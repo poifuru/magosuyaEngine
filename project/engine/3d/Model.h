@@ -65,14 +65,14 @@ private:		//メンバ変数
 
 	//行列データ
 	ComPtr<ID3D12Resource> matrixBuffer_;
-	TransformationMatrix* matrixData_;
+	TransformationMatrix* matrixData_ = nullptr;
 	Transform transform_;	//ローカル座標
 	Transform uvTransform_;	//uvTranform用のローカル座標
 	TransformationMatrix transformationMatrix_; //ワールド座標と、カメラからwvp行列をもらって格納する
 
 	//マテリアルデータ
 	ComPtr<ID3D12Resource> materialBuffer_;
-	Material* materialData_;
+	Material* materialData_ = nullptr;;
 
 	//ImGui用のラベル名
 	std::string id_;

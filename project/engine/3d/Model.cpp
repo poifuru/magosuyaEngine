@@ -48,19 +48,15 @@ Model::Model (ID3D12Device* device, const std::string& directoryPath, const std:
 Model::~Model () {
 	if (vertexBuffer_) {
 		vertexBuffer_->Unmap (0, nullptr);
-		vertexBuffer_.Reset ();
 	}
 	if (indexBuffer_) {
 		indexBuffer_->Unmap (0, nullptr);
-		indexBuffer_->GetGPUVirtualAddress ();
 	}
 	if (matrixBuffer_) {
 		matrixBuffer_->Unmap (0, nullptr);
-		matrixBuffer_.Reset ();
 	}
 	if (materialBuffer_) {
 		materialBuffer_->Unmap (0, nullptr);
-		materialBuffer_.Reset ();
 	}
 }
 

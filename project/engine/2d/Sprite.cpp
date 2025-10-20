@@ -1,7 +1,6 @@
 #include "Sprite.h"
 #include "../utility/function.h"
 #include "../utility/Math.h"
-#include "../utility/globalVariables.h"
 
 Sprite::Sprite (ID3D12Device* device) {
 	sprite_.transform.scale = { 1.0f, 1.0f, 1.0f };
@@ -44,25 +43,21 @@ Sprite::~Sprite () {
 	// vertexBuffer_ の Unmap
 	if (vertexBuffer_) {
 		vertexBuffer_->Unmap (0, nullptr);
-		vertexBuffer_.Reset ();
 	}
 
 	// indexBuffer_ の Unmap
 	if (indexBuffer_) {
 		indexBuffer_->Unmap (0, nullptr);
-		indexBuffer_.Reset ();
 	}
 
 	// matrixBuffer_ の Unmap
 	if (matrixBuffer_) {
 		matrixBuffer_->Unmap (0, nullptr);
-		matrixBuffer_.Reset ();
 	}
 
 	// materialBuffer_ の Unmap
 	if (materialBuffer_) {
 		materialBuffer_->Unmap (0, nullptr);
-		materialBuffer_.Reset ();
 	}
 }
 
@@ -103,7 +98,7 @@ void Sprite::Initialize (Vector3 position, Vector2 size) {
 void Sprite::Update () {
 	Matrix4x4 world = MakeAffineMatrix (sprite_.transform.scale, sprite_.transform.rotate, sprite_.transform.translate);
 	Matrix4x4 view = MakeIdentity4x4 ();
-	Matrix4x4 proj = MakeOrthographicMatrix (0, 0, (float)kClientWidth, (float)kClientHeight, 0, 100.0f);
+	Matrix4x4 proj = MakeOrthographicMatrix (0, 0, 1280.0f, 720.0f, 0, 100.0f);
 	sprite_.wvpMatrix = Multiply (world, Multiply (view, proj));
 	*matrixData_ = sprite_.wvpMatrix;
 
@@ -121,7 +116,7 @@ void Sprite::Draw (ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HAND
 	//こいつでインデックスバッファを使った描画
 	cmdList->DrawIndexedInstanced (6, 1, 0, 0, 0);
 }
-
+	
 void Sprite::ShowImGuiEditor () {
 	if (ImGui::ColorEdit4 ("Color##SpriteColor", color_)) {
 		// 色が変更されたらmaterialDataに反映

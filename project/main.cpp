@@ -272,12 +272,17 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon->GetDevice ()->CreateShaderResourceView (textureResource3.Get (), &srvDescTeapot, textureSrvHandleCPU[3]);
 	dxCommon->GetDevice ()->CreateShaderResourceView (textureResource4.Get (), &srvDescFence, textureSrvHandleCPU[4]);
 
+	//Uploadに使ったmipImageは解放する
+	for (int i = 0; i < 5; i++) {
+		mipImages[i].Release ();
+	}
+
 	//BGM再生
 	SoundPlayWave (xAudio2.Get (), soundData1);
 
 	//スプライト
-	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (dxCommon->GetDevice ());
-	sprite->Initialize ({ 0.0f, 0.0f, 0.0f }, { 640.0f, 360.0f });
+	/*std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (dxCommon->GetDevice ());
+	sprite->Initialize ({ 0.0f, 0.0f, 0.0f }, { 640.0f, 360.0f });*/
 
 	std::unique_ptr<SphereModel> sphere = std::make_unique<SphereModel> (dxCommon->GetDevice (), 16);
 	sphere->Initialize ({ 0.0f, 0.0f, 0.0f }, 1.0f);
@@ -376,9 +381,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			teapot->Update (&viewMatrix, &projectionMatrix);
 
-			sprite->Update ();
-			sphere->Update (&viewMatrix, &projectionMatrix);
 			Fence->Update (&viewMatrix, &projectionMatrix);
+
+			//sprite->Update ();
+			sphere->Update (&viewMatrix, &projectionMatrix);
 
 			//光源のdirectionの正規化
 			directionalLightData->direction = Normalize (directionalLightData->direction);
@@ -415,19 +421,19 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 			if (ImGui::CollapsingHeader ("plane")) {
 				ImGui::Checkbox ("Draw##plane", &usePlane);
-				plane->ImGui ();
+				//plane->ImGui ();
 			}
 			if (ImGui::CollapsingHeader ("Model")) {
 				ImGui::Checkbox ("Draw##Model", &useModel);
-				bunny->ImGui ();
+				//bunny->ImGui ();
 			}
 			if (ImGui::CollapsingHeader ("teapod")) {
 				ImGui::Checkbox ("Draw##teapod", &useTeapot);
-				teapot->ImGui ();
+				//teapot->ImGui ();
 			}
 			if (ImGui::CollapsingHeader ("Sprite")) {
 				ImGui::Checkbox ("Draw##useSprite", &useSprite);
-				sprite->ShowImGuiEditor ();
+				//sprite->ShowImGuiEditor ();
 			}
 			if (ImGui::CollapsingHeader ("light")) {
 				if (ImGui::ColorEdit4 ("color", colorLight)) {
@@ -441,12 +447,12 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 				ImGui::DragFloat ("intensity", &directionalLightData->intensity, 0.01f);
 			}
 			if (ImGui::CollapsingHeader ("fence")) {
-				Fence->ImGui ();
+				//Fence->ImGui ();
 			}
 			ImGui::End ();
-			/*ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);*/
+			ImGui::DragFloat2 ("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat2 ("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+			ImGui::SliderAngle ("UVRotate", &uvTransformSprite.rotate.z);
 
 
 
@@ -454,7 +460,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 			//ライティングの設定
 			dxCommon->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
 			//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
-			//Fence->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[4]);
+			Fence->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[4]);
 			if (useSphere) {
 				sphere->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
 			}
@@ -468,7 +474,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 				teapot->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[3]);
 			}
 			if (useSprite) {
-				sprite->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
+				//sprite->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
 			}
 
 			//フレーム終了

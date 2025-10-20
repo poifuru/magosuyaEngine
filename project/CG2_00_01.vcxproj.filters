@@ -90,9 +90,6 @@
     <ClCompile Include="engine\EngineCore\DxCommon.cpp">
       <Filter>engine\engineCore</Filter>
     </ClCompile>
-    <ClCompile Include="engine\utility\globalVariables.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
     <ClCompile Include="engine\utility\function.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -147,13 +144,7 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="engine\utility\header.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="externals.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\utility\globalVariables.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="engine\2d\Sprite.h">

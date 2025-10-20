@@ -23,7 +23,7 @@ void DebugCamera::Initialize() {
 	};
 	worldMatrix_ = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
 	viewMatrix_ = Inverse(worldMatrix_);
-	projectionMatrix_ = MakePerspectiveFOVMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+	projectionMatrix_ = MakePerspectiveFOVMatrix(0.45f, 1280.0f / 720.0f, 0.1f, 100.0f);
 
 	speed_ = 0.1f;
 }

@@ -118,26 +118,6 @@ void DxCommon::Initialize () {
 	//初期化完了のログを出す
 	Log (logStream, "Complete create D3D12Device!!!\n");
 
-	// ID3D12Device の作成後 (デバイス初期化時) に追加！
-	ComPtr<ID3D12DebugDevice1> debugDevice1;
-	if (SUCCEEDED (device.As (&debugDevice1))) {
-		// ログから控えた Creation Number (作成番号) をここに設定！
-		// ※もしアドレスブレークが効かない場合はこちらが確実でやんす！
-		UINT BreakOnCreationNumber = 575; // 控えた Creation Number に置き換えるでやんす！
-
-		// Define the missing constant if it's not available in the included headers  
-#ifndef D3D12_DEBUG_DEVICE_PARAMETER_TYPE_BREAK_ON_CREATION  
-#define D3D12_DEBUG_DEVICE_PARAMETER_TYPE_BREAK_ON_CREATION static_cast<D3D12_DEBUG_DEVICE_PARAMETER_TYPE>(0)  
-#endif  
-
-			// D3D12_DEBUG_DEVICE_PARAMETER_TYPE_BREAK_ON_CREATION を使用！
-			// これは多くのSDKで公開されている定数でやんす。
-		D3D12_DEBUG_DEVICE_PARAMETER_TYPE BreakType = D3D12_DEBUG_DEVICE_PARAMETER_TYPE_BREAK_ON_CREATION;
-
-		// SetDebugParameter で、Creation Number の実体とサイズを渡す！
-		debugDevice1->SetDebugParameter (BreakType, &BreakOnCreationNumber, sizeof (BreakOnCreationNumber));
-	}
-
 	//警告とかエラーとかが出たら出力ログに出してくれるらしい
 #ifdef _DEBUG
 	ComPtr<ID3D12InfoQueue> infoQueue = nullptr;
@@ -574,13 +554,6 @@ void DxCommon::Finalize () {
 
 	CloseHandle (fenceEvent);
 	CoUninitialize ();
-
-#ifdef _DEBUG
-	ComPtr<ID3D12DebugDevice> debugDevice;
-	if (SUCCEEDED (device.As (&debugDevice))) {
-		debugDevice->ReportLiveDeviceObjects (D3D12_RLDO_SUMMARY | D3D12_RLDO_DETAIL);
-	}
-#endif
 	device.Reset ();
 	DestroyWindow (hwnd);
 }
