@@ -528,32 +528,4 @@ void DxCommon::Finalize () {
 	ImGui_ImplDX12_Shutdown ();
 	ImGui_ImplWin32_Shutdown ();
 	ImGui::DestroyContext ();
-
-	//明示的にReset(作成時と逆順に)
-	graphicsPipelineState.Reset ();
-	dsvDescriptorHeap.Reset ();
-	depthStencilResource.Reset ();
-	pixelShaderBlob.Reset ();
-	vertexShaderBlob.Reset ();
-	rootSignature.Reset ();
-	errorBlob.Reset ();
-	signatureBlob.Reset ();
-	fence.Reset ();
-	srvDescriptorHeap.Reset ();
-	rtvDescriptorHeap.Reset ();
-	for (int i = 0; i < 2; i++) swapChainResources[i].Reset ();
-	swapChain.Reset ();
-	commandList.Reset ();
-	commandAllocator.Reset ();
-	commandQueue.Reset ();
-	includeHandler.Reset ();
-	dxcCompiler.Reset ();
-	dxcUtils.Reset ();
-	useAdapter.Reset ();
-	dxgiFactory.Reset ();
-
-	CloseHandle (fenceEvent);
-	CoUninitialize ();
-	device.Reset ();
-	DestroyWindow (hwnd);
 }
