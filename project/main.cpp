@@ -476,26 +476,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		g_inputManager->EndFrame ();
 		dxCommon->EndFrame ();
 	}
-	//mainで作成してるリソースのリセット
-	//参照が残るのを防ぐためにnullをしてしてviewを作り直す
-	dxCommon->GetDevice ()->CreateShaderResourceView (nullptr, &srvDescSphere, textureSrvHandleCPU[0]);
-	dxCommon->GetDevice ()->CreateShaderResourceView (nullptr, &srvDescPlane, textureSrvHandleCPU[1]);
-	dxCommon->GetDevice ()->CreateShaderResourceView (nullptr, &srvDescBunny, textureSrvHandleCPU[2]);
-	dxCommon->GetDevice ()->CreateShaderResourceView (nullptr, &srvDescTeapot, textureSrvHandleCPU[3]);
-	dxCommon->GetDevice ()->CreateShaderResourceView (nullptr, &srvDescFence, textureSrvHandleCPU[4]);
-
-	intermediateResource4.Reset ();
-	textureResource4.Reset ();
-	intermediateResource3.Reset ();
-	textureResource3.Reset ();
-	intermediateResource2.Reset ();
-	textureResource2.Reset ();
-	intermediateResource1.Reset ();
-	textureResource1.Reset ();
-	intermediateResource0.Reset ();
-	textureResource0.Reset ();
-	dierctionalLightResource->Unmap (0, nullptr);
-	dierctionalLightResource.Reset ();
+	
 	xAudio2.Reset ();
 	SoundUnload (&soundData1);  // バッファ解放
 	dxCommon->Finalize ();
