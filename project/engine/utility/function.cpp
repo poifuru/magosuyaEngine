@@ -1,28 +1,4 @@
 #include "function.h"
-#include "../Input/InputManager.h"
-
-//ウィンドウプロシージャ
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-	ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam);
-
-	//メッセージに応じてゲーム固有の処理を行う
-	switch (msg) {
-		//入力を検知した
-	case WM_INPUT:
-		if (g_inputManager) {
-			g_inputManager->Update (lparam);
-		}
-		break;
-
-		//ウィンドウが破棄された
-	case WM_DESTROY:
-		//OSに対して、アプリの終了を伝える
-		PostQuitMessage(0);
-		return 0;
-	}
-	//標準のメッセージ処理を行う
-	return DefWindowProc(hwnd, msg, wparam, lparam);
-}
 
 //ログを出力する関数
 void Log(std::ofstream& os, const std::string& message) {

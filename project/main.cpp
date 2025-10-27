@@ -121,9 +121,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon->Initialize ();
 
 	g_inputManager = std::make_unique<InputManager> ();
-	g_inputManager->Initialize (*dxCommon->GetHWND ());
-
-	MSG msg{};
+	g_inputManager->Initialize (dxCommon->GetWinAPI ()->GetHwnd ());
 
 	HRESULT hr;
 
@@ -327,160 +325,156 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	/*メインループ！！！！！！！！！*/
 	//ウィンドウの×ボタンが押されるまでループ
-	while (msg.message != WM_QUIT) {
-		//Windowにメッセージが来てたら最優先で処理させる
-		if (PeekMessage (&msg, NULL, 0, 0, PM_REMOVE)) {
-			TranslateMessage (&msg);
-			DispatchMessage (&msg);
-		}
-		else {
+	while (!dxCommon->GetWinAPI ()->ProcessMessage ()) {
+		/*if () {
+			break;
+		}*/
 
-			//フレーム開始
-			dxCommon->BeginFrame ();
+		//フレーム開始
+		dxCommon->BeginFrame ();
 
-			//実際のキー入力処理はここ！
-			/*if (!ImGui::GetIO ().WantCaptureKeyboard) {*/
-				// 押した瞬間だけトグル
-			if (g_inputManager->GetRawInput ()->Trigger (VK_TAB)) {
-				if (!debugMode) {
-					debugMode = true;
-				}
-				else {
-					debugMode = false;
-				}
-			}
-			/*}*/
-
-			if (g_inputManager->GetRawInput ()->Push ('D')/*key[DIK_D]*/) {
-				pos.x += 0.01f;
-			}
-			ImGui::Text ("pos.x:%f", pos.x);
-
-			//ゲームの処理//
-			//=======オブジェクトの更新処理=======//
-			//カメラ
-			cameraMatrix = MakeAffineMatrix (cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-			viewMatrix = Inverse (cameraMatrix);
-			projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (kClientWidth) / float (kClientHeight), 0.1f, 100.0f);
+		//実際のキー入力処理はここ！
+		/*if (!ImGui::GetIO ().WantCaptureKeyboard) {*/
+			// 押した瞬間だけトグル
+		if (g_inputManager->GetRawInput ()->Trigger (VK_TAB)) {
 			if (!debugMode) {
-				//worldViewProjectionMatrix = Multiply (cameraMatrix, Multiply (viewMatrix, projectionMatrix));
+				debugMode = true;
 			}
-			if (!ImGui::GetIO ().WantCaptureMouse) {
-				if (debugMode) {
-					debugCamera->Updata (*dxCommon->GetHWND (), hr, g_inputManager.get ());
-					viewMatrix = debugCamera->GetViewMatrix ();
-					projectionMatrix = debugCamera->GetProjectionMatrix ();
-				}
+			else {
+				debugMode = false;
 			}
-
-			//オブジェクト
-			plane->Update (&viewMatrix, &projectionMatrix);
-			plane->SetPositon (pos);
-
-			bunny->Update (&viewMatrix, &projectionMatrix);
-
-			teapot->Update (&viewMatrix, &projectionMatrix);
-
-			Fence->Update (&viewMatrix, &projectionMatrix);
-
-			//sprite->Update ();
-			sphere->Update (&viewMatrix, &projectionMatrix);
-
-			//光源のdirectionの正規化
-			directionalLightData->direction = Normalize (directionalLightData->direction);
-
-			ImGui::Begin ("カメラモード:TAB");
-			if (debugMode) {
-				ImGui::TextColored (ImVec4 (1, 1, 0, 1), "Current Camera: Debug");
-			}
-			else if (!debugMode) {
-				ImGui::TextColored (ImVec4 (0, 1, 0, 1), "Current Camera: Scene");
-			}
-			ImGui::End ();
-
-			//ImGuiと変数を結び付ける
-			// 色変更用のUI
-			static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };  // 初期値：白
-
-			ImGui::Begin ("setting");
-			if (ImGui::CollapsingHeader ("SceneCamera")) {
-				if (ImGui::Button ("Reset")) {
-					cameraTransform = {
-						{1.0f, 1.0f, 1.0f},
-						{0.0f, 0.0f, 0.0f},
-						{0.0f, 0.0f, -10.0f},
-					};
-				}
-				ImGui::DragFloat3 ("cameraScale", &cameraTransform.scale.x, 0.01f);
-				ImGui::DragFloat3 ("cameraRotate", &cameraTransform.rotate.x, 0.01f);
-				ImGui::DragFloat3 ("cameraTranslate", &cameraTransform.translate.x, 0.01f);
-			}
-			if (ImGui::CollapsingHeader ("sphere")) {
-				ImGui::Checkbox ("speher##useSphere", &useSphere);
-				sphere->ShowImGuiEditor ();
-			}
-			if (ImGui::CollapsingHeader ("plane")) {
-				ImGui::Checkbox ("Draw##plane", &usePlane);
-				//plane->ImGui ();
-			}
-			if (ImGui::CollapsingHeader ("Model")) {
-				ImGui::Checkbox ("Draw##Model", &useModel);
-				//bunny->ImGui ();
-			}
-			if (ImGui::CollapsingHeader ("teapod")) {
-				ImGui::Checkbox ("Draw##teapod", &useTeapot);
-				//teapot->ImGui ();
-			}
-			if (ImGui::CollapsingHeader ("Sprite")) {
-				ImGui::Checkbox ("Draw##useSprite", &useSprite);
-				//sprite->ShowImGuiEditor ();
-			}
-			if (ImGui::CollapsingHeader ("light")) {
-				if (ImGui::ColorEdit4 ("color", colorLight)) {
-					// 色が変更されたらmaterialDataに反映
-					directionalLightData->color.x = colorLight[0];
-					directionalLightData->color.y = colorLight[1];
-					directionalLightData->color.z = colorLight[2];
-					directionalLightData->color.w = colorLight[3];
-				}
-				ImGui::DragFloat3 ("lightDirection", &directionalLightData->direction.x, 0.01f);
-				ImGui::DragFloat ("intensity", &directionalLightData->intensity, 0.01f);
-			}
-			if (ImGui::CollapsingHeader ("fence")) {
-				//Fence->ImGui ();
-			}
-			ImGui::End ();
-			ImGui::DragFloat2 ("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2 ("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle ("UVRotate", &uvTransformSprite.rotate.z);
-
-
-
-			//=======コマンド君達=======//
-			//ライティングの設定
-			dxCommon->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
-			//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
-			Fence->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[4]);
-			if (useSphere) {
-				sphere->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
-			}
-			if (usePlane) {
-				plane->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[1]);
-			}
-			if (useModel) {
-				bunny->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[2]);
-			}
-			if (useTeapot) {
-				teapot->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[3]);
-			}
-			if (useSprite) {
-				//sprite->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
-			}
-
-			//フレーム終了
-			g_inputManager->EndFrame ();
-			dxCommon->EndFrame ();
 		}
+		/*}*/
+
+		if (g_inputManager->GetRawInput ()->Push ('D')/*key[DIK_D]*/) {
+			pos.x += 0.01f;
+		}
+		ImGui::Text ("pos.x:%f", pos.x);
+
+		//ゲームの処理//
+		//=======オブジェクトの更新処理=======//
+		//カメラ
+		cameraMatrix = MakeAffineMatrix (cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+		viewMatrix = Inverse (cameraMatrix);
+		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (dxCommon->GetWinAPI ()->kClientWidth) / float (dxCommon->GetWinAPI ()->kClientHeight), 0.1f, 100.0f);
+		if (!debugMode) {
+			//worldViewProjectionMatrix = Multiply (cameraMatrix, Multiply (viewMatrix, projectionMatrix));
+		}
+		if (!ImGui::GetIO ().WantCaptureMouse) {
+			if (debugMode) {
+				debugCamera->Updata (dxCommon->GetWinAPI ()->GetHwnd (), hr, g_inputManager.get ());
+				viewMatrix = debugCamera->GetViewMatrix ();
+				projectionMatrix = debugCamera->GetProjectionMatrix ();
+			}
+		}
+
+		//オブジェクト
+		plane->Update (&viewMatrix, &projectionMatrix);
+		plane->SetPositon (pos);
+
+		bunny->Update (&viewMatrix, &projectionMatrix);
+
+		teapot->Update (&viewMatrix, &projectionMatrix);
+
+		Fence->Update (&viewMatrix, &projectionMatrix);
+
+		//sprite->Update ();
+		sphere->Update (&viewMatrix, &projectionMatrix);
+
+		//光源のdirectionの正規化
+		directionalLightData->direction = Normalize (directionalLightData->direction);
+
+		ImGui::Begin ("カメラモード:TAB");
+		if (debugMode) {
+			ImGui::TextColored (ImVec4 (1, 1, 0, 1), "Current Camera: Debug");
+		}
+		else if (!debugMode) {
+			ImGui::TextColored (ImVec4 (0, 1, 0, 1), "Current Camera: Scene");
+		}
+		ImGui::End ();
+
+		//ImGuiと変数を結び付ける
+		// 色変更用のUI
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };  // 初期値：白
+
+		ImGui::Begin ("setting");
+		if (ImGui::CollapsingHeader ("SceneCamera")) {
+			if (ImGui::Button ("Reset")) {
+				cameraTransform = {
+					{1.0f, 1.0f, 1.0f},
+					{0.0f, 0.0f, 0.0f},
+					{0.0f, 0.0f, -10.0f},
+				};
+			}
+			ImGui::DragFloat3 ("cameraScale", &cameraTransform.scale.x, 0.01f);
+			ImGui::DragFloat3 ("cameraRotate", &cameraTransform.rotate.x, 0.01f);
+			ImGui::DragFloat3 ("cameraTranslate", &cameraTransform.translate.x, 0.01f);
+		}
+		if (ImGui::CollapsingHeader ("sphere")) {
+			ImGui::Checkbox ("speher##useSphere", &useSphere);
+			sphere->ShowImGuiEditor ();
+		}
+		if (ImGui::CollapsingHeader ("plane")) {
+			ImGui::Checkbox ("Draw##plane", &usePlane);
+			//plane->ImGui ();
+		}
+		if (ImGui::CollapsingHeader ("Model")) {
+			ImGui::Checkbox ("Draw##Model", &useModel);
+			//bunny->ImGui ();
+		}
+		if (ImGui::CollapsingHeader ("teapod")) {
+			ImGui::Checkbox ("Draw##teapod", &useTeapot);
+			//teapot->ImGui ();
+		}
+		if (ImGui::CollapsingHeader ("Sprite")) {
+			ImGui::Checkbox ("Draw##useSprite", &useSprite);
+			//sprite->ShowImGuiEditor ();
+		}
+		if (ImGui::CollapsingHeader ("light")) {
+			if (ImGui::ColorEdit4 ("color", colorLight)) {
+				// 色が変更されたらmaterialDataに反映
+				directionalLightData->color.x = colorLight[0];
+				directionalLightData->color.y = colorLight[1];
+				directionalLightData->color.z = colorLight[2];
+				directionalLightData->color.w = colorLight[3];
+			}
+			ImGui::DragFloat3 ("lightDirection", &directionalLightData->direction.x, 0.01f);
+			ImGui::DragFloat ("intensity", &directionalLightData->intensity, 0.01f);
+		}
+		if (ImGui::CollapsingHeader ("fence")) {
+			//Fence->ImGui ();
+		}
+		ImGui::End ();
+		ImGui::DragFloat2 ("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat2 ("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+		ImGui::SliderAngle ("UVRotate", &uvTransformSprite.rotate.z);
+
+
+
+		//=======コマンド君達=======//
+		//ライティングの設定
+		dxCommon->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
+		//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
+		Fence->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[4]);
+		if (useSphere) {
+			sphere->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
+		}
+		if (usePlane) {
+			plane->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[1]);
+		}
+		if (useModel) {
+			bunny->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[2]);
+		}
+		if (useTeapot) {
+			teapot->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[3]);
+		}
+		if (useSprite) {
+			//sprite->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
+		}
+
+		//フレーム終了
+		g_inputManager->EndFrame ();
+		dxCommon->EndFrame ();
 	}
 	//mainで作成してるリソースのリセット
 	//参照が残るのを防ぐためにnullをしてしてviewを作り直す

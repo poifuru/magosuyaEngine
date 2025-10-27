@@ -3,55 +3,22 @@
 #include <d3d12sdklayers.h>
 
 void DxCommon::Initialize () {
-	//ウィンドウサイズを表す構造体にクライアント領域を入れる
-	RECT wrc = { 0, 0, kClientWidth, kClientHeight };
-
-	//COMの初期化
-	CoInitializeEx (0, COINIT_MULTITHREADED);
-
 	//誰も補足しなかった場合に(Unhandled)、補足する関数を登録
 	//main関数が始まってすぐに登録すると良い
 	SetUnhandledExceptionFilter (ExportDump);
 
 	std::ofstream logStream = Logtext ();
 
-	//ウィンドウプロシージャ
-	wc.lpfnWndProc = WindowProc;
-	//ウィンドウクラス名
-	wc.lpszClassName = L"LE2B_22_マスヤ_ゴウ";
-	//インスタンスハンドル
-	wc.hInstance = GetModuleHandle (nullptr);
-	//カーソル
-	wc.hCursor = LoadCursor (nullptr, IDC_ARROW);
+	//COMの初期化
+	HRESULT hr = CoInitializeEx (0, COINIT_MULTITHREADED);
 
-	//ウィンドウクラスを登録する
-	RegisterClass (&wc);
-
-	//クライアント領域を元に実際のサイズにwrcを変更してもらう
-	AdjustWindowRect (&wrc, WS_OVERLAPPEDWINDOW, false);
-
-	//ウィンドウを生成
-	hwnd = CreateWindow (
-		wc.lpszClassName,		//利用するクラス名
-		L"CG2",					//タイトルバーの文字
-		WS_OVERLAPPEDWINDOW,	//よく見るウィンドウスタイル
-		CW_USEDEFAULT,			//表示x座標(Windowsに任せる)
-		CW_USEDEFAULT,			//表示y座標(WindowsOSに任せる)
-		wrc.right - wrc.left,	//ウィンドウ横幅
-		wrc.bottom - wrc.top,	//ウィンドウ縦幅
-		nullptr,				//親ウィンドウハンドル
-		nullptr,				//メニューハンドル
-		wc.hInstance,			//インスタンスハンドル
-		nullptr					//オプション
-	);
-
-	//ウィンドウを表示
-	ShowWindow (hwnd, SW_SHOW);
-
+	winApi_ = std::make_unique<WindowsAPI> ();
+	winApi_->Initalize ();
+	
 	//dxgiFactory生成
 	//HRESULTはWindows系のエラーコードであり、
 	//関数が成功したかどうかをSUCCEDEDマクロで判定できる
-	HRESULT hr = CreateDXGIFactory (IID_PPV_ARGS (dxgiFactory.GetAddressOf ()));
+	hr = CreateDXGIFactory (IID_PPV_ARGS (dxgiFactory.GetAddressOf ()));
 	//初期化の根本的な部分でエラーが出た場合はプログラムが間違っているか、
 	//どうにもできない場合が多いのでassertにしておく
 	assert (SUCCEEDED (hr));
@@ -163,15 +130,15 @@ void DxCommon::Initialize () {
 	assert (SUCCEEDED (hr));
 
 	//スワップチェーンを生成する
-	swapChainDesc.Width = kClientWidth;		//画面の幅,ウィンドウのクライアント領域を同じものにしておく
-	swapChainDesc.Height = kClientHeight;	//画面の高さ,ウィンドウのクライアント領域を同じものにしておく
+	swapChainDesc.Width = winApi_.get ()->kClientWidth;		//画面の幅,ウィンドウのクライアント領域を同じものにしておく
+	swapChainDesc.Height = winApi_.get ()->kClientHeight;	//画面の高さ,ウィンドウのクライアント領域を同じものにしておく
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;	//色の形式
 	swapChainDesc.SampleDesc.Count = 1;	//マルチサンプルしない
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;	//描画のターゲットとして利用する
 	swapChainDesc.BufferCount = 2;	//ダブルバッファ
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;	//モニタにうつしたら、中身を破棄
 	//コマンドキュー,ウィンドウハンドル,設定を渡して生成する
-	hr = dxgiFactory->CreateSwapChainForHwnd (commandQueue.Get (), hwnd, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf ()));
+	hr = dxgiFactory->CreateSwapChainForHwnd (commandQueue.Get (), winApi_.get ()->GetHwnd (), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf ()));
 	assert (SUCCEEDED (hr));
 
 	//swapChainからResourceを引っ張ってくる
@@ -340,7 +307,7 @@ void DxCommon::Initialize () {
 	assert (pixelShaderBlob != nullptr);
 
 	//DepthStencilTextureをウィンドウサイズで作成
-	depthStencilResource = CreateDepthStencilTextureResource (device.Get (), kClientWidth, kClientHeight);
+	depthStencilResource = CreateDepthStencilTextureResource (device.Get (), winApi_.get ()->kClientWidth, winApi_.get ()->kClientHeight);
 
 	//DSVディスクリプタヒープ生成
 	dsvDescriptorHeap = CreateDescriptorHeap (device.Get (), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
@@ -387,8 +354,8 @@ void DxCommon::Initialize () {
 
 	//ビューポート設定
 	//クライアント領域のサイズと一緒にして画面全体に表示
-	viewport.Width = static_cast<float>(kClientWidth);
-	viewport.Height = static_cast<float>(kClientHeight);
+	viewport.Width = static_cast<float>(winApi_.get ()->kClientWidth);
+	viewport.Height = static_cast<float>(winApi_.get ()->kClientHeight);
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
@@ -397,9 +364,9 @@ void DxCommon::Initialize () {
 	//シザー矩形設定
 	//基本的にビューポートと同じ矩形が構成されるようにする
 	scissorRect.left = 0;
-	scissorRect.right = kClientWidth;
+	scissorRect.right = winApi_.get ()->kClientWidth;
 	scissorRect.top = 0;
-	scissorRect.bottom = kClientHeight;
+	scissorRect.bottom = winApi_.get ()->kClientHeight;
 
 	//------------------------------------------//
 	//				ImGuiの初期化					//
@@ -412,7 +379,7 @@ void DxCommon::Initialize () {
 		"Resources/AppliMincho/PottaOne-Regular.ttf", 17.0f, nullptr,
 		io.Fonts->GetGlyphRangesJapanese ());
 	io.FontDefault = fontJP;
-	ImGui_ImplWin32_Init (hwnd);
+	ImGui_ImplWin32_Init (winApi_.get ()->GetHwnd ());
 	ImGui_ImplDX12_Init (device.Get (),
 						 swapChainDesc.BufferCount,
 						 rtvDesc.Format,
@@ -510,22 +477,13 @@ void DxCommon::EndFrame () {
 }
 
 void DxCommon::Finalize () {
-	if (commandList) {
-		commandList->Close ();
-	}
-
-	// GPUのコマンド完了を確実に待つ
-	if (commandQueue && fence) {
-		UINT64 currentFenceValue = ++fenceValue;
-		commandQueue->Signal (fence.Get (), currentFenceValue);
-		if (fence->GetCompletedValue () < currentFenceValue) {
-			fence->SetEventOnCompletion (currentFenceValue, fenceEvent);
-			WaitForSingleObject (fenceEvent, INFINITE);
-		}
-	}
-
-	// ImGui終了処理
+	//ImGuiの終了処理
 	ImGui_ImplDX12_Shutdown ();
 	ImGui_ImplWin32_Shutdown ();
 	ImGui::DestroyContext ();
+
+	CloseHandle (fenceEvent);
+
+	winApi_.get ()->Finalize ();
+	CoUninitialize ();
 }

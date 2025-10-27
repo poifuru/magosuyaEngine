@@ -5,3 +5,4 @@
 #include <vector>// 可変長配列
 #define _USE_MATH_DEFINES
 #include <math.h>// sin, cos, M_PI 定義など
+#include <memory>

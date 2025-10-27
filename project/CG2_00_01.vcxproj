@@ -184,8 +184,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="engine\Input\RawInput.cpp" />
+    <ClCompile Include="engine\3d\ModelManager.cpp" />
     <ClCompile Include="poi\poiEngine.cpp" />
-    <ClCompile Include="engine\windowsAPI\WindowsAPI.cpp" />
+    <ClCompile Include="engine\EngineCore\winAPI\WindowsAPI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="engine\shader\Object3d.PS.hlsl">
@@ -252,8 +253,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </ClInclude>
     <ClInclude Include="engine\Input\InputManager.h" />
     <ClInclude Include="engine\Input\RawInput.h" />
+    <ClInclude Include="engine\3d\ModelManager.h" />
     <ClInclude Include="poi\poiEngine.h" />
-    <ClInclude Include="engine\windowsAPI\WindowsAPI.h" />
+    <ClInclude Include="engine\EngineCore\winAPI\WindowsAPI.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

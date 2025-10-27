@@ -1,10 +1,8 @@
 #pragma once
 #include "../../header/Engine.h"
 #include "../Input/InputManager.h"
-
-//クライアント領域のサイズ
-const int32_t kClientWidth = 1280;
-const int32_t kClientHeight = 720;
+#include "winAPI/WindowsAPI.h"
+#include "../../header/pch.h"
 
 //BlendStateの個数
 const int kBlendDescNum = 6;
@@ -28,17 +26,15 @@ public:	//メンバ関数(mainで呼び出すよう)
 	void Finalize ();
 
 	//アクセッサ
-	HWND* GetHWND () { return &hwnd; }
+	WindowsAPI* GetWinAPI () { return winApi_.get(); }
 	ID3D12Device* GetDevice () { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList () { return commandList.Get (); }
 	ID3D12DescriptorHeap* GetsrvDescriptorHeap () { return srvDescriptorHeap.Get(); }
 
 private://メンバ変数
-	D3DResourceLeakChecker leakCheck{};
+	D3DResourceLeakChecker leakCheck_{};
 
-	//ウィンドウ
-	WNDCLASS wc{};
-	HWND hwnd{};
+	std::unique_ptr<WindowsAPI> winApi_;
 
 	//***DX12変数***//
 	//DXGIファクトリー

@@ -8,12 +8,6 @@
 #include "struct.h"
 #include <memory>
 
-class InputManager; // 前方宣言
-extern std::unique_ptr<InputManager> g_inputManager;
-
-//ウィンドウプロシージャ
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-
 //ログを出力する関数
 void Log(std::ofstream& os, const std::string& message);
 
