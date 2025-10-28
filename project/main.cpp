@@ -113,15 +113,12 @@ void SoundPlayWave (IXAudio2* xAudio2, const SoundData& soundData) {
 	result = pSourceVoice->Start ();
 }
 
-std::unique_ptr<InputManager> g_inputManager = nullptr;
+extern std::unique_ptr<InputManager> g_inputManager;
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::unique_ptr<DxCommon> dxCommon = std::make_unique<DxCommon> ();
 	dxCommon->Initialize ();
-
-	g_inputManager = std::make_unique<InputManager> ();
-	g_inputManager->Initialize (dxCommon->GetWinAPI ()->GetHwnd ());
 
 	HRESULT hr;
 
@@ -321,14 +318,13 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	/*********************************/
 
-
-
 	/*メインループ！！！！！！！！！*/
 	//ウィンドウの×ボタンが押されるまでループ
-	while (!dxCommon->GetWinAPI ()->ProcessMessage ()) {
-		/*if () {
+	while (true) {
+
+		if (dxCommon->GetWinAPI ()->ProcessMessage ()) {
 			break;
-		}*/
+		}
 
 		//フレーム開始
 		dxCommon->BeginFrame ();

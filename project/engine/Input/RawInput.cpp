@@ -28,12 +28,13 @@ void RawInput::Initialize (HWND hwnd) {
 void RawInput::Update (LPARAM lParam) {
     UINT size = 0;
     GetRawInputData ((HRAWINPUT)lParam, RID_INPUT, nullptr, &size, sizeof (RAWINPUTHEADER));
+    if (buffer_.size () < size)
+        buffer_.resize (size);
 
-    std::vector<BYTE> buffer (size);
-    if (GetRawInputData ((HRAWINPUT)lParam, RID_INPUT, buffer.data (), &size, sizeof (RAWINPUTHEADER)) != size)
+    if (GetRawInputData ((HRAWINPUT)lParam, RID_INPUT, buffer_.data (), &size, sizeof (RAWINPUTHEADER)) != size)
         return;
 
-    RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(buffer.data ());
+    RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(buffer_.data ());
 
     // キーボード入力
     if (raw->header.dwType == RIM_TYPEKEYBOARD) {

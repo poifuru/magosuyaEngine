@@ -40,4 +40,7 @@ private: // メンバ変数
 
     long mouseDeltaX_ = 0;  
     long mouseDeltaY_ = 0;  
+
+    //バッファ
+    std::vector<BYTE> buffer_;
 };

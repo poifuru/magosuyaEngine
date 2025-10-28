@@ -1,10 +1,9 @@
 #include "WindowsAPI.h"
 #include "../../utility/function.h"
-#include "../../Input/InputManager.h"
+
+extern std::unique_ptr<InputManager> g_inputManager;
 
 LRESULT WindowsAPI::WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-	ImGui_ImplWin32_WndProcHandler (hwnd, msg, wparam, lparam);
-
 	//メッセージに応じてゲーム固有の処理を行う
 	switch (msg) {
 		//入力を検知した
@@ -12,7 +11,7 @@ LRESULT WindowsAPI::WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 		if (g_inputManager) {
 			g_inputManager->Update (lparam);
 		}
-		break;
+		return 0;
 
 		//ウィンドウが破棄された
 	case WM_DESTROY:
@@ -20,6 +19,8 @@ LRESULT WindowsAPI::WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 		PostQuitMessage (0);
 		return 0;
 	}
+
+	ImGui_ImplWin32_WndProcHandler (hwnd, msg, wparam, lparam);
 
 	//標準のメッセージ処理を行う
 	return DefWindowProc (hwnd, msg, wparam, lparam);
@@ -61,6 +62,10 @@ void WindowsAPI::Initalize () {
 
 	//ウィンドウを表示
 	ShowWindow (hwnd_, SW_SHOW);
+
+	//インプットマネージャーの初期化
+	g_inputManager = std::make_unique<InputManager> ();
+	g_inputManager->Initialize (hwnd_);
 }
 
 bool WindowsAPI::ProcessMessage () {

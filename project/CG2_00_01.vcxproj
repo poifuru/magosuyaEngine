@@ -144,7 +144,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="engine\EngineCore\DxCommon.cpp">
-      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Development|x64'">None</DebugInformationFormat>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|x64'">None</DebugInformationFormat>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">None</DebugInformationFormat>
     </ClCompile>
@@ -183,7 +182,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="engine\Input\RawInput.cpp" />
+    <ClCompile Include="engine\Input\RawInput.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
+      </ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="engine\3d\ModelManager.cpp" />
     <ClCompile Include="poi\poiEngine.cpp" />
     <ClCompile Include="engine\EngineCore\winAPI\WindowsAPI.cpp" />
@@ -252,7 +254,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="engine\Input\InputManager.h" />
-    <ClInclude Include="engine\Input\RawInput.h" />
+    <ClInclude Include="engine\Input\RawInput.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
+      </ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="engine\3d\ModelManager.h" />
     <ClInclude Include="poi\poiEngine.h" />
     <ClInclude Include="engine\EngineCore\winAPI\WindowsAPI.h" />
