@@ -1,17 +1,17 @@
 #include "WindowsAPI.h"
 #include "../../utility/function.h"
-
-extern std::unique_ptr<InputManager> g_inputManager;
+#include "../../Input/InputManager.h"
 
 LRESULT WindowsAPI::WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	//メッセージに応じてゲーム固有の処理を行う
 	switch (msg) {
 		//入力を検知した
 	case WM_INPUT:
+
 		if (g_inputManager) {
 			g_inputManager->Update (lparam);
 		}
-		return 0;
+		break;;
 
 		//ウィンドウが破棄された
 	case WM_DESTROY:
@@ -20,13 +20,15 @@ LRESULT WindowsAPI::WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 		return 0;
 	}
 
-	ImGui_ImplWin32_WndProcHandler (hwnd, msg, wparam, lparam);
+	if (msg != WM_INPUT) {
+		ImGui_ImplWin32_WndProcHandler (hwnd, msg, wparam, lparam);
+	}
 
 	//標準のメッセージ処理を行う
 	return DefWindowProc (hwnd, msg, wparam, lparam);
 }
 
-void WindowsAPI::Initalize () {
+void WindowsAPI::Initialize () {
 	//ウィンドウプロシージャ
 	windowClass_.lpfnWndProc = WindowProc;
 	//ウィンドウクラス名
@@ -72,14 +74,14 @@ bool WindowsAPI::ProcessMessage () {
 	MSG msg{};
 
 	//Windowにメッセージが来てたら最優先で処理させる
-	if (PeekMessage (&msg, nullptr, 0, 0, PM_REMOVE)) {
+	while (PeekMessage (&msg, nullptr, 0, 0, PM_REMOVE)) {
 		TranslateMessage (&msg);
 		DispatchMessage (&msg);
-	}
 
-	//終了するかの判断をここでしてboolで返す
-	if (msg.message == WM_QUIT) {
-		return true;
+		//終了するかの判断をここでしてboolで返す
+		if (msg.message == WM_QUIT) {
+			return true;
+		}
 	}
 
 	return false;

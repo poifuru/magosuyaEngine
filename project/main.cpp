@@ -113,7 +113,7 @@ void SoundPlayWave (IXAudio2* xAudio2, const SoundData& soundData) {
 	result = pSourceVoice->Start ();
 }
 
-extern std::unique_ptr<InputManager> g_inputManager;
+std::unique_ptr<InputManager> g_inputManager = nullptr;
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {

@@ -1,7 +1,11 @@
 #pragma once
-#include "../../../header/WinSupport.h"
-#include "../../Input/InputManager.h"
+#ifndef __HLSL_VERSION
+#include <Windows.h>  // HLSL側では __HLSL_VERSION が定義されてないのでスキップできる
+#endif
 #include <memory>
+
+class InputManager; // 前方宣言
+extern std::unique_ptr<InputManager> g_inputManager;
 
 class WindowsAPI {
 public:	//静的メンバ関数
@@ -11,7 +15,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initalize ();
+	void Initialize ();
 
 	bool ProcessMessage ();
 

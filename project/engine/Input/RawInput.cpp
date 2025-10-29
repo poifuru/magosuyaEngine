@@ -3,6 +3,7 @@
 #include <hidusage.h>
 
 void RawInput::Initialize (HWND hwnd) {
+    OutputDebugStringA ("RawInput 登録\n");
     RAWINPUTDEVICE rid[2];
 
     // キーボード
@@ -101,6 +102,34 @@ bool RawInput::ReleaseMouse (int button) const {
     }
 
     return false;
+}
+
+void RawInput::HandleMessageForDebug (LPARAM lParam) {
+    UINT size = 0;
+    UINT ret = GetRawInputData ((HRAWINPUT)lParam, RID_INPUT, nullptr, &size, sizeof (RAWINPUTHEADER));
+    char out[256];
+    sprintf_s (out, "GetRawInputData(sizeQuery) returned %u size=%u\n", ret, size);
+    OutputDebugStringA (out);
+
+    if (size == 0) return;
+    if (buffer_.size () < size) buffer_.resize (size);
+
+    UINT bytes = GetRawInputData ((HRAWINPUT)lParam, RID_INPUT, buffer_.data (), &size, sizeof (RAWINPUTHEADER));
+    sprintf_s (out, "GetRawInputData(data) returned %u bytes=%u\n", bytes, size);
+    OutputDebugStringA (out);
+
+    RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(buffer_.data ());
+    if (raw->header.dwType == RIM_TYPEMOUSE) {
+        const RAWMOUSE& ms = raw->data.mouse;
+        sprintf_s (out, "MOUSE: lX=%ld lY=%ld flags=%04x usFlags=%04x\n",
+                   ms.lLastX, ms.lLastY, ms.usButtonFlags, ms.usFlags);
+        OutputDebugStringA (out);
+    }
+    else if (raw->header.dwType == RIM_TYPEKEYBOARD) {
+        const RAWKEYBOARD& kb = raw->data.keyboard;
+        sprintf_s (out, "KEY: VKey=%u Flags=%04x\n", kb.VKey, kb.Flags);
+        OutputDebugStringA (out);
+    }
 }
 
 void RawInput::EndFrame () {

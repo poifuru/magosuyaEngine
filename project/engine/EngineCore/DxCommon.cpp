@@ -13,7 +13,7 @@ void DxCommon::Initialize () {
 	HRESULT hr = CoInitializeEx (0, COINIT_MULTITHREADED);
 
 	winApi_ = std::make_unique<WindowsAPI> ();
-	winApi_->Initalize ();
+	winApi_->Initialize ();
 	
 	//dxgiFactory生成
 	//HRESULTはWindows系のエラーコードであり、

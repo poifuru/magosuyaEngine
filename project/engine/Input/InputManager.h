@@ -16,5 +16,3 @@ public:	//メンバ関数
 private://メンバ変数
 	std::unique_ptr<RawInput> rawInput_;
 };
-
-extern std::unique_ptr<InputManager> g_inputManager;

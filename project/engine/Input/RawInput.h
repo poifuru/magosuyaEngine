@@ -24,6 +24,8 @@ public: // メンバ関数
     bool TriggerMouse (int button) const;
     bool ReleaseMouse (int button) const;
 
+    //デバッグ用
+    void HandleMessageForDebug (LPARAM lParam);
 
     void EndFrame ();
     long GetMouseDeltaX() const { return mouseDeltaX_; }  

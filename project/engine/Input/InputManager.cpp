@@ -1,7 +1,5 @@
 #include "InputManager.h"
 
-std::unique_ptr<InputManager> g_inputManager = nullptr;
-
 void InputManager::Initialize (HWND hwnd) {
 	rawInput_ = std::make_unique<RawInput> ();
 	rawInput_->Initialize (hwnd);
