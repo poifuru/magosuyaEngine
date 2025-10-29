@@ -69,58 +69,64 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\SphereModel.cpp">
+    <ClCompile Include="poi\object\3d\SphereModel.cpp">
       <Filter>engine\3d</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\Model.cpp">
+    <ClCompile Include="poi\object\3d\Model.cpp">
       <Filter>engine\3d</Filter>
     </ClCompile>
-    <ClCompile Include="engine\2d\Sprite.cpp">
+    <ClCompile Include="poi\object\2d\Sprite.cpp">
       <Filter>engine\2d</Filter>
     </ClCompile>
-    <ClCompile Include="engine\audio\Sound.cpp">
+    <ClCompile Include="poi\utility\audio\Sound.cpp">
       <Filter>engine\audio</Filter>
     </ClCompile>
-    <ClCompile Include="engine\audio\SoundData.cpp">
+    <ClCompile Include="poi\utility\audio\SoundData.cpp">
       <Filter>engine\audio</Filter>
     </ClCompile>
-    <ClCompile Include="engine\audio\SoundManager.cpp">
+    <ClCompile Include="poi\utility\audio\SoundManager.cpp">
       <Filter>engine\audio</Filter>
     </ClCompile>
-    <ClCompile Include="engine\EngineCore\DxCommon.cpp">
+    <ClCompile Include="poi\engine\engineCore\DxCommon.cpp">
       <Filter>engine\engineCore</Filter>
     </ClCompile>
-    <ClCompile Include="engine\utility\function.cpp">
+    <ClCompile Include="general\function.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="engine\camera\DebugCamera.cpp">
+    <ClCompile Include="poi\utility\camera\DebugCamera.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="engine\utility\Math.cpp">
+    <ClCompile Include="general\Math.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="engine\Input\GamePad.cpp">
+    <ClCompile Include="poi\utility\input\GamePad.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="engine\Input\InputManager.cpp">
+    <ClCompile Include="poi\utility\input\InputManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="engine\Input\RawInput.cpp">
+    <ClCompile Include="poi\utility\input\RawInput.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="poi\poiEngine.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="engine\EngineCore\winAPI\WindowsAPI.cpp">
+    <ClCompile Include="poi\engine\engineCore\winAPI\WindowsAPI.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="engine\3d\ModelManager.cpp">
+    <ClCompile Include="poi\object\3d\ModelManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="general\Logger.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="general\String.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="engine\shader\Object3d.VS.hlsl" />
-    <FxCompile Include="engine\shader\Object3d.PS.hlsl" />
+    <FxCompile Include="poi\engine\shader\Object3d.VS.hlsl" />
+    <FxCompile Include="poi\engine\shader\Object3d.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -150,22 +156,22 @@
     <ClInclude Include="externals.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="engine\2d\Sprite.h">
+    <ClInclude Include="poi\object\2d\Sprite.h">
       <Filter>engine\2d</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\Model.h">
+    <ClInclude Include="poi\object\3d\Model.h">
       <Filter>engine\3d</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\SphereModel.h">
+    <ClInclude Include="poi\object\3d\SphereModel.h">
       <Filter>engine\3d</Filter>
     </ClInclude>
-    <ClInclude Include="engine\audio\Sound.h">
+    <ClInclude Include="poi\utility\audio\Sound.h">
       <Filter>engine\audio</Filter>
     </ClInclude>
-    <ClInclude Include="engine\audio\SoundData.h">
+    <ClInclude Include="poi\utility\audio\SoundData.h">
       <Filter>engine\audio</Filter>
     </ClInclude>
-    <ClInclude Include="engine\audio\SoundManager.h">
+    <ClInclude Include="poi\utility\audio\SoundManager.h">
       <Filter>engine\audio</Filter>
     </ClInclude>
     <ClInclude Include="header\ComPtr.h">
@@ -195,43 +201,49 @@
     <ClInclude Include="header\WinSupport.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="engine\EngineCore\DxCommon.h">
+    <ClInclude Include="poi\engine\engineCore\DxCommon.h">
       <Filter>engine\engineCore</Filter>
     </ClInclude>
     <ClInclude Include="header\pch.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="engine\camera\DebugCamera.h">
+    <ClInclude Include="poi\utility\camera\DebugCamera.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="engine\utility\Math.h">
+    <ClInclude Include="general\Math.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="engine\utility\struct.h">
+    <ClInclude Include="general\struct.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="engine\utility\function.h">
+    <ClInclude Include="general\function.h">
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="header\DX12\directX12.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="engine\Input\GamePad.h">
+    <ClInclude Include="poi\utility\input\GamePad.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="engine\Input\InputManager.h">
+    <ClInclude Include="poi\utility\input\InputManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="engine\Input\RawInput.h">
+    <ClInclude Include="poi\utility\input\RawInput.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="poi\poiEngine.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="engine\EngineCore\winAPI\WindowsAPI.h">
+    <ClInclude Include="poi\engine\engineCore\winAPI\WindowsAPI.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="engine\3d\ModelManager.h">
+    <ClInclude Include="poi\object\3d\ModelManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="general\Logger.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="general\String.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -241,6 +253,6 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <None Include="engine\shader\Object3d.hlsli" />
+    <None Include="poi\engine\shader\Object3d.hlsli" />
   </ItemGroup>
 </Project>

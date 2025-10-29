@@ -1,15 +1,13 @@
 #pragma once
-#include "../../header/ComPtr.h"
-#include "../../header/DX12/dxcapi.h"
-#include "../../header/WinSupport.h"
-#include "../../header/DX12/directX12.h"
-#include "../../header/file.h"
-#include "../../externals.h"
+#include "../header/ComPtr.h"
+#include "../header/DX12/dxcapi.h"
+#include "../header/WinSupport.h"
+#include "../header/DX12/directX12.h"
+#include "../header/file.h"
+#include "../externals.h"
 #include "struct.h"
 #include <memory>
 
-//ログを出力する関数
-void Log(std::ofstream& os, const std::string& message);
 
 //DirectX12が返してくる文字列を必要に応じて型変換してあげる
 //string->wstring
@@ -36,8 +34,7 @@ ComPtr<IDxcBlob> CompilerShader(
 //Resource作成関数
 ComPtr<ID3D12Resource> CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
 
-//DescriptorHeapの作成関数
-ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
+
 
 //Textureデータを読みこむ関数
 DirectX::ScratchImage LoadTexture(const std::string& filePath);
@@ -57,9 +54,7 @@ ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(ID3D12Device* device, i
 //ログをテキストで出す関数
 std::ofstream Logtext();
 
-//DescriptorHandleを取得する関数(CPUとGPU)
-D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
-D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
+
 
 //マテリアルファイルの読み込み関数
 MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);

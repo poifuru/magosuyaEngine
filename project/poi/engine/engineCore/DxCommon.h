@@ -1,8 +1,12 @@
 #pragma once
-#include "../../header/Engine.h"
-#include "../Input/InputManager.h"
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <dxcapi.h>
+#include <dxgidebug.h>
 #include "winAPI/WindowsAPI.h"
-#include "../../header/pch.h"
+#include "../../utility/input/InputManager.h"
+#include "../../../header/pch.h"
+#include "../../../header/ComPtr.h"
 
 //BlendStateの個数
 const int kBlendDescNum = 6;
@@ -19,14 +23,35 @@ struct D3DResourceLeakChecker {
 };
 
 class DxCommon {
-public:	//メンバ関数(mainで呼び出すよう)
-	void Initialize ();
+public:		//メンバ関数(mainで呼び出すよう)
+	void Initialize (WindowsAPI* winApp);
 	void BeginFrame ();
 	void EndFrame ();
 	void Finalize ();
 
-	//アクセッサ
-	WindowsAPI* GetWinAPI () { return winApi_.get(); }
+	/// <summary>
+	/// ディスクリプタヒープ作成関数
+	/// </summary>
+	/// <param name="device"></param>
+	/// <param name="heapType"></param>
+	/// <param name="numDescriptors"></param>
+	/// <param name="shaderVisible"></param>
+	/// <returns></returns>
+	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap (D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
+		
+private:	//プライベート関数
+	void DeviceInit ();
+	void CommandInit ();
+	void SwapChainInit();
+	void DepthBafferInit ();
+	void DescriptorHeapGenerate ();
+	void RtvInit ();
+	//DescriptorHandleを取得する関数(CPUとGPU)
+	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
+	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
+
+public:		//アクセッサ
+	WindowsAPI* GetWinAPI () { return winApp_; }
 	ID3D12Device* GetDevice () { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList () { return commandList.Get (); }
 	ID3D12DescriptorHeap* GetsrvDescriptorHeap () { return srvDescriptorHeap.Get(); }
@@ -34,7 +59,7 @@ public:	//メンバ関数(mainで呼び出すよう)
 private://メンバ変数
 	D3DResourceLeakChecker leakCheck_{};
 
-	std::unique_ptr<WindowsAPI> winApi_;
+	WindowsAPI* winApp_ = nullptr;
 
 	//***DX12変数***//
 	//DXGIファクトリー
@@ -73,11 +98,17 @@ private://メンバ変数
 	//RTVを2つ作るのでディスクリプタを2つ用意
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[5]{};
 
+	//ディスクリプタヒープサイズ
+	UINT rtvDescriptorHeapSize_;
+
 	//RTVディスクリプタヒープ
 	ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap{};
 
 	//RTVの設定
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+
+	//ディスクリプタヒープサイズ
+	UINT srvDescriptorHeapSize_;
 
 	//SRVディスクリプタヒープ
 	ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap{};
@@ -119,17 +150,20 @@ private://メンバ変数
 	ComPtr<IDxcBlob> vertexShaderBlob = nullptr;
 	ComPtr<IDxcBlob> pixelShaderBlob = nullptr;
 
-	//DepthStencilTexture
-	ComPtr<ID3D12Resource> depthStencilResource = nullptr;
-
-	//DSV用ディスクリプタヒープで数は1。DSVはShader内で触るものではないので、ShaderVisibleはfalse
-	ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap{};
-
 	//DSVの設定
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 
-	//depthStencilState
+	//depthStencilStateの設定
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+
+	//DepthStencilTexture
+	ComPtr<ID3D12Resource> depthStencilResource = nullptr;
+
+	//ディスクリプタヒープサイズ
+	UINT dsvDescriptorHeapSize_;
+
+	//DSV用ディスクリプタヒープで数は1。DSVはShader内で触るものではないので、ShaderVisibleはfalse
+	ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap{};
 
 	//PSO
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPieplineStateDesc{};

@@ -1,6 +1,7 @@
 #include "WindowsAPI.h"
-#include "../../utility/function.h"
-#include "../../Input/InputManager.h"
+#include "../../../../general/function.h"
+#include "../../../utility/Input/InputManager.h"
+#include "../../../../externals.h"
 
 LRESULT WindowsAPI::WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	//メッセージに応じてゲーム固有の処理を行う
