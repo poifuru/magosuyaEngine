@@ -1,19 +1,14 @@
 #pragma once
-#include "../header/ComPtr.h"
-#include "../header/DX12/dxcapi.h"
-#include "../header/WinSupport.h"
-#include "../header/DX12/directX12.h"
-#include "../header/file.h"
+#include <Windows.h>	
+#include <d3d12.h>
+#include <wrl.h>
+using namespace Microsoft::WRL;
+#include <dxcapi.h>
+#include <strsafe.h>
+#include <DbgHelp.h>
+#include <memory>
 #include "../externals.h"
 #include "struct.h"
-#include <memory>
-
-
-//DirectX12が返してくる文字列を必要に応じて型変換してあげる
-//string->wstring
-std::wstring ConvertString(const std::string& str);
-//wstring->string
-std::string ConvertString(const std::wstring& str);
 
 //クラッシュハンドルを登録するための関数
 LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception);

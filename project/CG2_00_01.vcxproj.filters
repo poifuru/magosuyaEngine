@@ -69,52 +69,52 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="poi\object\3d\SphereModel.cpp">
+    <ClCompile Include="magosuya\object\3d\SphereModel.cpp">
       <Filter>engine\3d</Filter>
     </ClCompile>
-    <ClCompile Include="poi\object\3d\Model.cpp">
+    <ClCompile Include="magosuya\object\3d\Model.cpp">
       <Filter>engine\3d</Filter>
     </ClCompile>
-    <ClCompile Include="poi\object\2d\Sprite.cpp">
+    <ClCompile Include="magosuya\object\2d\Sprite.cpp">
       <Filter>engine\2d</Filter>
     </ClCompile>
-    <ClCompile Include="poi\utility\audio\Sound.cpp">
+    <ClCompile Include="magosuya\utility\audio\Sound.cpp">
       <Filter>engine\audio</Filter>
     </ClCompile>
-    <ClCompile Include="poi\utility\audio\SoundData.cpp">
+    <ClCompile Include="magosuya\utility\audio\SoundData.cpp">
       <Filter>engine\audio</Filter>
     </ClCompile>
-    <ClCompile Include="poi\utility\audio\SoundManager.cpp">
+    <ClCompile Include="magosuya\utility\audio\SoundManager.cpp">
       <Filter>engine\audio</Filter>
     </ClCompile>
-    <ClCompile Include="poi\engine\engineCore\DxCommon.cpp">
+    <ClCompile Include="magosuya\engine\engineCore\DxCommon.cpp">
       <Filter>engine\engineCore</Filter>
     </ClCompile>
     <ClCompile Include="general\function.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="poi\utility\camera\DebugCamera.cpp">
+    <ClCompile Include="magosuya\utility\camera\DebugCamera.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="general\Math.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="poi\utility\input\GamePad.cpp">
+    <ClCompile Include="magosuya\utility\input\GamePad.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="poi\utility\input\InputManager.cpp">
+    <ClCompile Include="magosuya\utility\input\InputManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="poi\utility\input\RawInput.cpp">
+    <ClCompile Include="magosuya\utility\input\RawInput.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="poi\poiEngine.cpp">
+    <ClCompile Include="magosuya\MagosuyaEngine.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="poi\engine\engineCore\winAPI\WindowsAPI.cpp">
+    <ClCompile Include="magosuya\engine\engineCore\winAPI\WindowsAPI.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="poi\object\3d\ModelManager.cpp">
+    <ClCompile Include="magosuya\object\3d\ModelManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="general\Logger.cpp">
@@ -125,8 +125,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="poi\engine\shader\Object3d.VS.hlsl" />
-    <FxCompile Include="poi\engine\shader\Object3d.PS.hlsl" />
+    <FxCompile Include="magosuya\engine\shader\Object3d.VS.hlsl" />
+    <FxCompile Include="magosuya\engine\shader\Object3d.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -156,58 +156,28 @@
     <ClInclude Include="externals.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="poi\object\2d\Sprite.h">
+    <ClInclude Include="magosuya\object\2d\Sprite.h">
       <Filter>engine\2d</Filter>
     </ClInclude>
-    <ClInclude Include="poi\object\3d\Model.h">
+    <ClInclude Include="magosuya\object\3d\Model.h">
       <Filter>engine\3d</Filter>
     </ClInclude>
-    <ClInclude Include="poi\object\3d\SphereModel.h">
+    <ClInclude Include="magosuya\object\3d\SphereModel.h">
       <Filter>engine\3d</Filter>
     </ClInclude>
-    <ClInclude Include="poi\utility\audio\Sound.h">
+    <ClInclude Include="magosuya\utility\audio\Sound.h">
       <Filter>engine\audio</Filter>
     </ClInclude>
-    <ClInclude Include="poi\utility\audio\SoundData.h">
+    <ClInclude Include="magosuya\utility\audio\SoundData.h">
       <Filter>engine\audio</Filter>
     </ClInclude>
-    <ClInclude Include="poi\utility\audio\SoundManager.h">
+    <ClInclude Include="magosuya\utility\audio\SoundManager.h">
       <Filter>engine\audio</Filter>
     </ClInclude>
-    <ClInclude Include="header\ComPtr.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="header\DirectInput.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="header\DX12\dxcapi.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="header\DX12\dxgi.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="header\DX12\dxgiDebug.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="header\Engine.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="header\file.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="header\DX12\sdkLayers.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="header\WinSupport.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="poi\engine\engineCore\DxCommon.h">
+    <ClInclude Include="magosuya\engine\engineCore\DxCommon.h">
       <Filter>engine\engineCore</Filter>
     </ClInclude>
-    <ClInclude Include="header\pch.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="poi\utility\camera\DebugCamera.h">
+    <ClInclude Include="magosuya\utility\camera\DebugCamera.h">
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="general\Math.h">
@@ -219,25 +189,22 @@
     <ClInclude Include="general\function.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="header\DX12\directX12.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="poi\utility\input\GamePad.h">
+    <ClInclude Include="magosuya\utility\input\GamePad.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="poi\utility\input\InputManager.h">
+    <ClInclude Include="magosuya\utility\input\InputManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="poi\utility\input\RawInput.h">
+    <ClInclude Include="magosuya\utility\input\RawInput.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="poi\poiEngine.h">
+    <ClInclude Include="magosuya\MagosuyaEngine.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="poi\engine\engineCore\winAPI\WindowsAPI.h">
+    <ClInclude Include="magosuya\engine\engineCore\winAPI\WindowsAPI.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="poi\object\3d\ModelManager.h">
+    <ClInclude Include="magosuya\object\3d\ModelManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="general\Logger.h">
@@ -253,6 +220,6 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <None Include="poi\engine\shader\Object3d.hlsli" />
+    <None Include="magosuya\engine\shader\Object3d.hlsli" />
   </ItemGroup>
 </Project>

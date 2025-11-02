@@ -1,5 +1,5 @@
 #pragma once  
-#include "../../engine/utility/struct.h"  
+#include "../../general/struct.h"  
 #include <d3d12.h>  
 #include <wrl.h>  
 using namespace Microsoft::WRL;  

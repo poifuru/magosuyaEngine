@@ -1,6 +1,6 @@
 #pragma once
-#include "../utility/struct.h"
 #include <Windows.h>
+#include "../../general/struct.h"
 #include <d3d12.h>
 #include <d3d12sdklayers.h>
 #pragma comment(lib, "d3d12.lib")
@@ -12,7 +12,7 @@ using namespace Microsoft::WRL;
 #include <dinput.h>
 #pragma	comment(lib, "dinput8.lib")
 #pragma	comment(lib, "dxguid.lib")
-#include "../utility/Math.h"
+#include "../../general/Math.h"
 #include "../Input/InputManager.h"
 
 class DebugCamera{

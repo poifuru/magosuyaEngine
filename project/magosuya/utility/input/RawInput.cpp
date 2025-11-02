@@ -1,5 +1,5 @@
 #include "RawInput.h"
-#include "../utility/function.h"
+#include "../../general/function.h"
 #include <hidusage.h>
 
 void RawInput::Initialize (HWND hwnd) {

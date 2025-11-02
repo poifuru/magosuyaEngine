@@ -1,7 +1,7 @@
 #include <Windows.h>
-#include "engine/EngineCore/DxCommon.h"
-#include "engine/utility/function.h"
-#include "engine/utility/struct.h"
+#include "magosuya/engine/EngineCore/DxCommon.h"
+#include "general/function.h"
+#include "general/struct.h"
 #include <format>// C++20のformat() 文字列整形
 #include <chrono>	//時間を扱うライブラリ
 #include <sstream>// stringstream
@@ -9,11 +9,11 @@
 #pragma comment(lib,"xaudio2.lib")
 #include <Xinput.h>
 #pragma comment(lib, "xinput.lib")
-#include "engine/3d/Model.h"
-#include "engine/3d/SphereModel.h"
-#include "engine/2d/Sprite.h"
-#include "engine/camera/DebugCamera.h"
-#include "engine/Input/InputManager.h"
+#include "magosuya/object/3d/Model.h"
+#include "magosuya/object/3d/SphereModel.h"
+#include "magosuya/object/2d/Sprite.h"
+#include "magosuya/utility/camera/DebugCamera.h"
+#include "magosuya/utility/Input/InputManager.h"
 #include <memory>
 
 //サウンドデータの読み込み関数
@@ -118,7 +118,7 @@ std::unique_ptr<InputManager> g_inputManager = nullptr;
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::unique_ptr<DxCommon> dxCommon = std::make_unique<DxCommon> ();
-	dxCommon->Initialize ();
+	dxCommon->Initialize (dxCommon->GetWinAPI());
 
 	HRESULT hr;
 
@@ -246,20 +246,20 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	//SRVを作成するDescriptorHeapの場所を決める
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU[5];
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU[5];
-	textureSrvHandleCPU[0] = GetCPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 1);
-	textureSrvHandleGPU[0] = GetGPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 1);
+	textureSrvHandleCPU[0] = dxCommon->GetSRVCPUDescriptorHandle (1);
+	textureSrvHandleGPU[0] = dxCommon->GetSRVGPUDescriptorHandle (1);
 
-	textureSrvHandleCPU[1] = GetCPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 2);
-	textureSrvHandleGPU[1] = GetGPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 2);
+	textureSrvHandleCPU[1] = dxCommon->GetSRVCPUDescriptorHandle (2);
+	textureSrvHandleGPU[1] = dxCommon->GetSRVGPUDescriptorHandle (2);
 
-	textureSrvHandleCPU[2] = GetCPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 3);
-	textureSrvHandleGPU[2] = GetGPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 3);
+	textureSrvHandleCPU[2] = dxCommon->GetSRVCPUDescriptorHandle (3);
+	textureSrvHandleGPU[2] = dxCommon->GetSRVGPUDescriptorHandle (3);
 
-	textureSrvHandleCPU[3] = GetCPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 4);
-	textureSrvHandleGPU[3] = GetGPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 4);
+	textureSrvHandleCPU[3] = dxCommon->GetSRVCPUDescriptorHandle (4);
+	textureSrvHandleGPU[3] = dxCommon->GetSRVGPUDescriptorHandle (4);
 
-	textureSrvHandleCPU[4] = GetCPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 5);
-	textureSrvHandleGPU[4] = GetGPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 5);
+	textureSrvHandleCPU[4] = dxCommon->GetSRVCPUDescriptorHandle (5);
+	textureSrvHandleGPU[4] = dxCommon->GetSRVGPUDescriptorHandle (5);
 	//SRVの生成
 	dxCommon->GetDevice ()->CreateShaderResourceView (textureResource0.Get (), &srvDescSphere, textureSrvHandleCPU[0]);
 	dxCommon->GetDevice ()->CreateShaderResourceView (textureResource1.Get (), &srvDescPlane, textureSrvHandleCPU[1]);

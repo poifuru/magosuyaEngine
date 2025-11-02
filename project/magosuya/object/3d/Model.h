@@ -1,5 +1,5 @@
 #pragma once
-#include "../utility/struct.h"
+#include "../../general/struct.h"
 #include <vector>
 #include <d3d12.h>
 #include <wrl.h>

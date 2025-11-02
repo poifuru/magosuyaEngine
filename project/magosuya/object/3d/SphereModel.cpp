@@ -1,7 +1,8 @@
 #include "SphereModel.h"
-#include "../../header/pch.h"
-#include "../utility/function.h"
-#include "../utility/Math.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include "../../general/function.h"
+#include "../../general/Math.h"
 
 SphereModel::SphereModel (ID3D12Device* device, int subdivision) {
 	//球の分割数を決める

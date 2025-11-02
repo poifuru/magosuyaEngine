@@ -1,12 +1,14 @@
 #pragma once
+#include <Windows.h>
 #include <d3d12.h>
+#include <wrl.h>
+using namespace Microsoft::WRL;
 #include <dxgi1_6.h>
 #include <dxcapi.h>
 #include <dxgidebug.h>
+#include <array>
 #include "winAPI/WindowsAPI.h"
 #include "../../utility/input/InputManager.h"
-#include "../../../header/pch.h"
-#include "../../../header/ComPtr.h"
 
 //BlendStateの個数
 const int kBlendDescNum = 6;
@@ -38,14 +40,36 @@ public:		//メンバ関数(mainで呼び出すよう)
 	/// <param name="shaderVisible"></param>
 	/// <returns></returns>
 	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap (D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
+
+#pragma region ディスクリプタハンドル取得関数(必要になったらRTVやDSVなども)
+	/// <summary>
+	/// SRV専用のCPUディスクリプタハンドル取得関数
+	/// </summary>
+	/// <param name="index">要素数</param>
+	/// <returns>SRVのCPUディスクリプタハンドル</returns>
+	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle (uint32_t index);
+
+	/// <summary>
+	/// SRV専用のGPUディスクリプタハンドル取得関数
+	/// </summary>
+	/// <param name="index">要素数</param>
+	/// <returns>SRVのGPUディスクリプタハンドル</returns>
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle (uint32_t index);
+#pragma endregion
 		
 private:	//プライベート関数
-	void DeviceInit ();
-	void CommandInit ();
-	void SwapChainInit();
-	void DepthBafferInit ();
-	void DescriptorHeapGenerate ();
-	void RtvInit ();
+	void CreateDevice ();
+	void CreateCommand ();
+	void CreateDxcCompiler ();
+	void CreateFence ();
+	void CreateDescriptorHeap ();
+	void CreateSwapChain();
+	void CreateDepthBaffer ();
+	void CreateRTV ();
+	void CreateDSV ();
+	void ViewportRectInit ();
+	void ScissorRectInit ();
+	void ImGuiInit ();
 	//DescriptorHandleを取得する関数(CPUとGPU)
 	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
@@ -93,10 +117,10 @@ private://メンバ変数
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 
 	//swapChainResource
-	ComPtr<ID3D12Resource> swapChainResources[2] = { nullptr };
+	std::array<ComPtr<ID3D12Resource>, 2> swapChainResources;
 
 	//RTVを2つ作るのでディスクリプタを2つ用意
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[5]{};
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2]{};
 
 	//ディスクリプタヒープサイズ
 	UINT rtvDescriptorHeapSize_;
@@ -149,9 +173,6 @@ private://メンバ変数
 	//Shader
 	ComPtr<IDxcBlob> vertexShaderBlob = nullptr;
 	ComPtr<IDxcBlob> pixelShaderBlob = nullptr;
-
-	//DSVの設定
-	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 
 	//depthStencilStateの設定
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};

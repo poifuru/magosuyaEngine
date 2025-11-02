@@ -1,6 +1,6 @@
 #include "Sprite.h"
-#include "../utility/function.h"
-#include "../utility/Math.h"
+#include "../../general/function.h"
+#include "../../general/Math.h"
 
 Sprite::Sprite (ID3D12Device* device) {
 	sprite_.transform.scale = { 1.0f, 1.0f, 1.0f };

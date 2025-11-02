@@ -1,6 +1,13 @@
 #include "function.h"
 #include "Logger.h"
 #include "String.h"
+#pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "Dbghelp.lib")
+#include <format>
+#include <sstream>
+#include <iostream>
+#include <chrono>
+#include <filesystem>
 
 //クラッシュハンドルを登録するための関数
 LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
@@ -40,7 +47,7 @@ ComPtr<IDxcBlob> CompilerShader(
 ) {
 	/*1.hlslファイルを読み込む*/
 	//これからシェーダーをコンパイルする旨をログに出力する
-	Logger::Log(os, ConvertString(std::format(L"Begin CompileShader, path:{}, profile:{}\n", filePath, profile)));
+	Logger::Log (os, String::ConvertString (std::format (L"Begin CompileShader, path:{}, profile:{}\n", filePath, profile)));
 	//hlslファイルを読む
 	ComPtr<IDxcBlobEncoding> shaderSource = nullptr;
 	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
@@ -89,7 +96,7 @@ ComPtr<IDxcBlob> CompilerShader(
 	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(shaderBlob.GetAddressOf()), nullptr);
 	assert(SUCCEEDED(hr));
 	//成功したらログを出す
-	Logger::Log(os, ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
+	Logger::Log(os, String::ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
 	//もう使わないリソースを解放
 	shaderSource->Release();
 	shaderResult->Release();
@@ -142,7 +149,7 @@ ComPtr<ID3D12Resource> CreateBufferResource(ID3D12Device* device, size_t sizeInB
 DirectX::ScratchImage LoadTexture(const std::string& filePath) {
 	//テクスチャファイルを読み込んでプログラムで扱えるようにする
 	DirectX::ScratchImage image{};
-	std::wstring filePathW = ConvertString(filePath);
+	std::wstring filePathW = String::ConvertString(filePath);
 	OutputDebugStringW((L"探してるファイル: " + filePathW + L"\n").c_str());
 	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
 	if (FAILED(hr)) {

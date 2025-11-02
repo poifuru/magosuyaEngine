@@ -2,7 +2,7 @@
 #include "function.h"
 
 //ログを出力する関数
-void Log (std::ofstream& os, const std::string& message) {
+void Logger::Log (std::ofstream& os, const std::string& message) {
 	os << message << std::endl;
 	OutputDebugStringA (message.c_str ());
 }

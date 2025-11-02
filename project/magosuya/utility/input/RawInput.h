@@ -1,5 +1,5 @@
-#pragma once  
-#include "../../header/WinSupport.h"
+#pragma once 
+#include <Windows.h>
 #include <vector>  
 
 // マウスボタンのインデックスを分かりやすくするために定義しとくでやんす！

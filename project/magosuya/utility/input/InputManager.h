@@ -1,5 +1,5 @@
 #pragma once
-#include "../../header/WinSupport.h"
+#include <Windows.h>
 #include <memory>
 #include "RawInput.h"
 #include "GamePad.h"
