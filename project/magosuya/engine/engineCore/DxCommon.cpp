@@ -1,30 +1,30 @@
 #include "DxCommon.h"
 #include <dxcapi.h>
 #include <d3d12sdklayers.h>
+
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "dxcompiler.lib")
+
 #include <filesystem>
 #include <cassert>
+#include <thread>
 #include "../../../general/function.h"
 #include "../../../general/Logger.h"
 #include "../../../general/String.h"
+#include "../../../externals/DirectXTex/d3dx12.h"
 #include "../../../externals/imgui/imgui_impl_dx12.h"
 #include "../../../externals/imgui/imgui_impl_win32.h"
 
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "dxgi.h")
+DxCommon::DxCommon () {
+	Initialize ();
+}
 
-#ifdef _AMD64_
-#pragma message("_AMD64_ is defined")
-#else
-#pragma message("_AMD64_ is NOT defined")
-#endif
+DxCommon::~DxCommon () {
 
-#ifdef RC_INVOKED
-#pragma message("RC_INVOKED is defined")
-#else
-#pragma message("RC_INVOKED is NOT defined")
-#endif
+}
 
-void DxCommon::Initialize (WindowsAPI* winApp) {
+void DxCommon::Initialize () {
 	HRESULT hr;
 	std::ofstream logStream = Logtext ();
 
@@ -36,22 +36,24 @@ void DxCommon::Initialize (WindowsAPI* winApp) {
 	//COMの初期化
 	hr = CoInitializeEx (0, COINIT_MULTITHREADED);
 
-	assert (winApp);
-	winApp_ = winApp;
+	winApp_ = std::make_unique<WindowsAPI> ();
 	winApp_->Initialize ();
 
-	// 2.基本オブジェクトの初期化
+	// 2.FPSの固定化
+	InitializeFixFPS ();
+
+	// 3.基本オブジェクトの初期化
 	CreateDevice ();
 	CreateCommand ();
 	CreateDxcCompiler ();
 	CreateFence ();
 
-	// 3.リソースとヒープの初期化
+	// 4.リソースとヒープの初期化
 	CreateDescriptorHeap ();
 	CreateSwapChain ();
 	CreateDepthBaffer ();
 
-	// 4.ビューと設定の初期化
+	// 5.ビューと設定の初期化
 	CreateRTV ();
 	CreateDSV ();
 	ViewportRectInit ();
@@ -181,17 +183,11 @@ void DxCommon::Initialize (WindowsAPI* winApp) {
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	//Shaderをコンパイルする
-	vertexShaderBlob = CompilerShader (L"engine/shader/Object3d.VS.hlsl",
-									   L"vs_6_0", dxcUtils.Get (), dxcCompiler.Get (), includeHandler.Get (), logStream);
+	vertexShaderBlob = CompilerShader (L"magosuya/engine/shader/Object3d.VS.hlsl", L"vs_6_0", logStream);
 	assert (vertexShaderBlob != nullptr);
 
-	pixelShaderBlob = CompilerShader (L"engine/shader/Object3d.PS.hlsl",
-									  L"ps_6_0", dxcUtils.Get (), dxcCompiler.Get (), includeHandler.Get (), logStream);
+	pixelShaderBlob = CompilerShader (L"magosuya/engine/shader/Object3d.PS.hlsl", L"ps_6_0", logStream);
 	assert (pixelShaderBlob != nullptr);
-
-	
-
-	
 
 	//*****実際にPSOを生成する*****//
 	graphicsPieplineStateDesc.pRootSignature = rootSignature.Get ();//RootSignature
@@ -301,6 +297,8 @@ void DxCommon::EndFrame () {
 		//イベント待つ
 		WaitForSingleObject (fenceEvent, INFINITE);
 	}
+	//FPS固定:更新処理
+	UpdateFixFPS ();
 	//次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset ();
 	assert (SUCCEEDED (hr));
@@ -320,6 +318,128 @@ void DxCommon::Finalize () {
 	CoUninitialize ();
 }
 
+DirectX::ScratchImage DxCommon::LoadTexture (const std::string& filePath) {
+	//テクスチャファイルを読み込んでプログラムで扱えるようにする
+	DirectX::ScratchImage image{};
+	std::wstring filePathW = String::ConvertString (filePath);
+	OutputDebugStringW ((L"探してるファイル: " + filePathW + L"\n").c_str ());
+	HRESULT hr = DirectX::LoadFromWICFile (filePathW.c_str (), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	if (FAILED (hr)) {
+		std::wstringstream ss;
+		ss << L"[エラー] テクスチャ読み込み失敗！HRESULT: 0x" << std::hex << hr << std::endl;
+		OutputDebugStringW (ss.str ().c_str ());
+	}
+	assert (SUCCEEDED (hr));
+
+	//ミップマップの作成
+	DirectX::ScratchImage mipImages{};
+	hr = DirectX::GenerateMipMaps (image.GetImages (), image.GetImageCount (), image.GetMetadata (), DirectX::TEX_FILTER_SRGB, 0, mipImages);
+	assert (SUCCEEDED (hr));
+
+	//ミップマップ付きのデータを返す
+	return mipImages;
+}
+
+ComPtr<IDxcBlob> DxCommon::CompilerShader (const std::wstring& filePath, const wchar_t* profile, std::ofstream& os) {
+	/*1.hlslファイルを読み込む*/
+	//これからシェーダーをコンパイルする旨をログに出力する
+	Logger::Log (os, String::ConvertString (std::format (L"Begin CompileShader, path:{}, profile:{}\n", filePath, profile)));
+	//hlslファイルを読む
+	ComPtr<IDxcBlobEncoding> shaderSource = nullptr;
+	HRESULT hr = dxcUtils->LoadFile (filePath.c_str (), nullptr, &shaderSource);
+		//読めなかったらあきらめる
+		assert (SUCCEEDED (hr));
+	//読み込んだファイルの内容を設定する
+	DxcBuffer shaderSourceBuffer;
+	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer ();
+	shaderSourceBuffer.Size = shaderSource->GetBufferSize ();
+	shaderSourceBuffer.Encoding = DXC_CP_UTF8;//UTF_8の文字コードであることを通知
+
+	/*2.compileする*/
+	LPCWSTR arguments[] = {
+		filePath.c_str (),			//コンパイル対象のhlslファイル名
+		L"-E", L"main",				//エントリーポイントの指定。基本的にmain以外にはしない
+		L"-T", profile,				//ShaderProfileの設定
+		L"-Zi", L"-Qembed_debug",	//デバッグ用の情報を埋め込む
+		L"-Od",						//最適化を外しておく
+		L"-Zpr",					//メモリレイアウトは最優先
+	};
+	//実際にshaderをコンパイルする
+	ComPtr<IDxcResult> shaderResult = nullptr;
+	hr = dxcCompiler->Compile (
+		&shaderSourceBuffer,		//読み込んだファイル
+		arguments,					//コンパイルオプション
+		_countof (arguments),		//コンパイルオプションの数
+		includeHandler.Get(),				//includeが含まれた諸々
+		IID_PPV_ARGS (shaderResult.GetAddressOf ())	//コンパイル結果
+	);
+	//コンパイルエラーではなくdxcが起動できないなど致命的な状況
+	assert (SUCCEEDED (hr));
+
+	/*3.警告・エラーが出ていないか確認する*/
+	//警告・エラーが出てたらログに出して止める
+	ComPtr<IDxcBlobUtf8> shaderError = nullptr;
+	shaderResult->GetOutput (DXC_OUT_ERRORS, IID_PPV_ARGS (shaderError.GetAddressOf ()), nullptr);
+	if (shaderError != nullptr && shaderError->GetStringLength () != 0) {
+		Logger::Log (os, shaderError->GetStringPointer ());
+		//警告・エラーダメゼッタイ
+		assert (false);
+	}
+
+	/*4.compile結果を受け取って返す*/
+	//コンパイル結果から実行用のバイナリ部分を取得
+	ComPtr<IDxcBlob> shaderBlob = nullptr;
+	hr = shaderResult->GetOutput (DXC_OUT_OBJECT, IID_PPV_ARGS (shaderBlob.GetAddressOf ()), nullptr);
+	assert (SUCCEEDED (hr));
+	//成功したらログを出す
+	Logger::Log (os, String::ConvertString (std::format (L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
+	//もう使わないリソースを解放
+	shaderSource->Release ();
+	shaderResult->Release ();
+	//実行用のバイナリを返却
+	return shaderBlob.Get ();
+}
+
+ComPtr<ID3D12Resource> DxCommon::CreateBufferResource (size_t sizeInBytes) {
+	assert (device != nullptr);
+
+	// アップロードヒープのプロパティ
+	D3D12_HEAP_PROPERTIES uploadHeapProperties = {};
+	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
+	uploadHeapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	uploadHeapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+	uploadHeapProperties.CreationNodeMask = 1;
+	uploadHeapProperties.VisibleNodeMask = 1;
+
+	// リソースのディスクリプション（バッファとして）
+	D3D12_RESOURCE_DESC vertexResourceDesc = {};
+	vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	vertexResourceDesc.Alignment = 0;
+	vertexResourceDesc.Width = sizeInBytes;
+	vertexResourceDesc.Height = 1;
+	vertexResourceDesc.DepthOrArraySize = 1;
+	vertexResourceDesc.MipLevels = 1;
+	vertexResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+	vertexResourceDesc.SampleDesc.Count = 1;
+	vertexResourceDesc.SampleDesc.Quality = 0;
+	vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	vertexResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+	// リソースの作成
+	ComPtr<ID3D12Resource> vertexResource = nullptr;
+	HRESULT hr = device->CreateCommittedResource (
+		&uploadHeapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&vertexResourceDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS (vertexResource.GetAddressOf ())
+	);
+	assert (SUCCEEDED (hr));
+
+	return vertexResource;
+}
+
 ComPtr<ID3D12DescriptorHeap> DxCommon::CreateDescriptorHeap (D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible) {
 	ComPtr<ID3D12DescriptorHeap> descriptorHeap = nullptr;
 	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
@@ -331,12 +451,63 @@ ComPtr<ID3D12DescriptorHeap> DxCommon::CreateDescriptorHeap (D3D12_DESCRIPTOR_HE
 	return descriptorHeap;
 }
 
+ComPtr<ID3D12Resource> DxCommon::CreateTextureResource (const DirectX::TexMetadata& metadata) {
+	//1.metadataを基にResourceの設定
+	D3D12_RESOURCE_DESC resourceDesc{};
+	resourceDesc.Width = UINT (metadata.width);								//Textureの幅
+	resourceDesc.Height = UINT (metadata.height);							//Textureの高さ
+	resourceDesc.MipLevels = UINT (metadata.mipLevels);						//mipmapの数
+	resourceDesc.DepthOrArraySize = UINT (metadata.arraySize);				//奥行　or　配列Textureの配列数
+	resourceDesc.Format = metadata.format;									//TextureのFormat
+	resourceDesc.SampleDesc.Count = 1;										//サンプリングカウント。1固定
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION (metadata.dimension);	//Textureの次元数。普段使っているのは2次元
+
+	//2.利用するHeapの設定。非常に特殊な運用。
+	D3D12_HEAP_PROPERTIES heapProperties{};
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;			//細かい設定を行う
+
+	//3.Resourceを生成する
+	ComPtr<ID3D12Resource> resource = nullptr;
+	HRESULT hr = device->CreateCommittedResource (
+		&heapProperties,					//Heapの設定
+		D3D12_HEAP_FLAG_NONE,				//Heapの特殊な設定。特になし。
+		&resourceDesc,						//Resourceの設定
+		D3D12_RESOURCE_STATE_COPY_DEST,		//データ転送される設定
+		nullptr,							//Clear最適値。使わないのでnullptr。
+		IID_PPV_ARGS (resource.GetAddressOf ()));			//作成するResourceポインタへのポインタ
+	assert (SUCCEEDED (hr));
+	return resource;
+}
+
+ComPtr<ID3D12Resource> DxCommon::UploadTextureData (const ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages) {
+	std::vector<D3D12_SUBRESOURCE_DATA> subresources;
+	DirectX::PrepareUpload (device.Get(), mipImages.GetImages (), mipImages.GetImageCount (), mipImages.GetMetadata (), subresources);
+	uint64_t intermediateSize = GetRequiredIntermediateSize (texture.Get (), 0, UINT (subresources.size ()));
+	ComPtr<ID3D12Resource> intermediateResource = CreateBufferResource (intermediateSize);
+	UpdateSubresources (commandList.Get(), texture.Get (), intermediateResource.Get (), 0, 0, UINT (subresources.size ()), subresources.data ());
+
+	//Textureへの転送後は利用できるよう、D3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更する
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = texture.Get ();
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
+	commandList->ResourceBarrier (1, &barrier);
+	return intermediateResource;
+}
+
 D3D12_CPU_DESCRIPTOR_HANDLE DxCommon::GetSRVCPUDescriptorHandle (uint32_t index) {
 	return GetCPUDescriptorHandle (srvDescriptorHeap, rtvDescriptorHeapSize_, index);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE DxCommon::GetSRVGPUDescriptorHandle (uint32_t index) {
 	return GetGPUDescriptorHandle (srvDescriptorHeap, rtvDescriptorHeapSize_, index);
+}
+
+void DxCommon::InitializeFixFPS () {
+	reference_ = std::chrono::steady_clock::now ();
 }
 
 void DxCommon::CreateDevice () {
@@ -605,13 +776,37 @@ void DxCommon::ImGuiInit () {
 	);
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index) {
+void DxCommon::UpdateFixFPS () {
+	//1/60秒ぴったりの時間
+	const std::chrono::microseconds kMinTime (uint64_t (1000000.0f / 60.0f));
+	//1/60秒よりわずかに短い時間
+	const std::chrono::microseconds kMinCheckTime (uint64_t (1000000.0f / 65.0f));
+
+	//実際の更新処理
+	//現在時間を取得する
+	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now ();
+	//前回記録からの経過時間を取得する
+	std::chrono::microseconds elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - reference_);
+
+	//1/60秒(よりわずかに短い時間) 立っていない場合
+	if (elapsed < kMinCheckTime) {
+		//1/60秒経過するまで微小なスリープを繰り返す
+		while (std::chrono::steady_clock::now () - reference_ < kMinTime) {
+			//1マイクロ秒スリープ
+			std::this_thread::sleep_for (std::chrono::microseconds (1));
+		}
+	}
+	//現在の時間を記録する
+	reference_ = std::chrono::steady_clock::now ();
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE DxCommon::GetCPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index) {
 	D3D12_CPU_DESCRIPTOR_HANDLE    handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart ();
 	handleCPU.ptr += (descriptorSize * index);
 	return handleCPU;
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index) {
+D3D12_GPU_DESCRIPTOR_HANDLE DxCommon::GetGPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index) {
 	D3D12_GPU_DESCRIPTOR_HANDLE    handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart ();
 	handleGPU.ptr += (descriptorSize * index);
 	return handleGPU;

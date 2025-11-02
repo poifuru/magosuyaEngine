@@ -111,7 +111,7 @@
     <ClCompile Include="magosuya\MagosuyaEngine.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="magosuya\engine\engineCore\winAPI\WindowsAPI.cpp">
+    <ClCompile Include="magosuya\engine\engineCore\WindowsAPI.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="magosuya\object\3d\ModelManager.cpp">
@@ -121,6 +121,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="general\String.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\engine\engineCore\LeakChecker.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -201,7 +204,7 @@
     <ClInclude Include="magosuya\MagosuyaEngine.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="magosuya\engine\engineCore\winAPI\WindowsAPI.h">
+    <ClInclude Include="magosuya\engine\engineCore\WindowsAPI.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="magosuya\object\3d\ModelManager.h">
@@ -211,6 +214,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="general\String.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\engine\engineCore\LeakChecker.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

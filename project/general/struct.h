@@ -184,9 +184,9 @@ struct MaterialData {
 struct ModelData {
 	MaterialData material;
 	std::vector<VertexData> vertices;
-	size_t vertexCount;
+	size_t vertexCount = 0;
 	std::vector<uint32_t> indices;
-	size_t indexCount;
+	size_t indexCount = 0;
 };
 
 //チャンクヘッダ

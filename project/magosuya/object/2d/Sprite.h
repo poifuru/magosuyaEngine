@@ -3,18 +3,19 @@
 #include <d3d12.h>  
 #include <wrl.h>  
 using namespace Microsoft::WRL;  
+#include "../../magosuya/engine/engineCore/DxCommon.h"
 
 class Sprite {  
 	public:		//メンバ関数  
-	Sprite (ID3D12Device* device);  
-	~Sprite ();  
+	Sprite (DxCommon* dxCommon);
+	~Sprite ();
 
 	void Initialize (Vector3 position, Vector2 size);  
 	void Update ();  
-	void Draw (ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);  
+	void Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
 
-	// ImGuiで編集する用  
-	void ShowImGuiEditor ();  
+	// ImGuiで編集する用
+	void ShowImGuiEditor ();
 
 private:	//メンバ変数  
 	//スプライトのデータ  
@@ -23,7 +24,7 @@ private:	//メンバ変数
 	//GPUリソース  
 	ComPtr<ID3D12Resource> vertexBuffer_;  
 	ComPtr<ID3D12Resource> indexBuffer_;  
-	ComPtr<ID3D12Resource> matrixBuffer_;  
+	ComPtr<ID3D12Resource> matrixBuffer_; 
 	ComPtr<ID3D12Resource> materialBuffer_;  
 
 	VertexData* vertexData_ = nullptr;  
@@ -36,4 +37,7 @@ private:	//メンバ変数
 
 	//ImGuiで色をいじる
 	float color_[4];
+
+	//ポインタを持たせるだけ
+	DxCommon* dxCommon_ = nullptr;
 };

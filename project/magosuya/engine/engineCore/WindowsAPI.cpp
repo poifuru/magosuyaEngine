@@ -1,7 +1,8 @@
 #include "WindowsAPI.h"
-#include "../../../../general/function.h"
-#include "../../../utility/Input/InputManager.h"
-#include "../../../../externals.h"
+#pragma comment (lib, "winmm.lib")
+#include "../../../general/function.h"
+#include "../../utility/Input/InputManager.h"
+#include "../../../externals.h"
 
 LRESULT WindowsAPI::WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	//メッセージに応じてゲーム固有の処理を行う
@@ -30,6 +31,9 @@ LRESULT WindowsAPI::WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 }
 
 void WindowsAPI::Initialize () {
+	//システムタイマーの分解能を上げる
+	timeBeginPeriod (1);
+
 	//ウィンドウプロシージャ
 	windowClass_.lpfnWndProc = WindowProc;
 	//ウィンドウクラス名

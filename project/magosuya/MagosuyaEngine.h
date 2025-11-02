@@ -1,6 +1,6 @@
 #pragma once
 #include "engine/engineCore/DxCommon.h"
-#include "engine/engineCore/winAPI/WindowsAPI.h"
+#include "engine/engineCore/WindowsAPI.h"
 
 class MagosuyaEngine {
 public:		//メンバ関数

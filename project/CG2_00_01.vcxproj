@@ -21,6 +21,7 @@
     <RootNamespace>CG20001</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>CG2</ProjectName>
+    <Platform Condition="'$(Platform)' == ''">x64</Platform>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -74,7 +75,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_M_AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -86,6 +87,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"
@@ -145,6 +147,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClCompile Include="general\Logger.cpp" />
     <ClCompile Include="general\String.cpp" />
+    <ClCompile Include="magosuya\engine\engineCore\LeakChecker.cpp" />
     <ClCompile Include="magosuya\engine\engineCore\DxCommon.cpp">
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|x64'">None</DebugInformationFormat>
     </ClCompile>
@@ -189,7 +192,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </ClCompile>
     <ClCompile Include="magosuya\object\3d\ModelManager.cpp" />
     <ClCompile Include="magosuya\MagosuyaEngine.cpp" />
-    <ClCompile Include="magosuya\engine\engineCore\winAPI\WindowsAPI.cpp" />
+    <ClCompile Include="magosuya\engine\engineCore\WindowsAPI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="magosuya\engine\shader\Object3d.PS.hlsl">
@@ -212,6 +215,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClInclude Include="general\Logger.h" />
     <ClInclude Include="general\String.h" />
+    <ClInclude Include="magosuya\engine\engineCore\LeakChecker.h" />
     <ClInclude Include="magosuya\engine\engineCore\DxCommon.h" />
     <ClInclude Include="magosuya\utility\camera\DebugCamera.h" />
     <ClInclude Include="magosuya\utility\input\GamePad.h" />
@@ -252,7 +256,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </ClInclude>
     <ClInclude Include="magosuya\object\3d\ModelManager.h" />
     <ClInclude Include="magosuya\MagosuyaEngine.h" />
-    <ClInclude Include="magosuya\engine\engineCore\winAPI\WindowsAPI.h" />
+    <ClInclude Include="magosuya\engine\engineCore\WindowsAPI.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

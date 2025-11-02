@@ -1,5 +1,4 @@
 #include "String.h"
-#include <stringapiset.h>
 
 namespace String {
 	//DirectX12が返してくる文字列を必要に応じて型変換してあげる

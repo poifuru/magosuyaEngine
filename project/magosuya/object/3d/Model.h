@@ -4,6 +4,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 using namespace Microsoft::WRL;
+#include "../../magosuya/engine/engineCore/DxCommon.h"
 
 class Model {
 public:	//メンバ関数
@@ -13,7 +14,7 @@ public:	//メンバ関数
 	/// </summary>
 	/// <param name="directoryPath">3Dモデルファイルが存在するディレクトリのパス。</param>
 	/// <param name="filename">読み込む3Dモデルのファイル名。</param>
-	Model (ID3D12Device* device, const std::string& directoryPath, const std::string& filename, bool inversion = false);
+	Model (DxCommon* dxCommon, const std::string& directoryPath, const std::string& filename, bool inversion = false);
 
 	~Model ();
 
@@ -38,7 +39,7 @@ public:	//メンバ関数
 	/// <param name="cmdList">コマンドリスト</param>
 	/// <param name="textureHandle">使うテクスチャ</param>
 	/// <param name="light">ライト</param>
-	void Draw (ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
+	void Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
 	
 	/// <summary>
 	/// ImGuiで編集できるよ
@@ -79,4 +80,7 @@ private:		//メンバ変数
 
 	//ImGuiで色をいじる変数
 	float color_[4];
+
+	//ポインタを持たせておく
+	DxCommon* dxCommon_ = nullptr;
 };

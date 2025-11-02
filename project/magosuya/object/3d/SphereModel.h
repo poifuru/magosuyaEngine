@@ -4,15 +4,16 @@
 #include <d3d12.h>
 #include <wrl.h>
 using namespace Microsoft::WRL;
+#include "../../magosuya/engine/engineCore/DxCommon.h"
 
 class SphereModel {
 public:		//メンバ関数
-	SphereModel (ID3D12Device* device, int subdivision);
+	SphereModel (DxCommon* dxCommon, int subdivision);
 	~SphereModel ();
 
 	void Initialize (Vector3 position, float radius);
 	void Update (Matrix4x4* view, Matrix4x4* proj);
-	void Draw (ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
+	void Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
 
 	void ShowImGuiEditor ();
 
@@ -49,5 +50,8 @@ private:	//メンバ変数
 
 	//ImGuiで色を変える
 	float color_[4];
+
+	//dxCommonのポインタを持たせる
+	DxCommon* dxCommon_ = nullptr;
 };
 

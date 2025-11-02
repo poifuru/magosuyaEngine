@@ -2,7 +2,8 @@
 #include "../../general/function.h"
 #include "../../general/Math.h"
 
-Sprite::Sprite (ID3D12Device* device) {
+Sprite::Sprite (DxCommon* dxCommon) {
+	dxCommon_ = dxCommon;
 	sprite_.transform.scale = { 1.0f, 1.0f, 1.0f };
 	sprite_.transform.rotate = { 0.0f, 0.0f, 0.0f };
 	sprite_.transform.translate = { 0.0f, 0.0f, 0.0f };
@@ -10,13 +11,13 @@ Sprite::Sprite (ID3D12Device* device) {
 
 	//頂点・インデックスバッファ作成 → Mapして vertexData_, indexData_ に保持
 	//それぞれビューの設定も
-	vertexBuffer_ = CreateBufferResource (device, sizeof (VertexData) * 4);
+	vertexBuffer_ = dxCommon_->CreateBufferResource (sizeof (VertexData) * 4);
 	vertexBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&vertexData_));
 	vbView_.BufferLocation = vertexBuffer_->GetGPUVirtualAddress ();
 	vbView_.SizeInBytes = sizeof (VertexData) * 4;
 	vbView_.StrideInBytes = sizeof (VertexData);
 
-	indexBuffer_ = CreateBufferResource (device, sizeof (uint32_t) * 6);
+	indexBuffer_ = dxCommon_->CreateBufferResource (sizeof (uint32_t) * 6);
 	indexBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&indexData_));
 	ibView_.BufferLocation = indexBuffer_->GetGPUVirtualAddress ();
 	ibView_.SizeInBytes = sizeof (uint32_t) * 6;
@@ -24,11 +25,11 @@ Sprite::Sprite (ID3D12Device* device) {
 
 	//行列・マテリアル用の定数バッファも作成 → Mapして material_, wvpMatrix_ に保持
 	//初期設定まで済ませる
-	matrixBuffer_ = CreateBufferResource (device, (sizeof (Matrix4x4) + 255) & ~255);
+	matrixBuffer_ = dxCommon_->CreateBufferResource ((sizeof (Matrix4x4) + 255) & ~255);
 	matrixBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&matrixData_));
 	*matrixData_ = MakeIdentity4x4 ();
 
-	materialBuffer_ = CreateBufferResource (device, sizeof (Material));
+	materialBuffer_ = dxCommon_->CreateBufferResource (sizeof (Material));
 	materialBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&materialData_));
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };	//初期カラーは白
 	materialData_->enableLighting = false;
@@ -106,17 +107,17 @@ void Sprite::Update () {
 	materialData_->uvTranform = MakeAffineMatrix (sprite_.uvTransform.scale, sprite_.uvTransform.rotate, sprite_.uvTransform.translate);
 }
 
-void Sprite::Draw (ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
-	cmdList->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	cmdList->IASetVertexBuffers (0, 1, &vbView_);   //VBVを設定
-	cmdList->IASetIndexBuffer (&ibView_);	        //IBVを設定
-	cmdList->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
-	cmdList->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
-	cmdList->SetGraphicsRootDescriptorTable (2, textureHandle);
+void Sprite::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
+	dxCommon_->GetCommandList ()->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	dxCommon_->GetCommandList ()->IASetVertexBuffers (0, 1, &vbView_);   //VBVを設定
+	dxCommon_->GetCommandList ()->IASetIndexBuffer (&ibView_);	        //IBVを設定
+	dxCommon_->GetCommandList ()->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
+	dxCommon_->GetCommandList ()->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
+	dxCommon_->GetCommandList ()->SetGraphicsRootDescriptorTable (2, textureHandle);
 	//こいつでインデックスバッファを使った描画
-	cmdList->DrawIndexedInstanced (6, 1, 0, 0, 0);
+	dxCommon_->GetCommandList ()->DrawIndexedInstanced (6, 1, 0, 0, 0);
 }
-	
+
 void Sprite::ShowImGuiEditor () {
 	if (ImGui::ColorEdit4 ("Color##SpriteColor", color_)) {
 		// 色が変更されたらmaterialDataに反映

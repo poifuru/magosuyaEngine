@@ -4,7 +4,9 @@
 #include "../../general/function.h"
 #include "../../general/Math.h"
 
-SphereModel::SphereModel (ID3D12Device* device, int subdivision) {
+SphereModel::SphereModel (DxCommon* dxCommon, int subdivision) {
+	dxCommon_ = dxCommon;
+
 	//球の分割数を決める
 	kSubdivision_ = subdivision;
 
@@ -12,7 +14,7 @@ SphereModel::SphereModel (ID3D12Device* device, int subdivision) {
 	vertexData_.resize (vertexCount); // ★ これ重要！
 
 	//それぞれのバッファを作成してMapする、頂点バッファ・インデックスバッファのビューも設定しておく
-	vertexBuffer_ = CreateBufferResource (device, sizeof (VertexData) * vertexCount);
+	vertexBuffer_ = dxCommon_->CreateBufferResource (sizeof (VertexData) * vertexCount);
 	vertexBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&vertexDataPtr_));
 	vbView_.BufferLocation = vertexBuffer_->GetGPUVirtualAddress ();
 	vbView_.SizeInBytes = UINT (sizeof (VertexData) * vertexData_.size ());
@@ -25,13 +27,13 @@ SphereModel::SphereModel (ID3D12Device* device, int subdivision) {
 	ibView_.SizeInBytes = UINT (sizeof (uint32_t) * (kSubdivision_ * kSubdivision_) * 6);
 	ibView_.Format = DXGI_FORMAT_R32_UINT;*/
 
-	matrixBuffer_ = CreateBufferResource (device, sizeof (TransformationMatrix));
+	matrixBuffer_ = dxCommon_->CreateBufferResource (sizeof (TransformationMatrix));
 	matrixBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&matrixData_));
 	matrixData_->World = MakeIdentity4x4 ();
 	matrixData_->WVP = MakeIdentity4x4 ();
 	matrixData_->WorldInverseTranspose = MakeIdentity4x4 ();
 
-	materialBuffer_ = CreateBufferResource (device, sizeof (Material));
+	materialBuffer_ = dxCommon_->CreateBufferResource (sizeof (Material));
 	materialBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&materialData_));
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData_->enableLighting = true;
@@ -165,7 +167,7 @@ void SphereModel::Initialize (Vector3 position, float radius) {
 		OutputDebugStringA (buffer);
 	}*/
 	//GPUに渡すために手動でコピーする
-	memcpy (vertexDataPtr_, vertexData_.data (), sizeof (VertexData)* vertexCount);
+	memcpy (vertexDataPtr_, vertexData_.data (), sizeof (VertexData) * vertexCount);
 }
 
 void SphereModel::Update (Matrix4x4* view, Matrix4x4* proj) {
@@ -180,18 +182,18 @@ void SphereModel::Update (Matrix4x4* view, Matrix4x4* proj) {
 	materialData_->uvTranform = MakeAffineMatrix (uvTransform_.scale, uvTransform_.rotate, uvTransform_.translate);
 }
 
-void SphereModel::Draw (ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
+void SphereModel::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
 	//どんな形状で描画するのか
-	cmdList->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	dxCommon_->GetCommandList ()->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	//頂点バッファをセットする
-	cmdList->IASetVertexBuffers (0, 1, &vbView_);	//VBVを設定
+	dxCommon_->GetCommandList ()->IASetVertexBuffers (0, 1, &vbView_);	//VBVを設定
 	//定数バッファのルートパラメータを設定する	
-	cmdList->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
-	cmdList->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
+	dxCommon_->GetCommandList ()->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
+	dxCommon_->GetCommandList ()->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
 	//テクスチャのSRVを設定
-	cmdList->SetGraphicsRootDescriptorTable (2, textureHandle);
+	dxCommon_->GetCommandList ()->SetGraphicsRootDescriptorTable (2, textureHandle);
 	//実際に描画する(後々Index描画に変える)
-	cmdList->DrawInstanced ((kSubdivision_ * kSubdivision_ * 6), 1, 0, 0);
+	dxCommon_->GetCommandList ()->DrawInstanced ((kSubdivision_ * kSubdivision_ * 6), 1, 0, 0);
 }
 
 void SphereModel::ShowImGuiEditor () {

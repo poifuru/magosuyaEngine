@@ -118,7 +118,6 @@ std::unique_ptr<InputManager> g_inputManager = nullptr;
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::unique_ptr<DxCommon> dxCommon = std::make_unique<DxCommon> ();
-	dxCommon->Initialize (dxCommon->GetWinAPI());
 
 	HRESULT hr;
 
@@ -136,23 +135,23 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
 
 #pragma region Plane
-	std::unique_ptr<Model> plane = std::make_unique<Model> (dxCommon->GetDevice (), "Resources/plane", "plane", true);
+	std::unique_ptr<Model> plane = std::make_unique<Model> (dxCommon.get(), "Resources/plane", "plane", true);
 #pragma endregion
 
 #pragma region bunny
-	std::unique_ptr<Model> bunny = std::make_unique<Model> (dxCommon->GetDevice (), "Resources/bunny", "bunny", false);
+	std::unique_ptr<Model> bunny = std::make_unique<Model> (dxCommon.get (), "Resources/bunny", "bunny", false);
 #pragma endregion
 
 #pragma region Teapot
-	std::unique_ptr<Model> teapot = std::make_unique<Model> (dxCommon->GetDevice (), "Resources/teapot", "teapot", false);
+	std::unique_ptr<Model> teapot = std::make_unique<Model> (dxCommon.get (), "Resources/teapot", "teapot", false);
 #pragma endregion
 
 #pragma region Fence
-	std::unique_ptr<Model> Fence = std::make_unique<Model> (dxCommon->GetDevice (), "Resources/fence", "fence", false);
+	std::unique_ptr<Model> Fence = std::make_unique<Model> (dxCommon.get (), "Resources/fence", "fence", false);
 #pragma endregion
 
 	//平行光源のResourceを作成してデフォルト値を書き込む
-	ComPtr<ID3D12Resource> dierctionalLightResource = CreateBufferResource (dxCommon->GetDevice (), sizeof (DirectionalLight));
+	ComPtr<ID3D12Resource> dierctionalLightResource = dxCommon->CreateBufferResource (sizeof (DirectionalLight));
 	DirectionalLight* directionalLightData = nullptr;
 	//書き込むためのアドレス取得
 	dierctionalLightResource->Map (0, nullptr, reinterpret_cast<void**>(&directionalLightData));
@@ -183,10 +182,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//Textureを呼んで転送する
 	DirectX::ScratchImage mipImages[5];
-	mipImages[0] = LoadTexture ("Resources/uvChecker.png");
+	mipImages[0] = dxCommon->LoadTexture ("Resources/uvChecker.png");
 	const DirectX::TexMetadata& metadata0 = mipImages[0].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource0 = CreateTextureResource (dxCommon->GetDevice (), metadata0);
-	ComPtr<ID3D12Resource> intermediateResource0 = UploadTextureData (textureResource0, mipImages[0], dxCommon->GetDevice (), dxCommon->GetCommandList ());
+	ComPtr<ID3D12Resource> textureResource0 = dxCommon->CreateTextureResource (metadata0);
+	ComPtr<ID3D12Resource> intermediateResource0 = dxCommon->UploadTextureData (textureResource0, mipImages[0]);
 
 	//metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescSphere{};
@@ -195,10 +194,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDescSphere.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDescSphere.Texture2D.MipLevels = UINT (metadata0.mipLevels);
 
-	mipImages[1] = LoadTexture (plane->GetModelData ().material.textureFilePath);
+	mipImages[1] = dxCommon->LoadTexture (plane->GetModelData ().material.textureFilePath);
 	const DirectX::TexMetadata& metadata1 = mipImages[1].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource1 = CreateTextureResource (dxCommon->GetDevice (), metadata1);
-	ComPtr<ID3D12Resource> intermediateResource1 = UploadTextureData (textureResource1, mipImages[1], dxCommon->GetDevice (), dxCommon->GetCommandList ());
+	ComPtr<ID3D12Resource> textureResource1 = dxCommon->CreateTextureResource (metadata1);
+	ComPtr<ID3D12Resource> intermediateResource1 = dxCommon->UploadTextureData (textureResource1, mipImages[1]);
 
 	//metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescPlane{};
@@ -207,10 +206,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDescPlane.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDescPlane.Texture2D.MipLevels = UINT (metadata1.mipLevels);
 
-	mipImages[2] = LoadTexture (bunny->GetModelData ().material.textureFilePath);
+	mipImages[2] = dxCommon->LoadTexture (bunny->GetModelData ().material.textureFilePath);
 	const DirectX::TexMetadata& metadata2 = mipImages[2].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource2 = CreateTextureResource (dxCommon->GetDevice (), metadata2);
-	ComPtr<ID3D12Resource> intermediateResource2 = UploadTextureData (textureResource2, mipImages[2], dxCommon->GetDevice (), dxCommon->GetCommandList ());
+	ComPtr<ID3D12Resource> textureResource2 = dxCommon->CreateTextureResource (metadata2);
+	ComPtr<ID3D12Resource> intermediateResource2 = dxCommon->UploadTextureData (textureResource2, mipImages[2]);
 
 	//metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescBunny{};
@@ -219,10 +218,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDescBunny.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDescBunny.Texture2D.MipLevels = UINT (metadata2.mipLevels);
 
-	mipImages[3] = LoadTexture (teapot->GetModelData ().material.textureFilePath);
+	mipImages[3] = dxCommon->LoadTexture (teapot->GetModelData ().material.textureFilePath);
 	const DirectX::TexMetadata& metadata3 = mipImages[3].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource3 = CreateTextureResource (dxCommon->GetDevice (), metadata3);
-	ComPtr<ID3D12Resource> intermediateResource3 = UploadTextureData (textureResource3, mipImages[3], dxCommon->GetDevice (), dxCommon->GetCommandList ());
+	ComPtr<ID3D12Resource> textureResource3 = dxCommon->CreateTextureResource (metadata3);
+	ComPtr<ID3D12Resource> intermediateResource3 = dxCommon->UploadTextureData (textureResource3, mipImages[3]);
 
 	//metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescTeapot{};
@@ -231,10 +230,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDescTeapot.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDescTeapot.Texture2D.MipLevels = UINT (metadata3.mipLevels);
 
-	mipImages[4] = LoadTexture (Fence->GetModelData ().material.textureFilePath);
+	mipImages[4] = dxCommon->LoadTexture (Fence->GetModelData ().material.textureFilePath);
 	const DirectX::TexMetadata& metadata4 = mipImages[4].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource4 = CreateTextureResource (dxCommon->GetDevice (), metadata4);
-	ComPtr<ID3D12Resource> intermediateResource4 = UploadTextureData (textureResource4, mipImages[4], dxCommon->GetDevice (), dxCommon->GetCommandList ());
+	ComPtr<ID3D12Resource> textureResource4 = dxCommon->CreateTextureResource (metadata4);
+	ComPtr<ID3D12Resource> intermediateResource4 = dxCommon->UploadTextureData (textureResource4, mipImages[4]);
 
 	//metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescFence{};
@@ -279,7 +278,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	/*std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (dxCommon->GetDevice ());
 	sprite->Initialize ({ 0.0f, 0.0f, 0.0f }, { 640.0f, 360.0f });*/
 
-	std::unique_ptr<SphereModel> sphere = std::make_unique<SphereModel> (dxCommon->GetDevice (), 16);
+	std::unique_ptr<SphereModel> sphere = std::make_unique<SphereModel> (dxCommon.get (), 16);
 	sphere->Initialize ({ 0.0f, 0.0f, 0.0f }, 1.0f);
 
 	plane->Initialize ();
@@ -328,6 +327,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//フレーム開始
 		dxCommon->BeginFrame ();
+		//FPS表示
+		ImGui::Begin ("Debug Window");
+		ImGui::Text ("FPS: %.1f", ImGui::GetIO ().Framerate);
+		ImGui::End ();
 
 		//実際のキー入力処理はここ！
 		/*if (!ImGui::GetIO ().WantCaptureKeyboard) {*/
@@ -451,18 +454,18 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		//ライティングの設定
 		dxCommon->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
 		//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
-		Fence->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[4]);
+		Fence->Draw (textureSrvHandleGPU[4]);
 		if (useSphere) {
-			sphere->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
+			sphere->Draw (textureSrvHandleGPU[0]);
 		}
 		if (usePlane) {
-			plane->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[1]);
+			plane->Draw (textureSrvHandleGPU[1]);
 		}
 		if (useModel) {
-			bunny->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[2]);
+			bunny->Draw (textureSrvHandleGPU[2]);
 		}
 		if (useTeapot) {
-			teapot->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[3]);
+			teapot->Draw (textureSrvHandleGPU[3]);
 		}
 		if (useSprite) {
 			//sprite->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);

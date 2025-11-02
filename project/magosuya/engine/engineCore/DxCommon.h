@@ -7,29 +7,45 @@ using namespace Microsoft::WRL;
 #include <dxcapi.h>
 #include <dxgidebug.h>
 #include <array>
-#include "winAPI/WindowsAPI.h"
+#include <string>
+#include <chrono>
+#include "WindowsAPI.h"
+#include "LeakChecker.h"
 #include "../../utility/input/InputManager.h"
+#include "../../externals/DirectXTex/DirectXTex.h"
 
 //BlendStateの個数
 const int kBlendDescNum = 6;
 
-struct D3DResourceLeakChecker {
-	~D3DResourceLeakChecker () {
-		ComPtr<IDXGIDebug> debug;
-		if (SUCCEEDED (DXGIGetDebugInterface1 (0, IID_PPV_ARGS (debug.GetAddressOf ())))) {
-			debug->ReportLiveObjects (DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-			debug->ReportLiveObjects (DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
-			debug->ReportLiveObjects (DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-		}
-	}
-};
-
 class DxCommon {
 public:		//メンバ関数(mainで呼び出すよう)
-	void Initialize (WindowsAPI* winApp);
+	//デストラクタ
+	DxCommon ();
+	~DxCommon ();
+
+	void Initialize ();
 	void BeginFrame ();
 	void EndFrame ();
 	void Finalize ();
+
+	//Textureデータを読みこむ関数
+	static DirectX::ScratchImage LoadTexture (const std::string& filePath);
+
+	/// <summary>
+	/// シェーダーをコンパイルする関数
+	/// </summary>
+	/// <param name="filePath">shaderファイルへのパス</param>
+	/// <param name="profile">使用するプロファイル</param>
+	/// <param name="os">ログストリーム</param>
+	/// <returns>shader</returns>
+	ComPtr<IDxcBlob> CompilerShader (const std::wstring& filePath, const wchar_t* profile, std::ofstream& os);
+
+	/// <summary>
+	/// Resource作成関数
+	/// </summary>
+	/// <param name="sizeInBytes"></param>
+	/// <returns></returns>
+	ComPtr<ID3D12Resource> CreateBufferResource (size_t sizeInBytes);
 
 	/// <summary>
 	/// ディスクリプタヒープ作成関数
@@ -40,6 +56,13 @@ public:		//メンバ関数(mainで呼び出すよう)
 	/// <param name="shaderVisible"></param>
 	/// <returns></returns>
 	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap (D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
+
+	//DirectXのTexrureResourceを作る関数
+	ComPtr<ID3D12Resource> CreateTextureResource (const DirectX::TexMetadata& metadata);
+
+	//TextureResourceにデータを転送する関数
+	[[nodiscard]]
+	ComPtr<ID3D12Resource> UploadTextureData (const ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages);
 
 #pragma region ディスクリプタハンドル取得関数(必要になったらRTVやDSVなども)
 	/// <summary>
@@ -56,34 +79,40 @@ public:		//メンバ関数(mainで呼び出すよう)
 	/// <returns>SRVのGPUディスクリプタハンドル</returns>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle (uint32_t index);
 #pragma endregion
-		
+
 private:	//プライベート関数
+	void InitializeFixFPS ();
 	void CreateDevice ();
 	void CreateCommand ();
 	void CreateDxcCompiler ();
 	void CreateFence ();
 	void CreateDescriptorHeap ();
-	void CreateSwapChain();
+	void CreateSwapChain ();
 	void CreateDepthBaffer ();
 	void CreateRTV ();
 	void CreateDSV ();
 	void ViewportRectInit ();
 	void ScissorRectInit ();
 	void ImGuiInit ();
+	void UpdateFixFPS ();
+
 	//DescriptorHandleを取得する関数(CPUとGPU)
 	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
 public:		//アクセッサ
-	WindowsAPI* GetWinAPI () { return winApp_; }
-	ID3D12Device* GetDevice () { return device.Get(); }
+	WindowsAPI* GetWinAPI () { return winApp_.get (); }
+	ID3D12Device* GetDevice () { return device.Get (); }
 	ID3D12GraphicsCommandList* GetCommandList () { return commandList.Get (); }
-	ID3D12DescriptorHeap* GetsrvDescriptorHeap () { return srvDescriptorHeap.Get(); }
+	ID3D12DescriptorHeap* GetsrvDescriptorHeap () { return srvDescriptorHeap.Get (); }
 
 private://メンバ変数
-	D3DResourceLeakChecker leakCheck_{};
+	LeakChecker leakCheck_{};
 
-	WindowsAPI* winApp_ = nullptr;
+	std::unique_ptr<WindowsAPI> winApp_ = nullptr;
+
+	//FPS固定用
+	std::chrono::steady_clock::time_point reference_;
 
 	//***DX12変数***//
 	//DXGIファクトリー
