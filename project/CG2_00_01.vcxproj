@@ -21,6 +21,7 @@
     <RootNamespace>CG20001</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>CG2</ProjectName>
+    <Platform Condition="'$(Platform)' == ''">x64</Platform>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -74,7 +75,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_M_AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -86,6 +87,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"
@@ -143,12 +145,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="engine\EngineCore\DxCommon.cpp">
-      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Development|x64'">None</DebugInformationFormat>
+    <ClCompile Include="general\Logger.cpp" />
+    <ClCompile Include="general\String.cpp" />
+    <ClCompile Include="magosuya\engine\engineCore\LeakChecker.cpp" />
+    <ClCompile Include="magosuya\engine\engineCore\DxCommon.cpp">
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|x64'">None</DebugInformationFormat>
-      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">None</DebugInformationFormat>
     </ClCompile>
-    <ClCompile Include="engine\camera\DebugCamera.cpp" />
+    <ClCompile Include="magosuya\utility\camera\DebugCamera.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
     <ClCompile Include="externals\imgui\imgui_demo.cpp" />
     <ClCompile Include="externals\imgui\imgui_draw.cpp" />
@@ -156,39 +159,43 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="engine\utility\function.cpp" />
-    <ClCompile Include="engine\Input\GamePad.cpp" />
-    <ClCompile Include="engine\Input\InputManager.cpp" />
+    <ClCompile Include="general\function.cpp" />
+    <ClCompile Include="magosuya\utility\input\GamePad.cpp" />
+    <ClCompile Include="magosuya\utility\input\InputManager.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="engine\utility\Math.cpp" />
-    <ClCompile Include="engine\audio\Sound.cpp">
+    <ClCompile Include="general\Math.cpp" />
+    <ClCompile Include="magosuya\utility\audio\Sound.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="engine\3d\SphereModel.cpp">
+    <ClCompile Include="magosuya\object\3d\SphereModel.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="engine\2d\Sprite.cpp" />
-    <ClCompile Include="engine\3d\Model.cpp" />
-    <ClCompile Include="engine\audio\SoundData.cpp">
+    <ClCompile Include="magosuya\object\2d\Sprite.cpp" />
+    <ClCompile Include="magosuya\object\3d\Model.cpp" />
+    <ClCompile Include="magosuya\utility\audio\SoundData.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="engine\audio\SoundManager.cpp">
+    <ClCompile Include="magosuya\utility\audio\SoundManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="engine\Input\RawInput.cpp" />
-    <ClCompile Include="poi\poiEngine.cpp" />
-    <ClCompile Include="engine\windowsAPI\WindowsAPI.cpp" />
+    <ClCompile Include="magosuya\utility\input\RawInput.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
+      </ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="magosuya\object\3d\ModelManager.cpp" />
+    <ClCompile Include="magosuya\MagosuyaEngine.cpp" />
+    <ClCompile Include="magosuya\engine\engineCore\WindowsAPI.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="engine\shader\Object3d.PS.hlsl">
+    <FxCompile Include="magosuya\engine\shader\Object3d.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
@@ -196,7 +203,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="engine\shader\Object3d.VS.hlsl">
+    <FxCompile Include="magosuya\engine\shader\Object3d.VS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>
@@ -206,20 +213,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="engine\EngineCore\DxCommon.h" />
-    <ClInclude Include="engine\camera\DebugCamera.h" />
-    <ClInclude Include="engine\Input\GamePad.h" />
-    <ClInclude Include="header\DirectInput.h" />
-    <ClInclude Include="header\DX12\directX12.h" />
-    <ClInclude Include="header\ComPtr.h" />
-    <ClInclude Include="header\DX12\dxcapi.h" />
-    <ClInclude Include="header\DX12\dxgi.h" />
-    <ClInclude Include="header\DX12\dxgiDebug.h" />
-    <ClInclude Include="header\DX12\sdkLayers.h" />
-    <ClInclude Include="header\Engine.h" />
-    <ClInclude Include="header\file.h" />
-    <ClInclude Include="header\pch.h" />
-    <ClInclude Include="header\WinSupport.h" />
+    <ClInclude Include="general\Logger.h" />
+    <ClInclude Include="general\String.h" />
+    <ClInclude Include="magosuya\engine\engineCore\LeakChecker.h" />
+    <ClInclude Include="magosuya\engine\engineCore\DxCommon.h" />
+    <ClInclude Include="magosuya\utility\camera\DebugCamera.h" />
+    <ClInclude Include="magosuya\utility\input\GamePad.h" />
     <ClInclude Include="externals.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
     <ClInclude Include="externals\imgui\imgui.h" />
@@ -229,31 +228,35 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
-    <ClInclude Include="engine\utility\function.h" />
-    <ClInclude Include="engine\utility\Math.h" />
-    <ClInclude Include="engine\audio\Sound.h">
+    <ClInclude Include="general\function.h" />
+    <ClInclude Include="general\Math.h" />
+    <ClInclude Include="magosuya\utility\audio\Sound.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="engine\3d\SphereModel.h" />
-    <ClInclude Include="engine\2d\Sprite.h" />
-    <ClInclude Include="engine\utility\struct.h" />
-    <ClInclude Include="engine\3d\Model.h" />
-    <ClInclude Include="engine\audio\SoundData.h">
+    <ClInclude Include="magosuya\object\3d\SphereModel.h" />
+    <ClInclude Include="magosuya\object\2d\Sprite.h" />
+    <ClInclude Include="general\struct.h" />
+    <ClInclude Include="magosuya\object\3d\Model.h" />
+    <ClInclude Include="magosuya\utility\audio\SoundData.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="engine\audio\SoundManager.h">
+    <ClInclude Include="magosuya\utility\audio\SoundManager.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="engine\Input\InputManager.h" />
-    <ClInclude Include="engine\Input\RawInput.h" />
-    <ClInclude Include="poi\poiEngine.h" />
-    <ClInclude Include="engine\windowsAPI\WindowsAPI.h" />
+    <ClInclude Include="magosuya\utility\input\InputManager.h" />
+    <ClInclude Include="magosuya\utility\input\RawInput.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
+      </ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="magosuya\object\3d\ModelManager.h" />
+    <ClInclude Include="magosuya\MagosuyaEngine.h" />
+    <ClInclude Include="magosuya\engine\engineCore\WindowsAPI.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
@@ -264,7 +267,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="engine\shader\Object3d.hlsli" />
+    <None Include="magosuya\engine\shader\Object3d.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

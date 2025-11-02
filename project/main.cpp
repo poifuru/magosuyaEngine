@@ -1,7 +1,7 @@
 #include <Windows.h>
-#include "engine/EngineCore/DxCommon.h"
-#include "engine/utility/function.h"
-#include "engine/utility/struct.h"
+#include "magosuya/engine/EngineCore/DxCommon.h"
+#include "general/function.h"
+#include "general/struct.h"
 #include <format>// C++20のformat() 文字列整形
 #include <chrono>	//時間を扱うライブラリ
 #include <sstream>// stringstream
@@ -9,11 +9,11 @@
 #pragma comment(lib,"xaudio2.lib")
 #include <Xinput.h>
 #pragma comment(lib, "xinput.lib")
-#include "engine/3d/Model.h"
-#include "engine/3d/SphereModel.h"
-#include "engine/2d/Sprite.h"
-#include "engine/camera/DebugCamera.h"
-#include "engine/Input/InputManager.h"
+#include "magosuya/object/3d/Model.h"
+#include "magosuya/object/3d/SphereModel.h"
+#include "magosuya/object/2d/Sprite.h"
+#include "magosuya/utility/camera/DebugCamera.h"
+#include "magosuya/utility/Input/InputManager.h"
 #include <memory>
 
 //サウンドデータの読み込み関数
@@ -118,12 +118,6 @@ std::unique_ptr<InputManager> g_inputManager = nullptr;
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::unique_ptr<DxCommon> dxCommon = std::make_unique<DxCommon> ();
-	dxCommon->Initialize ();
-
-	g_inputManager = std::make_unique<InputManager> ();
-	g_inputManager->Initialize (*dxCommon->GetHWND ());
-
-	MSG msg{};
 
 	HRESULT hr;
 
@@ -141,23 +135,23 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
 
 #pragma region Plane
-	std::unique_ptr<Model> plane = std::make_unique<Model> (dxCommon->GetDevice (), "Resources/plane", "plane", true);
+	std::unique_ptr<Model> plane = std::make_unique<Model> (dxCommon.get(), "Resources/plane", "plane", true);
 #pragma endregion
 
 #pragma region bunny
-	std::unique_ptr<Model> bunny = std::make_unique<Model> (dxCommon->GetDevice (), "Resources/bunny", "bunny", false);
+	std::unique_ptr<Model> bunny = std::make_unique<Model> (dxCommon.get (), "Resources/bunny", "bunny", false);
 #pragma endregion
 
 #pragma region Teapot
-	std::unique_ptr<Model> teapot = std::make_unique<Model> (dxCommon->GetDevice (), "Resources/teapot", "teapot", false);
+	std::unique_ptr<Model> teapot = std::make_unique<Model> (dxCommon.get (), "Resources/teapot", "teapot", false);
 #pragma endregion
 
 #pragma region Fence
-	std::unique_ptr<Model> Fence = std::make_unique<Model> (dxCommon->GetDevice (), "Resources/fence", "fence", false);
+	std::unique_ptr<Model> Fence = std::make_unique<Model> (dxCommon.get (), "Resources/fence", "fence", false);
 #pragma endregion
 
 	//平行光源のResourceを作成してデフォルト値を書き込む
-	ComPtr<ID3D12Resource> dierctionalLightResource = CreateBufferResource (dxCommon->GetDevice (), sizeof (DirectionalLight));
+	ComPtr<ID3D12Resource> dierctionalLightResource = dxCommon->CreateBufferResource (sizeof (DirectionalLight));
 	DirectionalLight* directionalLightData = nullptr;
 	//書き込むためのアドレス取得
 	dierctionalLightResource->Map (0, nullptr, reinterpret_cast<void**>(&directionalLightData));
@@ -188,10 +182,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//Textureを呼んで転送する
 	DirectX::ScratchImage mipImages[5];
-	mipImages[0] = LoadTexture ("Resources/uvChecker.png");
+	mipImages[0] = dxCommon->LoadTexture ("Resources/uvChecker.png");
 	const DirectX::TexMetadata& metadata0 = mipImages[0].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource0 = CreateTextureResource (dxCommon->GetDevice (), metadata0);
-	ComPtr<ID3D12Resource> intermediateResource0 = UploadTextureData (textureResource0, mipImages[0], dxCommon->GetDevice (), dxCommon->GetCommandList ());
+	ComPtr<ID3D12Resource> textureResource0 = dxCommon->CreateTextureResource (metadata0);
+	ComPtr<ID3D12Resource> intermediateResource0 = dxCommon->UploadTextureData (textureResource0, mipImages[0]);
 
 	//metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescSphere{};
@@ -200,10 +194,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDescSphere.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDescSphere.Texture2D.MipLevels = UINT (metadata0.mipLevels);
 
-	mipImages[1] = LoadTexture (plane->GetModelData ().material.textureFilePath);
+	mipImages[1] = dxCommon->LoadTexture (plane->GetModelData ().material.textureFilePath);
 	const DirectX::TexMetadata& metadata1 = mipImages[1].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource1 = CreateTextureResource (dxCommon->GetDevice (), metadata1);
-	ComPtr<ID3D12Resource> intermediateResource1 = UploadTextureData (textureResource1, mipImages[1], dxCommon->GetDevice (), dxCommon->GetCommandList ());
+	ComPtr<ID3D12Resource> textureResource1 = dxCommon->CreateTextureResource (metadata1);
+	ComPtr<ID3D12Resource> intermediateResource1 = dxCommon->UploadTextureData (textureResource1, mipImages[1]);
 
 	//metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescPlane{};
@@ -212,10 +206,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDescPlane.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDescPlane.Texture2D.MipLevels = UINT (metadata1.mipLevels);
 
-	mipImages[2] = LoadTexture (bunny->GetModelData ().material.textureFilePath);
+	mipImages[2] = dxCommon->LoadTexture (bunny->GetModelData ().material.textureFilePath);
 	const DirectX::TexMetadata& metadata2 = mipImages[2].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource2 = CreateTextureResource (dxCommon->GetDevice (), metadata2);
-	ComPtr<ID3D12Resource> intermediateResource2 = UploadTextureData (textureResource2, mipImages[2], dxCommon->GetDevice (), dxCommon->GetCommandList ());
+	ComPtr<ID3D12Resource> textureResource2 = dxCommon->CreateTextureResource (metadata2);
+	ComPtr<ID3D12Resource> intermediateResource2 = dxCommon->UploadTextureData (textureResource2, mipImages[2]);
 
 	//metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescBunny{};
@@ -224,10 +218,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDescBunny.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDescBunny.Texture2D.MipLevels = UINT (metadata2.mipLevels);
 
-	mipImages[3] = LoadTexture (teapot->GetModelData ().material.textureFilePath);
+	mipImages[3] = dxCommon->LoadTexture (teapot->GetModelData ().material.textureFilePath);
 	const DirectX::TexMetadata& metadata3 = mipImages[3].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource3 = CreateTextureResource (dxCommon->GetDevice (), metadata3);
-	ComPtr<ID3D12Resource> intermediateResource3 = UploadTextureData (textureResource3, mipImages[3], dxCommon->GetDevice (), dxCommon->GetCommandList ());
+	ComPtr<ID3D12Resource> textureResource3 = dxCommon->CreateTextureResource (metadata3);
+	ComPtr<ID3D12Resource> intermediateResource3 = dxCommon->UploadTextureData (textureResource3, mipImages[3]);
 
 	//metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescTeapot{};
@@ -236,10 +230,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDescTeapot.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDescTeapot.Texture2D.MipLevels = UINT (metadata3.mipLevels);
 
-	mipImages[4] = LoadTexture (Fence->GetModelData ().material.textureFilePath);
+	mipImages[4] = dxCommon->LoadTexture (Fence->GetModelData ().material.textureFilePath);
 	const DirectX::TexMetadata& metadata4 = mipImages[4].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource4 = CreateTextureResource (dxCommon->GetDevice (), metadata4);
-	ComPtr<ID3D12Resource> intermediateResource4 = UploadTextureData (textureResource4, mipImages[4], dxCommon->GetDevice (), dxCommon->GetCommandList ());
+	ComPtr<ID3D12Resource> textureResource4 = dxCommon->CreateTextureResource (metadata4);
+	ComPtr<ID3D12Resource> intermediateResource4 = dxCommon->UploadTextureData (textureResource4, mipImages[4]);
 
 	//metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescFence{};
@@ -251,20 +245,20 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	//SRVを作成するDescriptorHeapの場所を決める
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU[5];
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU[5];
-	textureSrvHandleCPU[0] = GetCPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 1);
-	textureSrvHandleGPU[0] = GetGPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 1);
+	textureSrvHandleCPU[0] = dxCommon->GetSRVCPUDescriptorHandle (1);
+	textureSrvHandleGPU[0] = dxCommon->GetSRVGPUDescriptorHandle (1);
 
-	textureSrvHandleCPU[1] = GetCPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 2);
-	textureSrvHandleGPU[1] = GetGPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 2);
+	textureSrvHandleCPU[1] = dxCommon->GetSRVCPUDescriptorHandle (2);
+	textureSrvHandleGPU[1] = dxCommon->GetSRVGPUDescriptorHandle (2);
 
-	textureSrvHandleCPU[2] = GetCPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 3);
-	textureSrvHandleGPU[2] = GetGPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 3);
+	textureSrvHandleCPU[2] = dxCommon->GetSRVCPUDescriptorHandle (3);
+	textureSrvHandleGPU[2] = dxCommon->GetSRVGPUDescriptorHandle (3);
 
-	textureSrvHandleCPU[3] = GetCPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 4);
-	textureSrvHandleGPU[3] = GetGPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 4);
+	textureSrvHandleCPU[3] = dxCommon->GetSRVCPUDescriptorHandle (4);
+	textureSrvHandleGPU[3] = dxCommon->GetSRVGPUDescriptorHandle (4);
 
-	textureSrvHandleCPU[4] = GetCPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 5);
-	textureSrvHandleGPU[4] = GetGPUDescriptorHandle (dxCommon->GetsrvDescriptorHeap (), descriptorSizeSRV, 5);
+	textureSrvHandleCPU[4] = dxCommon->GetSRVCPUDescriptorHandle (5);
+	textureSrvHandleGPU[4] = dxCommon->GetSRVGPUDescriptorHandle (5);
 	//SRVの生成
 	dxCommon->GetDevice ()->CreateShaderResourceView (textureResource0.Get (), &srvDescSphere, textureSrvHandleCPU[0]);
 	dxCommon->GetDevice ()->CreateShaderResourceView (textureResource1.Get (), &srvDescPlane, textureSrvHandleCPU[1]);
@@ -284,7 +278,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	/*std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (dxCommon->GetDevice ());
 	sprite->Initialize ({ 0.0f, 0.0f, 0.0f }, { 640.0f, 360.0f });*/
 
-	std::unique_ptr<SphereModel> sphere = std::make_unique<SphereModel> (dxCommon->GetDevice (), 16);
+	std::unique_ptr<SphereModel> sphere = std::make_unique<SphereModel> (dxCommon.get (), 16);
 	sphere->Initialize ({ 0.0f, 0.0f, 0.0f }, 1.0f);
 
 	plane->Initialize ();
@@ -323,185 +317,165 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	/*********************************/
 
-
-
 	/*メインループ！！！！！！！！！*/
 	//ウィンドウの×ボタンが押されるまでループ
-	while (msg.message != WM_QUIT) {
-		//Windowにメッセージが来てたら最優先で処理させる
-		if (PeekMessage (&msg, NULL, 0, 0, PM_REMOVE)) {
-			TranslateMessage (&msg);
-			DispatchMessage (&msg);
+	while (true) {
+
+		if (dxCommon->GetWinAPI ()->ProcessMessage ()) {
+			break;
 		}
-		else {
 
-			//フレーム開始
-			dxCommon->BeginFrame ();
+		//フレーム開始
+		dxCommon->BeginFrame ();
+		//FPS表示
+		ImGui::Begin ("Debug Window");
+		ImGui::Text ("FPS: %.1f", ImGui::GetIO ().Framerate);
+		ImGui::End ();
 
-			//実際のキー入力処理はここ！
-			/*if (!ImGui::GetIO ().WantCaptureKeyboard) {*/
-				// 押した瞬間だけトグル
-			if (g_inputManager->GetRawInput ()->Trigger (VK_TAB)) {
-				if (!debugMode) {
-					debugMode = true;
-				}
-				else {
-					debugMode = false;
-				}
-			}
-			/*}*/
-
-			if (g_inputManager->GetRawInput ()->Push ('D')/*key[DIK_D]*/) {
-				pos.x += 0.01f;
-			}
-			ImGui::Text ("pos.x:%f", pos.x);
-
-			//ゲームの処理//
-			//=======オブジェクトの更新処理=======//
-			//カメラ
-			cameraMatrix = MakeAffineMatrix (cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-			viewMatrix = Inverse (cameraMatrix);
-			projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (kClientWidth) / float (kClientHeight), 0.1f, 100.0f);
+		//実際のキー入力処理はここ！
+		/*if (!ImGui::GetIO ().WantCaptureKeyboard) {*/
+			// 押した瞬間だけトグル
+		if (g_inputManager->GetRawInput ()->Trigger (VK_TAB)) {
 			if (!debugMode) {
-				//worldViewProjectionMatrix = Multiply (cameraMatrix, Multiply (viewMatrix, projectionMatrix));
+				debugMode = true;
 			}
-			if (!ImGui::GetIO ().WantCaptureMouse) {
-				if (debugMode) {
-					debugCamera->Updata (*dxCommon->GetHWND (), hr, g_inputManager.get ());
-					viewMatrix = debugCamera->GetViewMatrix ();
-					projectionMatrix = debugCamera->GetProjectionMatrix ();
-				}
+			else {
+				debugMode = false;
 			}
-
-			//オブジェクト
-			plane->Update (&viewMatrix, &projectionMatrix);
-			plane->SetPositon (pos);
-
-			bunny->Update (&viewMatrix, &projectionMatrix);
-
-			teapot->Update (&viewMatrix, &projectionMatrix);
-
-			Fence->Update (&viewMatrix, &projectionMatrix);
-
-			//sprite->Update ();
-			sphere->Update (&viewMatrix, &projectionMatrix);
-
-			//光源のdirectionの正規化
-			directionalLightData->direction = Normalize (directionalLightData->direction);
-
-			ImGui::Begin ("カメラモード:TAB");
-			if (debugMode) {
-				ImGui::TextColored (ImVec4 (1, 1, 0, 1), "Current Camera: Debug");
-			}
-			else if (!debugMode) {
-				ImGui::TextColored (ImVec4 (0, 1, 0, 1), "Current Camera: Scene");
-			}
-			ImGui::End ();
-
-			//ImGuiと変数を結び付ける
-			// 色変更用のUI
-			static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };  // 初期値：白
-
-			ImGui::Begin ("setting");
-			if (ImGui::CollapsingHeader ("SceneCamera")) {
-				if (ImGui::Button ("Reset")) {
-					cameraTransform = {
-						{1.0f, 1.0f, 1.0f},
-						{0.0f, 0.0f, 0.0f},
-						{0.0f, 0.0f, -10.0f},
-					};
-				}
-				ImGui::DragFloat3 ("cameraScale", &cameraTransform.scale.x, 0.01f);
-				ImGui::DragFloat3 ("cameraRotate", &cameraTransform.rotate.x, 0.01f);
-				ImGui::DragFloat3 ("cameraTranslate", &cameraTransform.translate.x, 0.01f);
-			}
-			if (ImGui::CollapsingHeader ("sphere")) {
-				ImGui::Checkbox ("speher##useSphere", &useSphere);
-				sphere->ShowImGuiEditor ();
-			}
-			if (ImGui::CollapsingHeader ("plane")) {
-				ImGui::Checkbox ("Draw##plane", &usePlane);
-				//plane->ImGui ();
-			}
-			if (ImGui::CollapsingHeader ("Model")) {
-				ImGui::Checkbox ("Draw##Model", &useModel);
-				//bunny->ImGui ();
-			}
-			if (ImGui::CollapsingHeader ("teapod")) {
-				ImGui::Checkbox ("Draw##teapod", &useTeapot);
-				//teapot->ImGui ();
-			}
-			if (ImGui::CollapsingHeader ("Sprite")) {
-				ImGui::Checkbox ("Draw##useSprite", &useSprite);
-				//sprite->ShowImGuiEditor ();
-			}
-			if (ImGui::CollapsingHeader ("light")) {
-				if (ImGui::ColorEdit4 ("color", colorLight)) {
-					// 色が変更されたらmaterialDataに反映
-					directionalLightData->color.x = colorLight[0];
-					directionalLightData->color.y = colorLight[1];
-					directionalLightData->color.z = colorLight[2];
-					directionalLightData->color.w = colorLight[3];
-				}
-				ImGui::DragFloat3 ("lightDirection", &directionalLightData->direction.x, 0.01f);
-				ImGui::DragFloat ("intensity", &directionalLightData->intensity, 0.01f);
-			}
-			if (ImGui::CollapsingHeader ("fence")) {
-				//Fence->ImGui ();
-			}
-			ImGui::End ();
-			ImGui::DragFloat2 ("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2 ("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle ("UVRotate", &uvTransformSprite.rotate.z);
-
-
-
-			//=======コマンド君達=======//
-			//ライティングの設定
-			dxCommon->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
-			//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
-			Fence->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[4]);
-			if (useSphere) {
-				sphere->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
-			}
-			if (usePlane) {
-				plane->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[1]);
-			}
-			if (useModel) {
-				bunny->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[2]);
-			}
-			if (useTeapot) {
-				teapot->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[3]);
-			}
-			if (useSprite) {
-				//sprite->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
-			}
-
-			//フレーム終了
-			g_inputManager->EndFrame ();
-			dxCommon->EndFrame ();
 		}
-	}
-	//mainで作成してるリソースのリセット
-	//参照が残るのを防ぐためにnullをしてしてviewを作り直す
-	dxCommon->GetDevice ()->CreateShaderResourceView (nullptr, &srvDescSphere, textureSrvHandleCPU[0]);
-	dxCommon->GetDevice ()->CreateShaderResourceView (nullptr, &srvDescPlane, textureSrvHandleCPU[1]);
-	dxCommon->GetDevice ()->CreateShaderResourceView (nullptr, &srvDescBunny, textureSrvHandleCPU[2]);
-	dxCommon->GetDevice ()->CreateShaderResourceView (nullptr, &srvDescTeapot, textureSrvHandleCPU[3]);
-	dxCommon->GetDevice ()->CreateShaderResourceView (nullptr, &srvDescFence, textureSrvHandleCPU[4]);
+		/*}*/
 
-	intermediateResource4.Reset ();
-	textureResource4.Reset ();
-	intermediateResource3.Reset ();
-	textureResource3.Reset ();
-	intermediateResource2.Reset ();
-	textureResource2.Reset ();
-	intermediateResource1.Reset ();
-	textureResource1.Reset ();
-	intermediateResource0.Reset ();
-	textureResource0.Reset ();
-	dierctionalLightResource->Unmap (0, nullptr);
-	dierctionalLightResource.Reset ();
+		if (g_inputManager->GetRawInput ()->Push ('D')/*key[DIK_D]*/) {
+			pos.x += 0.01f;
+		}
+		ImGui::Text ("pos.x:%f", pos.x);
+
+		//ゲームの処理//
+		//=======オブジェクトの更新処理=======//
+		//カメラ
+		cameraMatrix = MakeAffineMatrix (cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+		viewMatrix = Inverse (cameraMatrix);
+		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (dxCommon->GetWinAPI ()->kClientWidth) / float (dxCommon->GetWinAPI ()->kClientHeight), 0.1f, 100.0f);
+		if (!debugMode) {
+			//worldViewProjectionMatrix = Multiply (cameraMatrix, Multiply (viewMatrix, projectionMatrix));
+		}
+		if (!ImGui::GetIO ().WantCaptureMouse) {
+			if (debugMode) {
+				debugCamera->Updata (dxCommon->GetWinAPI ()->GetHwnd (), hr, g_inputManager.get ());
+				viewMatrix = debugCamera->GetViewMatrix ();
+				projectionMatrix = debugCamera->GetProjectionMatrix ();
+			}
+		}
+
+		//オブジェクト
+		plane->Update (&viewMatrix, &projectionMatrix);
+		plane->SetPositon (pos);
+
+		bunny->Update (&viewMatrix, &projectionMatrix);
+
+		teapot->Update (&viewMatrix, &projectionMatrix);
+
+		Fence->Update (&viewMatrix, &projectionMatrix);
+
+		//sprite->Update ();
+		sphere->Update (&viewMatrix, &projectionMatrix);
+
+		//光源のdirectionの正規化
+		directionalLightData->direction = Normalize (directionalLightData->direction);
+
+		ImGui::Begin ("カメラモード:TAB");
+		if (debugMode) {
+			ImGui::TextColored (ImVec4 (1, 1, 0, 1), "Current Camera: Debug");
+		}
+		else if (!debugMode) {
+			ImGui::TextColored (ImVec4 (0, 1, 0, 1), "Current Camera: Scene");
+		}
+		ImGui::End ();
+
+		//ImGuiと変数を結び付ける
+		// 色変更用のUI
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };  // 初期値：白
+
+		ImGui::Begin ("setting");
+		if (ImGui::CollapsingHeader ("SceneCamera")) {
+			if (ImGui::Button ("Reset")) {
+				cameraTransform = {
+					{1.0f, 1.0f, 1.0f},
+					{0.0f, 0.0f, 0.0f},
+					{0.0f, 0.0f, -10.0f},
+				};
+			}
+			ImGui::DragFloat3 ("cameraScale", &cameraTransform.scale.x, 0.01f);
+			ImGui::DragFloat3 ("cameraRotate", &cameraTransform.rotate.x, 0.01f);
+			ImGui::DragFloat3 ("cameraTranslate", &cameraTransform.translate.x, 0.01f);
+		}
+		if (ImGui::CollapsingHeader ("sphere")) {
+			ImGui::Checkbox ("speher##useSphere", &useSphere);
+			sphere->ShowImGuiEditor ();
+		}
+		if (ImGui::CollapsingHeader ("plane")) {
+			ImGui::Checkbox ("Draw##plane", &usePlane);
+			//plane->ImGui ();
+		}
+		if (ImGui::CollapsingHeader ("Model")) {
+			ImGui::Checkbox ("Draw##Model", &useModel);
+			//bunny->ImGui ();
+		}
+		if (ImGui::CollapsingHeader ("teapod")) {
+			ImGui::Checkbox ("Draw##teapod", &useTeapot);
+			//teapot->ImGui ();
+		}
+		if (ImGui::CollapsingHeader ("Sprite")) {
+			ImGui::Checkbox ("Draw##useSprite", &useSprite);
+			//sprite->ShowImGuiEditor ();
+		}
+		if (ImGui::CollapsingHeader ("light")) {
+			if (ImGui::ColorEdit4 ("color", colorLight)) {
+				// 色が変更されたらmaterialDataに反映
+				directionalLightData->color.x = colorLight[0];
+				directionalLightData->color.y = colorLight[1];
+				directionalLightData->color.z = colorLight[2];
+				directionalLightData->color.w = colorLight[3];
+			}
+			ImGui::DragFloat3 ("lightDirection", &directionalLightData->direction.x, 0.01f);
+			ImGui::DragFloat ("intensity", &directionalLightData->intensity, 0.01f);
+		}
+		if (ImGui::CollapsingHeader ("fence")) {
+			//Fence->ImGui ();
+		}
+		ImGui::End ();
+		ImGui::DragFloat2 ("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat2 ("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+		ImGui::SliderAngle ("UVRotate", &uvTransformSprite.rotate.z);
+
+
+
+		//=======コマンド君達=======//
+		//ライティングの設定
+		dxCommon->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
+		//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
+		Fence->Draw (textureSrvHandleGPU[4]);
+		if (useSphere) {
+			sphere->Draw (textureSrvHandleGPU[0]);
+		}
+		if (usePlane) {
+			plane->Draw (textureSrvHandleGPU[1]);
+		}
+		if (useModel) {
+			bunny->Draw (textureSrvHandleGPU[2]);
+		}
+		if (useTeapot) {
+			teapot->Draw (textureSrvHandleGPU[3]);
+		}
+		if (useSprite) {
+			//sprite->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
+		}
+
+		//フレーム終了
+		g_inputManager->EndFrame ();
+		dxCommon->EndFrame ();
+	}
+	
 	xAudio2.Reset ();
 	SoundUnload (&soundData1);  // バッファ解放
 	dxCommon->Finalize ();

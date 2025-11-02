@@ -1,0 +1,43 @@
+#pragma once  
+#include "../../general/struct.h"  
+#include <d3d12.h>  
+#include <wrl.h>  
+using namespace Microsoft::WRL;  
+#include "../../magosuya/engine/engineCore/DxCommon.h"
+
+class Sprite {  
+	public:		//メンバ関数  
+	Sprite (DxCommon* dxCommon);
+	~Sprite ();
+
+	void Initialize (Vector3 position, Vector2 size);  
+	void Update ();  
+	void Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
+
+	// ImGuiで編集する用
+	void ShowImGuiEditor ();
+
+private:	//メンバ変数  
+	//スプライトのデータ  
+	SpriteData sprite_;  
+
+	//GPUリソース  
+	ComPtr<ID3D12Resource> vertexBuffer_;  
+	ComPtr<ID3D12Resource> indexBuffer_;  
+	ComPtr<ID3D12Resource> matrixBuffer_; 
+	ComPtr<ID3D12Resource> materialBuffer_;  
+
+	VertexData* vertexData_ = nullptr;  
+	uint32_t* indexData_ = nullptr;  
+	Matrix4x4* matrixData_ = nullptr;  
+	Material* materialData_ = nullptr;  
+
+	D3D12_VERTEX_BUFFER_VIEW vbView_{};  
+	D3D12_INDEX_BUFFER_VIEW ibView_{};  
+
+	//ImGuiで色をいじる
+	float color_[4];
+
+	//ポインタを持たせるだけ
+	DxCommon* dxCommon_ = nullptr;
+};
