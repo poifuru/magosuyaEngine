@@ -320,3 +320,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# logディレクトリ内の全ファイルを無視する
+logs/
