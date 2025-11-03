@@ -18,22 +18,22 @@ class Sprite {
 	void ShowImGuiEditor ();
 
 private:	//メンバ変数  
-	//スプライトのデータ  
+	//スプライトのデータ
 	SpriteData sprite_;  
 
-	//GPUリソース  
-	ComPtr<ID3D12Resource> vertexBuffer_;  
-	ComPtr<ID3D12Resource> indexBuffer_;  
-	ComPtr<ID3D12Resource> matrixBuffer_; 
-	ComPtr<ID3D12Resource> materialBuffer_;  
+	//GPUリソース
+	ComPtr<ID3D12Resource> vertexBuffer_;
+	ComPtr<ID3D12Resource> indexBuffer_;
+	ComPtr<ID3D12Resource> matrixBuffer_;
+	ComPtr<ID3D12Resource> materialBuffer_;
 
-	VertexData* vertexData_ = nullptr;  
-	uint32_t* indexData_ = nullptr;  
-	Matrix4x4* matrixData_ = nullptr;  
-	Material* materialData_ = nullptr;  
+	VertexData* vertexData_ = nullptr;
+	uint32_t* indexData_ = nullptr;
+	Matrix4x4* matrixData_ = nullptr;
+	Material* materialData_ = nullptr;
 
-	D3D12_VERTEX_BUFFER_VIEW vbView_{};  
-	D3D12_INDEX_BUFFER_VIEW ibView_{};  
+	D3D12_VERTEX_BUFFER_VIEW vbView_{};
+	D3D12_INDEX_BUFFER_VIEW ibView_{};
 
 	//ImGuiで色をいじる
 	float color_[4];

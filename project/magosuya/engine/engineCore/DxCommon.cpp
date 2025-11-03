@@ -12,7 +12,6 @@
 #include "../../../general/function.h"
 #include "../../../general/Logger.h"
 #include "../../../general/String.h"
-#include "../../../externals/DirectXTex/d3dx12.h"
 #include "../../../externals/imgui/imgui_impl_dx12.h"
 #include "../../../externals/imgui/imgui_impl_win32.h"
 
@@ -449,53 +448,6 @@ ComPtr<ID3D12DescriptorHeap> DxCommon::CreateDescriptorHeap (D3D12_DESCRIPTOR_HE
 	HRESULT hr = device->CreateDescriptorHeap (&descriptorHeapDesc, IID_PPV_ARGS (descriptorHeap.GetAddressOf ()));
 	assert (SUCCEEDED (hr));
 	return descriptorHeap;
-}
-
-ComPtr<ID3D12Resource> DxCommon::CreateTextureResource (const DirectX::TexMetadata& metadata) {
-	//1.metadataを基にResourceの設定
-	D3D12_RESOURCE_DESC resourceDesc{};
-	resourceDesc.Width = UINT (metadata.width);								//Textureの幅
-	resourceDesc.Height = UINT (metadata.height);							//Textureの高さ
-	resourceDesc.MipLevels = UINT (metadata.mipLevels);						//mipmapの数
-	resourceDesc.DepthOrArraySize = UINT (metadata.arraySize);				//奥行　or　配列Textureの配列数
-	resourceDesc.Format = metadata.format;									//TextureのFormat
-	resourceDesc.SampleDesc.Count = 1;										//サンプリングカウント。1固定
-	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION (metadata.dimension);	//Textureの次元数。普段使っているのは2次元
-
-	//2.利用するHeapの設定。非常に特殊な運用。
-	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;			//細かい設定を行う
-
-	//3.Resourceを生成する
-	ComPtr<ID3D12Resource> resource = nullptr;
-	HRESULT hr = device->CreateCommittedResource (
-		&heapProperties,					//Heapの設定
-		D3D12_HEAP_FLAG_NONE,				//Heapの特殊な設定。特になし。
-		&resourceDesc,						//Resourceの設定
-		D3D12_RESOURCE_STATE_COPY_DEST,		//データ転送される設定
-		nullptr,							//Clear最適値。使わないのでnullptr。
-		IID_PPV_ARGS (resource.GetAddressOf ()));			//作成するResourceポインタへのポインタ
-	assert (SUCCEEDED (hr));
-	return resource;
-}
-
-ComPtr<ID3D12Resource> DxCommon::UploadTextureData (const ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages) {
-	std::vector<D3D12_SUBRESOURCE_DATA> subresources;
-	DirectX::PrepareUpload (device.Get(), mipImages.GetImages (), mipImages.GetImageCount (), mipImages.GetMetadata (), subresources);
-	uint64_t intermediateSize = GetRequiredIntermediateSize (texture.Get (), 0, UINT (subresources.size ()));
-	ComPtr<ID3D12Resource> intermediateResource = CreateBufferResource (intermediateSize);
-	UpdateSubresources (commandList.Get(), texture.Get (), intermediateResource.Get (), 0, 0, UINT (subresources.size ()), subresources.data ());
-
-	//Textureへの転送後は利用できるよう、D3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更する
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	barrier.Transition.pResource = texture.Get ();
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
-	commandList->ResourceBarrier (1, &barrier);
-	return intermediateResource;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DxCommon::GetSRVCPUDescriptorHandle (uint32_t index) {

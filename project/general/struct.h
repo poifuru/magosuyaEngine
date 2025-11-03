@@ -1,5 +1,8 @@
 #pragma once
 #include <Windows.h>
+#include <wrl.h>
+using namespace Microsoft::WRL;
+#include <d3d12.h>
 #include <vector>
 #include <string>
 #include <fstream>
@@ -150,6 +153,18 @@ struct TransformationMatrix {
 	Matrix4x4 World;
 	//ライティングの時に正しい法線を計算する
 	Matrix4x4 WorldInverseTranspose;
+};
+
+//テクスチャデータ構造体
+struct TextureData {
+	//テクスチャリソースハンドル
+	D3D12_GPU_DESCRIPTOR_HANDLE handle;
+	//テクスチャリソース
+	ComPtr<ID3D12Resource> textureResource = nullptr;
+	//どのディスクリプタヒープを使ったか
+	UINT descriptorIndex;
+	//参照カウント
+	int ref_count = 0;
 };
 
 //Sprite構造体

@@ -55,14 +55,7 @@ public:		//メンバ関数(mainで呼び出すよう)
 	/// <param name="numDescriptors"></param>
 	/// <param name="shaderVisible"></param>
 	/// <returns></returns>
-	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap (D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
-
-	//DirectXのTexrureResourceを作る関数
-	ComPtr<ID3D12Resource> CreateTextureResource (const DirectX::TexMetadata& metadata);
-
-	//TextureResourceにデータを転送する関数
-	[[nodiscard]]
-	ComPtr<ID3D12Resource> UploadTextureData (const ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages);
+	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap (D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);	
 
 #pragma region ディスクリプタハンドル取得関数(必要になったらRTVやDSVなども)
 	/// <summary>
