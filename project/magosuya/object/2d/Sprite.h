@@ -1,8 +1,8 @@
-#pragma once  
-#include "../../general/struct.h"  
+#pragma once    
 #include <d3d12.h>  
 #include <wrl.h>  
-using namespace Microsoft::WRL;  
+using namespace Microsoft::WRL;
+#include "../../general/struct.h"
 #include "../../magosuya/engine/engineCore/DxCommon.h"
 
 class Sprite {  
@@ -38,6 +38,6 @@ private:	//メンバ変数
 	//ImGuiで色をいじる
 	float color_[4];
 
-	//ポインタを持たせるだけ
+	//ポインタを借りてくる
 	DxCommon* dxCommon_ = nullptr;
 };

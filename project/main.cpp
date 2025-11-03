@@ -182,6 +182,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//テクスチャの読み込み
 	magosuya->GetTextureManger ()->LoadTexture ("Resources/uvChecker.png", "uvChecker");
+	magosuya->GetTextureManger ()->LoadTexture ("Resources/monsterBall.png", "monsterBall");
 
 	//BGM再生
 	SoundPlayWave (xAudio2.Get (), soundData1);
@@ -368,13 +369,13 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
 		Fence->Draw (*magosuya->GetTextureManger()->GetTextureHandle("uvChecker"));
 		if (useSphere) {
-			sphere->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
+			sphere->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
 		}
 		if (usePlane) {
-			plane->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
+			plane->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
 		}
 		if (useModel) {
-			bunny->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
+			bunny->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
 		}
 		if (useTeapot) {
 			teapot->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
