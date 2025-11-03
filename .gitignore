@@ -322,4 +322,10 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # logディレクトリ内の全ファイルを無視する
-logs/
+project/logs/
+
+# Dumpsディレクトリも無視
+project/Dumps/
+
+#  imgui.iniも無視
+project/.ini/
