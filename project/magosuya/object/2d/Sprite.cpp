@@ -1,6 +1,6 @@
 #include "Sprite.h"
-#include "../../general/function.h"
-#include "../../general/Math.h"
+#include "../../../general/function.h"
+#include "../../../general/Math.h"
 
 Sprite::Sprite (DxCommon* dxCommon) {
 	dxCommon_ = dxCommon;
@@ -41,25 +41,7 @@ Sprite::Sprite (DxCommon* dxCommon) {
 }
 
 Sprite::~Sprite () {
-	// vertexBuffer_ の Unmap
-	if (vertexBuffer_) {
-		vertexBuffer_->Unmap (0, nullptr);
-	}
 
-	// indexBuffer_ の Unmap
-	if (indexBuffer_) {
-		indexBuffer_->Unmap (0, nullptr);
-	}
-
-	// matrixBuffer_ の Unmap
-	if (matrixBuffer_) {
-		matrixBuffer_->Unmap (0, nullptr);
-	}
-
-	// materialBuffer_ の Unmap
-	if (materialBuffer_) {
-		materialBuffer_->Unmap (0, nullptr);
-	}
 }
 
 void Sprite::Initialize (Vector3 position, Vector2 size) {

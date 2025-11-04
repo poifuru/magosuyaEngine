@@ -6,7 +6,7 @@ using namespace Microsoft::WRL;
 #include <queue>
 #include <vector>
 #include "../../engine/engineCore/DxCommon.h"
-#include "../../general/struct.h"
+#include "../../../general/struct.h"
 
 class TextureManager {
 public:		//外部公開メソッド

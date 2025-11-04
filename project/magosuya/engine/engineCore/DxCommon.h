@@ -12,7 +12,7 @@ using namespace Microsoft::WRL;
 #include "WindowsAPI.h"
 #include "LeakChecker.h"
 #include "../../utility/input/InputManager.h"
-#include "../../externals/DirectXTex/DirectXTex.h"
+#include "../../../externals/DirectXTex/DirectXTex.h"
 
 //BlendStateの個数
 const int kBlendDescNum = 6;

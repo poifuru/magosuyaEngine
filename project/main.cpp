@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include "magosuya/MagosuyaEngine.h"
 #include "general/function.h"
+#include "general/Math.h"
 #include "general/struct.h"
 #include <format>// C++20のformat() 文字列整形
 #include <chrono>	//時間を扱うライブラリ

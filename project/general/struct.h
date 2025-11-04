@@ -131,6 +131,13 @@ struct Transform {
 	Vector3 translate;
 };
 
+// SpriteRendererが参照する最小限の情報構造体
+struct TransformData {
+	Transform transform;
+	Transform uvTransform;
+	Matrix4x4 wvpMatrix;
+};
+
 //頂点データの構造体
 struct VertexData {
 	Vector4 position;
