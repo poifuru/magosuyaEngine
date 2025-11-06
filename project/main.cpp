@@ -182,15 +182,16 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	const uint32_t descriptorSizeDSV = magosuya->GetDxCommon ()->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	//テクスチャの読み込み
-	magosuya->GetTextureManger ()->LoadTexture ("Resources/uvChecker.png", "uvChecker");
-	magosuya->GetTextureManger ()->LoadTexture ("Resources/monsterBall.png", "monsterBall");
+	magosuya->LoadTexture ("Resources/uvChecker.png", "uvChecker");
+	magosuya->LoadTexture ("Resources/monsterBall.png", "monsterBall");
 
 	//BGM再生
 	SoundPlayWave (xAudio2.Get (), soundData1);
 
 	//スプライト
-	/*std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (dxCommon->GetDevice ());
-	sprite->Initialize ({ 0.0f, 0.0f, 0.0f }, { 640.0f, 360.0f });*/
+	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (magosuya->GetDxCommon());
+	sprite->Initialize ({ 0.0f, 0.0f, 0.0f }, { 640.0f, 360.0f });
+	sprite->SetTexture (magosuya->GetTextureHandle ("uvChecker"));
 
 	std::unique_ptr<SphereModel> sphere = std::make_unique<SphereModel> (magosuya->GetDxCommon (), 16);
 	sphere->Initialize ({ 0.0f, 0.0f, 0.0f }, 1.0f);
@@ -247,8 +248,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::End ();
 
 		//実際のキー入力処理はここ！
-		/*if (!ImGui::GetIO ().WantCaptureKeyboard) {*/
-			// 押した瞬間だけトグル
+		// 押した瞬間だけトグル
 		if (g_inputManager->GetRawInput ()->Trigger (VK_TAB)) {
 			if (!debugMode) {
 				debugMode = true;
@@ -257,9 +257,8 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 				debugMode = false;
 			}
 		}
-		/*}*/
 
-		if (g_inputManager->GetRawInput ()->Push ('D')/*key[DIK_D]*/) {
+		if (g_inputManager->GetRawInput ()->Push ('D')) {
 			pos.x += 0.01f;
 		}
 		ImGui::Text ("pos.x:%f", pos.x);
@@ -291,7 +290,8 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		Fence->Update (&viewMatrix, &projectionMatrix);
 
-		//sprite->Update ();
+		sprite->Update ();
+
 		sphere->Update (&viewMatrix, &projectionMatrix);
 
 		//光源のdirectionの正規化
@@ -341,7 +341,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		if (ImGui::CollapsingHeader ("Sprite")) {
 			ImGui::Checkbox ("Draw##useSprite", &useSprite);
-			//sprite->ShowImGuiEditor ();
+			sprite->ImGui ();
 		}
 		if (ImGui::CollapsingHeader ("light")) {
 			if (ImGui::ColorEdit4 ("color", colorLight)) {
@@ -382,7 +382,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 			teapot->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
 		}
 		if (useSprite) {
-			//sprite->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
+			sprite->Draw ();
 		}
 
 		//フレーム終了

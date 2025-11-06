@@ -98,6 +98,8 @@ public:		//アクセッサ
 	ID3D12Device* GetDevice () { return device.Get (); }
 	ID3D12GraphicsCommandList* GetCommandList () { return commandList.Get (); }
 	ID3D12DescriptorHeap* GetsrvDescriptorHeap () { return srvDescriptorHeap.Get (); }
+	ID3D12RootSignature* GetRootSignature () { return rootSignature.Get (); }
+	ID3D12PipelineState* GetPipelineState () { return graphicsPipelineState.Get (); }
 
 private://メンバ変数
 	LeakChecker leakCheck_{};

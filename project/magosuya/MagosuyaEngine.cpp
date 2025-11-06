@@ -25,3 +25,11 @@ void MagosuyaEngine::EndFrame () {
 void MagosuyaEngine::Finalize () {
 	dxCommon_->Finalize ();
 }
+
+void MagosuyaEngine::LoadTexture (const std::string& filePath, const std::string& ID) {
+	textureManager_->LoadTexture (filePath, ID);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE* MagosuyaEngine::GetTextureHandle (const std::string& ID) {
+	return textureManager_->GetTextureHandle (ID);
+}

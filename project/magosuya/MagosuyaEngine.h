@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+#include <string>
 #include "engine/engineCore/DxCommon.h"
 #include "utility/resouceManager/TextureManager.h"
 
@@ -9,11 +11,14 @@ public:		//メンバ関数
 	~MagosuyaEngine ();
 
 	void Initialize ();
-
 	void BeginFrame ();
 	void EndFrame ();
-
 	void Finalize ();
+
+#pragma region 便利関数
+	void LoadTexture (const std::string& filePath, const std::string& ID);
+	D3D12_GPU_DESCRIPTOR_HANDLE* GetTextureHandle (const std::string& ID);
+#pragma endregion
 
 	//アクセッサ
 	DxCommon* GetDxCommon () { return dxCommon_.get (); }
