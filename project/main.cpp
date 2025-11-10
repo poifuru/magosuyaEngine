@@ -136,22 +136,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	//音声の読み込み
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
 
-#pragma region Plane
-	std::unique_ptr<Model> plane = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/plane", "plane", true);
-#pragma endregion
-
-#pragma region bunny
-	std::unique_ptr<Model> bunny = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/bunny", "bunny", false);
-#pragma endregion
-
-#pragma region Teapot
-	std::unique_ptr<Model> teapot = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/teapot", "teapot", false);
-#pragma endregion
-
-#pragma region Fence
-	std::unique_ptr<Model> Fence = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/fence", "fence", false);
-#pragma endregion
-
 	//平行光源のResourceを作成してデフォルト値を書き込む
 	ComPtr<ID3D12Resource> dierctionalLightResource = magosuya->GetDxCommon ()->CreateBufferResource (sizeof (DirectionalLight));
 	DirectionalLight* directionalLightData = nullptr;
@@ -164,23 +148,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	directionalLightData->mode = Light::halfLambert;
 
 	//Transform
-	Transform transform{ {1.0f, 1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
-	Transform transformModel{ {1.0f, 1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
-	Transform transformTeapot{ {1.0f, 1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
-	Transform transformSprite{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-
-	//UVtransform用の変数
-	Transform uvTransformSprite{
-		{1.0f, 1.0f, 1.0f},
-		{0.0f, 0.0f, 0.0f},
-		{0.0f, 0.0f, 0.0f},
-	};
-
-	//DescriptorSizeを取得しておく
-	const uint32_t descriptorSizeSRV = magosuya->GetDxCommon ()->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	const uint32_t descriptorSizeRTV = magosuya->GetDxCommon ()->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	const uint32_t descriptorSizeDSV = magosuya->GetDxCommon ()->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	//テクスチャの読み込み
 	magosuya->LoadTexture ("Resources/uvChecker.png", "uvChecker");
@@ -188,21 +156,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//BGM再生
 	SoundPlayWave (xAudio2.Get (), soundData1);
-
-	//スプライト
-	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (magosuya->GetDxCommon (), magosuya->GetTextureManger());
-	sprite->SetID ("uvChecker");
-	sprite->Initialize ({ 640.0f, 360.0f, 0.0f }, { 100.0f, 100.0f });
-	sprite->SetAnchorPoint ({ 0.5f, 0.5f });
-	sprite->SetTexture (magosuya->GetTextureHandle ("uvChecker"));
-
-	std::unique_ptr<SphereModel> sphere = std::make_unique<SphereModel> (magosuya->GetDxCommon (), 16);
-	sphere->Initialize ({ 0.0f, 0.0f, 0.0f }, 1.0f);
-
-	plane->Initialize ();
-	bunny->Initialize ();
-	teapot->Initialize ();
-	Fence->Initialize ();
 
 	//カメラ用
 	Matrix4x4 cameraMatrix = {};
@@ -214,25 +167,8 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	debugCamera->Initialize ();
 	bool debugMode = false;
 
-	//テクスチャ切り替え用の変数
-	bool useMonsterBall = true;
-	//スプライト切り替え
-	bool useSprite = false;
-	//球の切り替え
-	bool useSphere = false;
-	//ぷれーん
-	bool usePlane = true;
-	//うさぎ
-	bool useModel = false;
-	//てぃーぽっと
-	bool useTeapot = false;
-
 	//ライティング用の変数
 	float colorLight[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-	//お試し
-	Vector3 pos{};
-
 	/*********************************/
 
 	/*メインループ！！！！！！！！！*/
@@ -261,26 +197,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
-		if (g_inputManager->GetRawInput ()->Push ('D')) {
-			pos.x += 0.01f;
-		}
-		ImGui::Text ("pos.x:%f", pos.x);
-
-		Vector2 size = sprite->GetSize ();
-		if (g_inputManager->GetRawInput ()->Push ('D')) {
-			size.x += 0.5f;
-		}
-		if (g_inputManager->GetRawInput ()->Push ('A')) {
-			size.x -= 0.5f;
-		}
-		sprite->SetSize (size);
-		if (ImGui::Button ("flipX")) {
-			sprite->SetIsFlipX (true);
-		}
-		if (ImGui::Button ("flipY")) {
-			sprite->SetIsFlipY (true);
-		}
-
 		//ゲームの処理//
 		//=======オブジェクトの更新処理=======//
 		//カメラ
@@ -297,21 +213,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 				projectionMatrix = debugCamera->GetProjectionMatrix ();
 			}
 		}
-
-		//オブジェクト
-		plane->Update (&viewMatrix, &projectionMatrix);
-		plane->SetPositon (pos);
-
-		bunny->Update (&viewMatrix, &projectionMatrix);
-
-		teapot->Update (&viewMatrix, &projectionMatrix);
-
-		Fence->Update (&viewMatrix, &projectionMatrix);
-
-
-		sprite->Update ();
-
-		sphere->Update (&viewMatrix, &projectionMatrix);
 
 		//光源のdirectionの正規化
 		directionalLightData->direction = Normalize (directionalLightData->direction);
@@ -342,26 +243,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3 ("cameraRotate", &cameraTransform.rotate.x, 0.01f);
 			ImGui::DragFloat3 ("cameraTranslate", &cameraTransform.translate.x, 0.01f);
 		}
-		if (ImGui::CollapsingHeader ("sphere")) {
-			ImGui::Checkbox ("speher##useSphere", &useSphere);
-			sphere->ShowImGuiEditor ();
-		}
-		if (ImGui::CollapsingHeader ("plane")) {
-			ImGui::Checkbox ("Draw##plane", &usePlane);
-			plane->ImGui ();
-		}
-		if (ImGui::CollapsingHeader ("Model")) {
-			ImGui::Checkbox ("Draw##Model", &useModel);
-			bunny->ImGui ();
-		}
-		if (ImGui::CollapsingHeader ("teapod")) {
-			ImGui::Checkbox ("Draw##teapod", &useTeapot);
-			teapot->ImGui ();
-		}
-		if (ImGui::CollapsingHeader ("Sprite")) {
-			ImGui::Checkbox ("Draw##useSprite", &useSprite);
-			sprite->ImGui ();
-		}
 		if (ImGui::CollapsingHeader ("light")) {
 			if (ImGui::ColorEdit4 ("color", colorLight)) {
 				// 色が変更されたらmaterialDataに反映
@@ -373,36 +254,11 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3 ("lightDirection", &directionalLightData->direction.x, 0.01f);
 			ImGui::DragFloat ("intensity", &directionalLightData->intensity, 0.01f);
 		}
-		if (ImGui::CollapsingHeader ("fence")) {
-			//Fence->ImGui ();
-		}
 		ImGui::End ();
-		ImGui::DragFloat2 ("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat2 ("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-		ImGui::SliderAngle ("UVRotate", &uvTransformSprite.rotate.z);
-
-
 
 		//=======コマンド君達=======//
 		//ライティングの設定
 		magosuya->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
-		//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
-		//Fence->Draw (*magosuya->GetTextureManger()->GetTextureHandle("uvChecker"));
-		if (useSphere) {
-			sphere->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
-		}
-		if (usePlane) {
-			plane->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
-		}
-		if (useModel) {
-			bunny->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
-		}
-		if (useTeapot) {
-			teapot->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
-		}
-		if (useSprite) {
-			sprite->Draw ();
-		}
 
 		//フレーム終了
 		g_inputManager->EndFrame ();
