@@ -193,6 +193,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="magosuya\object\3d\ModelManager.cpp" />
     <ClCompile Include="magosuya\MagosuyaEngine.cpp" />
     <ClCompile Include="magosuya\engine\engineCore\WindowsAPI.cpp" />
+    <ClCompile Include="magosuya\utility\resouceManager\TextureManager.cpp" />
+    <ClCompile Include="magosuya\object\2d\SpriteRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="magosuya\engine\shader\Object3d.PS.hlsl">
@@ -257,6 +259,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="magosuya\object\3d\ModelManager.h" />
     <ClInclude Include="magosuya\MagosuyaEngine.h" />
     <ClInclude Include="magosuya\engine\engineCore\WindowsAPI.h" />
+    <ClInclude Include="magosuya\utility\resouceManager\TextureManager.h" />
+    <ClInclude Include="magosuya\object\2d\SpriteRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

@@ -1,10 +1,13 @@
 #include <Windows.h>
-#include "magosuya/engine/EngineCore/DxCommon.h"
+#include "magosuya/MagosuyaEngine.h"
 #include "general/function.h"
+#include "general/Math.h"
 #include "general/struct.h"
 #include <format>// C++20のformat() 文字列整形
 #include <chrono>	//時間を扱うライブラリ
 #include <sstream>// stringstream
+#include <memory>
+#include <vector>
 #include <xaudio2.h>
 #pragma comment(lib,"xaudio2.lib")
 #include <Xinput.h>
@@ -14,7 +17,6 @@
 #include "magosuya/object/2d/Sprite.h"
 #include "magosuya/utility/camera/DebugCamera.h"
 #include "magosuya/utility/Input/InputManager.h"
-#include <memory>
 
 //サウンドデータの読み込み関数
 SoundData SoundLoadWave (const char* filename) {
@@ -117,7 +119,7 @@ std::unique_ptr<InputManager> g_inputManager = nullptr;
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
-	std::unique_ptr<DxCommon> dxCommon = std::make_unique<DxCommon> ();
+	std::unique_ptr<MagosuyaEngine> magosuya = std::make_unique<MagosuyaEngine> ();
 
 	HRESULT hr;
 
@@ -135,23 +137,23 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
 
 #pragma region Plane
-	std::unique_ptr<Model> plane = std::make_unique<Model> (dxCommon.get(), "Resources/plane", "plane", true);
+	std::unique_ptr<Model> plane = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/plane", "plane", true);
 #pragma endregion
 
 #pragma region bunny
-	std::unique_ptr<Model> bunny = std::make_unique<Model> (dxCommon.get (), "Resources/bunny", "bunny", false);
+	std::unique_ptr<Model> bunny = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/bunny", "bunny", false);
 #pragma endregion
 
 #pragma region Teapot
-	std::unique_ptr<Model> teapot = std::make_unique<Model> (dxCommon.get (), "Resources/teapot", "teapot", false);
+	std::unique_ptr<Model> teapot = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/teapot", "teapot", false);
 #pragma endregion
 
 #pragma region Fence
-	std::unique_ptr<Model> Fence = std::make_unique<Model> (dxCommon.get (), "Resources/fence", "fence", false);
+	std::unique_ptr<Model> Fence = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/fence", "fence", false);
 #pragma endregion
 
 	//平行光源のResourceを作成してデフォルト値を書き込む
-	ComPtr<ID3D12Resource> dierctionalLightResource = dxCommon->CreateBufferResource (sizeof (DirectionalLight));
+	ComPtr<ID3D12Resource> dierctionalLightResource = magosuya->GetDxCommon ()->CreateBufferResource (sizeof (DirectionalLight));
 	DirectionalLight* directionalLightData = nullptr;
 	//書き込むためのアドレス取得
 	dierctionalLightResource->Map (0, nullptr, reinterpret_cast<void**>(&directionalLightData));
@@ -176,109 +178,25 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	};
 
 	//DescriptorSizeを取得しておく
-	const uint32_t descriptorSizeSRV = dxCommon->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	const uint32_t descriptorSizeRTV = dxCommon->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	const uint32_t descriptorSizeDSV = dxCommon->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	const uint32_t descriptorSizeSRV = magosuya->GetDxCommon ()->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	const uint32_t descriptorSizeRTV = magosuya->GetDxCommon ()->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	const uint32_t descriptorSizeDSV = magosuya->GetDxCommon ()->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
-	//Textureを呼んで転送する
-	DirectX::ScratchImage mipImages[5];
-	mipImages[0] = dxCommon->LoadTexture ("Resources/uvChecker.png");
-	const DirectX::TexMetadata& metadata0 = mipImages[0].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource0 = dxCommon->CreateTextureResource (metadata0);
-	ComPtr<ID3D12Resource> intermediateResource0 = dxCommon->UploadTextureData (textureResource0, mipImages[0]);
-
-	//metaDataを基にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescSphere{};
-	srvDescSphere.Format = metadata0.format;
-	srvDescSphere.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDescSphere.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
-	srvDescSphere.Texture2D.MipLevels = UINT (metadata0.mipLevels);
-
-	mipImages[1] = dxCommon->LoadTexture (plane->GetModelData ().material.textureFilePath);
-	const DirectX::TexMetadata& metadata1 = mipImages[1].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource1 = dxCommon->CreateTextureResource (metadata1);
-	ComPtr<ID3D12Resource> intermediateResource1 = dxCommon->UploadTextureData (textureResource1, mipImages[1]);
-
-	//metaDataを基にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescPlane{};
-	srvDescPlane.Format = metadata1.format;
-	srvDescPlane.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDescPlane.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
-	srvDescPlane.Texture2D.MipLevels = UINT (metadata1.mipLevels);
-
-	mipImages[2] = dxCommon->LoadTexture (bunny->GetModelData ().material.textureFilePath);
-	const DirectX::TexMetadata& metadata2 = mipImages[2].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource2 = dxCommon->CreateTextureResource (metadata2);
-	ComPtr<ID3D12Resource> intermediateResource2 = dxCommon->UploadTextureData (textureResource2, mipImages[2]);
-
-	//metaDataを基にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescBunny{};
-	srvDescBunny.Format = metadata2.format;
-	srvDescBunny.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDescBunny.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
-	srvDescBunny.Texture2D.MipLevels = UINT (metadata2.mipLevels);
-
-	mipImages[3] = dxCommon->LoadTexture (teapot->GetModelData ().material.textureFilePath);
-	const DirectX::TexMetadata& metadata3 = mipImages[3].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource3 = dxCommon->CreateTextureResource (metadata3);
-	ComPtr<ID3D12Resource> intermediateResource3 = dxCommon->UploadTextureData (textureResource3, mipImages[3]);
-
-	//metaDataを基にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescTeapot{};
-	srvDescTeapot.Format = metadata3.format;
-	srvDescTeapot.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDescTeapot.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
-	srvDescTeapot.Texture2D.MipLevels = UINT (metadata3.mipLevels);
-
-	mipImages[4] = dxCommon->LoadTexture (Fence->GetModelData ().material.textureFilePath);
-	const DirectX::TexMetadata& metadata4 = mipImages[4].GetMetadata ();
-	ComPtr<ID3D12Resource> textureResource4 = dxCommon->CreateTextureResource (metadata4);
-	ComPtr<ID3D12Resource> intermediateResource4 = dxCommon->UploadTextureData (textureResource4, mipImages[4]);
-
-	//metaDataを基にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDescFence{};
-	srvDescFence.Format = metadata4.format;
-	srvDescFence.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDescFence.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
-	srvDescFence.Texture2D.MipLevels = UINT (metadata4.mipLevels);
-
-	//SRVを作成するDescriptorHeapの場所を決める
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU[5];
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU[5];
-	textureSrvHandleCPU[0] = dxCommon->GetSRVCPUDescriptorHandle (1);
-	textureSrvHandleGPU[0] = dxCommon->GetSRVGPUDescriptorHandle (1);
-
-	textureSrvHandleCPU[1] = dxCommon->GetSRVCPUDescriptorHandle (2);
-	textureSrvHandleGPU[1] = dxCommon->GetSRVGPUDescriptorHandle (2);
-
-	textureSrvHandleCPU[2] = dxCommon->GetSRVCPUDescriptorHandle (3);
-	textureSrvHandleGPU[2] = dxCommon->GetSRVGPUDescriptorHandle (3);
-
-	textureSrvHandleCPU[3] = dxCommon->GetSRVCPUDescriptorHandle (4);
-	textureSrvHandleGPU[3] = dxCommon->GetSRVGPUDescriptorHandle (4);
-
-	textureSrvHandleCPU[4] = dxCommon->GetSRVCPUDescriptorHandle (5);
-	textureSrvHandleGPU[4] = dxCommon->GetSRVGPUDescriptorHandle (5);
-	//SRVの生成
-	dxCommon->GetDevice ()->CreateShaderResourceView (textureResource0.Get (), &srvDescSphere, textureSrvHandleCPU[0]);
-	dxCommon->GetDevice ()->CreateShaderResourceView (textureResource1.Get (), &srvDescPlane, textureSrvHandleCPU[1]);
-	dxCommon->GetDevice ()->CreateShaderResourceView (textureResource2.Get (), &srvDescBunny, textureSrvHandleCPU[2]);
-	dxCommon->GetDevice ()->CreateShaderResourceView (textureResource3.Get (), &srvDescTeapot, textureSrvHandleCPU[3]);
-	dxCommon->GetDevice ()->CreateShaderResourceView (textureResource4.Get (), &srvDescFence, textureSrvHandleCPU[4]);
-
-	//Uploadに使ったmipImageは解放する
-	for (int i = 0; i < 5; i++) {
-		mipImages[i].Release ();
-	}
+	//テクスチャの読み込み
+	magosuya->LoadTexture ("Resources/uvChecker.png", "uvChecker");
+	magosuya->LoadTexture ("Resources/monsterBall.png", "monsterBall");
 
 	//BGM再生
 	SoundPlayWave (xAudio2.Get (), soundData1);
 
 	//スプライト
-	/*std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (dxCommon->GetDevice ());
-	sprite->Initialize ({ 0.0f, 0.0f, 0.0f }, { 640.0f, 360.0f });*/
+	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (magosuya->GetDxCommon (), magosuya->GetTextureManger());
+	sprite->SetID ("uvChecker");
+	sprite->Initialize ({ 640.0f, 360.0f, 0.0f }, { 100.0f, 100.0f });
+	sprite->SetAnchorPoint ({ 0.5f, 0.5f });
+	sprite->SetTexture (magosuya->GetTextureHandle ("uvChecker"));
 
-	std::unique_ptr<SphereModel> sphere = std::make_unique<SphereModel> (dxCommon.get (), 16);
+	std::unique_ptr<SphereModel> sphere = std::make_unique<SphereModel> (magosuya->GetDxCommon (), 16);
 	sphere->Initialize ({ 0.0f, 0.0f, 0.0f }, 1.0f);
 
 	plane->Initialize ();
@@ -321,20 +239,19 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ウィンドウの×ボタンが押されるまでループ
 	while (true) {
 
-		if (dxCommon->GetWinAPI ()->ProcessMessage ()) {
+		if (magosuya->GetDxCommon ()->GetWinAPI ()->ProcessMessage ()) {
 			break;
 		}
 
 		//フレーム開始
-		dxCommon->BeginFrame ();
+		magosuya->BeginFrame ();
 		//FPS表示
 		ImGui::Begin ("Debug Window");
 		ImGui::Text ("FPS: %.1f", ImGui::GetIO ().Framerate);
 		ImGui::End ();
 
 		//実際のキー入力処理はここ！
-		/*if (!ImGui::GetIO ().WantCaptureKeyboard) {*/
-			// 押した瞬間だけトグル
+		// 押した瞬間だけトグル
 		if (g_inputManager->GetRawInput ()->Trigger (VK_TAB)) {
 			if (!debugMode) {
 				debugMode = true;
@@ -343,25 +260,39 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 				debugMode = false;
 			}
 		}
-		/*}*/
 
-		if (g_inputManager->GetRawInput ()->Push ('D')/*key[DIK_D]*/) {
+		if (g_inputManager->GetRawInput ()->Push ('D')) {
 			pos.x += 0.01f;
 		}
 		ImGui::Text ("pos.x:%f", pos.x);
+
+		Vector2 size = sprite->GetSize ();
+		if (g_inputManager->GetRawInput ()->Push ('D')) {
+			size.x += 0.5f;
+		}
+		if (g_inputManager->GetRawInput ()->Push ('A')) {
+			size.x -= 0.5f;
+		}
+		sprite->SetSize (size);
+		if (ImGui::Button ("flipX")) {
+			sprite->SetIsFlipX (true);
+		}
+		if (ImGui::Button ("flipY")) {
+			sprite->SetIsFlipY (true);
+		}
 
 		//ゲームの処理//
 		//=======オブジェクトの更新処理=======//
 		//カメラ
 		cameraMatrix = MakeAffineMatrix (cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 		viewMatrix = Inverse (cameraMatrix);
-		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (dxCommon->GetWinAPI ()->kClientWidth) / float (dxCommon->GetWinAPI ()->kClientHeight), 0.1f, 100.0f);
+		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientWidth) / float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientHeight), 0.1f, 100.0f);
 		if (!debugMode) {
 			//worldViewProjectionMatrix = Multiply (cameraMatrix, Multiply (viewMatrix, projectionMatrix));
 		}
 		if (!ImGui::GetIO ().WantCaptureMouse) {
 			if (debugMode) {
-				debugCamera->Updata (dxCommon->GetWinAPI ()->GetHwnd (), hr, g_inputManager.get ());
+				debugCamera->Updata (magosuya->GetDxCommon ()->GetWinAPI ()->GetHwnd (), hr, g_inputManager.get ());
 				viewMatrix = debugCamera->GetViewMatrix ();
 				projectionMatrix = debugCamera->GetProjectionMatrix ();
 			}
@@ -377,7 +308,9 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		Fence->Update (&viewMatrix, &projectionMatrix);
 
-		//sprite->Update ();
+
+		sprite->Update ();
+
 		sphere->Update (&viewMatrix, &projectionMatrix);
 
 		//光源のdirectionの正規化
@@ -415,19 +348,19 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		if (ImGui::CollapsingHeader ("plane")) {
 			ImGui::Checkbox ("Draw##plane", &usePlane);
-			//plane->ImGui ();
+			plane->ImGui ();
 		}
 		if (ImGui::CollapsingHeader ("Model")) {
 			ImGui::Checkbox ("Draw##Model", &useModel);
-			//bunny->ImGui ();
+			bunny->ImGui ();
 		}
 		if (ImGui::CollapsingHeader ("teapod")) {
 			ImGui::Checkbox ("Draw##teapod", &useTeapot);
-			//teapot->ImGui ();
+			teapot->ImGui ();
 		}
 		if (ImGui::CollapsingHeader ("Sprite")) {
 			ImGui::Checkbox ("Draw##useSprite", &useSprite);
-			//sprite->ShowImGuiEditor ();
+			sprite->ImGui ();
 		}
 		if (ImGui::CollapsingHeader ("light")) {
 			if (ImGui::ColorEdit4 ("color", colorLight)) {
@@ -452,32 +385,32 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//=======コマンド君達=======//
 		//ライティングの設定
-		dxCommon->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
+		magosuya->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
 		//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
-		Fence->Draw (textureSrvHandleGPU[4]);
+		//Fence->Draw (*magosuya->GetTextureManger()->GetTextureHandle("uvChecker"));
 		if (useSphere) {
-			sphere->Draw (textureSrvHandleGPU[0]);
+			sphere->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
 		}
 		if (usePlane) {
-			plane->Draw (textureSrvHandleGPU[1]);
+			plane->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
 		}
 		if (useModel) {
-			bunny->Draw (textureSrvHandleGPU[2]);
+			bunny->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
 		}
 		if (useTeapot) {
-			teapot->Draw (textureSrvHandleGPU[3]);
+			teapot->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
 		}
 		if (useSprite) {
-			//sprite->Draw (dxCommon->GetCommandList (), textureSrvHandleGPU[0]);
+			sprite->Draw ();
 		}
 
 		//フレーム終了
 		g_inputManager->EndFrame ();
-		dxCommon->EndFrame ();
+		magosuya->EndFrame ();
 	}
-	
+
 	xAudio2.Reset ();
 	SoundUnload (&soundData1);  // バッファ解放
-	dxCommon->Finalize ();
+	magosuya->Finalize ();
 	return 0;
 };

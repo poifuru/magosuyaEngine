@@ -12,7 +12,7 @@ using namespace Microsoft::WRL;
 #include "WindowsAPI.h"
 #include "LeakChecker.h"
 #include "../../utility/input/InputManager.h"
-#include "../../externals/DirectXTex/DirectXTex.h"
+#include "../../../externals/DirectXTex/DirectXTex.h"
 
 //BlendStateの個数
 const int kBlendDescNum = 6;
@@ -55,14 +55,7 @@ public:		//メンバ関数(mainで呼び出すよう)
 	/// <param name="numDescriptors"></param>
 	/// <param name="shaderVisible"></param>
 	/// <returns></returns>
-	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap (D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
-
-	//DirectXのTexrureResourceを作る関数
-	ComPtr<ID3D12Resource> CreateTextureResource (const DirectX::TexMetadata& metadata);
-
-	//TextureResourceにデータを転送する関数
-	[[nodiscard]]
-	ComPtr<ID3D12Resource> UploadTextureData (const ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages);
+	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap (D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);	
 
 #pragma region ディスクリプタハンドル取得関数(必要になったらRTVやDSVなども)
 	/// <summary>
@@ -105,6 +98,8 @@ public:		//アクセッサ
 	ID3D12Device* GetDevice () { return device.Get (); }
 	ID3D12GraphicsCommandList* GetCommandList () { return commandList.Get (); }
 	ID3D12DescriptorHeap* GetsrvDescriptorHeap () { return srvDescriptorHeap.Get (); }
+	ID3D12RootSignature* GetRootSignature () { return rootSignature.Get (); }
+	ID3D12PipelineState* GetPipelineState () { return graphicsPipelineState.Get (); }
 
 private://メンバ変数
 	LeakChecker leakCheck_{};

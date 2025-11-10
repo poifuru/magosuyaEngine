@@ -1,10 +1,10 @@
 #pragma once
-#include "../../general/struct.h"
+#include "../../../general/struct.h"
 #include <vector>
 #include <d3d12.h>
 #include <wrl.h>
 using namespace Microsoft::WRL;
-#include "../../magosuya/engine/engineCore/DxCommon.h"
+#include "../../../magosuya/engine/engineCore/DxCommon.h"
 
 class Model {
 public:	//メンバ関数

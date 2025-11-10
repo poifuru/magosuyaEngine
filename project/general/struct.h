@@ -1,9 +1,13 @@
 #pragma once
 #include <Windows.h>
+#include <wrl.h>
+using namespace Microsoft::WRL;
+#include <d3d12.h>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <Mmreg.h>
+#include "../externals/DirectXTex/DirectXTex.h"
 
 //Vector2構造体
 struct Vector2 {
@@ -128,6 +132,13 @@ struct Transform {
 	Vector3 translate;
 };
 
+// SpriteRendererが参照する最小限の情報構造体
+struct TransformData {
+	Transform transform;
+	Transform uvTransform;
+	Matrix4x4 wvpMatrix;
+};
+
 //頂点データの構造体
 struct VertexData {
 	Vector4 position;
@@ -150,6 +161,20 @@ struct TransformationMatrix {
 	Matrix4x4 World;
 	//ライティングの時に正しい法線を計算する
 	Matrix4x4 WorldInverseTranspose;
+};
+
+//テクスチャデータ構造体
+struct TextureData {
+	//テクスチャリソースハンドル
+	D3D12_GPU_DESCRIPTOR_HANDLE handle;
+	//テクスチャリソース
+	ComPtr<ID3D12Resource> textureResource = nullptr;
+	//メタデータ
+	DirectX::TexMetadata metadata;
+	//どのディスクリプタヒープを使ったか
+	UINT descriptorIndex;
+	//参照カウント
+	int ref_count = 0;
 };
 
 //Sprite構造体
