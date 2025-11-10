@@ -7,6 +7,7 @@ using namespace Microsoft::WRL;
 #include <string>
 #include <fstream>
 #include <Mmreg.h>
+#include "../externals/DirectXTex/DirectXTex.h"
 
 //Vector2構造体
 struct Vector2 {
@@ -168,6 +169,8 @@ struct TextureData {
 	D3D12_GPU_DESCRIPTOR_HANDLE handle;
 	//テクスチャリソース
 	ComPtr<ID3D12Resource> textureResource = nullptr;
+	//メタデータ
+	DirectX::TexMetadata metadata;
 	//どのディスクリプタヒープを使ったか
 	UINT descriptorIndex;
 	//参照カウント

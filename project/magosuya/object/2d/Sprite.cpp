@@ -1,10 +1,13 @@
 #include "Sprite.h"
 #include "../../../general/function.h"
 #include "../../../general/Math.h"
+#include "../../utility/resouceManager/TextureManager.h"
+#include "../../../externals/DirectXTex/DirectXTex.h"
 
-Sprite::Sprite (DxCommon* dxCommon) {
+Sprite::Sprite (DxCommon* dxCommon, TextureManager* textureManager) {
 	dxCommon_ = dxCommon;
-	renderer_ = std::make_unique<SpriteRenderer> (dxCommon);
+	textureManager_ = textureManager;
+	renderer_ = std::make_unique<SpriteRenderer> (dxCommon, textureManager);
 }
 
 Sprite::~Sprite () {
@@ -12,8 +15,8 @@ Sprite::~Sprite () {
 
 void Sprite::Initialize (Vector3 position, Vector2 size) {
 	//transformの初期化
-	transformData_.transform.scale = { 1.0f, 1.0f, 1.0f };
-	transformData_.transform.rotate = {};
+	transformData_.transform.scale = { size.x, size.y, 1.0f };
+	transformData_.transform.rotate = {0.0f, 0.0f, rotation_};
 	transformData_.transform.translate = position;
 
 	//uvTransformの初期化
@@ -24,7 +27,10 @@ void Sprite::Initialize (Vector3 position, Vector2 size) {
 	//wvpMatrixの初期化
 	transformData_.wvpMatrix = MakeIdentity4x4 ();
 
-	renderer_->Initialize (size);
+	size_ = size;
+	AdjustTextureSize ();
+
+	renderer_->Initialize ();
 }
 
 void Sprite::SetTexture (D3D12_GPU_DESCRIPTOR_HANDLE* handle) {
@@ -33,12 +39,15 @@ void Sprite::SetTexture (D3D12_GPU_DESCRIPTOR_HANDLE* handle) {
 
 void Sprite::MakewvpMatrix () {
 	Matrix4x4 world = MakeAffineMatrix (transformData_.transform.scale, transformData_.transform.rotate, transformData_.transform.translate);
-	transformData_.wvpMatrix = world;
+	Matrix4x4 view = MakeIdentity4x4 ();
+	Matrix4x4 proj = MakeOrthographicMatrix (0, 0, 1280.0f, 720.0f, 0, 100.0f);
+	transformData_.wvpMatrix = Multiply (world, Multiply (view, proj));
 }
 
 void Sprite::Update () {
 	MakewvpMatrix ();
-	renderer_->Update (transformData_.wvpMatrix, transformData_.uvTransform);
+	renderer_->Update (transformData_.wvpMatrix, transformData_.uvTransform,
+					   anchorPoint_, isFlipX_, isFlipY_, id_, textureLeftTop_, textureSize_);
 }
 
 void Sprite::Draw () {
@@ -47,4 +56,13 @@ void Sprite::Draw () {
 
 void Sprite::ImGui () {
 	renderer_->ImGui (transformData_.transform, transformData_.uvTransform);
+}
+
+void Sprite::AdjustTextureSize () {
+	const DirectX::TexMetadata& metadata = textureManager_->GetMetaData (id_);
+
+	textureSize_.x = static_cast<float>(metadata.width);
+	textureSize_.y = static_cast<float>(metadata.height);
+	//画像サイズをテクスチャサイズに合わせる
+	size_ = textureSize_;
 }

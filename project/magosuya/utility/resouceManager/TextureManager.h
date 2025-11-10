@@ -30,6 +30,7 @@ public:		//外部公開メソッド
 
 	//アクセッサ
 	const std::vector<ComPtr<ID3D12Resource>>& GetIntermediateResource () const { return intermediateResource_; }
+	const DirectX::TexMetadata& GetMetaData (const std::string& id);
 
 private:	//内部関数
 	//LoadTextureのヘルパー関数

@@ -1,11 +1,25 @@
 #include "SpriteRenderer.h"
 #include "../../../general/Math.h"
-#include "../../externals/imgui/imgui.h"
+#include "../../../externals/imgui/imgui.h"
 #include "../../engine/engineCore/DxCommon.h"
+#include "../../utility/resouceManager/TextureManager.h"
+#include "../../../externals/DirectXTex/DirectXTex.h"
 
-SpriteRenderer::SpriteRenderer (DxCommon* dxCommon) {
-	dxCommon_ = dxCommon;	
-	
+SpriteRenderer::SpriteRenderer (DxCommon* dxCommon, TextureManager* textureManager) {
+	dxCommon_ = dxCommon;
+	textureManager_ = textureManager;
+	rootSignature_ = dxCommon_->GetRootSignature ();
+	pipelineState_ = dxCommon_->GetPipelineState ();
+
+	for (int i = 0; i < 4; i++) {
+		color_[i] = 1.0f;
+	}
+}
+
+SpriteRenderer::~SpriteRenderer () {
+}
+
+void SpriteRenderer::Initialize () {
 	//頂点・インデックスバッファ作成 → Mapして vertexData_, indexData_ に保持
 	//それぞれビューの設定も
 	vertexBuffer_ = dxCommon_->CreateBufferResource (sizeof (VertexData) * 4);
@@ -31,30 +45,6 @@ SpriteRenderer::SpriteRenderer (DxCommon* dxCommon) {
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };	//初期カラーは白
 	materialData_->enableLighting = false;
 	materialData_->uvTranform = MakeIdentity4x4 ();
-}
-
-SpriteRenderer::~SpriteRenderer () {
-}
-
-void SpriteRenderer::Initialize (Vector2 size) {
-	//vertexData_に初期の四角形座標を書く（size_を使って計算）
-	float w = size.x;
-	float h = size.y;
-	vertexData_[0].position = { 0.0f, h, 0.0f, 1.0f };      //左下
-	vertexData_[0].texcoord = { 0.0f, 1.0f };
-	vertexData_[0].normal = { 0.0f, 0.0f, -1.0f };
-
-	vertexData_[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };   //左上
-	vertexData_[1].texcoord = { 0.0f, 0.0f };
-	vertexData_[1].normal = { 0.0f, 0.0f, -1.0f };
-
-	vertexData_[2].position = { w, h, 0.0f, 1.0f };         //右下
-	vertexData_[2].texcoord = { 1.0f, 1.0f };
-	vertexData_[2].normal = { 0.0f, 0.0f, -1.0f };
-
-	vertexData_[3].position = { w, 0.0f, 0.0f, 1.0f };      //右上
-	vertexData_[3].texcoord = { 1.0f, 0.0f };
-	vertexData_[3].normal = { 0.0f, 0.0f, -1.0f };
 
 	//indexData_に書き込み
 	indexData_[0] = 0;
@@ -63,13 +53,48 @@ void SpriteRenderer::Initialize (Vector2 size) {
 	indexData_[3] = 1;
 	indexData_[4] = 3;
 	indexData_[5] = 2;
-
-	for (int i = 0; i < 4; i++) {
-		color_[i] = 1.0f;
-	}
 }
 
-void SpriteRenderer::Update (Matrix4x4 wvpData, Transform uvTransform) {
+void SpriteRenderer::Update (Matrix4x4 wvpData, Transform uvTransform, Vector2 anchorPoint, bool flipX, bool flipY, const std::string& id, Vector2 texLeftTop, Vector2 texSize) {
+	//vertexData_に初期の四角形座標を書く（size_を使って計算）
+	float left = 0.0f - anchorPoint.x;
+	float right = 1.0f - anchorPoint.x;
+	float top = 0.0f - anchorPoint.y;
+	float bottom = 1.0f - anchorPoint.y;
+
+	//画像切り出し用
+	id_ = id;
+	const DirectX::TexMetadata& metadata = textureManager_->GetMetaData (id_);
+	float tex_left = texLeftTop.x / metadata.width;
+	float tex_right = (texLeftTop.x + texSize.x) / metadata.width;
+	float tex_top = texLeftTop.y / metadata.height;
+	float tex_bottom = (texLeftTop.y + texSize.y) / metadata.height;
+
+	if (flipX) {
+		left = -left;
+		right = -right;
+	}
+	if (flipY) {
+		top = -top;
+		bottom = -bottom;
+	}
+
+	vertexData_[0].position = { left, bottom, 0.0f, 1.0f };      //左下
+	vertexData_[0].texcoord = { tex_left, tex_bottom };
+	vertexData_[0].normal = { 0.0f, 0.0f, -1.0f };
+
+	vertexData_[1].position = { left, top, 0.0f, 1.0f };   //左上
+	vertexData_[1].texcoord = { tex_left, tex_top };
+	vertexData_[1].normal = { 0.0f, 0.0f, -1.0f };
+
+	vertexData_[2].position = { right, bottom, 0.0f, 1.0f };         //右下
+	vertexData_[2].texcoord = { tex_right, tex_bottom };
+	vertexData_[2].normal = { 0.0f, 0.0f, -1.0f };
+
+	vertexData_[3].position = { right, top, 0.0f, 1.0f };      //右上
+	vertexData_[3].texcoord = { tex_right, tex_top };
+	vertexData_[3].normal = { 0.0f, 0.0f, -1.0f };
+
 	*matrixData_ = wvpData;
 	// UVTransform更新
 	materialData_->uvTranform = MakeAffineMatrix (uvTransform.scale, uvTransform.rotate, uvTransform.translate);
@@ -97,10 +122,10 @@ void SpriteRenderer::ImGui (Transform& transform, Transform& uvTransform) {
 		materialData_->color.w = color_[3];
 	}
 	ImGui::DragFloat3 ("Scale", &transform.scale.x, 1.0f);
-	ImGui::DragFloat3 ("Rotate", &transform.rotate.x, 1.0f);
+	ImGui::DragFloat3 ("Rotate", &transform.rotate.x, 0.01f);
 	ImGui::DragFloat3 ("Translate", &transform.translate.x, 1.0f);
-	ImGui::DragFloat3 ("UVScale", &uvTransform.scale.x, 1.0f);
-	ImGui::DragFloat3 ("UVRotate", &uvTransform.rotate.x, 1.0f);
-	ImGui::DragFloat3 ("UVTranslate", &uvTransform.translate.x, 1.0f);
+	ImGui::DragFloat2 ("UVScale", &uvTransform.scale.x, 0.01f);
+	ImGui::DragFloat ("UVRotate", &uvTransform.rotate.z, 0.01f);
+	ImGui::DragFloat2 ("UVTranslate", &uvTransform.translate.x, 0.01f);
 	ImGui::Separator ();
 }

@@ -4,17 +4,25 @@
 using namespace Microsoft::WRL;
 #include "../../../general/struct.h"
 
-class DxCommon; //前方宣言
+//前方宣言
+class DxCommon;
+class TextureManager;
 
 class SpriteRenderer {
 public:		//外部公開メソッド
-	SpriteRenderer (DxCommon* dxCommon);
+	SpriteRenderer (DxCommon* dxCommon, TextureManager* textureManager);
 	~SpriteRenderer ();
 
-	void Initialize (Vector2 size);
-	void Update (Matrix4x4 wvpData, Transform uvTransform);
+	void Initialize ();
+	void Update (Matrix4x4 wvpData, Transform uvTransform, Vector2 anchorPoint,
+				 bool flipX, bool flipY, const std::string& id, Vector2 texLeftTop, Vector2 texSize);
 	void Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
 	void ImGui (Transform& transform, Transform& uvTransform);
+
+	//アクセッサ
+	Material* GetMaterial () { return materialData_; }
+	void SetColor (const Vector4& color) { materialData_->color = color; }
+	void SetID (const std::string& id) { id_ = id; }
 
 private:	//メンバ変数
 	//ルートシグネチャとパイプラインステート
@@ -36,10 +44,14 @@ private:	//メンバ変数
 	Matrix4x4* matrixData_ = nullptr;
 	Material* materialData_ = nullptr;
 
+	//画像検索用のID
+	std::string id_;
+
 	//ImGuiで色をいじる
 	float color_[4];
 
 	//ポインタを借りる
 	DxCommon* dxCommon_ = nullptr;
+	TextureManager* textureManager_ = nullptr;
 };
 

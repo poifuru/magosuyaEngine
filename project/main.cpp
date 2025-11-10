@@ -7,6 +7,7 @@
 #include <chrono>	//時間を扱うライブラリ
 #include <sstream>// stringstream
 #include <memory>
+#include <vector>
 #include <xaudio2.h>
 #pragma comment(lib,"xaudio2.lib")
 #include <Xinput.h>
@@ -136,7 +137,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
 
 #pragma region Plane
-	std::unique_ptr<Model> plane = std::make_unique<Model> (magosuya->GetDxCommon(), "Resources/plane", "plane", true);
+	std::unique_ptr<Model> plane = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/plane", "plane", true);
 #pragma endregion
 
 #pragma region bunny
@@ -152,7 +153,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 	//平行光源のResourceを作成してデフォルト値を書き込む
-	ComPtr<ID3D12Resource> dierctionalLightResource = magosuya->GetDxCommon()->CreateBufferResource (sizeof (DirectionalLight));
+	ComPtr<ID3D12Resource> dierctionalLightResource = magosuya->GetDxCommon ()->CreateBufferResource (sizeof (DirectionalLight));
 	DirectionalLight* directionalLightData = nullptr;
 	//書き込むためのアドレス取得
 	dierctionalLightResource->Map (0, nullptr, reinterpret_cast<void**>(&directionalLightData));
@@ -189,8 +190,10 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	SoundPlayWave (xAudio2.Get (), soundData1);
 
 	//スプライト
-	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (magosuya->GetDxCommon());
-	sprite->Initialize ({ 0.0f, 0.0f, 0.0f }, { 640.0f, 360.0f });
+	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (magosuya->GetDxCommon (), magosuya->GetTextureManger());
+	sprite->SetID ("uvChecker");
+	sprite->Initialize ({ 640.0f, 360.0f, 0.0f }, { 100.0f, 100.0f });
+	sprite->SetAnchorPoint ({ 0.5f, 0.5f });
 	sprite->SetTexture (magosuya->GetTextureHandle ("uvChecker"));
 
 	std::unique_ptr<SphereModel> sphere = std::make_unique<SphereModel> (magosuya->GetDxCommon (), 16);
@@ -263,6 +266,21 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		ImGui::Text ("pos.x:%f", pos.x);
 
+		Vector2 size = sprite->GetSize ();
+		if (g_inputManager->GetRawInput ()->Push ('D')) {
+			size.x += 0.5f;
+		}
+		if (g_inputManager->GetRawInput ()->Push ('A')) {
+			size.x -= 0.5f;
+		}
+		sprite->SetSize (size);
+		if (ImGui::Button ("flipX")) {
+			sprite->SetIsFlipX (true);
+		}
+		if (ImGui::Button ("flipY")) {
+			sprite->SetIsFlipY (true);
+		}
+
 		//ゲームの処理//
 		//=======オブジェクトの更新処理=======//
 		//カメラ
@@ -289,6 +307,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		teapot->Update (&viewMatrix, &projectionMatrix);
 
 		Fence->Update (&viewMatrix, &projectionMatrix);
+
 
 		sprite->Update ();
 
@@ -368,7 +387,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		//ライティングの設定
 		magosuya->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
 		//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
-		Fence->Draw (*magosuya->GetTextureManger()->GetTextureHandle("uvChecker"));
+		//Fence->Draw (*magosuya->GetTextureManger()->GetTextureHandle("uvChecker"));
 		if (useSphere) {
 			sphere->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
 		}
@@ -389,7 +408,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		g_inputManager->EndFrame ();
 		magosuya->EndFrame ();
 	}
-	
+
 	xAudio2.Reset ();
 	SoundUnload (&soundData1);  // バッファ解放
 	magosuya->Finalize ();

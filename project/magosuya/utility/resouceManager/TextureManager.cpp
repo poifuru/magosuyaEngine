@@ -52,18 +52,18 @@ TextureData* TextureManager::LoadTexture (const std::string& filePath, const std
 	assert (SUCCEEDED (hr));
 
 	//mipImageを使ってmetaDataを作る
-	const DirectX::TexMetadata& metadata = mipImage.GetMetadata ();
+	newData.metadata = mipImage.GetMetadata ();
 	//作ったmetaDataをもとにテクスチャリソースを作成
-	newData.textureResource = CreateTextureResource (metadata);
+	newData.textureResource = CreateTextureResource (newData.metadata);
 	//実際にデータを転送
 	intermediateResource_.push_back(UploadTextureData (newData.textureResource, mipImage));
 
 	//metaDataをもとにSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = metadata.format;
+	srvDesc.Format = newData.metadata.format;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
-	srvDesc.Texture2D.MipLevels = UINT (metadata.mipLevels);
+	srvDesc.Texture2D.MipLevels = UINT (newData.metadata.mipLevels);
 
 	//SRVを作成するDescriptorHeapの場所を決める
 	UINT newIndex;
@@ -113,7 +113,7 @@ void TextureManager::UnloadTexture (const std::string& filePath) {
 	if (!textureMap_.count (filePath)) { return; }
 	textureMap_.at (filePath).ref_count--;
 
-	// 参照を取得するでやんす！
+	// 参照を取得する
 	TextureData& data = textureMap_.at (filePath);
 
 	//参照カウントがゼロになったらテクスチャ削除
@@ -128,6 +128,12 @@ void TextureManager::UnloadTexture (const std::string& filePath) {
 
 void TextureManager::ClearIntermediateResource () {
 	intermediateResource_.clear ();
+}
+
+const DirectX::TexMetadata& TextureManager::GetMetaData (const std::string& id) {
+	assert (textureMap_.count (id));
+
+	return textureMap_.at (id).metadata;
 }
 
 ComPtr<ID3D12Resource> TextureManager::CreateTextureResource (const DirectX::TexMetadata& metadata) {
