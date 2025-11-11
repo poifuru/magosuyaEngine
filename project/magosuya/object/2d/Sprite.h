@@ -7,15 +7,14 @@ using namespace Microsoft::WRL;
 #include "../../../general/struct.h"
 
 //前方宣言
-class DxCommon; 
-class TextureManager;
+class MagosuyaEngine;
 
 class Sprite {  
 	public:		//メンバ関数  
-	Sprite (DxCommon* dxCommon, TextureManager* textureManager);
+	Sprite (MagosuyaEngine* magosuya);
 	~Sprite ();
 
-	void Initialize (Vector3 position, Vector2 size);
+	void Initialize (Vector3 position);
 	void SetTexture (D3D12_GPU_DESCRIPTOR_HANDLE* handle);
 	void MakewvpMatrix ();
 	void Update (); 
@@ -82,6 +81,5 @@ private:	//メンバ変数
 	std::unique_ptr<SpriteRenderer> renderer_ = nullptr;
 
 	//ポインタを借りてくる
-	DxCommon* dxCommon_ = nullptr;
-	TextureManager* textureManager_ = nullptr;
+	MagosuyaEngine* magosuya_ = nullptr;
 };

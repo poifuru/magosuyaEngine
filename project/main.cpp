@@ -17,6 +17,7 @@
 #include "magosuya/object/2d/Sprite.h"
 #include "magosuya/utility/camera/DebugCamera.h"
 #include "magosuya/utility/Input/InputManager.h"
+#include "application/scene/SceneManager.h"
 
 //サウンドデータの読み込み関数
 SoundData SoundLoadWave (const char* filename) {
@@ -136,6 +137,12 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	//音声の読み込み
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
 
+	//BGM再生
+	SoundPlayWave (xAudio2.Get (), soundData1);
+
+	std::unique_ptr<SceneManager> sceneManager = std::make_unique<SceneManager> (magosuya.get());
+	sceneManager->Initialize (SceneLabel::Title);
+
 	//平行光源のResourceを作成してデフォルト値を書き込む
 	ComPtr<ID3D12Resource> dierctionalLightResource = magosuya->GetDxCommon ()->CreateBufferResource (sizeof (DirectionalLight));
 	DirectionalLight* directionalLightData = nullptr;
@@ -143,32 +150,9 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	dierctionalLightResource->Map (0, nullptr, reinterpret_cast<void**>(&directionalLightData));
 	//実際に書き込み
 	directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
+	directionalLightData->direction = { -0.75f, -0.75f, 0.75f };
 	directionalLightData->intensity = 1.0f;
 	directionalLightData->mode = Light::halfLambert;
-
-	//Transform
-	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
-
-	//テクスチャの読み込み
-	magosuya->LoadTexture ("Resources/uvChecker.png", "uvChecker");
-	magosuya->LoadTexture ("Resources/monsterBall.png", "monsterBall");
-
-	//BGM再生
-	SoundPlayWave (xAudio2.Get (), soundData1);
-
-	//カメラ用
-	Matrix4x4 cameraMatrix = {};
-	Matrix4x4 viewMatrix = {};
-	Matrix4x4 projectionMatrix = {};
-
-	//デバッグカメラ
-	std::unique_ptr<DebugCamera> debugCamera = std::make_unique<DebugCamera> ();
-	debugCamera->Initialize ();
-	bool debugMode = false;
-
-	//ライティング用の変数
-	float colorLight[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	/*********************************/
 
 	/*メインループ！！！！！！！！！*/
@@ -186,79 +170,16 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::Text ("FPS: %.1f", ImGui::GetIO ().Framerate);
 		ImGui::End ();
 
-		//実際のキー入力処理はここ！
-		// 押した瞬間だけトグル
-		if (g_inputManager->GetRawInput ()->Trigger (VK_TAB)) {
-			if (!debugMode) {
-				debugMode = true;
-			}
-			else {
-				debugMode = false;
-			}
-		}
-
-		//ゲームの処理//
-		//=======オブジェクトの更新処理=======//
-		//カメラ
-		cameraMatrix = MakeAffineMatrix (cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-		viewMatrix = Inverse (cameraMatrix);
-		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientWidth) / float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientHeight), 0.1f, 100.0f);
-		if (!debugMode) {
-			//worldViewProjectionMatrix = Multiply (cameraMatrix, Multiply (viewMatrix, projectionMatrix));
-		}
-		if (!ImGui::GetIO ().WantCaptureMouse) {
-			if (debugMode) {
-				debugCamera->Updata (magosuya->GetDxCommon ()->GetWinAPI ()->GetHwnd (), hr, g_inputManager.get ());
-				viewMatrix = debugCamera->GetViewMatrix ();
-				projectionMatrix = debugCamera->GetProjectionMatrix ();
-			}
-		}
-
 		//光源のdirectionの正規化
 		directionalLightData->direction = Normalize (directionalLightData->direction);
 
-		ImGui::Begin ("カメラモード:TAB");
-		if (debugMode) {
-			ImGui::TextColored (ImVec4 (1, 1, 0, 1), "Current Camera: Debug");
-		}
-		else if (!debugMode) {
-			ImGui::TextColored (ImVec4 (0, 1, 0, 1), "Current Camera: Scene");
-		}
-		ImGui::End ();
+		sceneManager->Update ();
 
-		//ImGuiと変数を結び付ける
-		// 色変更用のUI
-		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };  // 初期値：白
-
-		ImGui::Begin ("setting");
-		if (ImGui::CollapsingHeader ("SceneCamera")) {
-			if (ImGui::Button ("Reset")) {
-				cameraTransform = {
-					{1.0f, 1.0f, 1.0f},
-					{0.0f, 0.0f, 0.0f},
-					{0.0f, 0.0f, -10.0f},
-				};
-			}
-			ImGui::DragFloat3 ("cameraScale", &cameraTransform.scale.x, 0.01f);
-			ImGui::DragFloat3 ("cameraRotate", &cameraTransform.rotate.x, 0.01f);
-			ImGui::DragFloat3 ("cameraTranslate", &cameraTransform.translate.x, 0.01f);
-		}
-		if (ImGui::CollapsingHeader ("light")) {
-			if (ImGui::ColorEdit4 ("color", colorLight)) {
-				// 色が変更されたらmaterialDataに反映
-				directionalLightData->color.x = colorLight[0];
-				directionalLightData->color.y = colorLight[1];
-				directionalLightData->color.z = colorLight[2];
-				directionalLightData->color.w = colorLight[3];
-			}
-			ImGui::DragFloat3 ("lightDirection", &directionalLightData->direction.x, 0.01f);
-			ImGui::DragFloat ("intensity", &directionalLightData->intensity, 0.01f);
-		}
-		ImGui::End ();
-
-		//=======コマンド君達=======//
+		//***描画処理***//
 		//ライティングの設定
 		magosuya->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
+		sceneManager->Draw ();
+		//*************//
 
 		//フレーム終了
 		g_inputManager->EndFrame ();

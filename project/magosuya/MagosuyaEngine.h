@@ -15,8 +15,9 @@ public:		//メンバ関数
 	void EndFrame ();
 	void Finalize ();
 
-#pragma region 便利関数
+#pragma region 関数を呼び出しやすくする
 	void LoadTexture (const std::string& filePath, const std::string& ID);
+	void UnloadTexture (const std::string& filePath);
 	D3D12_GPU_DESCRIPTOR_HANDLE* GetTextureHandle (const std::string& ID);
 #pragma endregion
 

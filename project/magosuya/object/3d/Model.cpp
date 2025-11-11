@@ -1,15 +1,16 @@
 #include "Model.h"
 #include "../../../general/function.h"
 #include "../../../general/Math.h"
+#include "../../MagosuyaEngine.h"
 
-Model::Model (DxCommon* dxCommon, const std::string& directoryPath, const std::string& filename, bool inversion) {
-	dxCommon_ = dxCommon;
+Model::Model (MagosuyaEngine* magosuya, const std::string& directoryPath, const std::string& filename, bool inversion) {
+	magosuya_ = magosuya;
 	model_ = LoadObjFile (directoryPath, filename, inversion);
 
 	//===リソースの初期化===//
 	//頂点データ
 	vertexData_.resize (model_.vertexCount);
-	vertexBuffer_ = dxCommon_->CreateBufferResource (sizeof (VertexData) * model_.vertexCount);
+	vertexBuffer_ = magosuya_->GetDxCommon()->CreateBufferResource (sizeof (VertexData) * model_.vertexCount);
 	vertexBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&vertexDataPtr_));
 	vbView_.BufferLocation = vertexBuffer_->GetGPUVirtualAddress ();
 	vbView_.SizeInBytes = UINT (sizeof (VertexData) * vertexData_.size ());
@@ -23,7 +24,7 @@ Model::Model (DxCommon* dxCommon, const std::string& directoryPath, const std::s
 	//ibView_.Format = DXGI_FORMAT_R32_UINT;
 
 	//行列データ
-	matrixBuffer_ = dxCommon_->CreateBufferResource (sizeof (TransformationMatrix));
+	matrixBuffer_ = magosuya_->GetDxCommon ()->CreateBufferResource (sizeof (TransformationMatrix));
 	matrixBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&matrixData_));
 	matrixData_->World = MakeIdentity4x4 ();
 	matrixData_->WVP = MakeIdentity4x4 ();
@@ -35,7 +36,7 @@ Model::Model (DxCommon* dxCommon, const std::string& directoryPath, const std::s
 	transformationMatrix_.WorldInverseTranspose = MakeIdentity4x4 ();
 
 	//マテリアルデータ
-	materialBuffer_ = dxCommon_->CreateBufferResource (sizeof (Material));
+	materialBuffer_ = magosuya_->GetDxCommon ()->CreateBufferResource (sizeof (Material));
 	materialBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&materialData_));
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData_->enableLighting = true;
@@ -61,11 +62,11 @@ Model::~Model () {
 	}
 }
 
-void Model::Initialize (Vector3 scale, Vector3 rotate, Vector3 position) {
+void Model::Initialize (Transform transform) {
 	transform_ = {
-		scale,
-		rotate,
-		position
+		transform.scale,
+		transform.rotate,
+		transform.translate
 	};
 	uvTransform_ = {
 		{ 1.0f, 1.0f, 1.0f },
@@ -90,16 +91,16 @@ void Model::Update (Matrix4x4* view, Matrix4x4* proj) {
 
 void Model::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
 	//どんな形状で描画するのか
-	dxCommon_->GetCommandList ()->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	magosuya_->GetDxCommon ()->GetCommandList ()->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	//頂点バッファをセットする
-	dxCommon_->GetCommandList ()->IASetVertexBuffers (0, 1, &vbView_);	//VBVを設定
+	magosuya_->GetDxCommon ()->GetCommandList ()->IASetVertexBuffers (0, 1, &vbView_);	//VBVを設定
 	//定数バッファのルートパラメータを設定する	
-	dxCommon_->GetCommandList ()->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
-	dxCommon_->GetCommandList ()->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
+	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
+	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
 	//テクスチャのSRVを設定
-	dxCommon_->GetCommandList ()->SetGraphicsRootDescriptorTable (2, textureHandle);
+	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootDescriptorTable (2, textureHandle);
 	//実際に描画する(後々Index描画に変える)
-	dxCommon_->GetCommandList ()->DrawInstanced (static_cast<UINT>(model_.vertexCount), 1, 0, 0);
+	magosuya_->GetDxCommon ()->GetCommandList ()->DrawInstanced (static_cast<UINT>(model_.vertexCount), 1, 0, 0);
 }
 
 void Model::ImGui () {

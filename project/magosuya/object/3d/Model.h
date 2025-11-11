@@ -4,7 +4,8 @@
 #include <d3d12.h>
 #include <wrl.h>
 using namespace Microsoft::WRL;
-#include "../../../magosuya/engine/engineCore/DxCommon.h"
+
+class MagosuyaEngine;
 
 class Model {
 public:	//メンバ関数
@@ -14,7 +15,7 @@ public:	//メンバ関数
 	/// </summary>
 	/// <param name="directoryPath">3Dモデルファイルが存在するディレクトリのパス。</param>
 	/// <param name="filename">読み込む3Dモデルのファイル名。</param>
-	Model (DxCommon* dxCommon, const std::string& directoryPath, const std::string& filename, bool inversion = false);
+	Model (MagosuyaEngine* magosuya, const std::string& directoryPath, const std::string& filename, bool inversion = false);
 
 	~Model ();
 
@@ -24,7 +25,7 @@ public:	//メンバ関数
 	/// <param name="scale">大きさ</param>
 	/// <param name="rotate">回転</param>
 	/// <param name="position">位置</param>
-	void Initialize (Vector3 scale = { 1.0f, 1.0f, 1.0f }, Vector3 rotate = { 0.0f, 0.0f, 0.0f }, Vector3 position = { 0.0f, 0.0f, 0.0f });
+	void Initialize (Transform transform = { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
 	
 	/// <summary>
 	/// 更新処理
@@ -48,7 +49,8 @@ public:	//メンバ関数
 
 	//アクセッサ
 	ModelData GetModelData () { return model_; }
-	void SetPositon (Vector3 pos) { transform_.translate = pos; }
+	Transform GetTransform () { return transform_; }
+	void SetTransform (const Transform& transform) { transform_ = transform; }
 
 private:		//メンバ変数
 	//モデルデータ
@@ -81,6 +83,6 @@ private:		//メンバ変数
 	//ImGuiで色をいじる変数
 	float color_[4];
 
-	//ポインタを持たせておく
-	DxCommon* dxCommon_ = nullptr;
+	//ポインタを借りる
+	MagosuyaEngine* magosuya_ = nullptr;
 };

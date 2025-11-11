@@ -163,6 +163,14 @@ struct TransformationMatrix {
 	Matrix4x4 WorldInverseTranspose;
 };
 
+//カメラの構造体
+struct CameraData {
+	Transform transform;
+	Matrix4x4 World;
+	Matrix4x4 View;
+	Matrix4x4 Proj;
+};
+
 //テクスチャデータ構造体
 struct TextureData {
 	//テクスチャリソースハンドル

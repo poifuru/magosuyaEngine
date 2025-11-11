@@ -5,12 +5,11 @@ using namespace Microsoft::WRL;
 #include "../../../general/struct.h"
 
 //前方宣言
-class DxCommon;
-class TextureManager;
+class MagosuyaEngine;
 
 class SpriteRenderer {
 public:		//外部公開メソッド
-	SpriteRenderer (DxCommon* dxCommon, TextureManager* textureManager);
+	SpriteRenderer (MagosuyaEngine* magosuya);
 	~SpriteRenderer ();
 
 	void Initialize ();
@@ -51,7 +50,6 @@ private:	//メンバ変数
 	float color_[4];
 
 	//ポインタを借りる
-	DxCommon* dxCommon_ = nullptr;
-	TextureManager* textureManager_ = nullptr;
+	MagosuyaEngine* magosuya_ = nullptr;
 };
 

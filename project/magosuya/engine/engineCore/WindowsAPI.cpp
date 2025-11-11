@@ -55,7 +55,7 @@ void WindowsAPI::Initialize () {
 	//ウィンドウを生成
 	hwnd_ = CreateWindow (
 		windowClass_.lpszClassName,	//利用するクラス名
-		L"CG2",						//タイトルバーの文字
+		L"タタタタイトル",						//タイトルバーの文字
 		WS_OVERLAPPEDWINDOW,		//よく見るウィンドウスタイル
 		CW_USEDEFAULT,				//表示x座標(Windowsに任せる)
 		CW_USEDEFAULT,				//表示y座標(WindowsOSに任せる)
