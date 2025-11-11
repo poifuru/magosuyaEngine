@@ -1,6 +1,9 @@
 #pragma once
 #include <memory>
 
+class InputManager;
+extern std::unique_ptr<InputManager> g_inputManager;
+
 //シーンのラベル
 enum class SceneLabel {
 	Title,

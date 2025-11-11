@@ -15,7 +15,10 @@ public:		//メンバ関数
 	void Update () override;
 	void Draw () override;
 
-	//アクセッサ
+private:
+	void Collision ();
+
+public:		//アクセッサ
 	CameraData* GetCamera () { return cameraData_; }
 
 private:	//メンバ変数
@@ -28,6 +31,7 @@ private:	//メンバ変数
 
 	//地面
 	std::unique_ptr<Sprite> ground_ = nullptr;
+	std::unique_ptr<Sprite> info_ = nullptr;
 	//ポインタ貸し出し
 	MagosuyaEngine* magosuya_ = nullptr;
 };

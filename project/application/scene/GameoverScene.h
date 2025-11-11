@@ -17,7 +17,7 @@ public:		//メンバ関数
 	void Draw () override;
 
 private:	//メンバ変数
-	//std::unique_ptr<Sprite> title_ = nullptr;
+	std::unique_ptr<Sprite> gameover_ = nullptr;
 
 	//ポインタ貸し出し
 	MagosuyaEngine* magosuya_ = nullptr;

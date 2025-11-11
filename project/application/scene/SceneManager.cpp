@@ -7,6 +7,7 @@ SceneManager::SceneManager (MagosuyaEngine* magosuya) {
 	titleScene_ = std::make_unique<TitleScene> (magosuya);
 	playScene_ = std::make_unique<PlayScene> (magosuya);
 	clearScene_ = std::make_unique<ClearScene> (magosuya);
+	gameoverScene_ = std::make_unique<GameoverScene> (magosuya);
 	currentScene_ = titleScene_.get();
 }
 
@@ -28,6 +29,10 @@ void SceneManager::Initialize (SceneLabel scene) {
 	case SceneLabel::Clear:
 		currentScene_ = clearScene_.get ();
 		break;
+
+	case SceneLabel::Gameover:
+		currentScene_ = gameoverScene_.get ();
+			break;
 	}
 	currentScene_->Initialize ();
 }
@@ -48,11 +53,13 @@ void SceneManager::Update () {
 		case SceneLabel::Clear:
 			currentScene_ = clearScene_.get ();
 			break;
+
+		case SceneLabel::Gameover:
+			currentScene_ = gameoverScene_.get ();
+			break;
 		}
 		currentScene_->Initialize ();
 	}
-
-	ImGui::Text ("nowScene : %d", currentScene_->GetNowScene ());
 }
 
 void SceneManager::Draw () {

@@ -4,8 +4,6 @@
 #include "../../magosuya/object/2d/Sprite.h"
 
 class MagosuyaEngine;
-class InputManager;
-extern std::unique_ptr<InputManager> g_inputManager;
 
 class TitleScene : public Scene {
 public:		//メンバ関数

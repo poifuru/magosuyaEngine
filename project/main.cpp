@@ -166,9 +166,11 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		//フレーム開始
 		magosuya->BeginFrame ();
 		//FPS表示
+#if defined (Debug) || (Development)
 		ImGui::Begin ("Debug Window");
 		ImGui::Text ("FPS: %.1f", ImGui::GetIO ().Framerate);
 		ImGui::End ();
+#endif // _DEBUG
 
 		//光源のdirectionの正規化
 		directionalLightData->direction = Normalize (directionalLightData->direction);

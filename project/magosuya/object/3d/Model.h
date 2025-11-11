@@ -51,8 +51,9 @@ public:	//メンバ関数
 	ModelData GetModelData () { return model_; }
 	Transform GetTransform () { return transform_; }
 	void SetTransform (const Transform& transform) { transform_ = transform; }
+	void SetColor (const Vector4& color) { materialData_->color = color; }
 
-private:		//メンバ変数
+private:	//メンバ変数
 	//モデルデータ
 	ModelData model_;
 

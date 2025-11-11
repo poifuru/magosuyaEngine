@@ -182,10 +182,10 @@ void DxCommon::Initialize () {
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	//Shaderをコンパイルする
-	vertexShaderBlob = CompilerShader (L"magosuya/engine/shader/Object3d.VS.hlsl", L"vs_6_0", logStream);
+	vertexShaderBlob = CompilerShader (L"Resources/shader/Object3d.VS.hlsl", L"vs_6_0", logStream);
 	assert (vertexShaderBlob != nullptr);
 
-	pixelShaderBlob = CompilerShader (L"magosuya/engine/shader/Object3d.PS.hlsl", L"ps_6_0", logStream);
+	pixelShaderBlob = CompilerShader (L"Resources/shader/Object3d.PS.hlsl", L"ps_6_0", logStream);
 	assert (pixelShaderBlob != nullptr);
 
 	//*****実際にPSOを生成する*****//

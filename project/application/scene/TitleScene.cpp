@@ -6,6 +6,7 @@
 
 TitleScene::TitleScene (MagosuyaEngine* magosuya) {
 	magosuya_ = magosuya;
+	title_ = std::make_unique<Sprite> (magosuya_);
 }
 
 TitleScene::~TitleScene () {
@@ -19,7 +20,6 @@ void TitleScene::Initialize () {
 
 	nowScene_ = SceneLabel::Title;
 	isFinish_ = false;
-	title_ = std::make_unique<Sprite> (magosuya_);
 	title_->SetID ("title");
 	title_->Initialize ({ 0.0f, 0.0f, 0.0f });
 	title_->SetTexture (magosuya_->GetTextureHandle ("title"));
