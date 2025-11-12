@@ -3,7 +3,7 @@
 #include <DirectXTex.h>
 #include "MathFunction.h"
 #include "engine/engineCore/DxCommon.h"
-#include "utility/resouceManager/TextureManager.h"
+#include "utility/manager/TextureManager.h"
 
 SpriteRenderer::SpriteRenderer (DxCommon* dxCommon, TextureManager* textureManager) {
 	dxCommon_ = dxCommon;

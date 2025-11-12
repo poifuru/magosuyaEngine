@@ -142,10 +142,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::unique_ptr<Model> plane = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/plane", "plane", false);
 #pragma endregion
 
-#pragma region bunny
-	std::unique_ptr<Model> bunny = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/bunny", "bunny", false);
-#pragma endregion
-
 #pragma region Teapot
 	std::unique_ptr<Model> teapot = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/teapot", "teapot", false);
 #pragma endregion
@@ -161,13 +157,12 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	dierctionalLightResource->Map (0, nullptr, reinterpret_cast<void**>(&directionalLightData));
 	//実際に書き込み
 	directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
+	directionalLightData->direction = { 0.0f, 0.0f, 1.0f };
 	directionalLightData->intensity = 1.0f;
 	directionalLightData->mode = Light::halfLambert;
 
 	//Transform
 	Transform transform{ {1.0f, 1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
-	Transform transformModel{ {1.0f, 1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 	Transform transformTeapot{ {1.0f, 1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
 	Transform transformSprite{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
@@ -178,11 +173,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0.0f, 0.0f, 0.0f},
 		{0.0f, 0.0f, 0.0f},
 	};
-
-	//DescriptorSizeを取得しておく
-	const uint32_t descriptorSizeSRV = magosuya->GetDxCommon ()->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	const uint32_t descriptorSizeRTV = magosuya->GetDxCommon ()->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	const uint32_t descriptorSizeDSV = magosuya->GetDxCommon ()->GetDevice ()->GetDescriptorHandleIncrementSize (D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	//テクスチャの読み込み
 	magosuya->LoadTexture ("Resources/uvChecker.png", "uvChecker");
@@ -202,7 +192,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	sphere->Initialize ({ 0.0f, 0.0f, 0.0f }, 1.0f);
 
 	plane->Initialize ();
-	bunny->Initialize ();
 	teapot->Initialize ();
 	Fence->Initialize ();
 
@@ -224,8 +213,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool useSphere = false;
 	//ぷれーん
 	bool usePlane = true;
-	//うさぎ
-	bool useModel = false;
 	//てぃーぽっと
 	bool useTeapot = false;
 
@@ -282,10 +269,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (ImGui::CollapsingHeader ("plane")) {
 			ImGui::Checkbox ("Draw##plane", &usePlane);
 			plane->ImGui ();
-		}
-		if (ImGui::CollapsingHeader ("Model")) {
-			ImGui::Checkbox ("Draw##Model", &useModel);
-			bunny->ImGui ();
 		}
 		if (ImGui::CollapsingHeader ("teapod")) {
 			ImGui::Checkbox ("Draw##teapod", &useTeapot);
@@ -344,8 +327,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		plane->Update (&viewMatrix, &projectionMatrix);
 		plane->SetPositon (pos);
 
-		bunny->Update (&viewMatrix, &projectionMatrix);
-
 		teapot->Update (&viewMatrix, &projectionMatrix);
 
 		Fence->Update (&viewMatrix, &projectionMatrix);
@@ -371,9 +352,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		if (usePlane) {
 			plane->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
-		}
-		if (useModel) {
-			bunny->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
 		}
 		if (useTeapot) {
 			teapot->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));

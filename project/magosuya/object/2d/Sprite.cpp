@@ -2,7 +2,7 @@
 #include <DirectXTex.h>
 #include "function.h"
 #include "MathFunction.h"
-#include "utility/resouceManager/TextureManager.h"
+#include "utility/manager/TextureManager.h"
 
 Sprite::Sprite (DxCommon* dxCommon, TextureManager* textureManager) {
 	dxCommon_ = dxCommon;

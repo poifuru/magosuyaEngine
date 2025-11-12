@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 #include "engine/engineCore/DxCommon.h"
-#include "utility/resouceManager/TextureManager.h"
+#include "utility/manager/TextureManager.h"
 #include "utility/ImGuiManager.h"
 
 class MagosuyaEngine {
