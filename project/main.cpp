@@ -260,14 +260,6 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		else if (!debugMode) {
 			ImGui::TextColored (ImVec4 (0, 1, 0, 1), "Current Camera: Scene");
 		}
-
-		if (!ImGui::GetIO ().WantCaptureMouse) {
-			if (debugMode) {
-				debugCamera->Updata (magosuya->GetDxCommon ()->GetWinAPI ()->GetHwnd (), hr, g_inputManager.get ());
-				viewMatrix = debugCamera->GetViewMatrix ();
-				projectionMatrix = debugCamera->GetProjectionMatrix ();
-			}
-		}
 		ImGui::End ();
 
 		ImGui::Begin ("setting");
@@ -340,6 +332,13 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		cameraMatrix = MakeAffineMatrix (cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 		viewMatrix = Inverse (cameraMatrix);
 		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientWidth) / float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientHeight), 0.1f, 100.0f);
+		if (!ImGui::GetIO ().WantCaptureMouse) {
+			if (debugMode) {
+				debugCamera->Updata (magosuya->GetDxCommon ()->GetWinAPI ()->GetHwnd (), hr, g_inputManager.get ());
+				viewMatrix = debugCamera->GetViewMatrix ();
+				projectionMatrix = debugCamera->GetProjectionMatrix ();
+			}
+		}
 
 		//オブジェクト
 		plane->Update (&viewMatrix, &projectionMatrix);
