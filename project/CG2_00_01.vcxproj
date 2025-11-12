@@ -70,7 +70,7 @@
     <IncludePath>$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)..\generated\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\generated\$(Configuration)\1_Game\</OutDir>
     <IntDir>$(SolutionDir)..\generated\outputs\$(ProjectName)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
@@ -118,14 +118,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)externals\imgui\lib\$(Configuration);$(SolutionDir)externals\DirectXTex\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>imgui.lib;DirectXTex.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)externals\DirectXTex\lib\$(Configuration);$(SolutionDir)externals\imgui\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTex.lib;imgui.lib</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"
 copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dxil.dll"
-xcopy /E /I /Y "$(SolutionDir)Resources\" "$(TargetDir)Resources\"</Command>
+xcopy /E /I /Y "$(SolutionDir)Resources\" "$(TargetDir)Resources\"
+echo "MaoSuya Engine Builded"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Development|x64'">

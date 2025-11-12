@@ -1,6 +1,6 @@
 #pragma once
 #include <Windows.h>
-#include "../../../general/struct.h"
+#include "struct.h"
 #include <d3d12.h>
 #include <d3d12sdklayers.h>
 #pragma comment(lib, "d3d12.lib")

@@ -24,8 +24,8 @@ LRESULT WindowsAPI::WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 		return 0;
 	}
 
-	if (msg != WM_INPUT) {
-		ImGui_ImplWin32_WndProcHandler (hwnd, msg, wparam, lparam);
+	if (ImGui_ImplWin32_WndProcHandler (hwnd, msg, wparam, lparam)) {
+		return true;
 	}
 
 	//標準のメッセージ処理を行う
