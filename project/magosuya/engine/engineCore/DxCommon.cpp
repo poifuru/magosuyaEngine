@@ -6,14 +6,14 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxcompiler.lib")
 
+#include <imgui_impl_dx12.h>
+#include <imgui_impl_win32.h>
 #include <filesystem>
 #include <cassert>
 #include <thread>
-#include "../../../general/function.h"
-#include "../../../general/Logger.h"
-#include "../../../general/String.h"
-#include "../../../externals/imgui/imgui_impl_dx12.h"
-#include "../../../externals/imgui/imgui_impl_win32.h"
+#include "function.h"
+#include "Logger.h"
+#include "ChangeString.h"
 
 DxCommon::DxCommon () {
 	Initialize ();
@@ -182,10 +182,10 @@ void DxCommon::Initialize () {
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	//Shaderをコンパイルする
-	vertexShaderBlob = CompilerShader (L"magosuya/engine/shader/Object3d.VS.hlsl", L"vs_6_0", logStream);
+	vertexShaderBlob = CompilerShader (L"Resources/shader/Object3d.VS.hlsl", L"vs_6_0", logStream);
 	assert (vertexShaderBlob != nullptr);
 
-	pixelShaderBlob = CompilerShader (L"magosuya/engine/shader/Object3d.PS.hlsl", L"ps_6_0", logStream);
+	pixelShaderBlob = CompilerShader (L"Resources/shader/Object3d.PS.hlsl", L"ps_6_0", logStream);
 	assert (pixelShaderBlob != nullptr);
 
 	//*****実際にPSOを生成する*****//

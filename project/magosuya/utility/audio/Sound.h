@@ -2,13 +2,10 @@
 #include <xaudio2.h>
 #pragma comment(lib, "xaudio2.h")
 #include <fstream>
-#include "../utility/ComPtr.h"
 
 class Sound{
-public: //メンバ関数
-	void 
+public: //メンバ関数 
 
 private://メンバ変数
-	ComPtr<IXAudio2> xAudio2_;
 	IXAudio2MasteringVoice* masterVoice_;
 };

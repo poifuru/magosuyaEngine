@@ -12,8 +12,8 @@ using namespace Microsoft::WRL;
 #include <dinput.h>
 #pragma	comment(lib, "dinput8.lib")
 #pragma	comment(lib, "dxguid.lib")
-#include "../../../general/Math.h"
-#include "../Input/InputManager.h"
+#include "MathFunction.h"
+#include "utility/Input/InputManager.h"
 
 class DebugCamera{
 public:	//メンバ関数

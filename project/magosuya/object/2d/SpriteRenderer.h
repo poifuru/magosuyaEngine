@@ -2,7 +2,7 @@
 #include <d3d12.h>
 #include <Wrl.h>
 using namespace Microsoft::WRL;
-#include "../../../general/struct.h"
+#include "struct.h"
 
 //前方宣言
 class DxCommon;

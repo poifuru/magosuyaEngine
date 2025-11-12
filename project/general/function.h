@@ -7,7 +7,6 @@ using namespace Microsoft::WRL;
 #include <strsafe.h>
 #include <DbgHelp.h>
 #include <memory>
-#include "../externals.h"
 #include "struct.h"
 
 //クラッシュハンドルを登録するための関数

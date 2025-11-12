@@ -1,8 +1,8 @@
 #include "TextureManager.h"
+#include <d3dx12.h>
+#include <DirectXTex.h>
 #include <filesystem>
-#include "../../../general/String.h"
-#include "../../../externals/DirectXTex/DirectXTex.h"
-#include "../../../externals/DirectXTex/d3dx12.h"
+#include "ChangeString.h"
 
 UINT TextureManager::nextDescriptorIndex_ = 1;
 

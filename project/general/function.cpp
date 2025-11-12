@@ -1,6 +1,4 @@
 #include "function.h"
-#include "Logger.h"
-#include "String.h"
 #pragma comment(lib, "Shlwapi.lib")
 #pragma comment(lib, "Dbghelp.lib")
 #include <format>
@@ -8,6 +6,8 @@
 #include <iostream>
 #include <chrono>
 #include <filesystem>
+#include "Logger.h"
+#include "String.h"
 
 //クラッシュハンドルを登録するための関数
 LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {

@@ -1,8 +1,4 @@
 #include <Windows.h>
-#include "magosuya/MagosuyaEngine.h"
-#include "general/function.h"
-#include "general/Math.h"
-#include "general/struct.h"
 #include <format>// C++20のformat() 文字列整形
 #include <chrono>	//時間を扱うライブラリ
 #include <sstream>// stringstream
@@ -12,11 +8,16 @@
 #pragma comment(lib,"xaudio2.lib")
 #include <Xinput.h>
 #pragma comment(lib, "xinput.lib")
-#include "magosuya/object/3d/Model.h"
-#include "magosuya/object/3d/SphereModel.h"
-#include "magosuya/object/2d/Sprite.h"
-#include "magosuya/utility/camera/DebugCamera.h"
-#include "magosuya/utility/Input/InputManager.h"
+#include <imgui.h>
+#include "MagosuyaEngine.h"
+#include "function.h"
+#include "MathFunction.h"
+#include "struct.h"
+#include "object/3d/Model.h"
+#include "object/3d/SphereModel.h"
+#include "object/2d/Sprite.h"
+#include "utility/camera/DebugCamera.h"
+#include "utility/Input/InputManager.h"
 
 //サウンドデータの読み込み関数
 SoundData SoundLoadWave (const char* filename) {

@@ -1,8 +1,9 @@
 #include "SphereModel.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include "../../../general/function.h"
-#include "../../../general/Math.h"
+#include <imgui.h>
+#include "function.h"
+#include "MathFunction.h"
 
 SphereModel::SphereModel (DxCommon* dxCommon, int subdivision) {
 	dxCommon_ = dxCommon;

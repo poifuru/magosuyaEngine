@@ -7,7 +7,7 @@ using namespace Microsoft::WRL;
 #include <string>
 #include <fstream>
 #include <Mmreg.h>
-#include "../externals/DirectXTex/DirectXTex.h"
+#include "DirectXTex.h"
 
 //Vector2構造体
 struct Vector2 {

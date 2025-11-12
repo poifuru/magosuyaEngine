@@ -11,8 +11,8 @@ using namespace Microsoft::WRL;
 #include <chrono>
 #include "WindowsAPI.h"
 #include "LeakChecker.h"
-#include "../../utility/input/InputManager.h"
-#include "../../../externals/DirectXTex/DirectXTex.h"
+#include "utility/input/InputManager.h"
+#include <DirectXTex.h>
 
 //BlendStateの個数
 const int kBlendDescNum = 6;

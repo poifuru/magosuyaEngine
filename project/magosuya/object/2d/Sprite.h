@@ -4,7 +4,7 @@
 using namespace Microsoft::WRL;
 #include <memory>
 #include "SpriteRenderer.h"
-#include "../../../general/struct.h"
+#include "struct.h"
 
 //前方宣言
 class DxCommon; 

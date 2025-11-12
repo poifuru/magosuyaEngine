@@ -1,6 +1,6 @@
 #include "RawInput.h"
-#include "../../../general/function.h"
 #include <hidusage.h>
+#include "function.h"
 
 void RawInput::Initialize (HWND hwnd) {
     OutputDebugStringA ("RawInput 登録\n");

@@ -1,8 +1,10 @@
 #include "WindowsAPI.h"
 #pragma comment (lib, "winmm.lib")
-#include "../../../general/function.h"
-#include "../../utility/Input/InputManager.h"
-#include "../../../externals.h"
+#include "imgui_impl_win32.h"
+#include "function.h"
+#include "utility/Input/InputManager.h"
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT WindowsAPI::WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	//メッセージに応じてゲーム固有の処理を行う

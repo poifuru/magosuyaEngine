@@ -1,4 +1,4 @@
-#include "String.h"
+#include "ChangeString.h"
 
 namespace String {
 	//DirectX12が返してくる文字列を必要に応じて型変換してあげる

@@ -1,4 +1,4 @@
-#include "Math.h"
+#include "MathFunction.h"
 //#include <Novice.h>
 #include <cmath>
 #define _USE_MATH_DEFINES

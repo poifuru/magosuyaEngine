@@ -1,8 +1,8 @@
 #include "Sprite.h"
-#include "../../../general/function.h"
-#include "../../../general/Math.h"
-#include "../../utility/resouceManager/TextureManager.h"
-#include "../../../externals/DirectXTex/DirectXTex.h"
+#include <DirectXTex.h>
+#include "function.h"
+#include "MathFunction.h"
+#include "utility/resouceManager/TextureManager.h"
 
 Sprite::Sprite (DxCommon* dxCommon, TextureManager* textureManager) {
 	dxCommon_ = dxCommon;

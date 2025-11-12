@@ -1,6 +1,7 @@
 #include "Model.h"
-#include "../../../general/function.h"
-#include "../../../general/Math.h"
+#include <imgui.h>
+#include "function.h"
+#include "MathFunction.h"
 
 Model::Model (DxCommon* dxCommon, const std::string& directoryPath, const std::string& filename, bool inversion) {
 	dxCommon_ = dxCommon;

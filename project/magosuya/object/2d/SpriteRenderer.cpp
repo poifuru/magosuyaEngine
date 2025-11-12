@@ -1,9 +1,9 @@
 #include "SpriteRenderer.h"
-#include "../../../general/Math.h"
-#include "../../../externals/imgui/imgui.h"
-#include "../../engine/engineCore/DxCommon.h"
-#include "../../utility/resouceManager/TextureManager.h"
-#include "../../../externals/DirectXTex/DirectXTex.h"
+#include <imgui.h>
+#include <DirectXTex.h>
+#include "MathFunction.h"
+#include "engine/engineCore/DxCommon.h"
+#include "utility/resouceManager/TextureManager.h"
 
 SpriteRenderer::SpriteRenderer (DxCommon* dxCommon, TextureManager* textureManager) {
 	dxCommon_ = dxCommon;
