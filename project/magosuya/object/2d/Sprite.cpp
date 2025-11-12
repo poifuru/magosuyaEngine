@@ -1,22 +1,23 @@
 #include "Sprite.h"
 #include <DirectXTex.h>
 #include "function.h"
-#include "MathFunction.h"
-#include "utility/resouceManager/TextureManager.h"
+#include "mathFunction.h"
+#include "MagosuyaEngine.h"
 
-Sprite::Sprite (DxCommon* dxCommon, TextureManager* textureManager) {
-	dxCommon_ = dxCommon;
-	textureManager_ = textureManager;
-	renderer_ = std::make_unique<SpriteRenderer> (dxCommon, textureManager);
+
+Sprite::Sprite (MagosuyaEngine* magosuya) {
+	magosuya_ = magosuya;
+	renderer_ = std::make_unique<SpriteRenderer> (magosuya);
 }
 
 Sprite::~Sprite () {
 }
 
-void Sprite::Initialize (Vector3 position, Vector2 size) {
+void Sprite::Initialize (Vector3 position) {
+	AdjustTextureSize ();
 	//transformの初期化
-	transformData_.transform.scale = { size.x, size.y, 1.0f };
-	transformData_.transform.rotate = {0.0f, 0.0f, rotation_};
+	transformData_.transform.scale = { size_.x, size_.y, 1.0f };
+	transformData_.transform.rotate = { 0.0f, 0.0f, rotation_ };
 	transformData_.transform.translate = position;
 
 	//uvTransformの初期化
@@ -26,9 +27,6 @@ void Sprite::Initialize (Vector3 position, Vector2 size) {
 
 	//wvpMatrixの初期化
 	transformData_.wvpMatrix = MakeIdentity4x4 ();
-
-	size_ = size;
-	AdjustTextureSize ();
 
 	renderer_->Initialize ();
 }
@@ -47,7 +45,8 @@ void Sprite::MakewvpMatrix () {
 void Sprite::Update () {
 	MakewvpMatrix ();
 	renderer_->Update (transformData_.wvpMatrix, transformData_.uvTransform,
-					   anchorPoint_, isFlipX_, isFlipY_, id_, textureLeftTop_, textureSize_);
+					   anchorPoint_, isFlipX_, isFlipY_, id_, textureLeftTop_, textureSize_
+	);
 }
 
 void Sprite::Draw () {
@@ -59,7 +58,7 @@ void Sprite::ImGui () {
 }
 
 void Sprite::AdjustTextureSize () {
-	const DirectX::TexMetadata& metadata = textureManager_->GetMetaData (id_);
+	const DirectX::TexMetadata& metadata = magosuya_->GetTextureManger ()->GetMetaData (id_);
 
 	textureSize_.x = static_cast<float>(metadata.width);
 	textureSize_.y = static_cast<float>(metadata.height);

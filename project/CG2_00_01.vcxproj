@@ -160,6 +160,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="application\enemy\Enemy.cpp" />
+    <ClCompile Include="application\scene\ClearScene.cpp" />
+    <ClCompile Include="application\scene\GameoverScene.cpp" />
     <ClCompile Include="general\Logger.cpp" />
     <ClCompile Include="general\ChangeString.cpp" />
     <ClCompile Include="magosuya\utility\ImGuiManager.cpp" />
@@ -204,6 +207,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="magosuya\engine\engineCore\WindowsAPI.cpp" />
     <ClCompile Include="magosuya\utility\resouceManager\TextureManager.cpp" />
     <ClCompile Include="magosuya\object\2d\SpriteRenderer.cpp" />
+    <ClCompile Include="application\player\Player.cpp" />
+    <ClCompile Include="application\scene\SceneManager.cpp" />
+    <ClCompile Include="application\scene\TitleScene.cpp" />
+    <ClCompile Include="application\scene\PlayScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shader\Object3d.PS.hlsl">
@@ -224,7 +231,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="application\enemy\Enemy.h" />
+    <ClInclude Include="application\scene\Scene.h" />
+    <ClInclude Include="application\scene\ClearScene.h" />
     <ClInclude Include="externals\externals.h" />
+    <ClInclude Include="application\scene\GameoverScene.h" />
     <ClInclude Include="general\Logger.h" />
     <ClInclude Include="general\ChangeString.h" />
     <ClInclude Include="magosuya\utility\ImGuiManager.h" />
@@ -271,6 +282,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="magosuya\engine\engineCore\WindowsAPI.h" />
     <ClInclude Include="magosuya\utility\resouceManager\TextureManager.h" />
     <ClInclude Include="magosuya\object\2d\SpriteRenderer.h" />
+    <ClInclude Include="application\player\Player.h" />
+    <ClInclude Include="application\scene\SceneManager.h" />
+    <ClInclude Include="application\scene\TitleScene.h" />
+    <ClInclude Include="application\scene\PlayScene.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

@@ -1,24 +1,24 @@
+
 #pragma once    
 #include <d3d12.h>  
 #include <wrl.h>  
 using namespace Microsoft::WRL;
 #include <memory>
 #include "SpriteRenderer.h"
-#include "struct.h"
+#include "../../../general/struct.h"
 
 //前方宣言
-class DxCommon; 
-class TextureManager;
+class MagosuyaEngine;
 
-class Sprite {  
-	public:		//メンバ関数  
-	Sprite (DxCommon* dxCommon, TextureManager* textureManager);
+class Sprite {
+public:		//メンバ関数  
+	Sprite (MagosuyaEngine* magosuya);
 	~Sprite ();
 
-	void Initialize (Vector3 position, Vector2 size);
+	void Initialize (Vector3 position);
 	void SetTexture (D3D12_GPU_DESCRIPTOR_HANDLE* handle);
 	void MakewvpMatrix ();
-	void Update (); 
+	void Update ();
 	void Draw ();
 	void ImGui ();
 
@@ -82,6 +82,5 @@ private:	//メンバ変数
 	std::unique_ptr<SpriteRenderer> renderer_ = nullptr;
 
 	//ポインタを借りてくる
-	DxCommon* dxCommon_ = nullptr;
-	TextureManager* textureManager_ = nullptr;
+	MagosuyaEngine* magosuya_ = nullptr;
 };
