@@ -119,7 +119,7 @@ void SoundPlayWave (IXAudio2* xAudio2, const SoundData& soundData) {
 std::unique_ptr<InputManager> g_inputManager = nullptr;
 
 // Windowsアプリでのエントリーポイント(main関数)
-int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
 	std::unique_ptr<MagosuyaEngine> magosuya = std::make_unique<MagosuyaEngine> ();
 	magosuya->Initialize ();
 
@@ -182,7 +182,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	SoundPlayWave (xAudio2.Get (), soundData1);
 
 	//スプライト
-	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (magosuya->GetDxCommon (), magosuya->GetTextureManger());
+	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (magosuya.get());
 	sprite->SetID ("uvChecker");
 	sprite->Initialize ({ 640.0f, 360.0f, 0.0f }, { 100.0f, 100.0f });
 	sprite->SetAnchorPoint ({ 0.5f, 0.5f });
@@ -248,6 +248,12 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::TextColored (ImVec4 (0, 1, 0, 1), "Current Camera: Scene");
 		}
 		ImGui::End ();
+		if (!ImGui::GetIO ().WantCaptureMouse) {
+			debugCamera->SetTatchImGui (false);
+		}
+		else {
+			debugCamera->SetTatchImGui (true);
+		}
 
 		ImGui::Begin ("setting");
 		if (ImGui::CollapsingHeader ("SceneCamera")) {
@@ -315,12 +321,11 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		cameraMatrix = MakeAffineMatrix (cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 		viewMatrix = Inverse (cameraMatrix);
 		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientWidth) / float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientHeight), 0.1f, 100.0f);
-		if (!ImGui::GetIO ().WantCaptureMouse) {
-			if (debugMode) {
-				debugCamera->Updata (magosuya->GetDxCommon ()->GetWinAPI ()->GetHwnd (), hr, g_inputManager.get ());
-				viewMatrix = debugCamera->GetViewMatrix ();
-				projectionMatrix = debugCamera->GetProjectionMatrix ();
-			}
+
+		if (debugMode && !debugCamera->GetTatchImGui()) {
+			debugCamera->Updata (magosuya->GetDxCommon ()->GetWinAPI ()->GetHwnd (), hr, g_inputManager.get ());
+			viewMatrix = debugCamera->GetViewMatrix ();
+			projectionMatrix = debugCamera->GetProjectionMatrix ();
 		}
 
 		//オブジェクト
@@ -348,13 +353,13 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
 		//Fence->Draw (*magosuya->GetTextureManger()->GetTextureHandle("uvChecker"));
 		if (useSphere) {
-			sphere->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
+			sphere->Draw (magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
 		}
 		if (usePlane) {
-			plane->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
+			plane->Draw (magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
 		}
 		if (useTeapot) {
-			teapot->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
+			teapot->Draw (magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
 		}
 		if (useSprite) {
 			sprite->Draw ();

@@ -170,9 +170,9 @@ struct TextureData {
 	//テクスチャリソース
 	ComPtr<ID3D12Resource> textureResource = nullptr;
 	//メタデータ
-	DirectX::TexMetadata metadata;
+	DirectX::TexMetadata metadata = {};
 	//どのディスクリプタヒープを使ったか
-	UINT descriptorIndex;
+	UINT descriptorIndex = 0;
 	//参照カウント
 	int ref_count = 0;
 };

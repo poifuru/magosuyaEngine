@@ -98,14 +98,10 @@ TextureData* TextureManager::LoadTexture (const std::string& filePath, const std
 	return &textureMap_.at (ID);
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE* TextureManager::GetTextureHandle (const std::string& ID) {
+D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetTextureHandle (const std::string& ID) {
 	//ファイルパスを指定してmapから持ってくる
-	if (textureMap_.count (ID)) {
-		return &textureMap_.at (ID).handle;
-	}
-
-	//存在しなかったらエラー処理
-	return nullptr;
+	assert (textureMap_.count (ID));
+	return textureMap_.at (ID).handle;
 }
 
 void TextureManager::UnloadTexture (const std::string& filePath) {

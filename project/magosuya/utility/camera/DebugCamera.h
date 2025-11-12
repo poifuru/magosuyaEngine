@@ -30,6 +30,8 @@ public:	//メンバ関数
 	Matrix4x4 GetWorldMatrix () { return worldMatrix_; }
 	Matrix4x4 GetViewMatrix () { return viewMatrix_; }
 	Matrix4x4 GetProjectionMatrix () { return projectionMatrix_; }
+	bool GetTatchImGui () { return tatchImGui_; }
+	void SetTatchImGui (bool flag) { tatchImGui_ = flag; }
 
 private:	//メンバ変数
 	Transform transform_;
@@ -53,5 +55,7 @@ private:	//メンバ変数
 	//ドラッグで視点を変える
 	float sensitivity_;	//ドラッグの感度
 	float pitchOver_;	//上を向きすぎるのを防止する
+
+	bool tatchImGui_ = false;	//ImGuiにカーソルが触れているか
 };
 

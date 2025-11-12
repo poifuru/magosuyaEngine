@@ -2,49 +2,11 @@
 #include <imgui.h>
 #include "function.h"
 #include "MathFunction.h"
+#include "MagosuyaEngine.h"
 
-Model::Model (DxCommon* dxCommon, const std::string& directoryPath, const std::string& filename, bool inversion) {
-	dxCommon_ = dxCommon;
+Model::Model (MagosuyaEngine* magosuya, const std::string& directoryPath, const std::string& filename, bool inversion) {
+	magosuya_ = magosuya;
 	model_ = LoadObjFile (directoryPath, filename, inversion);
-
-	//===リソースの初期化===//
-	//頂点データ
-	vertexData_.resize (model_.vertexCount);
-	vertexBuffer_ = dxCommon_->CreateBufferResource (sizeof (VertexData) * model_.vertexCount);
-	vertexBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&vertexDataPtr_));
-	vbView_.BufferLocation = vertexBuffer_->GetGPUVirtualAddress ();
-	vbView_.SizeInBytes = UINT (sizeof (VertexData) * vertexData_.size ());
-	vbView_.StrideInBytes = sizeof (VertexData);
-
-	//お前は今じゃない、また今度な！
-	//indexBuffer_ = CreateBufferResource (device, sizeof (uint32_t) * (kSubdivision_ * kSubdivision_) * 6);
-	//indexBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&indexData_));
-	//ibView_.BufferLocation = indexBuffer_->GetGPUVirtualAddress ();
-	//ibView_.SizeInBytes = UINT (sizeof (uint32_t) * (kSubdivision_ * kSubdivision_) * 6);
-	//ibView_.Format = DXGI_FORMAT_R32_UINT;
-
-	//行列データ
-	matrixBuffer_ = dxCommon_->CreateBufferResource (sizeof (TransformationMatrix));
-	matrixBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&matrixData_));
-	matrixData_->World = MakeIdentity4x4 ();
-	matrixData_->WVP = MakeIdentity4x4 ();
-	matrixData_->WorldInverseTranspose = MakeIdentity4x4 ();
-	transform_ = {};
-	uvTransform_ = {};
-	transformationMatrix_.World = MakeIdentity4x4 ();
-	transformationMatrix_.WVP = MakeIdentity4x4 ();
-	transformationMatrix_.WorldInverseTranspose = MakeIdentity4x4 ();
-
-	//マテリアルデータ
-	materialBuffer_ = dxCommon_->CreateBufferResource (sizeof (Material));
-	materialBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&materialData_));
-	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialData_->enableLighting = true;
-	materialData_->uvTranform = MakeIdentity4x4 ();
-
-	for (int i = 0; i < 4; i++) {
-		color_[i] = 1.0f;
-	}
 }
 
 Model::~Model () {
@@ -90,17 +52,7 @@ void Model::Update (Matrix4x4* view, Matrix4x4* proj) {
 }
 
 void Model::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
-	//どんな形状で描画するのか
-	dxCommon_->GetCommandList ()->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	//頂点バッファをセットする
-	dxCommon_->GetCommandList ()->IASetVertexBuffers (0, 1, &vbView_);	//VBVを設定
-	//定数バッファのルートパラメータを設定する	
-	dxCommon_->GetCommandList ()->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
-	dxCommon_->GetCommandList ()->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
-	//テクスチャのSRVを設定
-	dxCommon_->GetCommandList ()->SetGraphicsRootDescriptorTable (2, textureHandle);
-	//実際に描画する(後々Index描画に変える)
-	dxCommon_->GetCommandList ()->DrawInstanced (static_cast<UINT>(model_.vertexCount), 1, 0, 0);
+	
 }
 
 void Model::ImGui () {

@@ -162,7 +162,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClCompile Include="general\Logger.cpp" />
     <ClCompile Include="general\ChangeString.cpp" />
-    <ClCompile Include="magosuya\utility\ImGuiManager.cpp" />
+    <ClCompile Include="magosuya\utility\manager\ImGuiManager.cpp" />
     <ClCompile Include="magosuya\engine\engineCore\LeakChecker.cpp" />
     <ClCompile Include="magosuya\engine\engineCore\DxCommon.cpp">
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|x64'">None</DebugInformationFormat>
@@ -204,6 +204,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="magosuya\engine\engineCore\WindowsAPI.cpp" />
     <ClCompile Include="magosuya\utility\manager\TextureManager.cpp" />
     <ClCompile Include="magosuya\object\2d\SpriteRenderer.cpp" />
+    <ClCompile Include="magosuya\object\3d\ModelRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shader\Object3d.PS.hlsl">
@@ -227,7 +228,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\externals.h" />
     <ClInclude Include="general\Logger.h" />
     <ClInclude Include="general\ChangeString.h" />
-    <ClInclude Include="magosuya\utility\ImGuiManager.h" />
+    <ClInclude Include="magosuya\utility\manager\ImGuiManager.h" />
     <ClInclude Include="magosuya\engine\engineCore\LeakChecker.h" />
     <ClInclude Include="magosuya\engine\engineCore\DxCommon.h" />
     <ClInclude Include="magosuya\utility\camera\DebugCamera.h" />
@@ -271,6 +272,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="magosuya\engine\engineCore\WindowsAPI.h" />
     <ClInclude Include="magosuya\utility\manager\TextureManager.h" />
     <ClInclude Include="magosuya\object\2d\SpriteRenderer.h" />
+    <ClInclude Include="magosuya\object\3d\ModelRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

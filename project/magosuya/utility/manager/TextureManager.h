@@ -20,7 +20,7 @@ public:		//外部公開メソッド
 	TextureData* LoadTexture (const std::string& filePath, const std::string& ID);
 
 	//登録した画像のGPUハンドルを取得する関数
-	D3D12_GPU_DESCRIPTOR_HANDLE* GetTextureHandle (const std::string& ID);
+	D3D12_GPU_DESCRIPTOR_HANDLE GetTextureHandle (const std::string& ID);
 
 	//テクスチャのアンロード関数
 	void UnloadTexture (const std::string& filePath);

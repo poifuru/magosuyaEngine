@@ -2,27 +2,27 @@
 #include <d3d12.h>
 #include <Wrl.h>
 using namespace Microsoft::WRL;
+#include <vector>
 #include "struct.h"
 
 class MagosuyaEngine;
 
-class SpriteRenderer {
-public:		//外部公開メソッド
-	SpriteRenderer (MagosuyaEngine* magosuya);
-	~SpriteRenderer ();
+class ModelRenderer {
+public:
+	ModelRenderer (MagosuyaEngine* magosuya);
+	~ModelRenderer ();
 
 	void Initialize ();
-	void Update (Matrix4x4 wvpData, Transform uvTransform, Vector2 anchorPoint,
-				 bool flipX, bool flipY, const std::string& id, Vector2 texLeftTop, Vector2 texSize);
+	void Update (Matrix4x4 world, Transform wvp);
 	void Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
-	void ImGui (Transform& transform, Transform& uvTransform);
 
 	//アクセッサ
 	Material* GetMaterial () { return materialData_; }
 	void SetColor (const Vector4& color) { materialData_->color = color; }
-	void SetID (const std::string& id) { id_ = id; }
+	void SetModelID (const std::string& id) { modelID_ = id; }
+	void SetTextureID (const std::string& id) { texID_ = id; }
 
-private:	//メンバ変数
+private:
 	//ルートシグネチャとパイプラインステート
 	ComPtr<ID3D12RootSignature> rootSignature_;
 	ComPtr<ID3D12PipelineState> pipelineState_;
@@ -37,13 +37,21 @@ private:	//メンバ変数
 	D3D12_INDEX_BUFFER_VIEW ibView_{};
 
 	//GPUリソースにマッピングするデータ
-	VertexData* vertexData_ = nullptr;
+	std::vector<VertexData> vertexData_;
+	VertexData* vertexDataPtr_ = nullptr;
 	uint32_t* indexData_ = nullptr;
-	Matrix4x4* matrixData_ = nullptr;
+	TransformationMatrix* matrixData_ = nullptr;
 	Material* materialData_ = nullptr;
 
-	//画像検索用のID
-	std::string id_;
+	//モデルデータ
+	ModelData modelData_;
+
+	TransformationMatrix* matrixData_ = nullptr;
+
+	//モデルデータ検索用ID
+	std::string modelID_;
+	//テクスチャ検索用ID
+	std::string texID_;
 
 	//ImGuiで色をいじる
 	float color_[4];
@@ -51,4 +59,3 @@ private:	//メンバ変数
 	//ポインタを借りる
 	MagosuyaEngine* magosuya_ = nullptr;
 };
-
