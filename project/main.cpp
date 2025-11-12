@@ -121,6 +121,7 @@ std::unique_ptr<InputManager> g_inputManager = nullptr;
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::unique_ptr<MagosuyaEngine> magosuya = std::make_unique<MagosuyaEngine> ();
+	magosuya->Initialize ();
 
 	HRESULT hr;
 
@@ -138,7 +139,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
 
 #pragma region Plane
-	std::unique_ptr<Model> plane = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/plane", "plane", true);
+	std::unique_ptr<Model> plane = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/plane", "plane", false);
 #pragma endregion
 
 #pragma region bunny
@@ -246,76 +247,11 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//フレーム開始
 		magosuya->BeginFrame ();
+#ifdef USEIMGUI
 		//FPS表示
 		ImGui::Begin ("Debug Window");
 		ImGui::Text ("FPS: %.1f", ImGui::GetIO ().Framerate);
 		ImGui::End ();
-
-		//実際のキー入力処理はここ！
-		// 押した瞬間だけトグル
-		if (g_inputManager->GetRawInput ()->Trigger (VK_TAB)) {
-			if (!debugMode) {
-				debugMode = true;
-			}
-			else {
-				debugMode = false;
-			}
-		}
-
-		if (g_inputManager->GetRawInput ()->Push ('D')) {
-			pos.x += 0.01f;
-		}
-		ImGui::Text ("pos.x:%f", pos.x);
-
-		Vector2 size = sprite->GetSize ();
-		if (g_inputManager->GetRawInput ()->Push ('D')) {
-			size.x += 0.5f;
-		}
-		if (g_inputManager->GetRawInput ()->Push ('A')) {
-			size.x -= 0.5f;
-		}
-		sprite->SetSize (size);
-		if (ImGui::Button ("flipX")) {
-			sprite->SetIsFlipX (true);
-		}
-		if (ImGui::Button ("flipY")) {
-			sprite->SetIsFlipY (true);
-		}
-
-		//ゲームの処理//
-		//=======オブジェクトの更新処理=======//
-		//カメラ
-		cameraMatrix = MakeAffineMatrix (cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-		viewMatrix = Inverse (cameraMatrix);
-		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientWidth) / float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientHeight), 0.1f, 100.0f);
-		if (!debugMode) {
-			//worldViewProjectionMatrix = Multiply (cameraMatrix, Multiply (viewMatrix, projectionMatrix));
-		}
-		if (!ImGui::GetIO ().WantCaptureMouse) {
-			if (debugMode) {
-				debugCamera->Updata (magosuya->GetDxCommon ()->GetWinAPI ()->GetHwnd (), hr, g_inputManager.get ());
-				viewMatrix = debugCamera->GetViewMatrix ();
-				projectionMatrix = debugCamera->GetProjectionMatrix ();
-			}
-		}
-
-		//オブジェクト
-		plane->Update (&viewMatrix, &projectionMatrix);
-		plane->SetPositon (pos);
-
-		bunny->Update (&viewMatrix, &projectionMatrix);
-
-		teapot->Update (&viewMatrix, &projectionMatrix);
-
-		Fence->Update (&viewMatrix, &projectionMatrix);
-
-
-		sprite->Update ();
-
-		sphere->Update (&viewMatrix, &projectionMatrix);
-
-		//光源のdirectionの正規化
-		directionalLightData->direction = Normalize (directionalLightData->direction);
 
 		ImGui::Begin ("カメラモード:TAB");
 		if (debugMode) {
@@ -324,11 +260,15 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		else if (!debugMode) {
 			ImGui::TextColored (ImVec4 (0, 1, 0, 1), "Current Camera: Scene");
 		}
-		ImGui::End ();
 
-		//ImGuiと変数を結び付ける
-		// 色変更用のUI
-		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };  // 初期値：白
+		if (!ImGui::GetIO ().WantCaptureMouse) {
+			if (debugMode) {
+				debugCamera->Updata (magosuya->GetDxCommon ()->GetWinAPI ()->GetHwnd (), hr, g_inputManager.get ());
+				viewMatrix = debugCamera->GetViewMatrix ();
+				projectionMatrix = debugCamera->GetProjectionMatrix ();
+			}
+		}
+		ImGui::End ();
 
 		ImGui::Begin ("setting");
 		if (ImGui::CollapsingHeader ("SceneCamera")) {
@@ -381,10 +321,48 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat2 ("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat2 ("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 		ImGui::SliderAngle ("UVRotate", &uvTransformSprite.rotate.z);
+#endif
+
+		//実際のキー入力処理はここ！
+		// 押した瞬間だけトグル
+		if (g_inputManager->GetRawInput ()->Trigger (VK_TAB)) {
+			if (!debugMode) {
+				debugMode = true;
+			}
+			else {
+				debugMode = false;
+			}
+		}
+
+		//ゲームの処理//
+		//=======オブジェクトの更新処理=======//
+		//カメラ
+		cameraMatrix = MakeAffineMatrix (cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+		viewMatrix = Inverse (cameraMatrix);
+		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientWidth) / float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientHeight), 0.1f, 100.0f);
+
+		//オブジェクト
+		plane->Update (&viewMatrix, &projectionMatrix);
+		plane->SetPositon (pos);
+
+		bunny->Update (&viewMatrix, &projectionMatrix);
+
+		teapot->Update (&viewMatrix, &projectionMatrix);
+
+		Fence->Update (&viewMatrix, &projectionMatrix);
 
 
+		sprite->Update ();
 
-		//=======コマンド君達=======//
+		sphere->Update (&viewMatrix, &projectionMatrix);
+
+		//光源のdirectionの正規化
+		directionalLightData->direction = Normalize (directionalLightData->direction);
+
+		//ImGuiと変数を結び付ける
+		// 色変更用のUI
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };  // 初期値：白
+
 		//ライティングの設定
 		magosuya->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
 		//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
@@ -393,7 +371,7 @@ int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int) {
 			sphere->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
 		}
 		if (usePlane) {
-			plane->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
+			plane->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
 		}
 		if (useModel) {
 			bunny->Draw (*magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));

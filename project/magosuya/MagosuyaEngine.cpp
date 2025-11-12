@@ -3,6 +3,7 @@
 MagosuyaEngine::MagosuyaEngine () {
 	dxCommon_ = std::make_unique<DxCommon> ();
 	textureManager_ = std::make_unique<TextureManager> (dxCommon_.get ());
+	imGuiManager_ = std::make_unique<ImGuiManager> (dxCommon_.get ());
 }
 
 MagosuyaEngine::~MagosuyaEngine () {
@@ -12,12 +13,15 @@ MagosuyaEngine::~MagosuyaEngine () {
 void MagosuyaEngine::Initialize () {
 	dxCommon_->Initialize ();
 	textureManager_->Initialize ();
+	imGuiManager_->Initialize ();
 }
 
 void MagosuyaEngine::BeginFrame () {
+	imGuiManager_->BeginFrame ();
 	dxCommon_->BeginFrame ();
 }
 void MagosuyaEngine::EndFrame () {
+	imGuiManager_->Draw ();
 	dxCommon_->EndFrame ();
 	textureManager_->ClearIntermediateResource ();
 }

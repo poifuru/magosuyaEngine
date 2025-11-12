@@ -16,7 +16,7 @@
 #include "ChangeString.h"
 
 DxCommon::DxCommon () {
-	Initialize ();
+
 }
 
 DxCommon::~DxCommon () {
@@ -35,8 +35,8 @@ void DxCommon::Initialize () {
 	//COMの初期化
 	hr = CoInitializeEx (0, COINIT_MULTITHREADED);
 
-	winApp_ = std::make_unique<WindowsAPI> ();
-	winApp_->Initialize ();
+	winApi_ = std::make_unique<WindowsAPI> ();
+	winApi_->Initialize ();
 
 	// 2.FPSの固定化
 	InitializeFixFPS ();
@@ -57,7 +57,6 @@ void DxCommon::Initialize () {
 	CreateDSV ();
 	ViewportRectInit ();
 	ScissorRectInit ();
-	ImGuiInit ();
 
 	// DiscriptorRangeの設定
 	descriptorRange[0].BaseShaderRegister = 0;	//0から始まる
@@ -216,11 +215,6 @@ void DxCommon::Initialize () {
 }
 
 void DxCommon::BeginFrame () {
-	// //フレームの先頭をImGuiに伝えてあげる
-	ImGui_ImplDX12_NewFrame ();
-	ImGui_ImplWin32_NewFrame ();
-	ImGui::NewFrame ();
-
 	//これから書きこむバックバッファのインデックスを取得
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex ();
 	//TransitionBarrierの設定
@@ -260,10 +254,6 @@ void DxCommon::BeginFrame () {
 }
 
 void DxCommon::EndFrame () {
-	//ImGuiの内部コマンドを生成する
-	ImGui::Render ();
-	//実際のImGui描画コマンドを詰む
-	ImGui_ImplDX12_RenderDrawData (ImGui::GetDrawData (), commandList.Get ());
 	//これから書きこむバックバッファのインデックスを取得
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex ();
 	//画面に描く処理はすべて終わり、画面に映すので、状態を遷移
@@ -306,14 +296,9 @@ void DxCommon::EndFrame () {
 }
 
 void DxCommon::Finalize () {
-	//ImGuiの終了処理
-	ImGui_ImplDX12_Shutdown ();
-	ImGui_ImplWin32_Shutdown ();
-	ImGui::DestroyContext ();
-
 	CloseHandle (fenceEvent);
 
-	winApp_->Finalize ();
+	winApi_->Finalize ();
 	CoUninitialize ();
 }
 
@@ -619,21 +604,21 @@ void DxCommon::CreateSwapChain () {
 	HRESULT hr;
 
 	//スワップチェーンを設定する
-	swapChainDesc.Width = winApp_->kClientWidth;		//画面の幅,ウィンドウのクライアント領域を同じものにしておく
-	swapChainDesc.Height = winApp_->kClientHeight;	//画面の高さ,ウィンドウのクライアント領域を同じものにしておく
+	swapChainDesc.Width = winApi_->kClientWidth;		//画面の幅,ウィンドウのクライアント領域を同じものにしておく
+	swapChainDesc.Height = winApi_->kClientHeight;	//画面の高さ,ウィンドウのクライアント領域を同じものにしておく
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;	//色の形式
 	swapChainDesc.SampleDesc.Count = 1;	//マルチサンプルしない
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;	//描画のターゲットとして利用する
 	swapChainDesc.BufferCount = 2;	//ダブルバッファ
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;	//モニタにうつしたら、中身を破棄
 	//コマンドキュー,ウィンドウハンドル,設定を渡して生成する
-	hr = dxgiFactory->CreateSwapChainForHwnd (commandQueue.Get (), winApp_->GetHwnd (), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf ()));
+	hr = dxgiFactory->CreateSwapChainForHwnd (commandQueue.Get (), winApi_->GetHwnd (), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf ()));
 	assert (SUCCEEDED (hr));
 }
 
 void DxCommon::CreateDepthBaffer () {
 	//DepthStencilTextureをウィンドウサイズで作成
-	depthStencilResource = CreateDepthStencilTextureResource (device.Get (), winApp_->kClientWidth, winApp_->kClientHeight);
+	depthStencilResource = CreateDepthStencilTextureResource (device.Get (), winApi_->kClientWidth, winApi_->kClientHeight);
 
 	//PSO作成時に使う設定だがわかりやすいのでこちらで設定
 	//Depthの機能を有効化する
@@ -689,8 +674,8 @@ void DxCommon::CreateDSV () {
 void DxCommon::ViewportRectInit () {
 	//ビューポート設定
 	//クライアント領域のサイズと一緒にして画面全体に表示
-	viewport.Width = static_cast<float>(winApp_->kClientWidth);
-	viewport.Height = static_cast<float>(winApp_->kClientHeight);
+	viewport.Width = static_cast<float>(winApi_->kClientWidth);
+	viewport.Height = static_cast<float>(winApi_->kClientHeight);
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
@@ -701,31 +686,9 @@ void DxCommon::ScissorRectInit () {
 	//シザー矩形設定
 	//基本的にビューポートと同じ矩形が構成されるようにする
 	scissorRect.left = 0;
-	scissorRect.right = winApp_->kClientWidth;
+	scissorRect.right = winApi_->kClientWidth;
 	scissorRect.top = 0;
-	scissorRect.bottom = winApp_->kClientHeight;
-}
-
-void DxCommon::ImGuiInit () {
-	//------------------------------------------//
-	//				ImGuiの初期化					//
-	//------------------------------------------//
-	IMGUI_CHECKVERSION ();
-	ImGui::CreateContext ();
-	ImGui::StyleColorsDark ();
-	ImGuiIO& io = ImGui::GetIO ();
-	ImFont* fontJP = io.Fonts->AddFontFromFileTTF (
-		"Resources/AppliMincho/PottaOne-Regular.ttf", 17.0f, nullptr,
-		io.Fonts->GetGlyphRangesJapanese ());
-	io.FontDefault = fontJP;
-	ImGui_ImplWin32_Init (winApp_->GetHwnd ());
-	ImGui_ImplDX12_Init (device.Get (),
-						 swapChainDesc.BufferCount,
-						 rtvDesc.Format,
-						 srvDescriptorHeap.Get (),
-						 srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart (),
-						 srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart ()
-	);
+	scissorRect.bottom = winApi_->kClientHeight;
 }
 
 void DxCommon::UpdateFixFPS () {

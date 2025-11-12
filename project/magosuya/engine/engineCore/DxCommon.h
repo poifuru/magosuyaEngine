@@ -86,7 +86,6 @@ private:	//プライベート関数
 	void CreateDSV ();
 	void ViewportRectInit ();
 	void ScissorRectInit ();
-	void ImGuiInit ();
 	void UpdateFixFPS ();
 
 	//DescriptorHandleを取得する関数(CPUとGPU)
@@ -94,7 +93,7 @@ private:	//プライベート関数
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
 public:		//アクセッサ
-	WindowsAPI* GetWinAPI () { return winApp_.get (); }
+	WindowsAPI* GetWinAPI () { return winApi_.get (); }
 	ID3D12Device* GetDevice () { return device.Get (); }
 	ID3D12GraphicsCommandList* GetCommandList () { return commandList.Get (); }
 	ID3D12DescriptorHeap* GetsrvDescriptorHeap () { return srvDescriptorHeap.Get (); }
@@ -104,7 +103,7 @@ public:		//アクセッサ
 private://メンバ変数
 	LeakChecker leakCheck_{};
 
-	std::unique_ptr<WindowsAPI> winApp_ = nullptr;
+	std::unique_ptr<WindowsAPI> winApi_ = nullptr;
 
 	//FPS固定用
 	std::chrono::steady_clock::time_point reference_;

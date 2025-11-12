@@ -3,6 +3,7 @@
 #include <string>
 #include "engine/engineCore/DxCommon.h"
 #include "utility/resouceManager/TextureManager.h"
+#include "utility/ImGuiManager.h"
 
 class MagosuyaEngine {
 public:		//メンバ関数
@@ -30,4 +31,5 @@ private:	//内部関数
 private:	//メンバ変数
 	std::unique_ptr<DxCommon> dxCommon_;
 	std::unique_ptr<TextureManager> textureManager_;
+	std::unique_ptr<ImGuiManager> imGuiManager_;
 };
