@@ -156,14 +156,9 @@ ModelData ModelManager::LoadObjFile (const std::string& directoryPath, const std
 		}
 		else if (identifier == "f") {
 			//面は三角形限定。その他は未対応
-			std::string vertexDefinitions[3];
-			//3つの頂点すべてを faceVertex = 0, 1, 2 の順で読み込む
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
-				s >> vertexDefinitions[faceVertex];
-			}
-
-			for (int32_t faceVertex = 2; faceVertex > 0; --faceVertex) {
-				std::string& vertexDefinition = vertexDefinitions[faceVertex];
+				std::string vertexDefinition;
+				s >> vertexDefinition;
 
 				// この複合インデックスが既出かチェック
 				if (uniqueVertices.count (vertexDefinition)) {

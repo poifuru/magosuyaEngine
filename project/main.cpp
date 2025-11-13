@@ -147,11 +147,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 #pragma endregion
 
 #pragma region Teapot
-	//std::unique_ptr<Model> teapot = std::make_unique<Model> (magosuya.get ());
-#pragma endregion
-
-#pragma region Fence
-	//std::unique_ptr<Model> Fence = std::make_unique<Model> (magosuya.get ());
+	std::unique_ptr<Model> teapot = std::make_unique<Model> (magosuya.get ());
+	magosuya->LoadModelData ("Resources/teapot", "teapot");
+	teapot->SetTexture ("teapot");
+	teapot->SetModelData ("teapot");
+	teapot->Initialize ();
 #pragma endregion
 
 	//平行光源のResourceを作成してデフォルト値を書き込む
@@ -166,10 +166,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	directionalLightData->mode = Light::halfLambert;
 
 	//Transform
-	Transform transform{ {1.0f, 1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
-	Transform transformTeapot{ {1.0f, 1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
-	Transform transformSprite{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 
 	//UVtransform用の変数
 	Transform uvTransformSprite{
@@ -188,16 +185,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	//スプライト
 	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (magosuya.get());
 	sprite->SetID ("uvChecker");
-	sprite->Initialize ({ 640.0f, 360.0f, 0.0f }, { 100.0f, 100.0f });
+	sprite->Initialize ({ 640.0f, 360.0f, 0.0f });
 	sprite->SetAnchorPoint ({ 0.5f, 0.5f });
-	sprite->SetTexture (magosuya->GetTextureHandle ("uvChecker"));
+	sprite->SetTexture ("uvChecker");
 
 	std::unique_ptr<SphereModel> sphere = std::make_unique<SphereModel> (magosuya->GetDxCommon (), 16);
 	sphere->Initialize ({ 0.0f, 0.0f, 0.0f }, 1.0f);
-
-	plane->Initialize ();
-	//teapot->Initialize ();
-	//Fence->Initialize ();
 
 	//カメラ用
 	Matrix4x4 cameraMatrix = {};
@@ -209,14 +202,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	debugCamera->Initialize ();
 	bool debugMode = false;
 
-	//テクスチャ切り替え用の変数
-	bool useMonsterBall = true;
 	//スプライト切り替え
-	bool useSprite = true;
+	bool useSprite = false;
 	//球の切り替え
 	bool useSphere = false;
 	//ぷれーん
-	bool usePlane = false;
+	bool usePlane = true;
 	//てぃーぽっと
 	bool useTeapot = false;
 
@@ -282,7 +273,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		}
 		if (ImGui::CollapsingHeader ("teapod")) {
 			ImGui::Checkbox ("Draw##teapod", &useTeapot);
-			//teapot->ImGui ();
+			teapot->ImGui ();
 		}
 		if (ImGui::CollapsingHeader ("Sprite")) {
 			ImGui::Checkbox ("Draw##useSprite", &useSprite);
@@ -299,13 +290,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			ImGui::DragFloat3 ("lightDirection", &directionalLightData->direction.x, 0.01f);
 			ImGui::DragFloat ("intensity", &directionalLightData->intensity, 0.01f);
 		}
-		if (ImGui::CollapsingHeader ("fence")) {
-			//Fence->ImGui ();
-		}
 		ImGui::End ();
-		ImGui::DragFloat2 ("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat2 ("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-		ImGui::SliderAngle ("UVRotate", &uvTransformSprite.rotate.z);
 #endif
 
 		//実際のキー入力処理はここ！
@@ -337,11 +322,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 		//オブジェクト
 		plane->Update (&vp);
-		//plane->SetPositon (pos);
 
-		//teapot->Update (&vp);
-
-		//Fence->Update (&vp);
+		teapot->Update (&vp);
 
 		sprite->Update ();
 
@@ -365,7 +347,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			plane->Draw ();
 		}
 		if (useTeapot) {
-			//teapot->Draw ();
+			teapot->Draw ();
 		}
 		if (useSprite) {
 			sprite->Draw ();

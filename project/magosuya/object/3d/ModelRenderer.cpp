@@ -53,7 +53,7 @@ void ModelRenderer::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
 	//どんな形状で描画するのか
 	magosuya_->GetDxCommon ()->GetCommandList ()->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	//頂点バッファをセットする
-	magosuya_->GetDxCommon ()->GetCommandList ()->IASetVertexBuffers (0, 1, &modelData_.lock()->vbView);
+	magosuya_->GetDxCommon ()->GetCommandList ()->IASetVertexBuffers (0, 1, &data->vbView);
 	//インデックスバッファをセットする
 	magosuya_->GetDxCommon ()->GetCommandList ()->IASetIndexBuffer (&data->ibView);
 	//定数バッファのルートパラメータを設定する	
@@ -65,7 +65,7 @@ void ModelRenderer::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
 	magosuya_->GetDxCommon ()->GetCommandList ()->DrawIndexedInstanced (static_cast<UINT>(data->indexCount), 1, 0, 0, 0);
 }
 
-void ModelRenderer::ImGui (Transform transform, Transform uvTransform) {
+void ModelRenderer::ImGui (Transform& transform, Transform& uvTransform) {
 	std::string label = "##" + tag_;
 	if (ImGui::ColorEdit4 (("Color" + label).c_str (), color_)) {
 		// 色が変更されたらmaterialDataに反映

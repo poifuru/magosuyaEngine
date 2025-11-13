@@ -6,10 +6,10 @@
 
 SpriteRenderer::SpriteRenderer (MagosuyaEngine* magosuya) {
 	magosuya_ = magosuya;
-	rootSignature_ = magosuya_->GetDxCommon()->GetRootSignature ();
+	rootSignature_ = magosuya_->GetDxCommon ()->GetRootSignature ();
 	pipelineState_ = magosuya_->GetDxCommon ()->GetPipelineState ();
 
-	for (int i = 0; i < 4; ++i) {
+	for (int i = 0; i < 4; i++) {
 		color_[i] = 1.0f;
 	}
 }
@@ -99,8 +99,8 @@ void SpriteRenderer::Update (Matrix4x4 wvpData, Transform uvTransform, Vector2 a
 }
 
 void SpriteRenderer::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootSignature (rootSignature_.Get());
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetPipelineState (pipelineState_.Get());
+	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootSignature (rootSignature_.Get ());
+	magosuya_->GetDxCommon ()->GetCommandList ()->SetPipelineState (pipelineState_.Get ());
 	magosuya_->GetDxCommon ()->GetCommandList ()->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	magosuya_->GetDxCommon ()->GetCommandList ()->IASetVertexBuffers (0, 1, &vbView_);   //VBVを設定
 	magosuya_->GetDxCommon ()->GetCommandList ()->IASetIndexBuffer (&ibView_);	        //IBVを設定

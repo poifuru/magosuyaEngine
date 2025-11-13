@@ -9,15 +9,15 @@ using namespace Microsoft::WRL;
 //前方宣言
 class MagosuyaEngine;
 
-class Sprite {  
-	public:		//メンバ関数  
+class Sprite {
+public:		//メンバ関数  
 	Sprite (MagosuyaEngine* magosuya);
 	~Sprite ();
 
-	void Initialize (Vector3 position, Vector2 size);
-	void SetTexture (D3D12_GPU_DESCRIPTOR_HANDLE handle);
+	void Initialize (Vector3 position);
+	void SetTexture (std::string ID);
 	void MakewvpMatrix ();
-	void Update (); 
+	void Update ();
 	void Draw ();
 	void ImGui ();
 

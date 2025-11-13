@@ -35,7 +35,7 @@ void Model::ImGui () {
 void Model::SetModelData (const std::string& ID) {
 	modelData_ = magosuya_->GetModelData (ID);
 	renderer_->SetModelData (modelData_);
-	renderer_->SetImGuiID (ID);
+	renderer_->SetImGuiID (ID); 
 }
 
 void Model::SetTexture (const std::string& ID) {

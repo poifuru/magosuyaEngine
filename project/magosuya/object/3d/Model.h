@@ -56,7 +56,10 @@ public:	//メンバ関数
 	void SetTexture (const std::string& ID);
 
 	//アクセッサ
-	//void SetPositon (Vector3 pos) { transform_.translate = pos; }
+	Transform GetTransform () { return transform_; }
+	void SetTransform (Transform transform) { transform_ = transform; }
+	Transform GetUVTransform () { return uvTransform_; }
+	void SetUVTransform (Transform transform) { uvTransform_ = transform; }
 
 private:		//メンバ変数
 	//マネージャーから受け取るモデルデータ
