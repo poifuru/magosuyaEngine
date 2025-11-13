@@ -6,6 +6,7 @@
 
 class TitleScene : public Scene {
 public:		//メンバ関数
+	TitleScene (MagosuyaEngine* magosuya);
 	~TitleScene () override;
 
 	void Initialize () override;

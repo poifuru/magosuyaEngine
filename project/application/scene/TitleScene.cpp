@@ -2,6 +2,10 @@
 #include "MagosuyaEngine.h"
 #include "utility/input/InputManager.h"
 
+TitleScene::TitleScene (MagosuyaEngine* magosuya) {
+	magosuya_ = magosuya;
+}
+
 TitleScene::~TitleScene () {
 
 }

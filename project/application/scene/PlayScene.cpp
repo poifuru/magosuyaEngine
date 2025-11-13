@@ -1,6 +1,10 @@
 #include "PlayScene.h"
 #include "MagosuyaEngine.h"
 
+PlayScene::PlayScene (MagosuyaEngine* magosuya) {
+	magosuya_ = magosuya;
+}
+
 PlayScene::~PlayScene () {
 	
 }
