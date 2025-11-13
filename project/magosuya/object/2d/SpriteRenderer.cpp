@@ -62,7 +62,7 @@ void SpriteRenderer::Update (Matrix4x4 wvpData, Transform uvTransform, Vector2 a
 
 	//画像切り出し用
 	id_ = id;
-	const DirectX::TexMetadata& metadata = magosuya_->GetTextureManger()->GetMetaData (id_);
+	const DirectX::TexMetadata& metadata = magosuya_->GetMetaData (id_);
 	float tex_left = texLeftTop.x / metadata.width;
 	float tex_right = (texLeftTop.x + texSize.x) / metadata.width;
 	float tex_top = texLeftTop.y / metadata.height;

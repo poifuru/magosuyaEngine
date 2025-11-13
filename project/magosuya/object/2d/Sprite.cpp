@@ -59,7 +59,7 @@ void Sprite::ImGui () {
 }
 
 void Sprite::AdjustTextureSize () {
-	const DirectX::TexMetadata& metadata = magosuya_->GetTextureManger()->GetMetaData (id_);
+	const DirectX::TexMetadata& metadata = magosuya_->GetMetaData (id_);
 
 	textureSize_.x = static_cast<float>(metadata.width);
 	textureSize_.y = static_cast<float>(metadata.height);

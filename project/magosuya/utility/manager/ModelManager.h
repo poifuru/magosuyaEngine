@@ -6,23 +6,30 @@ using namespace Microsoft::WRL;
 #include <queue>
 #include <vector>
 #include "struct.h"
+#include "TextureManager.h"
+
+class DxCommon;
 
 class ModelManager {
 public:		//メンバ関数
-	ModelManager ();
+	ModelManager (DxCommon* dxCommon, TextureManager* textureManager);
 	~ModelManager ();
 
-	void Initialize ();
-	void LoadModelData ();
-	void UnloadModelData ();
+	ModelData* LoadModelData (const std::string& directoryPath, const std::string& id, bool inversion = false);
+	std::weak_ptr<ModelData> GetModelData (std::string id);
+	void UnloadModelData (const std::string& id);
 
 private:	//内部関数
 	//マテリアルファイルの読み込み関数
-	MaterialData LoadMaterialTemplateFile (const std::string& directoryPath, const std::string& filename);
+	MaterialData LoadMaterialTemplateFile (const std::string& directoryPath, const std::string& id);
 
 	//ファイル読み込みの関数
-	ModelData LoadObjFile (const std::string& directoryPath, const std::string& filename, bool inversion = false);
+	ModelData LoadObjFile (const std::string& directoryPath, const std::string& id, bool inversion = false);
 
 private:	//メンバ変数
-	std::unordered_map<std::string, ModelData> map_;
+	std::unordered_map<std::string, std::shared_ptr<ModelData>> map_;
+
+	//ポインタを借りる
+	DxCommon* dxCommon_ = nullptr;
+	TextureManager* textureManager_ = nullptr;
 };

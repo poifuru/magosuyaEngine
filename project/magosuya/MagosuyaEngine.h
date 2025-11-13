@@ -4,6 +4,7 @@
 #include "engine/DxCommon.h"
 #include "utility/manager/TextureManager.h"
 #include "utility/manager/ImGuiManager.h"
+#include "utility/manager/ModelManager.h"
 
 class MagosuyaEngine {
 public:		//メンバ関数
@@ -16,21 +17,22 @@ public:		//メンバ関数
 	void EndFrame ();
 	void Finalize ();
 
-#pragma region メンバ変数が持ってる機能を扱いやすく
+#pragma region メンバ変数を便利に
 	void LoadTexture (const std::string& filePath, const std::string& ID);
 	void UnloadTexture (const std::string& filePath);
 	D3D12_GPU_DESCRIPTOR_HANDLE GetTextureHandle (const std::string& ID);
+	const DirectX::TexMetadata& GetMetaData (const std::string& id);
+	void LoadModelData (const std::string& filePath, const std::string& ID, bool inversion = false);
+	void UnloadModelData (const std::string& ID);
+	std::weak_ptr<ModelData> GetModelData (const std::string& ID);
 #pragma endregion
 
 	//アクセッサ
 	DxCommon* GetDxCommon () { return dxCommon_.get (); }
-	TextureManager* GetTextureManger () { return textureManager_.get (); }
-
-private:	//内部関数
-	
 
 private:	//メンバ変数
 	std::unique_ptr<DxCommon> dxCommon_;
 	std::unique_ptr<TextureManager> textureManager_;
 	std::unique_ptr<ImGuiManager> imGuiManager_;
+	std::unique_ptr<ModelManager> modelManager_;
 };

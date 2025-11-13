@@ -13,9 +13,6 @@ public:		//外部公開メソッド
 	TextureManager (DxCommon* dxCommon);
 	~TextureManager ();
 
-	//初期化(主にポインタの貸し出し)
-	void Initialize ();
-
 	//画像をロードする関数
 	TextureData* LoadTexture (const std::string& filePath, const std::string& ID);
 

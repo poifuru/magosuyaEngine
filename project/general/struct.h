@@ -207,11 +207,23 @@ struct MaterialData {
 
 //ModelData構造体
 struct ModelData {
+	//形状情報 (CPU側データ)
 	MaterialData material;
 	std::vector<VertexData> vertices;
 	size_t vertexCount = 0;
+
+	//インデックス描画用のCPU側データ
 	std::vector<uint32_t> indices;
 	size_t indexCount = 0;
+
+	//Dxリソース (GPU側データ) インスタンス間で共有される
+	//頂点バッファ
+	ComPtr<ID3D12Resource> vertexBuffer;
+	D3D12_VERTEX_BUFFER_VIEW vbView{};
+
+	//インデックスバッファ
+	ComPtr<ID3D12Resource> indexBuffer;
+	D3D12_INDEX_BUFFER_VIEW ibView{};
 };
 
 //チャンクヘッダ

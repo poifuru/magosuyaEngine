@@ -3,7 +3,9 @@
 #include <d3d12.h>
 #include <wrl.h>
 using namespace Microsoft::WRL;
+#include <memory>
 #include "struct.h"
+#include "ModelRenderer.h"
 
 class MagosuyaEngine;
 
@@ -15,7 +17,7 @@ public:	//メンバ関数
 	/// </summary>
 	/// <param name="directoryPath">3Dモデルファイルが存在するディレクトリのパス。</param>
 	/// <param name="filename">読み込む3Dモデルのファイル名。</param>
-	Model (MagosuyaEngine* magosuya, const std::string& directoryPath, const std::string& filename, bool inversion = false);
+	Model (MagosuyaEngine* magosuya);
 
 	~Model ();
 
@@ -28,11 +30,10 @@ public:	//メンバ関数
 	void Initialize (Vector3 scale = { 1.0f, 1.0f, 1.0f }, Vector3 rotate = { 0.0f, 0.0f, 0.0f }, Vector3 position = { 0.0f, 0.0f, 0.0f });
 	
 	/// <summary>
-	/// 更新処理
+	/// 更新
 	/// </summary>
-	/// <param name="view">ビュー行列</param>
-	/// <param name="proj">射影行列</param>
-	void Update (Matrix4x4* view, Matrix4x4* proj);
+	/// <param name="vp">vp行列</param>
+	void Update (Matrix4x4* vp);
 
 	/// <summary>
 	/// 描画処理
@@ -40,48 +41,35 @@ public:	//メンバ関数
 	/// <param name="cmdList">コマンドリスト</param>
 	/// <param name="textureHandle">使うテクスチャ</param>
 	/// <param name="light">ライト</param>
-	void Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
+	void Draw ();
 	
 	/// <summary>
 	/// ImGuiで編集できるよ
 	/// </summary>
 	void ImGui ();
 
+	/// <summary>
+	/// どのモデルを使うのか
+	/// </summary>
+	void SetModelData (const std::string& ID);
+
+	void SetTexture (const std::string& ID);
+
 	//アクセッサ
-	ModelData GetModelData () { return model_; }
-	void SetPositon (Vector3 pos) { transform_.translate = pos; }
+	//void SetPositon (Vector3 pos) { transform_.translate = pos; }
 
 private:		//メンバ変数
-	//モデルデータ
-	ModelData model_;
+	//マネージャーから受け取るモデルデータ
+	std::weak_ptr<ModelData> modelData_;
+	//貼り付けるテクスチャーのハンドル
+	D3D12_GPU_DESCRIPTOR_HANDLE texture_;
 
-	//頂点データ
-	ComPtr<ID3D12Resource> vertexBuffer_;
-	std::vector<VertexData> vertexData_;
-	VertexData* vertexDataPtr_ = nullptr;
-	D3D12_VERTEX_BUFFER_VIEW vbView_{};
+	Transform transform_ = {};
+	Transform uvTransform_ = {};
 
-	//インデックスデータ
-	ComPtr<ID3D12Resource> indexBuffer_;
-	D3D12_INDEX_BUFFER_VIEW ibView_{};
+	//レンダラークラス
+	std::unique_ptr<ModelRenderer> renderer_ = nullptr;
 
-	//行列データ
-	ComPtr<ID3D12Resource> matrixBuffer_;
-	TransformationMatrix* matrixData_ = nullptr;
-	Transform transform_;	//ローカル座標
-	Transform uvTransform_;	//uvTranform用のローカル座標
-	TransformationMatrix transformationMatrix_; //ワールド座標と、カメラからwvp行列をもらって格納する
-
-	//マテリアルデータ
-	ComPtr<ID3D12Resource> materialBuffer_;
-	Material* materialData_ = nullptr;;
-
-	//ImGui用のラベル名
-	std::string id_;
-
-	//ImGuiで色をいじる変数
-	float color_[4];
-
-	//ポインタを持たせておく
+	//ポインタを借りる
 	MagosuyaEngine* magosuya_ = nullptr;
 };

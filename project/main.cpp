@@ -139,15 +139,19 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
 
 #pragma region Plane
-	std::unique_ptr<Model> plane = std::make_unique<Model> (magosuya.get(), "Resources/plane", "plane", false);
+	std::unique_ptr<Model> plane = std::make_unique<Model> (magosuya.get());
+	magosuya->LoadModelData ("Resources/plane", "plane");
+	plane->SetTexture ("plane");
+	plane->SetModelData ("plane");
+	plane->Initialize ();
 #pragma endregion
 
 #pragma region Teapot
-	std::unique_ptr<Model> teapot = std::make_unique<Model> (magosuya.get (), "Resources/teapot", "teapot", false);
+	//std::unique_ptr<Model> teapot = std::make_unique<Model> (magosuya.get ());
 #pragma endregion
 
 #pragma region Fence
-	std::unique_ptr<Model> Fence = std::make_unique<Model> (magosuya.get (), "Resources/fence", "fence", false);
+	//std::unique_ptr<Model> Fence = std::make_unique<Model> (magosuya.get ());
 #pragma endregion
 
 	//平行光源のResourceを作成してデフォルト値を書き込む
@@ -192,8 +196,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	sphere->Initialize ({ 0.0f, 0.0f, 0.0f }, 1.0f);
 
 	plane->Initialize ();
-	teapot->Initialize ();
-	Fence->Initialize ();
+	//teapot->Initialize ();
+	//Fence->Initialize ();
 
 	//カメラ用
 	Matrix4x4 cameraMatrix = {};
@@ -208,11 +212,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	//テクスチャ切り替え用の変数
 	bool useMonsterBall = true;
 	//スプライト切り替え
-	bool useSprite = false;
+	bool useSprite = true;
 	//球の切り替え
 	bool useSphere = false;
 	//ぷれーん
-	bool usePlane = true;
+	bool usePlane = false;
 	//てぃーぽっと
 	bool useTeapot = false;
 
@@ -278,7 +282,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		}
 		if (ImGui::CollapsingHeader ("teapod")) {
 			ImGui::Checkbox ("Draw##teapod", &useTeapot);
-			teapot->ImGui ();
+			//teapot->ImGui ();
 		}
 		if (ImGui::CollapsingHeader ("Sprite")) {
 			ImGui::Checkbox ("Draw##useSprite", &useSprite);
@@ -328,13 +332,16 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			projectionMatrix = debugCamera->GetProjectionMatrix ();
 		}
 
+		//vp行列作成
+		Matrix4x4 vp = Multiply (viewMatrix, projectionMatrix);
+
 		//オブジェクト
-		plane->Update (&viewMatrix, &projectionMatrix);
-		plane->SetPositon (pos);
+		plane->Update (&vp);
+		//plane->SetPositon (pos);
 
-		teapot->Update (&viewMatrix, &projectionMatrix);
+		//teapot->Update (&vp);
 
-		Fence->Update (&viewMatrix, &projectionMatrix);
+		//Fence->Update (&vp);
 
 		sprite->Update ();
 
@@ -352,13 +359,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
 		//Fence->Draw (*magosuya->GetTextureManger()->GetTextureHandle("uvChecker"));
 		if (useSphere) {
-			sphere->Draw (magosuya->GetTextureManger ()->GetTextureHandle ("monsterBall"));
+			sphere->Draw (magosuya->GetTextureHandle ("monsterBall"));
 		}
 		if (usePlane) {
-			plane->Draw (magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
+			plane->Draw ();
 		}
 		if (useTeapot) {
-			teapot->Draw (magosuya->GetTextureManger ()->GetTextureHandle ("uvChecker"));
+			//teapot->Draw ();
 		}
 		if (useSprite) {
 			sprite->Draw ();

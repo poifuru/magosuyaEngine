@@ -14,10 +14,6 @@ TextureManager::~TextureManager () {
 
 }
 
-void TextureManager::Initialize () {
-	
-}
-
 TextureData* TextureManager::LoadTexture (const std::string& filePath, const std::string& ID) {
 	//そのパスの画像をすでに読み込んでいたら
 	if (textureMap_.count (filePath)) {
@@ -99,7 +95,7 @@ TextureData* TextureManager::LoadTexture (const std::string& filePath, const std
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetTextureHandle (const std::string& ID) {
-	//ファイルパスを指定してmapから持ってくる
+	//ID指定してmapから持ってくる
 	assert (textureMap_.count (ID));
 	return textureMap_.at (ID).handle;
 }
