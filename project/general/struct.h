@@ -201,14 +201,14 @@ struct DirectionalLight {
 };
 
 //MaterialData構造体
-struct MaterialData {
+struct MaterialFile {
 	std::string textureFilePath;
 };
 
 //ModelData構造体
 struct ModelData {
 	//形状情報 (CPU側データ)
-	MaterialData material;
+	MaterialFile material;
 	std::vector<VertexData> vertices;
 	size_t vertexCount = 0;
 

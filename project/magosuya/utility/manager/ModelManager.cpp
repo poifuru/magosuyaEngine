@@ -77,9 +77,9 @@ void ModelManager::UnloadModelData (const std::string& id) {
 	map_.erase (id);
 }
 
-MaterialData ModelManager::LoadMaterialTemplateFile (const std::string& directoryPath, const std::string& id) {
+MaterialFile ModelManager::LoadMaterialTemplateFile (const std::string& directoryPath, const std::string& id) {
 	//必要な変数の宣言
-	MaterialData materialData;
+	MaterialFile materialData;
 	std::string line;
 
 	//ファイルを開く

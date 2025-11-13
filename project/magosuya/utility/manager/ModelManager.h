@@ -21,7 +21,7 @@ public:		//メンバ関数
 
 private:	//内部関数
 	//マテリアルファイルの読み込み関数
-	MaterialData LoadMaterialTemplateFile (const std::string& directoryPath, const std::string& id);
+	MaterialFile LoadMaterialTemplateFile (const std::string& directoryPath, const std::string& id);
 
 	//ファイル読み込みの関数
 	ModelData LoadObjFile (const std::string& directoryPath, const std::string& id, bool inversion = false);

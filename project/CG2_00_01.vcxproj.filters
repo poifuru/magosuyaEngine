@@ -1,0 +1,287 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <FxCompile Include="Resources\shader\Object3d.PS.hlsl">
+      <Filter>シェーダー</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\shader\Object3d.VS.hlsl">
+      <Filter>シェーダー</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>ソースファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\engine\DxCommon.cpp">
+      <Filter>ソースファイル\magosuya\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\engine\LeakChecker.cpp">
+      <Filter>ソースファイル\magosuya\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\engine\WindowsAPI.cpp">
+      <Filter>ソースファイル\magosuya\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\object\2d\SpriteRenderer.cpp">
+      <Filter>ソースファイル\magosuya\object\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\object\2d\Sprite.cpp">
+      <Filter>ソースファイル\magosuya\object\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\object\3d\Model.cpp">
+      <Filter>ソースファイル\magosuya\object\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\object\3d\ModelRenderer.cpp">
+      <Filter>ソースファイル\magosuya\object\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\object\3d\SphereModel.cpp">
+      <Filter>ソースファイル\magosuya\object\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="general\ChangeString.cpp">
+      <Filter>ソースファイル\general</Filter>
+    </ClCompile>
+    <ClCompile Include="general\function.cpp">
+      <Filter>ソースファイル\general</Filter>
+    </ClCompile>
+    <ClCompile Include="general\Logger.cpp">
+      <Filter>ソースファイル\general</Filter>
+    </ClCompile>
+    <ClCompile Include="general\MathFunction.cpp">
+      <Filter>ソースファイル\general</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\utility\camera\DebugCamera.cpp">
+      <Filter>ソースファイル\magosuya\utility\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\utility\manager\ImGuiManager.cpp">
+      <Filter>ソースファイル\magosuya\utility\manager</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\utility\manager\ModelManager.cpp">
+      <Filter>ソースファイル\magosuya\utility\manager</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\utility\manager\TextureManager.cpp">
+      <Filter>ソースファイル\magosuya\utility\manager</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\utility\input\InputManager.cpp">
+      <Filter>ソースファイル\magosuya\utility\input</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\utility\input\GamePad.cpp">
+      <Filter>ソースファイル\magosuya\utility\input</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\utility\input\RawInput.cpp">
+      <Filter>ソースファイル\magosuya\utility\input</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\utility\audio\Sound.cpp">
+      <Filter>ソースファイル\magosuya\utility\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\utility\audio\SoundData.cpp">
+      <Filter>ソースファイル\magosuya\utility\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\utility\audio\SoundManager.cpp">
+      <Filter>ソースファイル\magosuya\utility\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="magosuya\MagosuyaEngine.cpp">
+      <Filter>ソースファイル\magosuya</Filter>
+    </ClCompile>
+    <ClCompile Include="application\scene\SceneManager.cpp" />
+    <ClCompile Include="application\scene\TitleScene.cpp" />
+    <ClCompile Include="application\scene\PlayScene.cpp" />
+    <ClCompile Include="application\scene\ClearScene.cpp" />
+    <ClCompile Include="application\scene\GameoverScene.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="externals\imgui\imconfig.h">
+      <Filter>外部ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imgui.h">
+      <Filter>外部ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
+      <Filter>外部ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imgui_impl_win32.h">
+      <Filter>外部ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imgui_internal.h">
+      <Filter>外部ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imstb_rectpack.h">
+      <Filter>外部ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imstb_truetype.h">
+      <Filter>外部ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\imstb_textedit.h">
+      <Filter>外部ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="general\ChangeString.h">
+      <Filter>ヘッダーファイル\general</Filter>
+    </ClInclude>
+    <ClInclude Include="general\Logger.h">
+      <Filter>ヘッダーファイル\general</Filter>
+    </ClInclude>
+    <ClInclude Include="general\function.h">
+      <Filter>ヘッダーファイル\general</Filter>
+    </ClInclude>
+    <ClInclude Include="general\MathFunction.h">
+      <Filter>ヘッダーファイル\general</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\externals.h">
+      <Filter>外部ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\engine\WindowsAPI.h">
+      <Filter>ヘッダーファイル\magosuya\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\engine\DxCommon.h">
+      <Filter>ヘッダーファイル\magosuya\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\engine\LeakChecker.h">
+      <Filter>ヘッダーファイル\magosuya\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\MagosuyaEngine.h">
+      <Filter>ヘッダーファイル\magosuya</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\object\2d\Sprite.h">
+      <Filter>ヘッダーファイル\magosuya\object\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\object\2d\SpriteRenderer.h">
+      <Filter>ヘッダーファイル\magosuya\object\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\object\3d\Model.h">
+      <Filter>ヘッダーファイル\magosuya\object\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\object\3d\ModelRenderer.h">
+      <Filter>ヘッダーファイル\magosuya\object\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\object\3d\SphereModel.h">
+      <Filter>ヘッダーファイル\magosuya\object\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="general\struct.h">
+      <Filter>ヘッダーファイル\general</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\utility\manager\ImGuiManager.h">
+      <Filter>ヘッダーファイル\magosuya\utility\manager</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\utility\manager\ModelManager.h">
+      <Filter>ヘッダーファイル\magosuya\utility\manager</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\utility\manager\TextureManager.h">
+      <Filter>ヘッダーファイル\magosuya\utility\manager</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\utility\audio\Sound.h">
+      <Filter>ヘッダーファイル\magosuya\utility\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\utility\audio\SoundData.h">
+      <Filter>ヘッダーファイル\magosuya\utility\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\utility\audio\SoundManager.h">
+      <Filter>ヘッダーファイル\magosuya\utility\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\utility\camera\DebugCamera.h">
+      <Filter>ヘッダーファイル\magosuya\utility\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\utility\input\GamePad.h">
+      <Filter>ヘッダーファイル\magosuya\utility\input</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\utility\input\RawInput.h">
+      <Filter>ヘッダーファイル\magosuya\utility\input</Filter>
+    </ClInclude>
+    <ClInclude Include="magosuya\utility\input\InputManager.h">
+      <Filter>ヘッダーファイル\magosuya\utility\input</Filter>
+    </ClInclude>
+    <ClInclude Include="application\scene\Scene.h" />
+    <ClInclude Include="application\scene\SceneManager.h" />
+    <ClInclude Include="application\scene\TitleScene.h" />
+    <ClInclude Include="application\scene\PlayScene.h" />
+    <ClInclude Include="application\scene\ClearScene.h" />
+    <ClInclude Include="application\scene\GameoverScene.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="ソースファイル">
+      <UniqueIdentifier>{d9429fbc-a45c-4a09-accd-7d639b3f1204}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダーファイル">
+      <UniqueIdentifier>{7be6bd21-6bb5-434f-b59f-2bf5a2ea2d85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="外部ファイル">
+      <UniqueIdentifier>{10a88c8f-860b-4156-bce4-27bc63e0df11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダー">
+      <UniqueIdentifier>{d00e7eef-e698-44cf-820e-da4c2ae980d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソースファイル\magosuya">
+      <UniqueIdentifier>{2f6a1d5f-0a7f-438c-b0aa-d0bf96c43ba0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソースファイル\magosuya\engine">
+      <UniqueIdentifier>{272283cd-e2df-4bc6-a28f-dfdd8cf66693}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソースファイル\magosuya\object">
+      <UniqueIdentifier>{2a89f171-a0e7-4e8f-896f-8a6fb1373d95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソースファイル\magosuya\utility">
+      <UniqueIdentifier>{68d7c6c6-196f-46d9-9d63-da40278cc47e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソースファイル\magosuya\object\2d">
+      <UniqueIdentifier>{e0948fee-20e5-4aa8-9350-025ef1981440}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソースファイル\magosuya\object\3d">
+      <UniqueIdentifier>{e22d1c64-6799-4529-be1d-d5260554f9ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソースファイル\magosuya\utility\audio">
+      <UniqueIdentifier>{fbc6c45d-9f1b-4e68-be7a-5a881df9f9ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソースファイル\magosuya\utility\camera">
+      <UniqueIdentifier>{d80154bf-3be6-4d69-8f92-08a0316d0269}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソースファイル\magosuya\utility\input">
+      <UniqueIdentifier>{8acba643-37e2-46e8-9adf-fe880630c96b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソースファイル\magosuya\utility\manager">
+      <UniqueIdentifier>{a7b841e9-39d8-40d4-8220-d56c979f6d07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソースファイル\general">
+      <UniqueIdentifier>{3e5e4c26-2402-409b-9ddb-c94548049e20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダーファイル\general">
+      <UniqueIdentifier>{f4051e4e-3868-44fd-82a7-adb5287b54d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダーファイル\magosuya">
+      <UniqueIdentifier>{ad062e45-9d4e-481e-a879-dd3a8c5cae57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダーファイル\magosuya\engine">
+      <UniqueIdentifier>{43229519-ce23-4416-bf5b-09e304dc3418}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダーファイル\magosuya\utility">
+      <UniqueIdentifier>{2868ef4d-0e95-4781-b0f4-e1e164fa53bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダーファイル\magosuya\object">
+      <UniqueIdentifier>{829cf9a4-8cc4-48d5-8dbc-c4a14fd974a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダーファイル\magosuya\object\2d">
+      <UniqueIdentifier>{bb2018e7-7b99-4f8e-890d-965275393f32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダーファイル\magosuya\object\3d">
+      <UniqueIdentifier>{95eae0ef-733e-485b-829e-1dd0db913abf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダーファイル\magosuya\utility\camera">
+      <UniqueIdentifier>{e075de14-080f-45a8-bf10-0d385afae3df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダーファイル\magosuya\utility\input">
+      <UniqueIdentifier>{f696b3c0-0344-47c7-88a4-58bfed422508}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダーファイル\magosuya\utility\manager">
+      <UniqueIdentifier>{ad0fc355-0c4e-4fc6-84b2-13b10b7c50fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダーファイル\magosuya\utility\audio">
+      <UniqueIdentifier>{457fd7ce-1080-4188-9b25-f8a794eb8700}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\shader\Object3d.hlsli">
+      <Filter>シェーダー</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="externals\imgui\LICENSE.txt">
+      <Filter>外部ファイル</Filter>
+    </Text>
+  </ItemGroup>
+</Project>
