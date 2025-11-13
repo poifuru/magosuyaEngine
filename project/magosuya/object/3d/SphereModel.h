@@ -3,7 +3,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 using namespace Microsoft::WRL;
-#include "engine/engineCore/DxCommon.h"
+#include "engine/DxCommon.h"
 #include "struct.h"
 
 class SphereModel {

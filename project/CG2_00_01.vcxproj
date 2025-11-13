@@ -163,8 +163,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="general\Logger.cpp" />
     <ClCompile Include="general\ChangeString.cpp" />
     <ClCompile Include="magosuya\utility\manager\ImGuiManager.cpp" />
-    <ClCompile Include="magosuya\engine\engineCore\LeakChecker.cpp" />
-    <ClCompile Include="magosuya\engine\engineCore\DxCommon.cpp">
+    <ClCompile Include="magosuya\engine\LeakChecker.cpp" />
+    <ClCompile Include="magosuya\engine\DxCommon.cpp">
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|x64'">None</DebugInformationFormat>
     </ClCompile>
     <ClCompile Include="magosuya\utility\camera\DebugCamera.cpp" />
@@ -199,9 +199,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
       </ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="magosuya\object\3d\ModelManager.cpp" />
+    <ClCompile Include="magosuya\utility\manager\ModelManager.cpp" />
     <ClCompile Include="magosuya\MagosuyaEngine.cpp" />
-    <ClCompile Include="magosuya\engine\engineCore\WindowsAPI.cpp" />
+    <ClCompile Include="magosuya\engine\WindowsAPI.cpp" />
     <ClCompile Include="magosuya\utility\manager\TextureManager.cpp" />
     <ClCompile Include="magosuya\object\2d\SpriteRenderer.cpp" />
     <ClCompile Include="magosuya\object\3d\ModelRenderer.cpp" />
@@ -229,8 +229,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="general\Logger.h" />
     <ClInclude Include="general\ChangeString.h" />
     <ClInclude Include="magosuya\utility\manager\ImGuiManager.h" />
-    <ClInclude Include="magosuya\engine\engineCore\LeakChecker.h" />
-    <ClInclude Include="magosuya\engine\engineCore\DxCommon.h" />
+    <ClInclude Include="magosuya\engine\LeakChecker.h" />
+    <ClInclude Include="magosuya\engine\DxCommon.h" />
     <ClInclude Include="magosuya\utility\camera\DebugCamera.h" />
     <ClInclude Include="magosuya\utility\input\GamePad.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
@@ -267,9 +267,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
       </ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="magosuya\object\3d\ModelManager.h" />
+    <ClInclude Include="magosuya\utility\manager\ModelManager.h" />
     <ClInclude Include="magosuya\MagosuyaEngine.h" />
-    <ClInclude Include="magosuya\engine\engineCore\WindowsAPI.h" />
+    <ClInclude Include="magosuya\engine\WindowsAPI.h" />
     <ClInclude Include="magosuya\utility\manager\TextureManager.h" />
     <ClInclude Include="magosuya\object\2d\SpriteRenderer.h" />
     <ClInclude Include="magosuya\object\3d\ModelRenderer.h" />

@@ -5,7 +5,7 @@ using namespace Microsoft::WRL;
 #include <string>
 #include <queue>
 #include <vector>
-#include "engine/engineCore/DxCommon.h"
+#include "engine/DxCommon.h"
 #include "struct.h"
 
 class TextureManager {

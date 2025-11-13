@@ -9,7 +9,7 @@ SpriteRenderer::SpriteRenderer (MagosuyaEngine* magosuya) {
 	rootSignature_ = magosuya_->GetDxCommon()->GetRootSignature ();
 	pipelineState_ = magosuya_->GetDxCommon ()->GetPipelineState ();
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; ++i) {
 		color_[i] = 1.0f;
 	}
 }

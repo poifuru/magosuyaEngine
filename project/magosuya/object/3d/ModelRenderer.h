@@ -13,7 +13,7 @@ public:
 	~ModelRenderer ();
 
 	void Initialize ();
-	void Update (Matrix4x4 world, Transform wvp);
+	void Update (Matrix4x4 world, Matrix4x4 vp, Transform uvTransform);
 	void Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
 
 	//アクセッサ
@@ -46,15 +46,13 @@ private:
 	//モデルデータ
 	ModelData modelData_;
 
-	TransformationMatrix* matrixData_ = nullptr;
-
 	//モデルデータ検索用ID
 	std::string modelID_;
 	//テクスチャ検索用ID
 	std::string texID_;
 
 	//ImGuiで色をいじる
-	float color_[4];
+	Vector4 color_;
 
 	//ポインタを借りる
 	MagosuyaEngine* magosuya_ = nullptr;

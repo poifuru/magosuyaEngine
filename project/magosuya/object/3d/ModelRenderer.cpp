@@ -6,6 +6,7 @@ ModelRenderer::ModelRenderer (MagosuyaEngine* magosuya) {
 	magosuya_ = magosuya;
 	rootSignature_ = magosuya_->GetDxCommon ()->GetRootSignature ();
 	pipelineState_ = magosuya_->GetDxCommon ()->GetPipelineState ();
+	color_ = {};
 }
 
 ModelRenderer::~ModelRenderer () {
@@ -42,13 +43,16 @@ void ModelRenderer::Initialize () {
 	materialData_->enableLighting = true;
 	materialData_->uvTranform = MakeIdentity4x4 ();
 
-	for (int i = 0; i < 4; i++) {
-		color_[i] = 1.0f;
-	}                                                                                                                                                                                                                     
+	color_ = { 1.0f, 1.0f, 1.0f, 1.0f };
 }
 
-void ModelRenderer::Update (Matrix4x4 wvpData, Transform uvTransform) {
+void ModelRenderer::Update (Matrix4x4 world, Matrix4x4 vp, Transform uvTransform) {
+	matrixData_->World = world;
+	matrixData_->WVP = Multiply(matrixData_->World, vp);
+	matrixData_->WorldInverseTranspose = Transpose (Inverse (matrixData_->World));
 
+	//uvTranform更新
+	materialData_->uvTranform = MakeAffineMatrix (uvTransform.scale, uvTransform.rotate, uvTransform.translate);
 }
 
 void ModelRenderer::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {

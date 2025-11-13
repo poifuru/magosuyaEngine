@@ -17,9 +17,3 @@ ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(ID3D12Device* device, i
 
 //ログをテキストで出す関数
 std::ofstream Logtext();
-
-//マテリアルファイルの読み込み関数
-MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
-
-//ファイル読み込みの関数
-ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename, bool inversion = false);

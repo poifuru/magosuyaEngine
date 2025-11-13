@@ -139,15 +139,15 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
 
 #pragma region Plane
-	std::unique_ptr<Model> plane = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/plane", "plane", false);
+	std::unique_ptr<Model> plane = std::make_unique<Model> (magosuya.get(), "Resources/plane", "plane", false);
 #pragma endregion
 
 #pragma region Teapot
-	std::unique_ptr<Model> teapot = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/teapot", "teapot", false);
+	std::unique_ptr<Model> teapot = std::make_unique<Model> (magosuya.get (), "Resources/teapot", "teapot", false);
 #pragma endregion
 
 #pragma region Fence
-	std::unique_ptr<Model> Fence = std::make_unique<Model> (magosuya->GetDxCommon (), "Resources/fence", "fence", false);
+	std::unique_ptr<Model> Fence = std::make_unique<Model> (magosuya.get (), "Resources/fence", "fence", false);
 #pragma endregion
 
 	//平行光源のResourceを作成してデフォルト値を書き込む
@@ -335,7 +335,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		teapot->Update (&viewMatrix, &projectionMatrix);
 
 		Fence->Update (&viewMatrix, &projectionMatrix);
-
 
 		sprite->Update ();
 

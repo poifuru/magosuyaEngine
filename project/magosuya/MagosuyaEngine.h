@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <string>
-#include "engine/engineCore/DxCommon.h"
+#include "engine/DxCommon.h"
 #include "utility/manager/TextureManager.h"
 #include "utility/manager/ImGuiManager.h"
 
