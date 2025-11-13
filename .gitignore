@@ -329,3 +329,12 @@ project/Dumps/
 
 #  imgui.iniも無視
 project/.ini/
+
+# CG2ファイル無視
+CG2/
+
+externals/
+
+x64/
+
+desktop.ini
