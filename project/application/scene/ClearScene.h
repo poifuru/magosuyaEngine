@@ -6,6 +6,7 @@
 
 class ClearScene : public Scene {
 public:		//メンバ関数
+	ClearScene (MagosuyaEngine* magosuya);
 	~ClearScene () override;
 
 	void Initialize () override;

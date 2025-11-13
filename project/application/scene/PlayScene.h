@@ -7,6 +7,7 @@
 
 class PlayScene : public Scene {
 public:		//メンバ関数
+	PlayScene (MagosuyaEngine* magosuya);
 	~PlayScene () override;
 
 	void Initialize () override;

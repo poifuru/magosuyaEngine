@@ -6,6 +6,7 @@
 
 class GameoverScene : public Scene {
 public:		//メンバ関数
+	GameoverScene (MagosuyaEngine* magosuya);
 	~GameoverScene () override;
 
 	void Initialize () override;

@@ -1,6 +1,10 @@
 #include "ClearScene.h"
 #include "MagosuyaEngine.h"
 
+ClearScene::ClearScene (MagosuyaEngine* magosuya) {
+	magosuya_ = magosuya;
+}
+
 ClearScene::~ClearScene () {
 	
 }

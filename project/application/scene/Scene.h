@@ -19,7 +19,6 @@ class MagosuyaEngine;
 
 class Scene {
 public:		//メンバ関数
-	Scene (MagosuyaEngine* magosuya) { magosuya_ = magosuya; }
 	virtual ~Scene () = default;
 
 	virtual void Initialize () = 0;
