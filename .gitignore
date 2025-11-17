@@ -333,11 +333,6 @@ project/.ini/
 # CG2ファイル無視
 CG2/
 
-externals/
-
-project/DirectXTex/
-project/imgui/
-
 x64/
 
 desktop.ini
