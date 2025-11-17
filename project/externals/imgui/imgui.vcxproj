@@ -59,15 +59,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)$externals\imgui\lib\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)$..\generated\outputs\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)..\generated\outputs\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$externals\imgui\lib\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)$..\generated\outputs\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)..\generated\outputs\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
     <OutDir>$(SolutionDir)$externals\imgui\lib\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)$..\generated\outputs\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)..\generated\outputs\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
