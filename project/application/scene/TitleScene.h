@@ -14,5 +14,6 @@ public:		//メンバ関数
 	void Draw () override;
 
 private:	//メンバ変数
-	
+	std::unique_ptr<CameraData> camera_ = nullptr;
+	std::unique_ptr<Model> model_ = nullptr;
 };

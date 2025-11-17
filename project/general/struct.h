@@ -132,6 +132,14 @@ struct Transform {
 	Vector3 translate;
 };
 
+//カメラデータ構造体
+struct CameraData {
+	Transform transform;
+	Matrix4x4 world;
+	Matrix4x4 view;
+	Matrix4x4 proj;
+};
+
 // SpriteRendererが参照する最小限の情報構造体
 struct TransformData {
 	Transform transform;

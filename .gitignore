@@ -337,6 +337,8 @@ x64/
 
 desktop.ini
 
+project/$
+
 /project/externals/DirectXTex/lib/Debug/DirectXTex.lib
 /project/externals/DirectXTex/lib/Debug/DirectXTex.pdb
 /project/externals/DirectXTex/lib/Development/DirectXTex.lib
