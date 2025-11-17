@@ -88,30 +88,6 @@
     <ClCompile Include="application\scene\GameoverScene.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="externals\imgui\imconfig.h">
-      <Filter>外部ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imgui.h">
-      <Filter>外部ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
-      <Filter>外部ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imgui_impl_win32.h">
-      <Filter>外部ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imgui_internal.h">
-      <Filter>外部ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imstb_rectpack.h">
-      <Filter>外部ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imstb_truetype.h">
-      <Filter>外部ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imstb_textedit.h">
-      <Filter>外部ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="general\ChangeString.h">
       <Filter>ヘッダーファイル\general</Filter>
     </ClInclude>
@@ -278,10 +254,5 @@
     <None Include="Resources\shader\Object3d.hlsli">
       <Filter>シェーダー</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="externals\imgui\LICENSE.txt">
-      <Filter>外部ファイル</Filter>
-    </Text>
   </ItemGroup>
 </Project>
