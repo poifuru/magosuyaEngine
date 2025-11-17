@@ -11,13 +11,15 @@ LRESULT WindowsAPI::WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 	switch (msg) {
 		//入力を検知した
 	case WM_INPUT:
-
-		if (g_inputManager) {
-			g_inputManager->Update (lparam);
+	{
+		WindowsAPI* pThis = reinterpret_cast<WindowsAPI*>(GetWindowLongPtr (hwnd, GWLP_USERDATA));
+		if (pThis && pThis->inputManager_) {
+			pThis->inputManager_->Update (lparam);
 		}
-		break;;
+		break;
+	}
 
-		//ウィンドウが破棄された
+	//ウィンドウが破棄された
 	case WM_DESTROY:
 		//OSに対して、アプリの終了を伝える
 		PostQuitMessage (0);
@@ -32,7 +34,7 @@ LRESULT WindowsAPI::WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 	return DefWindowProc (hwnd, msg, wparam, lparam);
 }
 
-void WindowsAPI::Initialize () {
+void WindowsAPI::Initialize (InputManager* inputManager) {
 	//システムタイマーの分解能を上げる
 	timeBeginPeriod (1);
 
@@ -69,12 +71,14 @@ void WindowsAPI::Initialize () {
 		nullptr						//オプション
 	);
 
+	// ウィンドウに this ポインタを保存
+	SetWindowLongPtr (hwnd_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+
 	//ウィンドウを表示
 	ShowWindow (hwnd_, SW_SHOW);
 
 	//インプットマネージャーの初期化
-	g_inputManager = std::make_unique<InputManager> ();
-	g_inputManager->Initialize (hwnd_);
+	inputManager_ = inputManager;
 }
 
 bool WindowsAPI::ProcessMessage () {

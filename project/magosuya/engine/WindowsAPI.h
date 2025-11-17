@@ -5,7 +5,6 @@
 #include <memory>
 
 class InputManager; // 前方宣言
-extern std::unique_ptr<InputManager> g_inputManager;
 
 class WindowsAPI {
 public:	//静的メンバ関数
@@ -15,7 +14,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize ();
+	void Initialize (InputManager* inputManager);
 
 	bool ProcessMessage ();
 
@@ -33,4 +32,7 @@ private:
 	//ウィンドウ
 	WNDCLASS windowClass_{};
 	HWND hwnd_{};
+
+	//ポインタを借りる
+	InputManager* inputManager_ = nullptr;
 };
