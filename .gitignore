@@ -344,9 +344,13 @@ desktop.ini
 
 /project/externals/DirectXTex/lib/Debug/DirectXTex.lib
 /project/externals/DirectXTex/lib/Debug/DirectXTex.pdb
+/project/externals/DirectXTex/lib/Development/DirectXTex.lib
+/project/externals/DirectXTex/lib/Development/DirectXTex.pdb
 /project/externals/DirectXTex/lib/Release/DirectXTex.lib
 /project/externals/DirectXTex/lib/Release/DirectXTex.pdb
 /project/externals/imgui/lib/Debug/imgui.lib
 /project/externals/imgui/lib/Debug/imgui.pdb
+/project/externals/imgui/lib/Development/imgui.lib
+/project/externals/imgui/lib/Development/ImGui.pdb
 /project/externals/imgui/lib/Release/imgui.lib
 /project/externals/imgui/lib/Release/ImGui.pdb
