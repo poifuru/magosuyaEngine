@@ -330,18 +330,18 @@ project/Dumps/
 #  imgui.iniも無視
 project/.ini/
 
-# libファイルを無視
-project/externals/DirectXTex/lib/
-project/externals/imgui/lib/
-
 # CG2ファイル無視
 CG2/
 
 externals/
 
+project/DirectXTex/
+project/imgui/
+
 x64/
 
 desktop.ini
+
 /project/externals/DirectXTex/lib/Debug/DirectXTex.lib
 /project/externals/DirectXTex/lib/Debug/DirectXTex.pdb
 /project/externals/DirectXTex/lib/Release/DirectXTex.lib
