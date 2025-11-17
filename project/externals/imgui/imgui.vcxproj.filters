@@ -15,57 +15,55 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imstb_truetype.h">
+    <ClInclude Include="imconfig.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imconfig.h">
+    <ClInclude Include="imgui.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imgui.h">
+    <ClInclude Include="imgui_impl_dx12.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imgui_impl_dx12.h">
+    <ClInclude Include="imgui_impl_win32.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imgui_impl_win32.h">
+    <ClInclude Include="imgui_internal.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imgui_internal.h">
+    <ClInclude Include="imstb_rectpack.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imstb_rectpack.h">
+    <ClInclude Include="imstb_textedit.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imstb_textedit.h">
+    <ClInclude Include="imstb_truetype.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imgui_widgets.cpp">
+    <ClCompile Include="imgui.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imgui.cpp">
+    <ClCompile Include="imgui_demo.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imgui_demo.cpp">
+    <ClCompile Include="imgui_draw.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imgui_draw.cpp">
+    <ClCompile Include="imgui_impl_dx12.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imgui_impl_dx12.cpp">
+    <ClCompile Include="imgui_impl_win32.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imgui_impl_win32.cpp">
+    <ClCompile Include="imgui_tables.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\imgui_tables.cpp">
+    <ClCompile Include="imgui_widgets.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\..\..\..\..\LibraryBuild\ImGui\ImGui\LICENSE.txt">
-      <Filter>リソース ファイル</Filter>
-    </Text>
+    <Text Include="LICENSE.txt" />
   </ItemGroup>
 </Project>
