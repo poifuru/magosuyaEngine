@@ -4,7 +4,8 @@ MagosuyaEngine::MagosuyaEngine () {
 	dxCommon_ = std::make_unique<DxCommon> ();
 	imGuiManager_ = std::make_unique<ImGuiManager> (dxCommon_.get ());
 	textureManager_ = std::make_unique<TextureManager> (dxCommon_.get ());
-	modelManager_ = std::make_unique<ModelManager> (dxCommon_.get (), textureManager_.get());
+	modelManager_ = std::make_unique<ModelManager> (dxCommon_.get (), textureManager_.get ());
+	inputManager_ = std::make_unique<InputManager> ();
 }
 
 MagosuyaEngine::~MagosuyaEngine () {
@@ -12,18 +13,23 @@ MagosuyaEngine::~MagosuyaEngine () {
 }
 
 void MagosuyaEngine::Initialize () {
-	dxCommon_->Initialize ();
+	dxCommon_->Initialize (inputManager_.get ());
 	imGuiManager_->Initialize ();
+	inputManager_->Initialize (dxCommon_->GetWinAPI ()->GetHwnd ());
 }
 
 void MagosuyaEngine::BeginFrame () {
 	imGuiManager_->BeginFrame ();
 	dxCommon_->BeginFrame ();
+
+	//ゲームパッドの更新
+	inputManager_->GetGamePad ()->Update ();
 }
 void MagosuyaEngine::EndFrame () {
 	imGuiManager_->Draw ();
 	dxCommon_->EndFrame ();
 	textureManager_->ClearIntermediateResource ();
+	inputManager_->EndFrame ();
 }
 
 void MagosuyaEngine::Finalize () {
@@ -56,4 +62,12 @@ void MagosuyaEngine::UnloadModelData (const std::string& ID) {
 
 std::weak_ptr<ModelData> MagosuyaEngine::GetModelData (const std::string& ID) {
 	return modelManager_->GetModelData (ID);
+}
+
+RawInput* MagosuyaEngine::GetRawInput () {
+	return inputManager_->GetRawInput ();
+}
+
+GamePad* MagosuyaEngine::GetGamePad () {
+	return inputManager_->GetGamePad ();
 }

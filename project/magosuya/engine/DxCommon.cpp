@@ -14,6 +14,7 @@
 #include "function.h"
 #include "Logger.h"
 #include "ChangeString.h"
+#include "utility/input/InputManager.h"
 
 DxCommon::DxCommon () {
 
@@ -23,7 +24,7 @@ DxCommon::~DxCommon () {
 
 }
 
-void DxCommon::Initialize () {
+void DxCommon::Initialize (InputManager* inputManager) {
 	HRESULT hr;
 	std::ofstream logStream = Logtext ();
 
@@ -36,7 +37,7 @@ void DxCommon::Initialize () {
 	hr = CoInitializeEx (0, COINIT_MULTITHREADED);
 
 	winApi_ = std::make_unique<WindowsAPI> ();
-	winApi_->Initialize ();
+	winApi_->Initialize (inputManager);
 
 	// 2.FPSの固定化
 	InitializeFixFPS ();
@@ -331,8 +332,8 @@ ComPtr<IDxcBlob> DxCommon::CompilerShader (const std::wstring& filePath, const w
 	//hlslファイルを読む
 	ComPtr<IDxcBlobEncoding> shaderSource = nullptr;
 	HRESULT hr = dxcUtils->LoadFile (filePath.c_str (), nullptr, &shaderSource);
-		//読めなかったらあきらめる
-		assert (SUCCEEDED (hr));
+	//読めなかったらあきらめる
+	assert (SUCCEEDED (hr));
 	//読み込んだファイルの内容を設定する
 	DxcBuffer shaderSourceBuffer;
 	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer ();
@@ -354,7 +355,7 @@ ComPtr<IDxcBlob> DxCommon::CompilerShader (const std::wstring& filePath, const w
 		&shaderSourceBuffer,		//読み込んだファイル
 		arguments,					//コンパイルオプション
 		_countof (arguments),		//コンパイルオプションの数
-		includeHandler.Get(),				//includeが含まれた諸々
+		includeHandler.Get (),				//includeが含まれた諸々
 		IID_PPV_ARGS (shaderResult.GetAddressOf ())	//コンパイル結果
 	);
 	//コンパイルエラーではなくdxcが起動できないなど致命的な状況

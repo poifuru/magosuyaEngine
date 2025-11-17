@@ -11,8 +11,9 @@ using namespace Microsoft::WRL;
 #include <chrono>
 #include "WindowsAPI.h"
 #include "LeakChecker.h"
-#include "utility/input/InputManager.h"
 #include <DirectXTex.h>
+
+class InputManager;
 
 //BlendStateの個数
 const int kBlendDescNum = 6;
@@ -23,7 +24,7 @@ public:		//メンバ関数(mainで呼び出すよう)
 	DxCommon ();
 	~DxCommon ();
 
-	void Initialize ();
+	void Initialize (InputManager* inputManager);
 	void BeginFrame ();
 	void EndFrame ();
 	void Finalize ();
@@ -55,7 +56,7 @@ public:		//メンバ関数(mainで呼び出すよう)
 	/// <param name="numDescriptors"></param>
 	/// <param name="shaderVisible"></param>
 	/// <returns></returns>
-	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap (D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);	
+	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap (D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
 #pragma region ディスクリプタハンドル取得関数(必要になったらRTVやDSVなども)
 	/// <summary>
