@@ -17,7 +17,9 @@
 #include "InputManager.h"
 
 DxCommon::DxCommon () {
-
+	HRESULT hr;
+	//COMの初期化
+	hr = CoInitializeEx (0, COINIT_MULTITHREADED);
 }
 
 DxCommon::~DxCommon () {
@@ -32,9 +34,6 @@ void DxCommon::Initialize (InputManager* inputManager) {
 	//誰も補足しなかった場合に(Unhandled)、補足する関数を登録
 	//main関数が始まってすぐに登録すると良い
 	SetUnhandledExceptionFilter (ExportDump);
-
-	//COMの初期化
-	hr = CoInitializeEx (0, COINIT_MULTITHREADED);
 
 	winApi_ = std::make_unique<WindowsAPI> ();
 	winApi_->Initialize (inputManager);

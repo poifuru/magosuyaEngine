@@ -8,10 +8,13 @@ TitleScene::TitleScene (MagosuyaEngine* magosuya) {
 	camera_ = std::make_unique<CameraData> ();
 	model_ = std::make_unique<Model> (magosuya);
 	magosuya_->LoadModelData ("Resources/teapot", "teapot");
+	bgm_ = std::make_unique<Sound> (magosuya_);
+	magosuya_->LoadSound ("Resources/Sounds/Alarm01.wav", "bgm");
 }
 
 TitleScene::~TitleScene () {
-
+	magosuya_->UnloadModelData ("teapot");
+	magosuya_->UnloadSound ("bgm");
 }
 
 void TitleScene::Initialize () {
@@ -27,6 +30,9 @@ void TitleScene::Initialize () {
 		{},
 		{0.0f, 0.0f, -50.0f},
 	};
+
+	bgm_->SetSound ("bgm");
+	bgm_->Play ();
 }
 
 void TitleScene::Update () {

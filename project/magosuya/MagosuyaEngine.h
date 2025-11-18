@@ -6,6 +6,7 @@
 #include "ImGuiManager.h"
 #include "ModelManager.h"
 #include "InputManager.h"
+#include "SoundManager.h"
 
 class MagosuyaEngine {
 public:		//メンバ関数
@@ -33,15 +34,23 @@ public:		//メンバ関数
 	//インプットマネージャー
 	RawInput* GetRawInput ();
 	GamePad* GetGamePad ();
+
+	//サウンドマネージャー
+	SoundData* LoadSound (const std::string& filePath, const std::string& id);
+	void UnloadSound (const std::string& id);
+	const SoundData& GetSound (const std::string& id) const;
+	IXAudio2* GetXAudio ();
+	IXAudio2MasteringVoice* GetMasterVoice ();
 #pragma endregion
 
 	//アクセッサ
 	DxCommon* GetDxCommon () { return dxCommon_.get (); }
 
 private:	//メンバ変数
-	std::unique_ptr<DxCommon> dxCommon_;
-	std::unique_ptr<TextureManager> textureManager_;
-	std::unique_ptr<ImGuiManager> imGuiManager_;
-	std::unique_ptr<ModelManager> modelManager_;
-	std::unique_ptr<InputManager> inputManager_;
+	std::unique_ptr<DxCommon> dxCommon_ = nullptr;
+	std::unique_ptr<TextureManager> textureManager_ = nullptr;
+	std::unique_ptr<ImGuiManager> imGuiManager_ = nullptr;
+	std::unique_ptr<ModelManager> modelManager_ = nullptr;
+	std::unique_ptr<InputManager> inputManager_ = nullptr;
+	std::unique_ptr<SoundManager> soundManager_ = nullptr;
 };

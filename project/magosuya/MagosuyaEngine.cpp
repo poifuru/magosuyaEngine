@@ -6,6 +6,7 @@ MagosuyaEngine::MagosuyaEngine () {
 	textureManager_ = std::make_unique<TextureManager> (dxCommon_.get ());
 	modelManager_ = std::make_unique<ModelManager> (dxCommon_.get (), textureManager_.get ());
 	inputManager_ = std::make_unique<InputManager> ();
+	soundManager_ = std::make_unique<SoundManager> ();
 }
 
 MagosuyaEngine::~MagosuyaEngine () {
@@ -34,6 +35,7 @@ void MagosuyaEngine::EndFrame () {
 
 void MagosuyaEngine::Finalize () {
 	dxCommon_->Finalize ();
+	soundManager_->Finalize ();
 }
 
 void MagosuyaEngine::LoadTexture (const std::string& filePath, const std::string& ID) {
@@ -70,4 +72,24 @@ RawInput* MagosuyaEngine::GetRawInput () {
 
 GamePad* MagosuyaEngine::GetGamePad () {
 	return inputManager_->GetGamePad ();
+}
+
+SoundData* MagosuyaEngine::LoadSound (const std::string& filePath, const std::string& id) {
+	return soundManager_->LoadSound (filePath, id);
+}
+
+void MagosuyaEngine::UnloadSound (const std::string& id) {
+	soundManager_->UnloadSound (id);
+}
+
+const SoundData& MagosuyaEngine::GetSound (const std::string& id) const{
+	return soundManager_->GetSound (id);
+}
+
+IXAudio2* MagosuyaEngine::GetXAudio () {
+	return soundManager_->GetXAudio ();
+}
+
+IXAudio2MasteringVoice* MagosuyaEngine::GetMasterVoice () {
+	return soundManager_->GetMasterVoice ();
 }
