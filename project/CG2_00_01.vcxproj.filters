@@ -109,6 +109,7 @@
     <ClCompile Include="application\Player\PlayerState\PlayerChargeState.cpp" />
     <ClCompile Include="application\Player\PlayerState\PlayerChargeReleaseState.cpp" />
     <ClCompile Include="application\Boss\Boss.cpp" />
+    <ClCompile Include="application\Boss\Attack\CenterStomp\CenterStomp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="general\ChangeString.h">
@@ -206,6 +207,7 @@
     <ClInclude Include="application\Collider\PlayerBodyCollider.h" />
     <ClInclude Include="application\Collider\AttackCollider.h" />
     <ClInclude Include="application\Boss\Boss.h" />
+    <ClInclude Include="application\Boss\Attack\CenterStomp\CenterStomp.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ソースファイル">

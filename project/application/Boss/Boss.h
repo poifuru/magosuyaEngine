@@ -1,6 +1,7 @@
 #pragma once
-#include "../../magosuya/MagosuyaEngine.h"
+#include "MagosuyaEngine.h"
 #include "object/3d/Model.h"
+#include "Attack/CenterStomp/CenterStomp.h"
 
 class Boss {
 public:
@@ -10,9 +11,13 @@ public:
 	void Initialize();
 	void Update();
 	void Draw();
+	void ImGuiControl();
 
-	Transform& GetTransform() { return position_; }
-	Vector3& GetPosition() { return position_.translate; }
+	// Getter
+	Transform& GetTransform() { return transform_; }
+	Vector3& GetPosition() { return transform_.translate; }
+	// Setter
+	void SetTransform(Transform transform) { transform_ = transform; }
 
 private:
 	void UpdateCamera();
@@ -23,7 +28,9 @@ private:
 	Matrix4x4 vp_;
 	std::unique_ptr<Model> model_ = nullptr;
 	
-	Transform position_;
+	std::unique_ptr <CenterStomp> centerStomp_ = nullptr;
+
+	Transform transform_;
 	Vector3 speed_;
 };
 

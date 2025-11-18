@@ -1,5 +1,6 @@
 #include "Boss.h"
 #include "MathFunction.h"
+#include <imgui.h>
 
 Boss::Boss(MagosuyaEngine* magosuya, CameraData* camera) {
 	magosuya_ = magosuya;
@@ -9,7 +10,7 @@ Boss::Boss(MagosuyaEngine* magosuya, CameraData* camera) {
 }
 
 Boss::~Boss() {
-
+	
 }
 
 void Boss::Initialize() {
@@ -17,7 +18,10 @@ void Boss::Initialize() {
 	model_->SetTexture("teapot");
 	model_->Initialize();
 
-	position_ = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f}, {0.0f,0.0f,0.0f} };
+	centerStomp_ = std::make_unique<CenterStomp>(magosuya_, camera_);
+	centerStomp_->Initialize();
+
+	transform_ = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f}, {0.0f,0.0f,0.0f} };
 	speed_ = { 0.1f,0.1f,0.1f };
 }
 
@@ -29,10 +33,22 @@ void Boss::Update() {
 
 
 	model_->Update(&vp_);
+	centerStomp_->Update();
 }
 
 void Boss::Draw() {
 	model_->Draw();
+	centerStomp_->Draw();
+}
+
+void Boss::ImGuiControl() {
+#ifdef _DEBUG
+	ImGui::Begin("Boss");
+	ImGui::DragFloat3("Scale", &transform_.scale.x, 0.1f);
+	ImGui::DragFloat3("Rotate", &transform_.rotate.x, 0.1f);
+	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.1f);
+	ImGui::End();
+#endif
 }
 
 void Boss::UpdateCamera() {
@@ -46,16 +62,16 @@ void Boss::UpdateCamera() {
 
 void Boss::UpdateMove() {
 	if (magosuya_->GetRawInput()->Push(VK_UP)) {
-		position_.translate.z += speed_.z;
+		transform_.translate.z += speed_.z;
 	}
 	if (magosuya_->GetRawInput()->Push(VK_DOWN)) {
-		position_.translate.z -= speed_.z;
+		transform_.translate.z -= speed_.z;
 	}
 	if (magosuya_->GetRawInput()->Push(VK_LEFT)) {
-		position_.translate.x -= speed_.x;
+		transform_.translate.x -= speed_.x;
 	}
 	if (magosuya_->GetRawInput()->Push(VK_RIGHT)) {
-		position_.translate.x += speed_.x;
+		transform_.translate.x += speed_.x;
 	}
-	model_->SetTransform(position_);
+	model_->SetTransform(transform_);
 }

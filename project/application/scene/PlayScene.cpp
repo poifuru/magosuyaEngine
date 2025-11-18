@@ -24,6 +24,8 @@ void PlayScene::Initialize () {
 }
 
 void PlayScene::Update () {
+	boss_->ImGuiControl();
+
 	if (magosuya_->GetRawInput()->Trigger(VK_SPACE)) {
 		nextScene_ = SceneLabel::Title;
 		isFinish_ = true;
