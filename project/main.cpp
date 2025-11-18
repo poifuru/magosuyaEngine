@@ -18,6 +18,7 @@
 #include "object/2d/Sprite.h"
 #include "utility/camera/DebugCamera.h"
 #include "utility/Input/InputManager.h"
+#include "utility/particle/Particle.h"
 
 //サウンドデータの読み込み関数
 SoundData SoundLoadWave (const char* filename) {
@@ -137,22 +138,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	//音声の読み込み
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
-
-#pragma region Plane
-	std::unique_ptr<Model> plane = std::make_unique<Model> (magosuya.get());
-	magosuya->LoadModelData ("Resources/plane", "plane");
-	plane->SetTexture ("plane");
-	plane->SetModelData ("plane");
-	plane->Initialize ();
-#pragma endregion
-
-#pragma region Teapot
-	std::unique_ptr<Model> teapot = std::make_unique<Model> (magosuya.get ());
-	magosuya->LoadModelData ("Resources/teapot", "teapot");
-	teapot->SetTexture ("teapot");
-	teapot->SetModelData ("teapot");
-	teapot->Initialize ();
-#pragma endregion
+	//テクスチャの読み込み
+	magosuya->LoadTexture ("Resources/uvChecker.png", "uvChecker");
 
 	//平行光源のResourceを作成してデフォルト値を書き込む
 	ComPtr<ID3D12Resource> dierctionalLightResource = magosuya->GetDxCommon ()->CreateBufferResource (sizeof (DirectionalLight));
@@ -164,35 +151,21 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	directionalLightData->direction = { 0.0f, 0.0f, 1.0f };
 	directionalLightData->intensity = 1.0f;
 	directionalLightData->mode = Light::halfLambert;
-
-	//Transform
-	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
-
-	//UVtransform用の変数
-	Transform uvTransformSprite{
-		{1.0f, 1.0f, 1.0f},
-		{0.0f, 0.0f, 0.0f},
-		{0.0f, 0.0f, 0.0f},
-	};
-
-	//テクスチャの読み込み
-	magosuya->LoadTexture ("Resources/uvChecker.png", "uvChecker");
-	magosuya->LoadTexture ("Resources/monsterBall.png", "monsterBall");
+	//ライティング用の変数
+	float colorLight[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	//BGM再生
 	SoundPlayWave (xAudio2.Get (), soundData1);
 
-	//スプライト
-	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite> (magosuya.get());
-	sprite->SetID ("uvChecker");
-	sprite->Initialize ({ 640.0f, 360.0f, 0.0f });
-	sprite->SetAnchorPoint ({ 0.5f, 0.5f });
-	sprite->SetTexture ("uvChecker");
-
-	std::unique_ptr<SphereModel> sphere = std::make_unique<SphereModel> (magosuya->GetDxCommon (), 16);
-	sphere->Initialize ({ 0.0f, 0.0f, 0.0f }, 1.0f);
+	std::unique_ptr<Particle> particle = std::make_unique<Particle> (magosuya.get ());
+	particle->SetTexHandle (magosuya->GetTextureHandle ("uvChecker"));
+	particle->Initialize ();
+	Transform transform = particle->GetTransform ();
+	Transform uvTransform = particle->GetUVTransform ();
 
 	//カメラ用
+	//Transform
+	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
 	Matrix4x4 cameraMatrix = {};
 	Matrix4x4 viewMatrix = {};
 	Matrix4x4 projectionMatrix = {};
@@ -201,22 +174,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	std::unique_ptr<DebugCamera> debugCamera = std::make_unique<DebugCamera> ();
 	debugCamera->Initialize ();
 	bool debugMode = false;
-
-	//スプライト切り替え
-	bool useSprite = false;
-	//球の切り替え
-	bool useSphere = false;
-	//ぷれーん
-	bool usePlane = true;
-	//てぃーぽっと
-	bool useTeapot = false;
-
-	//ライティング用の変数
-	float colorLight[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-	//お試し
-	Vector3 pos{};
-
 	/*********************************/
 
 	/*メインループ！！！！！！！！！*/
@@ -263,22 +220,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			ImGui::DragFloat3 ("cameraRotate", &cameraTransform.rotate.x, 0.01f);
 			ImGui::DragFloat3 ("cameraTranslate", &cameraTransform.translate.x, 0.01f);
 		}
-		if (ImGui::CollapsingHeader ("sphere")) {
-			ImGui::Checkbox ("speher##useSphere", &useSphere);
-			sphere->ShowImGuiEditor ();
-		}
-		if (ImGui::CollapsingHeader ("plane")) {
-			ImGui::Checkbox ("Draw##plane", &usePlane);
-			plane->ImGui ();
-		}
-		if (ImGui::CollapsingHeader ("teapod")) {
-			ImGui::Checkbox ("Draw##teapod", &useTeapot);
-			teapot->ImGui ();
-		}
-		if (ImGui::CollapsingHeader ("Sprite")) {
-			ImGui::Checkbox ("Draw##useSprite", &useSprite);
-			sprite->ImGui ();
-		}
 		if (ImGui::CollapsingHeader ("light")) {
 			if (ImGui::ColorEdit4 ("color", colorLight)) {
 				// 色が変更されたらmaterialDataに反映
@@ -304,6 +245,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			}
 		}
 
+		if (g_inputManager->GetRawInput ()->Push ('D')) {
+			transform.translate.x += 0.01f;
+		}
+		if (g_inputManager->GetRawInput ()->Push ('A')) {
+			transform.translate.x -= 0.01f;
+		}
+
 		//ゲームの処理//
 		//=======オブジェクトの更新処理=======//
 		//カメラ
@@ -319,15 +267,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 		//vp行列作成
 		Matrix4x4 vp = Multiply (viewMatrix, projectionMatrix);
-
-		//オブジェクト
-		plane->Update (&vp);
-
-		teapot->Update (&vp);
-
-		sprite->Update ();
-
-		sphere->Update (&viewMatrix, &projectionMatrix);
+		particle->SetTransform (transform);
+		particle->SetUVTransform (uvTransform);
+		particle->Update (&vp);
 
 		//光源のdirectionの正規化
 		directionalLightData->direction = Normalize (directionalLightData->direction);
@@ -338,21 +280,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 		//ライティングの設定
 		magosuya->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
-		//描画！(DrawCall/ドローコール)。3頂点で1つのインスタンス。インスタンスについては今後
-		//Fence->Draw (*magosuya->GetTextureManger()->GetTextureHandle("uvChecker"));
-		if (useSphere) {
-			sphere->Draw (magosuya->GetTextureHandle ("monsterBall"));
-		}
-		if (usePlane) {
-			plane->Draw ();
-		}
-		if (useTeapot) {
-			teapot->Draw ();
-		}
-		if (useSprite) {
-			sprite->Draw ();
-		}
-
+		//===描画===//
+		particle->Draw ();
+		
 		//フレーム終了
 		g_inputManager->EndFrame ();
 		magosuya->EndFrame ();

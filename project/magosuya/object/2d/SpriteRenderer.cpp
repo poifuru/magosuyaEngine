@@ -107,7 +107,7 @@ void SpriteRenderer::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
 	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
 	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
 	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootDescriptorTable (2, textureHandle);
-	//こいつでインデックスバッファを使った描画
+	//インデックスバッファを使った描画
 	magosuya_->GetDxCommon ()->GetCommandList ()->DrawIndexedInstanced (6, 1, 0, 0, 0);
 }
 
