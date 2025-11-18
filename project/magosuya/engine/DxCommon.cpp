@@ -14,7 +14,7 @@
 #include "function.h"
 #include "Logger.h"
 #include "ChangeString.h"
-#include "utility/input/InputManager.h"
+#include "InputManager.h"
 
 DxCommon::DxCommon () {
 

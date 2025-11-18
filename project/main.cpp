@@ -1,9 +1,6 @@
 #include <Windows.h>
-#include <xaudio2.h>
-#pragma comment(lib,"xaudio2.lib")
-#include <imgui.h>
 #include "MagosuyaEngine.h"
-#include "application/scene/SceneManager.h"
+#include "SceneManager.h"
 
 //サウンドデータの読み込み関数
 SoundData SoundLoadWave (const char* filename) {
@@ -124,7 +121,6 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 	//音声の読み込み
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
-
 
 	/*メインループ！！！！！！！！！*/
 	//ウィンドウの×ボタンが押されるまでループ

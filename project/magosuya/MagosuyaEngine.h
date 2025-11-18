@@ -1,11 +1,11 @@
 #pragma once
 #include <memory>
 #include <string>
-#include "engine/DxCommon.h"
-#include "utility/manager/TextureManager.h"
-#include "utility/manager/ImGuiManager.h"
-#include "utility/manager/ModelManager.h"
-#include "utility/input/InputManager.h"
+#include "DxCommon.h"
+#include "TextureManager.h"
+#include "ImGuiManager.h"
+#include "ModelManager.h"
+#include "InputManager.h"
 
 class MagosuyaEngine {
 public:		//メンバ関数

@@ -1,11 +1,14 @@
 #pragma once
+#include <Wrl.h>
+using namespace Microsoft::WRL;
 #include <xaudio2.h>
-#pragma comment(lib, "xaudio2.h")
 #include <fstream>
+#include "struct.h"
 
 class Sound{
-public: //メンバ関数 
+public: // メンバ関数
+	void Play ();
 
-private://メンバ変数
+private:// メンバ変数
 	IXAudio2MasteringVoice* masterVoice_;
 };

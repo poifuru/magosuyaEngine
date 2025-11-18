@@ -13,7 +13,7 @@ using namespace Microsoft::WRL;
 #pragma	comment(lib, "dinput8.lib")
 #pragma	comment(lib, "dxguid.lib")
 #include "MathFunction.h"
-#include "utility/Input/InputManager.h"
+#include "InputManager.h"
 
 class DebugCamera{
 public:	//メンバ関数

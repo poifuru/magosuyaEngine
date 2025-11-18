@@ -1,6 +1,5 @@
 #include "GameoverScene.h"
 #include "MagosuyaEngine.h"
-#include "utility/input/InputManager.h"
 
 GameoverScene::GameoverScene (MagosuyaEngine* magosuya) {
 	magosuya_ = magosuya;

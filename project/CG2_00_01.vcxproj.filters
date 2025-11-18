@@ -51,13 +51,13 @@
     <ClCompile Include="magosuya\utility\camera\DebugCamera.cpp">
       <Filter>ソースファイル\magosuya\utility\camera</Filter>
     </ClCompile>
-    <ClCompile Include="magosuya\utility\manager\ImGuiManager.cpp">
+    <ClCompile Include="magosuya\utility\imgui\ImGuiManager.cpp">
       <Filter>ソースファイル\magosuya\utility\manager</Filter>
     </ClCompile>
-    <ClCompile Include="magosuya\utility\manager\ModelManager.cpp">
+    <ClCompile Include="magosuya\object\3d\ModelManager.cpp">
       <Filter>ソースファイル\magosuya\utility\manager</Filter>
     </ClCompile>
-    <ClCompile Include="magosuya\utility\manager\TextureManager.cpp">
+    <ClCompile Include="magosuya\object\2d\TextureManager.cpp">
       <Filter>ソースファイル\magosuya\utility\manager</Filter>
     </ClCompile>
     <ClCompile Include="magosuya\utility\input\InputManager.cpp">
@@ -69,15 +69,6 @@
     <ClCompile Include="magosuya\utility\input\RawInput.cpp">
       <Filter>ソースファイル\magosuya\utility\input</Filter>
     </ClCompile>
-    <ClCompile Include="magosuya\utility\audio\Sound.cpp">
-      <Filter>ソースファイル\magosuya\utility\audio</Filter>
-    </ClCompile>
-    <ClCompile Include="magosuya\utility\audio\SoundData.cpp">
-      <Filter>ソースファイル\magosuya\utility\audio</Filter>
-    </ClCompile>
-    <ClCompile Include="magosuya\utility\audio\SoundManager.cpp">
-      <Filter>ソースファイル\magosuya\utility\audio</Filter>
-    </ClCompile>
     <ClCompile Include="magosuya\MagosuyaEngine.cpp">
       <Filter>ソースファイル\magosuya</Filter>
     </ClCompile>
@@ -86,13 +77,8 @@
     <ClCompile Include="application\scene\PlayScene.cpp" />
     <ClCompile Include="application\scene\ClearScene.cpp" />
     <ClCompile Include="application\scene\GameoverScene.cpp" />
-    <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="externals\imgui\imgui.cpp" />
-    <ClCompile Include="externals\imgui\imgui_demo.cpp" />
-    <ClCompile Include="externals\imgui\imgui_draw.cpp" />
-    <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp" />
-    <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
-    <ClCompile Include="externals\imgui\imgui_tables.cpp" />
+    <ClCompile Include="magosuya\utility\audio\SoundManager.cpp" />
+    <ClCompile Include="magosuya\utility\audio\Sound.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="general\ChangeString.h">
@@ -140,23 +126,14 @@
     <ClInclude Include="general\struct.h">
       <Filter>ヘッダーファイル\general</Filter>
     </ClInclude>
-    <ClInclude Include="magosuya\utility\manager\ImGuiManager.h">
+    <ClInclude Include="magosuya\utility\imgui\ImGuiManager.h">
       <Filter>ヘッダーファイル\magosuya\utility\manager</Filter>
     </ClInclude>
-    <ClInclude Include="magosuya\utility\manager\ModelManager.h">
+    <ClInclude Include="magosuya\object\3d\ModelManager.h">
       <Filter>ヘッダーファイル\magosuya\utility\manager</Filter>
     </ClInclude>
-    <ClInclude Include="magosuya\utility\manager\TextureManager.h">
+    <ClInclude Include="magosuya\object\2d\TextureManager.h">
       <Filter>ヘッダーファイル\magosuya\utility\manager</Filter>
-    </ClInclude>
-    <ClInclude Include="magosuya\utility\audio\Sound.h">
-      <Filter>ヘッダーファイル\magosuya\utility\audio</Filter>
-    </ClInclude>
-    <ClInclude Include="magosuya\utility\audio\SoundData.h">
-      <Filter>ヘッダーファイル\magosuya\utility\audio</Filter>
-    </ClInclude>
-    <ClInclude Include="magosuya\utility\audio\SoundManager.h">
-      <Filter>ヘッダーファイル\magosuya\utility\audio</Filter>
     </ClInclude>
     <ClInclude Include="magosuya\utility\camera\DebugCamera.h">
       <Filter>ヘッダーファイル\magosuya\utility\camera</Filter>
@@ -184,6 +161,8 @@
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h" />
     <ClInclude Include="externals\imgui\imgui_impl_win32.h" />
     <ClInclude Include="externals\imgui\imgui_internal.h" />
+    <ClInclude Include="magosuya\utility\audio\SoundManager.h" />
+    <ClInclude Include="magosuya\utility\audio\Sound.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ソースファイル">
