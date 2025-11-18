@@ -93,6 +93,19 @@
     <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp" />
     <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
+    <ClCompile Include="application\Player\Player.cpp" />
+    <ClCompile Include="application\Collider\Collider.cpp" />
+    <ClCompile Include="application\Collider\AttackCollider.cpp" />
+    <ClCompile Include="application\Collider\PlayerBodyCollider.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerAttackState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerDashState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerDeathState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerEvasionState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerExhaustedState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerFallState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerHurtState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerStopState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerWalkState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="general\ChangeString.h">
@@ -184,6 +197,11 @@
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h" />
     <ClInclude Include="externals\imgui\imgui_impl_win32.h" />
     <ClInclude Include="externals\imgui\imgui_internal.h" />
+    <ClInclude Include="application\Player\Player.h" />
+    <ClInclude Include="application\Player\PlayerState\PlayerState.h" />
+    <ClInclude Include="application\Collider\Collider.h" />
+    <ClInclude Include="application\Collider\PlayerBodyCollider.h" />
+    <ClInclude Include="application\Collider\AttackCollider.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ソースファイル">
