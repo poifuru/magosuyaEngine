@@ -45,26 +45,23 @@ void Particle::Initialize () {
 	materialData_->enableLighting = true;
 	materialData_->uvTranform = MakeIdentity4x4 ();
 
+	//vertexData_に書き込み
 	//左上
-	VertexData vertex = { { 1.0f, 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
-	data_->vertices.push_back (vertex);
+	vertexData_[0] = { { -1.0f, 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } };
 	//右上
-	vertex = { { -1.0f, 1.0f, 0.0f, 1.0f }, { 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
-	data_->vertices.push_back (vertex);
+	vertexData_[1] = { { 1.0f, 1.0f, 0.0f, 1.0f }, { 1.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } };
 	//左下
-	vertex = { { 1.0f, -1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f, 1.0f } };
-	data_->vertices.push_back (vertex);
+	vertexData_[2] = { { -1.0f, -1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f, -1.0f } };
 	//右下
-	vertex = { { -1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }, { 0.0f, 0.0f, 1.0f } };
-	data_->vertices.push_back (vertex);
+	vertexData_[3] = { { 1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }, { 0.0f, 0.0f, -1.0f } };
 
 	//indexData_に書き込み
-	data_->indices.push_back (0);
-	data_->indices.push_back (1);
-	data_->indices.push_back (2);
-	data_->indices.push_back (1);
-	data_->indices.push_back (3);
-	data_->indices.push_back (2);
+	indexData_[0] = 0;
+	indexData_[1] = 1;
+	indexData_[2] = 2;
+	indexData_[3] = 1;
+	indexData_[4] = 3;
+	indexData_[5] = 2;
 }
 
 void Particle::Update (Matrix4x4* vp) {
