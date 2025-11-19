@@ -3,6 +3,7 @@
 #include <Wrl.h>
 using namespace Microsoft::WRL;
 #include <d3d12.h>
+#include <string>
 #include <unordered_map>
 
 class DxCommon;
@@ -19,7 +20,7 @@ public:		// メンバ関数
 
 	//ルートシグネチャの定義を受け取って、生成&キャッシュしてIDを返す
 	//(後で定義情報を含む独自のDescriptor構造体を作って差し替え)
-	uint32_t GetOrCreateRootSignature (const D3D12_ROOT_SIGNATURE_DESC& descriptor);
+	uint32_t GetOrCreateRootSignature (const D3D12_ROOT_SIGNATURE_DESC& desc);
 
 	//IDをもとにID3D12RootSignature*を返す
 	ID3D12RootSignature* GetRootSignature (uint32_t rootSigID) const;

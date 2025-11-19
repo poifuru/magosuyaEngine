@@ -22,7 +22,7 @@ public:		// メンバ関数
 	~ShaderManager ();
 
 	// ファイルパスとプロファイルを受け取ってコンパイルしてIDを返す
-	uint32_t CompileAndCasheShader (const std::wstring& filePath, const wchar_t* profile);
+	uint32_t CompileAndCasheShader (const std::wstring& filePath, const wchar_t* profile, std::ofstream& os);
 
 	// IDに基づいてD3D12_SHADER_BYTECODEを返す
 	D3D12_SHADER_BYTECODE GetShaderBytecode (uint32_t shaderID) const;

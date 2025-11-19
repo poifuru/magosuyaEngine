@@ -1,6 +1,7 @@
 #include "ShaderManager.h"
 #include <cassert>
 #include <format>
+#include <fstream>
 #include "Logger.h"
 #include "ChangeString.h"
 #include "DxCommon.h"
@@ -13,7 +14,7 @@ ShaderManager::~ShaderManager () {
 
 }
 
-uint32_t ShaderManager::CompileAndCasheShader (const std::wstring& filePath, const wchar_t* profile) {
+uint32_t ShaderManager::CompileAndCasheShader (const std::wstring& filePath, const wchar_t* profile, std::ofstream& os) {
 	//ファイルパスとプロファイルを組み合わせたキーを生成
 	std::wstring key = filePath + L"_" + profile;
 
@@ -26,10 +27,8 @@ uint32_t ShaderManager::CompileAndCasheShader (const std::wstring& filePath, con
 	//無かったらシェーダーをコンパイル
 	ComPtr<IDxcBlob> newBlob = CompilerShader (filePath, profile);
 
-	//キーと結びつけるIDを新規生成
-	uint32_t newID = m_NextID;
-	//連番にするのでインクリメント
-	m_NextID++;
+	//キーと結びつけるIDを新規生成した後インクリメント
+	uint32_t newID = m_NextID++;
 
 	//IDと実体データをキャッシュに登録する
 	ShaderInfo newInfo;
@@ -57,7 +56,7 @@ D3D12_SHADER_BYTECODE ShaderManager::GetShaderBytecode (uint32_t shaderID) const
 }
 
 ComPtr<IDxcBlob> ShaderManager::CompilerShader (const std::wstring& filePath, const wchar_t* profile) {
-	std::ofstream& os = Logger::Logtext ();
+	std::ofstream os = Logger::Logtext ();
 
 	/*1.hlslファイルを読み込む*/
 	//これからシェーダーをコンパイルする旨をログに出力する
