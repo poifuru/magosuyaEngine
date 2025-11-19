@@ -1,8 +1,9 @@
 #pragma once
+#include <Windows.h>
+#include <Wrl.h>
+using namespace Microsoft::WRL;
 #include <vector>
 #include <d3d12.h>
-#include <wrl.h>
-using namespace Microsoft::WRL;
 #include <memory>
 #include "struct.h"
 #include "ModelRenderer.h"

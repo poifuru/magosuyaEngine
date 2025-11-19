@@ -1,7 +1,8 @@
-#pragma once    
-#include <d3d12.h>  
-#include <wrl.h>  
+#pragma once
+#include <Windows.h>
+#include <Wrl.h>
 using namespace Microsoft::WRL;
+#include <d3d12.h>  
 #include <memory>
 #include "SpriteRenderer.h"
 #include "struct.h"

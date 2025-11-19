@@ -1,9 +1,10 @@
 #include "LeakChecker.h"
+#include <Windows.h>
+#include <Wrl.h>
+using namespace Microsoft::WRL;
 #include <dxgidebug.h>
 #include <d3d12.h>
 #include <dxgi1_6.h>
-#include <wrl.h>
-using namespace Microsoft::WRL;
 
 LeakChecker::~LeakChecker () {
 	ComPtr<IDXGIDebug> debug;

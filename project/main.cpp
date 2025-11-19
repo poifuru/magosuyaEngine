@@ -13,12 +13,12 @@
 #include "function.h"
 #include "MathFunction.h"
 #include "struct.h"
-#include "object/3d/Model.h"
-#include "object/3d/SphereModel.h"
-#include "object/2d/Sprite.h"
-#include "utility/camera/DebugCamera.h"
-#include "utility/Input/InputManager.h"
-#include "utility/particle/Particle.h"
+#include "Model.h"
+#include "SphereModel.h"
+#include "Sprite.h"
+#include "DebugCamera.h"
+#include "InputManager.h"
+#include "Particle.h"
 
 //サウンドデータの読み込み関数
 SoundData SoundLoadWave (const char* filename) {

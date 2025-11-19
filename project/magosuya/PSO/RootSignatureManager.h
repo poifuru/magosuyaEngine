@@ -1,14 +1,33 @@
 #pragma once
-#include <d3d12.h>
+#include <Windows.h>
 #include <Wrl.h>
 using namespace Microsoft::WRL;
+#include <d3d12.h>
 #include <unordered_map>
 
+class DxCommon;
+
+//ルートシグネチャを定義するための構造体
+struct RootSignatureDescriptor {
+
+};
+
 class RootSignatureManager {
-public:
+public:		// メンバ関数
+	RootSignatureManager (DxCommon* dxCommon);
+	~RootSignatureManager ();
 
+	//ルートシグネチャの定義を受け取って、生成&キャッシュしてIDを返す
+	//(後で定義情報を含む独自のDescriptor構造体を作って差し替え)
+	uint32_t GetOrCreateRootSignature (const D3D12_ROOT_SIGNATURE_DESC& descriptor);
 
-private:
+	//IDをもとにID3D12RootSignature*を返す
+	ID3D12RootSignature* GetRootSignature (uint32_t rootSigID) const;
+
+private:	// ヘルパー関数
+	uint64_t ComputeHash (const D3D12_ROOT_SIGNATURE_DESC& desc) const;
+
+private:	// メンバ変数
 	//ハッシュ値とIDのマップ(逆引き兼キャッシュチェック用)
 	std::unordered_map<uint64_t, uint32_t> m_HashTagID;
 

@@ -1,8 +1,9 @@
 #pragma once
-#include <d3d12.h>
-#include <dxcapi.h>
+#include <Windows.h>
 #include <Wrl.h>
 using namespace Microsoft::WRL;
+#include <d3d12.h>
+#include <dxcapi.h>
 #include <string>
 #include <unordered_map>
 

@@ -1,7 +1,8 @@
 #pragma once
-#include <d3d12.h>
+#include <Windows.h>
 #include <Wrl.h>
 using namespace Microsoft::WRL;
+#include <d3d12.h>
 #include <vector>
 #include <string>
 #include "struct.h"

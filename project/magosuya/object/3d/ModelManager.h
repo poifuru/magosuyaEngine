@@ -1,5 +1,6 @@
 #pragma once
-#include <Wrl.h>
+#include <Windows.h>
+#include <wrl.h>
 using namespace Microsoft::WRL;
 #include <unordered_map>
 #include <string>

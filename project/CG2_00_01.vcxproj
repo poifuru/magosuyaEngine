@@ -85,7 +85,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(SolutionDir)application\scene;$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(SolutionDir)general;$(SolutionDir)magosuya;$(SolutionDir)magosuya\engine;$(SolutionDir)magosuya\object\2d;$(SolutionDir)magosuya\object\3d;$(SolutionDir)magosuya\utility\audio;$(SolutionDir)magosuya\utility\camera;$(SolutionDir)magosuya\utility\input;$(SolutionDir)magosuya\utility\imgui;$(SolutionDir)magosuya\utility\particel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)application\scene;$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(SolutionDir)general;$(SolutionDir)magosuya;$(SolutionDir)magosuya\engine;$(SolutionDir)magosuya\object\2d;$(SolutionDir)magosuya\object\3d;$(SolutionDir)magosuya\utility\audio;$(SolutionDir)magosuya\utility\camera;$(SolutionDir)magosuya\utility\input;$(SolutionDir)magosuya\utility\imgui;$(SolutionDir)magosuya\utility\particle</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -111,7 +111,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(SolutionDir)application\scene;$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(SolutionDir)general;$(SolutionDir)magosuya;$(SolutionDir)magosuya\engine;$(SolutionDir)magosuya\object\2d;$(SolutionDir)magosuya\object\3d;$(SolutionDir)magosuya\utility\audio;$(SolutionDir)magosuya\utility\camera;$(SolutionDir)magosuya\utility\input;$(SolutionDir)magosuya\utility\imgui;$(SolutionDir)magosuya\utility\particel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)application\scene;$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(SolutionDir)general;$(SolutionDir)magosuya;$(SolutionDir)magosuya\engine;$(SolutionDir)magosuya\object\2d;$(SolutionDir)magosuya\object\3d;$(SolutionDir)magosuya\utility\audio;$(SolutionDir)magosuya\utility\camera;$(SolutionDir)magosuya\utility\input;$(SolutionDir)magosuya\utility\imgui;$(SolutionDir)magosuya\utility\particle</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -142,7 +142,7 @@ echo "MaoSuya Engine Builded"</Command>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)application\scene;$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(SolutionDir)general;$(SolutionDir)magosuya;$(SolutionDir)magosuya\engine;$(SolutionDir)magosuya\object\2d;$(SolutionDir)magosuya\object\3d;$(SolutionDir)magosuya\utility\audio;$(SolutionDir)magosuya\utility\camera;$(SolutionDir)magosuya\utility\input;$(SolutionDir)magosuya\utility\imgui;$(SolutionDir)magosuya\utility\particel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)application\scene;$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(SolutionDir)general;$(SolutionDir)magosuya;$(SolutionDir)magosuya\engine;$(SolutionDir)magosuya\object\2d;$(SolutionDir)magosuya\object\3d;$(SolutionDir)magosuya\utility\audio;$(SolutionDir)magosuya\utility\camera;$(SolutionDir)magosuya\utility\input;$(SolutionDir)magosuya\utility\imgui;$(SolutionDir)magosuya\utility\particle</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

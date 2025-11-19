@@ -1,7 +1,8 @@
 #pragma once
-#include <d3d12.h>
-#include <Wrl.h>
+#include <Windows.h>
+#include <wrl.h>
 using namespace Microsoft::WRL;
+#include <d3d12.h>
 #include "struct.h"
 
 class MagosuyaEngine;

@@ -3,7 +3,7 @@
 #include <format>
 #include "Logger.h"
 #include "ChangeString.h"
-#include "engine/DxCommon.h"
+#include "DxCommon.h"
 
 ShaderManager::ShaderManager (DxCommon* dxCommon) {
 	dxCommon_ = dxCommon;
@@ -57,7 +57,7 @@ D3D12_SHADER_BYTECODE ShaderManager::GetShaderBytecode (uint32_t shaderID) const
 }
 
 ComPtr<IDxcBlob> ShaderManager::CompilerShader (const std::wstring& filePath, const wchar_t* profile) {
-	std::ofstream& os = &Logger::Logtext ();
+	std::ofstream& os = Logger::Logtext ();
 
 	/*1.hlslファイルを読み込む*/
 	//これからシェーダーをコンパイルする旨をログに出力する

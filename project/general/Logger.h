@@ -6,5 +6,5 @@ namespace Logger {
 	void Log (std::ofstream& os, const std::string& message);
 
 	//ログをテキストで出す関数
-	std::ofstream Logtext ();
+	std::ofstream& Logtext ();
 }

@@ -10,7 +10,7 @@ void Logger::Log (std::ofstream& os, const std::string& message) {
 	OutputDebugStringA (message.c_str ());
 }
 
-std::ofstream Logger::Logtext () {
+std::ofstream& Logger::Logtext () {
 	//ログのディレクトリを用意
 	std::filesystem::create_directory ("logs");
 	//現在時刻を取得(UTC時刻)
