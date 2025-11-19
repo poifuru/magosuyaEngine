@@ -2,7 +2,7 @@
 #include <sstream>
 #include <map>
 #include "MagosuyaEngine.h"
-#include "engine/DxCommon.h"
+#include "DxCommon.h"
 
 ModelManager::ModelManager (DxCommon* dxCommon, TextureManager* textureManager) {
 	dxCommon_ = dxCommon;

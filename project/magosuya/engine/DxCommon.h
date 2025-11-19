@@ -9,10 +9,10 @@ using namespace Microsoft::WRL;
 #include <array>
 #include <string>
 #include <chrono>
+#include <DirectXTex.h>
 #include "WindowsAPI.h"
 #include "LeakChecker.h"
-#include "utility/input/InputManager.h"
-#include <DirectXTex.h>
+#include "InputManager.h"
 
 //BlendStateの個数
 const int kBlendDescNum = 6;

@@ -2,9 +2,9 @@
 #include <memory>
 #include <string>
 #include "engine/DxCommon.h"
-#include "utility/manager/TextureManager.h"
-#include "utility/manager/ImGuiManager.h"
-#include "utility/manager/ModelManager.h"
+#include "TextureManager.h"
+#include "ImGuiManager.h"
+#include "ModelManager.h"
 
 class MagosuyaEngine {
 public:		//メンバ関数
