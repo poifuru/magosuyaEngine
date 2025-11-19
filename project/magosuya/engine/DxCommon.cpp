@@ -25,7 +25,7 @@ DxCommon::~DxCommon () {
 
 void DxCommon::Initialize () {
 	HRESULT hr;
-	std::ofstream logStream = Logtext ();
+	std::ofstream logStream = Logger::Logtext ();
 
 	// 1.システムレベルの初期化
 	//誰も補足しなかった場合に(Unhandled)、補足する関数を登録
@@ -449,7 +449,7 @@ void DxCommon::InitializeFixFPS () {
 
 void DxCommon::CreateDevice () {
 	HRESULT hr;
-	std::ofstream logStream = Logtext ();
+	std::ofstream logStream = Logger::Logtext ();
 
 	//デバイス生成の前にデバッグレイヤーを有効化する
 #if defined (Debug) || (Development)

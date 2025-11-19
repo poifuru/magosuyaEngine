@@ -99,6 +99,9 @@ public:		//アクセッサ
 	ID3D12DescriptorHeap* GetsrvDescriptorHeap () { return srvDescriptorHeap.Get (); }
 	ID3D12RootSignature* GetRootSignature () { return rootSignature.Get (); }
 	ID3D12PipelineState* GetPipelineState () { return graphicsPipelineState.Get (); }
+	IDxcUtils* GetDxcUtils () { return dxcUtils.Get(); }
+	IDxcCompiler3* GetDxcCompiler () { return dxcCompiler.Get (); }
+	IDxcIncludeHandler* GetIncludeHandler () { return includeHandler.Get (); }
 
 private://メンバ変数
 	LeakChecker leakCheck_{};

@@ -94,6 +94,7 @@
     <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="magosuya\utility\particle\Particle.cpp" />
+    <ClCompile Include="magosuya\PSO\ShaderManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="general\ChangeString.h">
@@ -186,6 +187,7 @@
     <ClInclude Include="externals\imgui\imgui_impl_win32.h" />
     <ClInclude Include="externals\imgui\imgui_internal.h" />
     <ClInclude Include="magosuya\utility\particle\Particle.h" />
+    <ClInclude Include="magosuya\PSO\ShaderManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ソースファイル">
