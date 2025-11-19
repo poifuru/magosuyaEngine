@@ -220,6 +220,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="magosuya\utility\particle\Particle.cpp" />
     <ClCompile Include="magosuya\PSO\ShaderManager.cpp" />
     <ClCompile Include="magosuya\PSO\RootSignatureManager.cpp" />
+    <ClCompile Include="magosuya\PSO\PSOManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shader\Object3d.PS.hlsl">
@@ -297,6 +298,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="magosuya\utility\particle\Particle.h" />
     <ClInclude Include="magosuya\PSO\ShaderManager.h" />
     <ClInclude Include="magosuya\PSO\RootSignatureManager.h" />
+    <ClInclude Include="magosuya\PSO\PSOManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\shader\Object3d.hlsli" />

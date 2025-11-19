@@ -108,17 +108,28 @@ uint64_t RootSignatureManager::ComputeHash (const D3D12_ROOT_SIGNATURE_DESC& des
 			const auto& table = param.DescriptorTable;
 			hash = (hash * 31) ^ table.NumDescriptorRanges;
 			for (UINT j = 0; j < table.NumDescriptorRanges; ++j) {
-				const auto& range = table.pDescriptorRanges[i];
+				const auto& range = table.pDescriptorRanges[j];
 				hash = (hash * 31) ^ range.RangeType;
 				hash = (hash * 31) ^ range.BaseShaderRegister;
 				hash = (hash * 31) ^ range.NumDescriptors;
 			}
 		}
 	}
-	//スタティックサンプラーの内容をハッシュ化(今回は省略)
-	/*for (UINT i = 0; i < desc.NumStaticSamplers; ++i) {
+	//スタティックサンプラーの内容をハッシュ化
+	for (UINT i = 0; i < desc.NumStaticSamplers; ++i) {
+		const auto& sampler = desc.pStaticSamplers[i];
+		//主要な設定をハッシュの種にする
+		hash = (hash * 31) ^ sampler.Filter; // フィルタリングモード
+		hash = (hash * 31) ^ sampler.AddressU; // U座標のアドレスモード
+		hash = (hash * 31) ^ sampler.AddressV; // V座標のアドレスモード
+		hash = (hash * 31) ^ sampler.AddressW; // W座標のアドレスモード
+		hash = (hash * 31) ^ sampler.ShaderRegister; // シェーダーレジスタ
+		hash = (hash * 31) ^ sampler.ShaderVisibility; // 可視性
+		hash = (hash * 31) ^ sampler.ComparisonFunc; // 比較関数
 
-	}*/
+		//他の設定も必要に応じてハッシュ化
+		hash = (hash * 31) ^ (uint32_t)(sampler.MaxLOD * 100.0f);
+	}
 
 	return hash;
 }

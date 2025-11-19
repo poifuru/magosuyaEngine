@@ -8,11 +8,6 @@ using namespace Microsoft::WRL;
 
 class DxCommon;
 
-//ルートシグネチャを定義するための構造体
-struct RootSignatureDescriptor {
-
-};
-
 class RootSignatureManager {
 public:		// メンバ関数
 	RootSignatureManager (DxCommon* dxCommon);
