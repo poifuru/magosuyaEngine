@@ -1,5 +1,5 @@
 #include "PlayerState.h" 
-#include "Player3D.h"
+#include "../Player.h"
 
 void PlayerHurtState::Initialize()
 {
@@ -22,22 +22,22 @@ void PlayerHurtState::Update()
 
 	bool isMove = false;
 	auto& move = player_->Move();
-	if (InputManager::GetKey().PressKey(DIK_W))
+	if (player_->engine_->GetRawInput()->Push('W'))
 	{
 		move.z = 1.0f;
 		isMove = true;
 	}
-	if (InputManager::GetKey().PressKey(DIK_S))
+	if (player_->engine_->GetRawInput()->Push('S'))
 	{
 		move.z = -1.0f;
 		isMove = true;
 	}
-	if (InputManager::GetKey().PressKey(DIK_A))
+	if (player_->engine_->GetRawInput()->Push('A'))
 	{
 		move.x = -1.0f;
 		isMove = true;
 	}
-	if (InputManager::GetKey().PressKey(DIK_D))
+	if (player_->engine_->GetRawInput()->Push('D'))
 	{
 		move.x = 1.0f;
 		isMove = true;
@@ -51,11 +51,11 @@ void PlayerHurtState::Update()
 	
 	if (blinkCount % 2 == 0){
 		// 偶数回 (例: 0.0～0.1, 0.2～0.3) は不透明 (α=1.0)
-		player_->SetAlpha(1.0f);
+		//player_->SetAlpha(1.0f);
 	}
 	else{
 		// 奇数回 (例: 0.1～0.2, 0.3～0.4) は透明 (α=0.0)
-		player_->SetAlpha(0.0f);
+		//player_->SetAlpha(0.0f);
 	}
 
 	// 2. **State 遷移ロジック (終了判定)**
@@ -75,14 +75,14 @@ void PlayerHurtState::Update()
 		return;
 	}
 
-	ImGuiManager::GetInstance()->Text("HurtState");
+	//ImGuiManager::GetInstance()->Text("HurtState");
 }
 
 void PlayerHurtState::Exit()
 {
 	if (!player_) return;
 	// αを一応戻す
-	player_->SetAlpha(1.0f);
+	//player_->SetAlpha(1.0f);
 
 	// 無敵時間を解除
 	player_->SetInvulnerable(false);

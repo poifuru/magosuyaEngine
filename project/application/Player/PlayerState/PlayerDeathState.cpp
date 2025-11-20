@@ -1,5 +1,5 @@
 #include "PlayerState.h" 
-#include "Player3D.h"    
+#include "../Player.h"   
 
 void PlayerDeathState::Initialize()
 {
@@ -35,7 +35,6 @@ void PlayerDeathState::Update()
 		// シーン遷移が完了すると、この Player3D インスタンスも破棄される想定
 	}
 
-	ImGuiManager::GetInstance()->Text("DeathState");
 }
 
 // Exit() は空のまま

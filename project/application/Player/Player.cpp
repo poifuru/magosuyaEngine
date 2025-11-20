@@ -1,24 +1,26 @@
 #include "Player.h"
+#include "MathFunction.h"
+#include "imgui.h"
 
 Player::~Player() {
 	delete state_;
 }
 
-void Player::Initialize(MagosuyaEngine* engine)
+void Player::Initialize()
 {
-	obj_ = std::make_unique<Model>();
+	obj_ = std::make_unique<Model>(engine_);
+	obj_->SetModelData("teapot");
+	obj_->SetTexture("teapot");
 	obj_->Initialize();
 
 	// 始まりのState
 	state_ = new PlayerStopState();
 	state_->SetPlayer(this);
 
-	/*attackColliderObj_ = std::make_unique<ModelObject>();
-	attackColliderObj_->Initialize(fngine->GetD3D12System(), "cube.obj");
-	attackColliderObj_->SetFngine(fngine);
-	attackColliderObj_->worldTransform_.set_.Scale({ 1.0f,1.0f,1.0f });
-	attackColliderObj_->SetColor({ 0.0f,0.0f,0.0f,1.0f });
-	attackColliderObj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");*/
+	attackColliderObj_ = std::make_unique<Model>(engine_);
+	attackColliderObj_->SetModelData("teapot");
+	attackColliderObj_->SetTexture("teapot");
+	attackColliderObj_->Initialize();
 
 	// Colliderの設定
 	// 1, Player
@@ -28,7 +30,7 @@ void Player::Initialize(MagosuyaEngine* engine)
 	EnableHitBox(false, obj_->GetTransform().translate);
 }
 
-void Player::Update()
+void Player::Update(Matrix4x4* m)
 {
 	// 毎フレーム初期化する処理↓↓↓
 	move_ = { 0.0f,0.0f,0.0f };
@@ -46,6 +48,11 @@ void Player::Update()
 	// カメラに対してにする処理
 	//move_ = move_.z * CameraSystem::GetInstance()->GetActiveCamera()->zAxis_ + move_.x * CameraSystem::GetInstance()->GetActiveCamera()->xAxis_;
 	// = Normalize(move_);
+	if (move_.x != 0.0f || move_.y != 0.0f || move_.z != 0.0f) {
+		move_ = Normalize(move_);
+		direction_.x = move_.x;
+		direction_.z = move_.z;
+	}
 	move_.y = 1.0f;
 
 	RotateToMoveDirection();
@@ -54,19 +61,30 @@ void Player::Update()
 	pos.x += move_.x * speed_ * speedMultiplier_;
 	pos.y += move_.y * verticalVelocity_;
 	pos.z += move_.z * speed_ * speedMultiplier_;
-	obj_->SetTransform({obj_->GetTransform().rotate,obj_->GetTransform().scale,pos});
+	obj_->SetTransform({ obj_->GetTransform().scale,obj_->GetTransform().rotate,pos});
+
+	attackColliderObj_->SetTransform({ {attackCollider_->GetRadius(),0.1f,attackCollider_->GetRadius()},{0.0f,0.0f,0.0f},
+		{attackCollider_->GetWorldPosition().x,
+		attackCollider_->GetWorldPosition().y - 0.5f,
+		attackCollider_->GetWorldPosition().z} });
+
+	obj_->Update(m);
+	attackColliderObj_->Update(m);
+#ifdef _DEBUG
+	ImGui::Begin("Player");
+	ImGui::SliderFloat3("Direction", &direction_.x,0.0f,0.0f);
+	ImGui::End();
+	obj_->ImGui();
+#endif//_DEBUG
 }
 
 void Player::Draw()
 {
 	obj_->Draw();
 
-	/*if (isAttackViewFlag_) {
-		attackColliderObj_->worldTransform_.set_.Translation(attackCollider_->GetWorldPosition());
-		attackColliderObj_->LocalToWorld();
-		attackColliderObj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(attackColliderObj_->worldTransform_.mat_));
+	if (isAttackViewFlag_) {
 		attackColliderObj_->Draw();
-	}*/
+	}
 }
 
 void Player::ChangeState(PlayerState* newState) {
@@ -88,7 +106,11 @@ void Player::ChangeState(PlayerState* newState) {
 void Player::EnableHitBox(bool enable, const Vector3& worldPos) {
 	if (enable) {
 		// 攻撃判定の位置を更新
-		attackCollider_->SetWorldPosition(worldPos);
+		Matrix4x4 w = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, worldPos);
+		Matrix4x4 pW = MakeAffineMatrix({ obj_->GetTransform().scale }, { obj_->GetTransform().rotate }, { obj_->GetTransform().translate });
+		w = w * pW;
+
+		attackCollider_->SetWorldPosition({w.m[3][0],w.m[3][1] ,w.m[3][2] });
 
 		// 攻撃判定をアクティブ化
 		attackCollider_->SetMyType(COL_Player_Attack);
@@ -118,7 +140,7 @@ void Player::ApplyPhysics() {
 		isOnGround_ = true;
 		Vector3 pos = obj_->GetTransform().translate;
 		pos.y = 0.0f;
-		obj_->SetTransform({ obj_->GetTransform().rotate,obj_->GetTransform().scale,pos });
+		obj_->SetTransform({ obj_->GetTransform().scale,obj_->GetTransform().rotate,pos });
 	}
 
 	if (isOnGround_ == true) {
@@ -156,6 +178,23 @@ void Player::RotateToMoveDirection() {
 
 	float targetAngle = std::atan2(move_.x, move_.z);
 
+	targetAngle = std::fmod(targetAngle, Deg2Rad(360));
+
+	if (targetAngle >= Deg2Rad(180)) {
+		targetAngle -= Deg2Rad(360);
+	}
+	else if (targetAngle <= Deg2Rad(-180)) {
+		targetAngle += Deg2Rad(360);
+	}
+
+
+	Vector3 rot = obj_->GetTransform().rotate;
+	rot.y = 0.0f * obj_->GetTransform().rotate.y + (1.0f - 0.0f) * targetAngle;
+	obj_->SetTransform({
+		obj_->GetTransform().scale,
+		rot,
+		obj_->GetTransform().translate
+		});
 	/*Quaternion targetQuaternion = Quaternion::MakeRotateAxisAngleQuaternion({ 0.0f,1.0f,0.0f }, targetAngle);
 
 	Quaternion currentQuaternion = obj_->worldTransform_.get_.Quaternion();
@@ -164,9 +203,7 @@ void Player::RotateToMoveDirection() {
 }
 
 Vector3 Player::GetForwardVector() {
-	Vector3 ret;
-	//ret = obj_->worldTransform_.get_.ForwardVector();
-	return (ret);
+	return (direction_);
 }
 
 // ---------------------------

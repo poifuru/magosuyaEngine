@@ -98,6 +98,38 @@ private:
 	bool canCombo_ = false;
 	float comboWindowStart_ = 0.2f; // 攻撃開始から200ms後
 	float comboWindowEnd_ = 0.4f;   // 攻撃開始から400ms後
+	bool isAttackHeld_ = false;
+};
+
+// チャージ時のState
+class PlayerChargeState
+	: public PlayerState
+{
+public:
+	void Initialize() override;
+	void Update() override;
+	void Exit() override;
+private:
+	// チャージ時間に関する変数
+	float chargeTimer_ = 0.0f; // チャージ経過時間
+	float MAX_CHARGE_TIME = 2.0f; // 最大チャージに必要な時間 (例: 2.0秒)
+	int currentChargeLevel_ = 0; // 現在のチャージレベル (0: 初期, 1, 2, ...)
+};
+
+// チャージ解放時のState
+class PlayerChargeReleaseState
+	: public PlayerState
+{
+public:
+	// コンストラクタでチャージレベルを受け取る
+	PlayerChargeReleaseState(int chargeLevel) : chargeLevel_(chargeLevel) {}
+	void Initialize() override;
+	void Update() override;
+	void Exit() override;
+private:
+	float releaseTimer_ = 0.0f; // 攻撃アニメーションの経過時間
+	float maxReleaseDuration_ = 0.8f; // 攻撃アニメーションの持続時間 (チャージレベルで変動させても良い)
+	int chargeLevel_ = 0; // 発動する攻撃のチャージレベル
 };
 
 class PlayerComboAttackState

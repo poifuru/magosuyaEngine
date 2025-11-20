@@ -164,3 +164,6 @@ Vector3 ComputeBezierPoint(const Vector3& p0, const Vector3& p1, const Vector3& 
 
 //反射ベクトルを求める関数
 Vector3 Reflect(const Vector3& input, Vector3& normal);
+
+// 度数法からラジアンに切り替える
+float Deg2Rad(float deg);

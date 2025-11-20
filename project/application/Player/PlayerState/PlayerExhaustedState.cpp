@@ -1,5 +1,5 @@
 #include "PlayerState.h" // PlayerExhaustedStateの定義
-#include "Player3D.h"    // Player3Dの機能を使うため
+#include "../Player.h"
 
 void PlayerExhaustedState::Initialize(){
     if (!player_) return;
@@ -13,22 +13,22 @@ void PlayerExhaustedState::Update(){
     if (!player_) return;
     bool isMove = false;
     auto& move = player_->Move();
-    if (InputManager::GetKey().PressKey(DIK_W))
+    if (player_->engine_->GetRawInput()->Push('W'))
     {
         move.z = 1.0f;
         isMove = true;
     }
-    if (InputManager::GetKey().PressKey(DIK_S))
+    if (player_->engine_->GetRawInput()->Push('S'))
     {
         move.z = -1.0f;
         isMove = true;
     }
-    if (InputManager::GetKey().PressKey(DIK_A))
+    if (player_->engine_->GetRawInput()->Push('A'))
     {
         move.x = -1.0f;
         isMove = true;
     }
-    if (InputManager::GetKey().PressKey(DIK_D))
+    if (player_->engine_->GetRawInput()->Push('D'))
     {
         move.x = 1.0f;
         isMove = true;
@@ -61,7 +61,7 @@ void PlayerExhaustedState::Update(){
         return;
     }
 
-    ImGuiManager::GetInstance()->Text("ExhaustedState");
+    //ImGuiManager::GetInstance()->Text("ExhaustedState");
 }
 
 void PlayerExhaustedState::Exit() {

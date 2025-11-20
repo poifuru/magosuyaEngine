@@ -162,6 +162,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClCompile Include="application\Collider\PlayerBodyCollider.cpp" />
     <ClCompile Include="application\Player\PlayerState\PlayerAttackState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerChargeReleaseState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerChargeState.cpp" />
     <ClCompile Include="application\Player\PlayerState\PlayerDashState.cpp" />
     <ClCompile Include="application\Player\PlayerState\PlayerDeathState.cpp" />
     <ClCompile Include="application\Player\PlayerState\PlayerEvasionState.cpp" />

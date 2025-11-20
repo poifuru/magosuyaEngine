@@ -1,5 +1,5 @@
 #include "PlayerState.h"
-#include "Player3D.h"
+#include "../Player.h"
 
 void PlayerDashState::Initialize() {
 	
@@ -23,22 +23,22 @@ void PlayerDashState::Update() {
 
 	bool isMove = false;
 	auto& move = player_->Move();
-	if (InputManager::GetKey().PressKey(DIK_W))
+	if (player_->engine_->GetRawInput()->Push('W'))
 	{
 		move.z = 1.0f;
 		isMove = true;
 	}
-	if (InputManager::GetKey().PressKey(DIK_S))
+	if (player_->engine_->GetRawInput()->Push('S'))
 	{
 		move.z = -1.0f;
 		isMove = true;
 	}
-	if (InputManager::GetKey().PressKey(DIK_A))
+	if (player_->engine_->GetRawInput()->Push('A'))
 	{
 		move.x = -1.0f;
 		isMove = true;
 	}
-	if (InputManager::GetKey().PressKey(DIK_D))
+	if (player_->engine_->GetRawInput()->Push('D'))
 	{
 		move.x = 1.0f;
 		isMove = true;
@@ -61,7 +61,7 @@ void PlayerDashState::Update() {
 	player_->DrainStamina(staminaDrainRate_ * deltaTime);
 
 	//	ここから状態遷移チェック
-	bool is_dash = InputManager::IsDash();
+	bool is_dash = false;
 	bool has_stamina = player_->GetStamina() > 0.0f;
 
 	if (has_stamina == false) {
@@ -81,13 +81,13 @@ void PlayerDashState::Update() {
 		return;
 	}
 
-	if (InputManager::IsAttack()) {
+	if (player_->engine_->GetRawInput()->Push('J')) {
 		// 攻撃
 		player_->ChangeState(new PlayerAttackState());
 		return;
 	}
 	
-	ImGuiManager::GetInstance()->Text("DashState");
+	//ImGuiManager::GetInstance()->Text("DashState");
 }
 
 void PlayerDashState::Exit() {

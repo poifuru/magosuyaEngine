@@ -1,6 +1,6 @@
 #include "PlayerState.h"
-#include "Player3D.h"
-
+#include "../Player.h"
+#include "MathFunction.h"
 
 void PlayerAttackState::Initialize(){
     if (!player_) return;
@@ -8,16 +8,27 @@ void PlayerAttackState::Initialize(){
     // スタミナ消費と回復ブロック
     // 攻撃にもスタミナコストがある場合や、回復を止める場合
     player_->BlockStaminaRecovery();
-    player_->SetIsViewAttack(true);
 
     // タイマーリセット
     attackTimer_ = 0.0f;
     canCombo_ = false;
+
+    // チャージ判定の初期化
+    isAttackHeld_ = true;
 }
 
 void PlayerAttackState::Update(){
     const float deltaTime = 1.0f / 60.0f;
     attackTimer_ += deltaTime;
+
+    // チャージに移行できる時間
+    const float CHARGE_WINDOW_DURATION = 0.15f;
+
+    if (attackTimer_ < CHARGE_WINDOW_DURATION) {
+        if (player_->engine_->GetRawInput()->Push('J') == false) {
+            isAttackHeld_ = false;
+        }
+    }
 
     // 攻撃判定の位置を計算
     Vector3 playerPos = player_->GetPosition();
@@ -25,12 +36,19 @@ void PlayerAttackState::Update(){
     float colliderRadius = 0.0f;
     Vector3 hitBoxWorldPos{};
     // ここで位置計算
-    if (attackTimer_ >= 0.1f && attackTimer_ <= 0.4f) {
+    if (attackTimer_ >= CHARGE_WINDOW_DURATION && attackTimer_ <= 0.4f) {
+
+        if (isAttackHeld_ == true) {
+            // チャージ攻撃に遷移
+            player_->ChangeState(new PlayerChargeState());
+            return;
+        }
+
         // 0.0f ~ 1.0fに正規化
         float slashTime = (attackTimer_ - 0.1f) / 0.3f;
 
         // 刀の軌道を計算
-        if (slashTime < 0.5f) {
+        /*if (slashTime < 0.5f) {
             attackOffset.y = 1.8f - (slashTime * 0.5f);
             attackOffset.z = 0.8f;
             colliderRadius = 0.6f;
@@ -39,14 +57,19 @@ void PlayerAttackState::Update(){
             attackOffset.y = 1.5f - (slashTime * 1.0f);
             attackOffset.z = 1.2f;
             colliderRadius = 0.8f;
-        }
+        }*/
+        attackOffset.y = 0.0f;
+        attackOffset.z = 1.2f;
+        colliderRadius = 0.8f;
         player_->SetAttackColliderRadius(colliderRadius);
-        hitBoxWorldPos = playerPos + (Quaternion::RotateVector(attackOffset,player_->GetPlayerQuaternion()) * 2.0f);
+        hitBoxWorldPos = attackOffset/*+ (Quaternion::RotateVector(attackOffset,player_->GetPlayerQuaternion()) * 2.0f)*/;
         player_->EnableHitBox(true, hitBoxWorldPos);
+        player_->SetIsViewAttack(true);
     }
     else {
-        hitBoxWorldPos = playerPos + (attackOffset * player_->GetForwardVector());
+        //hitBoxWorldPos = playerPos + (attackOffset * player_->GetForwardVector());
         player_->EnableHitBox(false, hitBoxWorldPos);
+        player_->SetIsViewAttack(false);
     }
 
     // コンボ受付期間の管理
@@ -80,7 +103,7 @@ void PlayerAttackState::Update(){
         return;
     }
 
-    ImGuiManager::GetInstance()->Text("AttackState");
+    //ImGuiManager::GetInstance()->Text("AttackState");
 }
 
 void PlayerAttackState::Exit()

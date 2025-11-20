@@ -12,8 +12,8 @@ public:
 	Player(MagosuyaEngine* engine) :engine_(engine) {};
 	~Player();
 public:
-	void Initialize(MagosuyaEngine* engine);
-	void Update();
+	void Initialize();
+	void Update(Matrix4x4* m);
 	void Draw();
 public:
 	void ChangeState(PlayerState* newState);
@@ -73,7 +73,7 @@ private:
 
 	// 攻撃判定用のCollider
 	std::unique_ptr<AttackCollider>attackCollider_;
-	//std::unique_ptr<ModelObject>attackColliderObj_;
+	std::unique_ptr<Model>attackColliderObj_;
 	bool isAttackViewFlag_ = false;
 
 	// 無敵管理フラグ
@@ -84,6 +84,7 @@ private:
 	float hp_ = 100.0f;
 
 	Vector3 move_ = { 0,0,0 };
+	Vector3 direction_ = { 0.0f,0.0f,0.0f };
 	// 一旦これは元のスピード
 	float speed_ = 1.0f;
 	// 移動速度倍率

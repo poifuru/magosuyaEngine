@@ -1,5 +1,5 @@
 #include "PlayerState.h"
-#include "Player3D.h"
+#include "../Player.h"
 
 void PlayerFallState::Initialize() {
 	
@@ -12,12 +12,4 @@ void PlayerFallState::Update() {
 		player_->ChangeState(new PlayerStopState());
 		return;
 	}
-
-	if (player_->CanDoubleJump() && InputManager::IsJump()) {
-		// 二段ジャンプへ
-		player_->ChangeState(new PlayerDoubleJumpState());
-		return;
-	}
-
-	ImGuiManager::GetInstance()->Text("FallState");
 }

@@ -9,6 +9,7 @@ TitleScene::TitleScene (MagosuyaEngine* magosuya) {
 	camera_ = std::make_unique<CameraData> ();
 	model_ = std::make_unique<Model> (magosuya);
 	magosuya_->LoadModelData ("Resources/teapot", "teapot");
+	player_ = std::make_unique<Player>(magosuya);
 }
 
 TitleScene::~TitleScene () {
@@ -28,6 +29,8 @@ void TitleScene::Initialize () {
 		{},
 		{0.0f, 0.0f, -50.0f},
 	};
+
+	player_->Initialize();
 }
 
 void TitleScene::Update () {
@@ -40,8 +43,10 @@ void TitleScene::Update () {
 	Matrix4x4 vp = Multiply (camera_->view, camera_->proj);
 
 	model_->Update (&vp);
+	player_->Update(&vp);
 }
 
 void TitleScene::Draw () {
 	model_->Draw ();
+	player_->Draw();
 }

@@ -1,5 +1,5 @@
 #include "PlayerState.h"
-#include "Player3D.h"
+#include "../Player.h"
 
 void PlayerEvasionState::Initialize()
 {
@@ -13,28 +13,28 @@ void PlayerEvasionState::Initialize()
 	Vector3 inputVector;
 
 	auto& move = player_->Move();
-	if (InputManager::GetKey().PressKey(DIK_W)){
+	if (player_->engine_->GetRawInput()->Push('W')) {
 		move.z = 1.0f;
 	}
-	if (InputManager::GetKey().PressKey(DIK_S)){
+	if (player_->engine_->GetRawInput()->Push('S')) {
 		move.z = -1.0f;
 	}
-	if (InputManager::GetKey().PressKey(DIK_A)){
+	if (player_->engine_->GetRawInput()->Push('A')) {
 		move.x = -1.0f;
 	}
-	if (InputManager::GetKey().PressKey(DIK_D)){
+	if (player_->engine_->GetRawInput()->Push('D')) {
 		move.x = 1.0f;
 	}
 	inputVector = move;
 
-	if (Length(inputVector) > 0.001f){
-		// 入力がある場合、入力方向に回避
-		evasionDirection_ = Normalize(inputVector);
-	}
-	else{
-		// 入力がない場合、プレイヤーの正面方向に回避
-		evasionDirection_ = player_->GetForwardVector();
-	}
+	//if (Length(inputVector) > 0.001f){
+	//	// 入力がある場合、入力方向に回避
+	//	evasionDirection_ = Normalize(inputVector);
+	//}
+	//else{
+	//	// 入力がない場合、プレイヤーの正面方向に回避
+	//	evasionDirection_ = player_->GetForwardVector();
+	//}
 
 	// 3. **無敵状態の設定**
 	player_->SetInvulnerable(true);
@@ -51,7 +51,7 @@ void PlayerEvasionState::Initialize()
 	player_->SetIsOnGround(false);
 
 	// 回転を保存
-	preQuaternion_ = player_->GetPlayerQuaternion();
+	//preQuaternion_ = player_->GetPlayerQuaternion();
 }
 
 void PlayerEvasionState::Update()
@@ -71,16 +71,16 @@ void PlayerEvasionState::Update()
 	if (t >= 1.0f) {
 		t = 1.0f;
 	}
-	float currentAngle = Deg2Rad(targetAngle_) * t;
+	//float currentAngle = Deg2Rad(targetAngle_) * t;
 
-	// 向いている方向とワールドの真上の軸から回転させる軸を生成
-	Vector3 rotationAxis = CrossProduct({ 0.0f,1.0f,0.0f }, player_->GetForwardVector());
-	rotationAxis = Normalize(rotationAxis);
+	//// 向いている方向とワールドの真上の軸から回転させる軸を生成
+	//Vector3 rotationAxis = CrossProduct({ 0.0f,1.0f,0.0f }, player_->GetForwardVector());
+	//rotationAxis = Normalize(rotationAxis);
 
-	// Quaternionの生成
-	Quaternion evasionRotation = Quaternion::MakeRotateAxisAngleQuaternion(rotationAxis, currentAngle);
+	//// Quaternionの生成
+	//Quaternion evasionRotation = Quaternion::MakeRotateAxisAngleQuaternion(rotationAxis, currentAngle);
 
-	player_->SetPlayerQuaternion(evasionRotation);
+	//player_->SetPlayerQuaternion(evasionRotation);
 
 	// 2. **状態遷移ロジック (終了判定)**
 
@@ -94,7 +94,7 @@ void PlayerEvasionState::Update()
 		player_->SetSpeedMultiplier(1.0f);
 
 		// 回転をもとに戻す
-		player_->SetPlayerQuaternion(preQuaternion_);
+		//player_->SetPlayerQuaternion(preQuaternion_);
 
 		// スタミナ回復を解除
 		player_->UnblockStaminaRecovery();
@@ -104,5 +104,5 @@ void PlayerEvasionState::Update()
 		return;
 	}
 
-	ImGuiManager::GetInstance()->Text("EvasionState");
+	//ImGuiManager::GetInstance()->Text("EvasionState");
 }

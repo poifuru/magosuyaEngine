@@ -59,5 +59,5 @@ void PlayerWalkState::Update() {
 		return;
 	}
 
-	ImGuiManager::GetInstance()->Text("WalkState");
+	
 }

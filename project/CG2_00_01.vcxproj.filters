@@ -106,6 +106,8 @@
     <ClCompile Include="application\Player\PlayerState\PlayerHurtState.cpp" />
     <ClCompile Include="application\Player\PlayerState\PlayerStopState.cpp" />
     <ClCompile Include="application\Player\PlayerState\PlayerWalkState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerChargeState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerChargeReleaseState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="general\ChangeString.h">
