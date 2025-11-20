@@ -3,7 +3,6 @@
 #include <memory>
 #include "object/2d/Sprite.h"
 #include "object/3d/Model.h"
-#include "../Player/Player.h"
 
 class TitleScene : public Scene {
 public:		//メンバ関数
@@ -17,6 +16,4 @@ public:		//メンバ関数
 private:	//メンバ変数
 	std::unique_ptr<CameraData> camera_ = nullptr;
 	std::unique_ptr<Model> model_ = nullptr;
-
-	std::unique_ptr<Player>player_ = nullptr;
 };

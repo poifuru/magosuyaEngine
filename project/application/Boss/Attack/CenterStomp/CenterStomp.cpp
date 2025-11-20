@@ -4,9 +4,8 @@
 #include <imgui.h>
 #include <algorithm>
 
-CenterStomp::CenterStomp(MagosuyaEngine* magosuya, CameraData* camera, Boss* boss) {
+CenterStomp::CenterStomp(MagosuyaEngine* magosuya, Boss* boss) {
 	magosuya_ = magosuya;
-	camera_ = camera;
 	boss_ = boss;
 
 	// 攻撃範囲表示用のモデル作成
@@ -45,9 +44,7 @@ void CenterStomp::StartAttack() {
 	targetPos_.y = kHoverHeight_;         // ゴール地点Y：上空(10.0)
 }
 
-void CenterStomp::Update() {
-	UpdateCamera();
-
+void CenterStomp::Update(Matrix4x4* m) {
 	// 状態遷移マシンの実行
 	switch (phase_) {
 	case StompPhase::Rise:
@@ -79,7 +76,7 @@ void CenterStomp::Update() {
 	// transform_.translate = kCenterPoint_; 
 
 	model_->SetTransform(transform_);
-	model_->Update(&vp_);
+	model_->Update(m);
 }
 
 // 毎フレーム呼ばれる上昇更新処理
@@ -197,15 +194,4 @@ void CenterStomp::ImGuiControl() {
 
 	ImGui::End();
 #endif
-}
-
-void CenterStomp::UpdateCamera() {
-	camera_->world = MakeAffineMatrix(camera_->transform.scale, camera_->transform.rotate, camera_->transform.translate);
-	camera_->view = Inverse(camera_->world);
-	camera_->proj = MakePerspectiveFOVMatrix(
-		0.45f,
-		float(magosuya_->GetDxCommon()->GetWinAPI()->kClientWidth) / float(magosuya_->GetDxCommon()->GetWinAPI()->kClientHeight),
-		0.1f, 100.0f
-	);
-	vp_ = Multiply(camera_->view, camera_->proj);
 }

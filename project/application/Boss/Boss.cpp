@@ -2,9 +2,8 @@
 #include "MathFunction.h"
 #include <imgui.h>
 
-Boss::Boss(MagosuyaEngine* magosuya, CameraData* camera) {
+Boss::Boss(MagosuyaEngine* magosuya) {
 	magosuya_ = magosuya;
-	camera_ = camera;
 	model_ = std::make_unique<Model>(magosuya);
 	magosuya_->LoadModelData("Resources/teapot", "teapot");
 }
@@ -18,16 +17,14 @@ void Boss::Initialize() {
 	model_->SetTexture("teapot");
 	model_->Initialize();
 
-	centerStomp_ = std::make_unique<CenterStomp>(magosuya_, camera_, this);
+	centerStomp_ = std::make_unique<CenterStomp>(magosuya_, this);
 	centerStomp_->Initialize();
 
 	transform_ = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f}, {0.0f,0.0f,0.0f} };
 	speed_ = { 0.1f,0.1f,0.1f };
 }
 
-void Boss::Update() {
-	// カメラの更新
-	UpdateCamera();
+void Boss::Update(Matrix4x4* m) {
 	// 行動の更新
 	UpdateMove();
 
@@ -35,8 +32,8 @@ void Boss::Update() {
 		centerStomp_->StartAttack();
 	}
 
-	model_->Update(&vp_);
-	centerStomp_->Update();
+	model_->Update(m);
+	centerStomp_->Update(m);
 
 	model_->SetTransform(transform_);
 }
@@ -56,15 +53,6 @@ void Boss::ImGuiControl() {
 
 	centerStomp_->ImGuiControl();
 #endif
-}
-
-void Boss::UpdateCamera() {
-	camera_->world = MakeAffineMatrix(camera_->transform.scale, camera_->transform.rotate, camera_->transform.translate);
-	camera_->view = Inverse(camera_->world);
-	camera_->proj = MakePerspectiveFOVMatrix(
-		0.45f, float(magosuya_->GetDxCommon()->GetWinAPI()->kClientWidth) / float(magosuya_->GetDxCommon()->GetWinAPI()->kClientHeight), 0.1f, 100.0f
-	);
-	vp_ = Multiply(camera_->view, camera_->proj);
 }
 
 void Boss::UpdateMove() {

@@ -14,19 +14,17 @@ enum class StompPhase {
 
 class CenterStomp {
 public:
-	CenterStomp(MagosuyaEngine* magosuya, CameraData* camera, Boss* boss);
+	CenterStomp(MagosuyaEngine* magosuya, Boss* boss);
 	~CenterStomp();
 
 	void Initialize();
-	void Update();
+	void Update(Matrix4x4* m);
 	void Draw();
 	void ImGuiControl();
 
 	void StartAttack();
 	bool IsAttacking() const { return phase_ != StompPhase::None; }
 private:
-	void UpdateCamera();
-	
 	// 各フェーズの処理
 	void UpdateRise();   // 上昇
 	void UpdateHover();  // 待機
@@ -34,8 +32,6 @@ private:
 	void UpdateCooldown(); // 硬直
 private:
 	MagosuyaEngine* magosuya_ = nullptr;
-	CameraData* camera_;
-	Matrix4x4 vp_;
 	std::unique_ptr<Model> model_ = nullptr;
 
 	// ボス攻撃時の波

@@ -5,11 +5,11 @@
 
 class Boss {
 public:
-	Boss(MagosuyaEngine* magosuya, CameraData* camera);
+	Boss(MagosuyaEngine* magosuya);
 	~Boss();
 
 	void Initialize();
-	void Update();
+	void Update(Matrix4x4* m);
 	void Draw();
 	void ImGuiControl();
 
@@ -21,12 +21,9 @@ public:
 	void SetPosition(Vector3 position) { transform_.translate = position; }
 
 private:
-	void UpdateCamera();
 	void UpdateMove();
 private:
 	MagosuyaEngine* magosuya_ = nullptr;
-	CameraData* camera_;
-	Matrix4x4 vp_;
 	std::unique_ptr<Model> model_ = nullptr;
 	
 	std::unique_ptr <CenterStomp> centerStomp_ = nullptr;
