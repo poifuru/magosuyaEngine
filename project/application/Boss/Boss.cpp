@@ -18,7 +18,7 @@ void Boss::Initialize() {
 	model_->SetTexture("teapot");
 	model_->Initialize();
 
-	centerStomp_ = std::make_unique<CenterStomp>(magosuya_, camera_);
+	centerStomp_ = std::make_unique<CenterStomp>(magosuya_, camera_, this);
 	centerStomp_->Initialize();
 
 	transform_ = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f}, {0.0f,0.0f,0.0f} };
@@ -31,9 +31,14 @@ void Boss::Update() {
 	// 行動の更新
 	UpdateMove();
 
+	if (magosuya_->GetRawInput()->Trigger('1')) {
+		centerStomp_->StartAttack();
+	}
 
 	model_->Update(&vp_);
 	centerStomp_->Update();
+
+	model_->SetTransform(transform_);
 }
 
 void Boss::Draw() {
@@ -48,6 +53,8 @@ void Boss::ImGuiControl() {
 	ImGui::DragFloat3("Rotate", &transform_.rotate.x, 0.1f);
 	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.1f);
 	ImGui::End();
+
+	centerStomp_->ImGuiControl();
 #endif
 }
 
@@ -61,17 +68,9 @@ void Boss::UpdateCamera() {
 }
 
 void Boss::UpdateMove() {
-	if (magosuya_->GetRawInput()->Push(VK_UP)) {
-		transform_.translate.z += speed_.z;
+	if (centerStomp_->IsAttacking()) {
+		return;
 	}
-	if (magosuya_->GetRawInput()->Push(VK_DOWN)) {
-		transform_.translate.z -= speed_.z;
-	}
-	if (magosuya_->GetRawInput()->Push(VK_LEFT)) {
-		transform_.translate.x -= speed_.x;
-	}
-	if (magosuya_->GetRawInput()->Push(VK_RIGHT)) {
-		transform_.translate.x += speed_.x;
-	}
-	model_->SetTransform(transform_);
+	transform_.translate.x += static_cast<float>(rand() % 3 - 1) * 0.1f;
+	transform_.translate.z += static_cast<float>(rand() % 3 - 1) * 0.1f;
 }

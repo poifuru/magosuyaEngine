@@ -18,6 +18,7 @@ public:
 	Vector3& GetPosition() { return transform_.translate; }
 	// Setter
 	void SetTransform(Transform transform) { transform_ = transform; }
+	void SetPosition(Vector3 position) { transform_.translate = position; }
 
 private:
 	void UpdateCamera();
@@ -33,4 +34,3 @@ private:
 	Transform transform_;
 	Vector3 speed_;
 };
-
