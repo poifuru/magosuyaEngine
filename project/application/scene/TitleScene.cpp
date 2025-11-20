@@ -42,6 +42,12 @@ void TitleScene::Update () {
 	);
 	Matrix4x4 vp = Multiply (camera_->view, camera_->proj);
 
+	// ゲーム終了
+	if (magosuya_->GetRawInput()->Trigger(VK_SPACE)) {
+		nextScene_ = SceneLabel::Play;
+		isFinish_ = true;
+	}
+
 	model_->Update (&vp);
 	player_->Update(&vp);
 }
