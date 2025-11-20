@@ -160,8 +160,22 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="application\Collider\PlayerBodyCollider.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerAttackState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerChargeReleaseState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerChargeState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerDashState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerDeathState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerEvasionState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerExhaustedState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerFallState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerHurtState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerStopState.cpp" />
+    <ClCompile Include="application\Player\PlayerState\PlayerWalkState.cpp" />
     <ClCompile Include="application\scene\ClearScene.cpp" />
     <ClCompile Include="application\scene\GameoverScene.cpp" />
+    <ClCompile Include="application\Collider\Collider.cpp" />
+    <ClCompile Include="application\Collider\AttackCollider.cpp" />
     <ClCompile Include="application\Boss\Boss.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
     <ClCompile Include="externals\imgui\imgui_demo.cpp" />
@@ -218,6 +232,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\scene\SceneManager.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\scene\PlayScene.cpp" />
+    <ClCompile Include="application\Player\Player.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shader\Object3d.PS.hlsl">
@@ -238,8 +253,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="application\Collider\AttackCollider.h" />
+    <ClInclude Include="application\Collider\PlayerBodyCollider.h" />
+    <ClInclude Include="application\Player\PlayerState\PlayerState.h" />
     <ClInclude Include="application\scene\Scene.h" />
     <ClInclude Include="application\scene\ClearScene.h" />
+    <ClInclude Include="application\Collider\Collider.h" />
     <ClInclude Include="application\Boss\Boss.h" />
     <ClInclude Include="externals\externals.h" />
     <ClInclude Include="application\scene\GameoverScene.h" />
@@ -293,6 +312,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\scene\SceneManager.h" />
     <ClInclude Include="application\scene\TitleScene.h" />
     <ClInclude Include="application\scene\PlayScene.h" />
+    <ClInclude Include="application\Player\Player.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\shader\Object3d.hlsli" />

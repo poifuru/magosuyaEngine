@@ -833,3 +833,8 @@ Vector3 Reflect(const Vector3& input, Vector3& normal) {
 	reflect = input - normal * (2.0f * dot);
 	return reflect;
 }
+
+float Deg2Rad(float deg) {
+	float ret = static_cast<float>(deg) * (3.14159265358979323846f / 180.0f);
+	return ret;
+}

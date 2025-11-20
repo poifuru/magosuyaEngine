@@ -3,6 +3,7 @@
 #include <memory>
 #include "object/2d/Sprite.h"
 #include "object/3d/Model.h"
+#include "../Player/Player.h"
 #include "../Boss/Boss.h"
 
 class PlayScene : public Scene {
