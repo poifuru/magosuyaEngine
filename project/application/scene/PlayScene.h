@@ -17,5 +17,6 @@ public:		//メンバ関数
 
 private:	//メンバ変数
 	std::unique_ptr<CameraData> camera_ = nullptr;
+	std::unique_ptr<Player>player_ = nullptr;
 	std::unique_ptr<Boss> boss_ = nullptr;
 };

@@ -785,12 +785,12 @@ bool IsCollision(const AABB& aabb, const Segment& segment) {
 //	wasMousePressed = isMousePressed;
 //}
 
-Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
+Vector3 Lerp(const Vector3& start, const Vector3& end, float t) {
 	Vector3 v;
 
-	v.x = t * v1.x + (1 - t) * v2.x;
-	v.y = t * v1.y + (1 - t) * v2.y;
-	v.z = t * v1.z + (1 - t) * v2.z;
+	v.x = t * end.x + (1 - t) * start.x;
+	v.y = t * end.y + (1 - t) * start.y;
+	v.z = t * end.z + (1 - t) * start.z;
 
 	return v;
 }
