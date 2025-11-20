@@ -162,15 +162,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClCompile Include="application\scene\ClearScene.cpp" />
     <ClCompile Include="application\scene\GameoverScene.cpp" />
-    <ClCompile Include="externals\imgui\imgui.cpp" />
-    <ClCompile Include="externals\imgui\imgui_demo.cpp" />
-    <ClCompile Include="externals\imgui\imgui_draw.cpp" />
-    <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp" />
-    <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
-    <ClCompile Include="externals\imgui\imgui_tables.cpp" />
-    <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="magosuya\PSO\BlendModeManager.cpp" />
     <ClCompile Include="general\Logger.cpp" />
     <ClCompile Include="general\ChangeString.cpp" />
+    <ClCompile Include="magosuya\PSO\InputLayoutManager.cpp" />
     <ClCompile Include="magosuya\utility\imgui\ImGuiManager.cpp" />
     <ClCompile Include="magosuya\engine\LeakChecker.cpp" />
     <ClCompile Include="magosuya\engine\DxCommon.cpp">
@@ -243,6 +238,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClInclude Include="application\scene\Scene.h" />
     <ClInclude Include="application\scene\ClearScene.h" />
+    <ClInclude Include="magosuya\PSO\BlendModeManager.h" />
     <ClInclude Include="externals\externals.h" />
     <ClInclude Include="application\scene\GameoverScene.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
@@ -255,6 +251,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="general\Logger.h" />
     <ClInclude Include="general\ChangeString.h" />
+    <ClInclude Include="magosuya\PSO\InputLayoutManager.h" />
     <ClInclude Include="magosuya\utility\imgui\ImGuiManager.h" />
     <ClInclude Include="magosuya\engine\LeakChecker.h" />
     <ClInclude Include="magosuya\engine\DxCommon.h" />

@@ -28,10 +28,6 @@ private:
 	//モデルデータ
 	std::unique_ptr<ModelData> data_ = nullptr;
 
-	//ルートシグネチャとパイプラインステート
-	ComPtr<ID3D12RootSignature> rootSignature_;
-	ComPtr<ID3D12PipelineState> pipelineState_;
-
 	//GPUリソース
 	ComPtr<ID3D12Resource> matrixBuffer_;
 	ComPtr<ID3D12Resource> materialBuffer_;

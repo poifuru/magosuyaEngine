@@ -5,8 +5,6 @@
 Particle::Particle (MagosuyaEngine* magosuya) {
 	magosuya_ = magosuya;
 	data_ = std::make_unique<ModelData> ();
-	rootSignature_ = magosuya_->GetDxCommon ()->GetRootSignature ();
-	pipelineState_ = magosuya_->GetDxCommon ()->GetPipelineState ();
 	transform_ = { {1.0f, 1.0f, 1.0f},{0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f} };
 	uvTransform_ = { {1.0f, 1.0f, 1.0f},{0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f} };
 }
@@ -74,8 +72,6 @@ void Particle::Update (Matrix4x4* vp) {
 }
 
 void Particle::Draw () {
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootSignature (rootSignature_.Get ());
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetPipelineState (pipelineState_.Get ());
 	magosuya_->GetDxCommon ()->GetCommandList ()->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	magosuya_->GetDxCommon ()->GetCommandList ()->IASetVertexBuffers (0, 1, &data_->vbView);   //VBVを設定
 	magosuya_->GetDxCommon ()->GetCommandList ()->IASetIndexBuffer (&data_->ibView);	        //IBVを設定

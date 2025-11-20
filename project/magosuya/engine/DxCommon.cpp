@@ -58,160 +58,7 @@ void DxCommon::Initialize () {
 	ViewportRectInit ();
 	ScissorRectInit ();
 
-	// DiscriptorRangeの設定
-	descriptorRange[0].BaseShaderRegister = 0;	//0から始まる
-	descriptorRange[0].NumDescriptors = 1;		//数は1つ
-	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;	//SRVを使う
-	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	//Offsetを自動計算
-
-	//RootSignature
-	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-	//RootParameter作成。複数設定できるので配列
-	rootParameter[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;		//CBVを使う
-	rootParameter[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;	//VertexShaderで使う
-	rootParameter[0].Descriptor.ShaderRegister = 0;
-
-	rootParameter[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;		//CBVを使う
-	rootParameter[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;	//PixelShaderで使う
-	rootParameter[1].Descriptor.ShaderRegister = 1;						//レジスタ番号とバインド
-	descriptionRootSignature.pParameters = rootParameter;				//ルートパラメータ配列へのポインタ
-	descriptionRootSignature.NumParameters = _countof (rootParameter);	//配列の長さ
-
-	//DescriptorTable
-	rootParameter[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;	//DiscriptorTableを使う
-	rootParameter[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;	//PixelShaderで使う
-	rootParameter[2].DescriptorTable.pDescriptorRanges = descriptorRange;	//Tableの中身の配列を指定
-	rootParameter[2].DescriptorTable.NumDescriptorRanges = _countof (descriptorRange);	//Tableで利用する数
-
-	//平行光源用のCBV
-	rootParameter[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameter[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameter[3].Descriptor.ShaderRegister = 3;
-
-	//InputLayoutの設定
-	inputElementDescs[0].SemanticName = "POSITION";
-	inputElementDescs[0].SemanticIndex = 0;
-	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	inputElementDescs[1].SemanticName = "TEXCOORD";
-	inputElementDescs[1].SemanticIndex = 0;
-	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	inputElementDescs[2].SemanticName = "NORMAL";
-	inputElementDescs[2].SemanticIndex = 0;
-	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	//ElementDescをバインド
-	inputLayoutDesc.pInputElementDescs = inputElementDescs;
-	inputLayoutDesc.NumElements = _countof (inputElementDescs);
-
-	//***BlendStateの設定***//
-	//すべての色の要素を書き込む
-	blendDesc[0].RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-	//共通設定なのでfor文で回す
-	for (int i = 1; i < kBlendDescNum; i++) {
-		blendDesc[i].RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-		blendDesc[i].RenderTarget[0].BlendEnable = TRUE;
-		blendDesc[i].RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-		blendDesc[i].RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-		blendDesc[i].RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-	}
-
-	//---個別の設定---//
-	//アルファブレンド
-	blendDesc[1].RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDesc[1].RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc[1].RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-
-	//加算合成
-	blendDesc[2].RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDesc[2].RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc[2].RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-
-	//減算合成
-	blendDesc[3].RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDesc[3].RenderTarget[0].BlendOp = D3D12_BLEND_OP_SUBTRACT;
-	blendDesc[3].RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-
-	//乗算合成
-	blendDesc[4].RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
-	blendDesc[4].RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc[4].RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
-
-	//スクリーン合成
-	blendDesc[5].RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
-	blendDesc[5].RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc[5].RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-	//--------------//
-	//***************//
-
-	//Samplerの設定
-	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;	//バイリニアフィルタ
-	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;	//比較しない
-	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;	//ありったけのmipmapを使う
-	staticSamplers[0].ShaderRegister = 0;	//レジスタ番号0を使う
-	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;		//PixelShaderで使う
-	descriptionRootSignature.pStaticSamplers = staticSamplers;
-	descriptionRootSignature.NumStaticSamplers = _countof (staticSamplers);
-
-	//CPU側でRootSignatureの設定をシリアライズしてバイナリにする(GPUが理解できる形に変換する)
-	hr = D3D12SerializeRootSignature (&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-	if (FAILED (hr)) {
-		Logger::Log (logStream, reinterpret_cast<char*>(errorBlob->GetBufferPointer ()));
-		assert (false);
-	}
-
-	//作ったバイナリを元にGPU側にRootSignatureを作成
-	hr = device->CreateRootSignature (0, signatureBlob->GetBufferPointer (),
-									  signatureBlob->GetBufferSize (), IID_PPV_ARGS (rootSignature.GetAddressOf ()));
-	assert (SUCCEEDED (hr));
-
-	//RasterizerStateの設定
-	//裏面(時計回り)を表示しない
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE/*D3D12_CULL_MODE_BACK*/;
-	//三角形の中を塗りつぶす
-	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-
-	//Shaderをコンパイルする
-	vertexShaderBlob = CompilerShader (L"Resources/shader/Object3d.VS.hlsl", L"vs_6_0", logStream);
-	assert (vertexShaderBlob != nullptr);
-
-	pixelShaderBlob = CompilerShader (L"Resources/shader/Object3d.PS.hlsl", L"ps_6_0", logStream);
-	assert (pixelShaderBlob != nullptr);
-
-	//*****実際にPSOを生成する*****//
-	graphicsPieplineStateDesc.pRootSignature = rootSignature.Get ();//RootSignature
-	graphicsPieplineStateDesc.InputLayout = inputLayoutDesc;		//InputLayout
-	graphicsPieplineStateDesc.VS = { vertexShaderBlob->GetBufferPointer (),
-	vertexShaderBlob->GetBufferSize () };							//VertexShader
-	graphicsPieplineStateDesc.PS = { pixelShaderBlob->GetBufferPointer (),
-	pixelShaderBlob->GetBufferSize () };							//PixelShader
-	graphicsPieplineStateDesc.BlendState = blendDesc[1];			//BlendState
-	graphicsPieplineStateDesc.RasterizerState = rasterizerDesc;		//RastarizerState
-	//書き込むRTVの情報
-	graphicsPieplineStateDesc.NumRenderTargets = 1;
-	graphicsPieplineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	//利用するトポロジ(形状)のタイプ。三角形
-	graphicsPieplineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	//どのように画面に色を打ち込むのかの設定(気にしなくて良い)
-	graphicsPieplineStateDesc.SampleDesc.Count = 1;
-	graphicsPieplineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-	//DepthStencilの設定
-	graphicsPieplineStateDesc.DepthStencilState = depthStencilDesc;
-	graphicsPieplineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	hr = device->CreateGraphicsPipelineState (&graphicsPieplineStateDesc,
-											  IID_PPV_ARGS (graphicsPipelineState.GetAddressOf ()));
-	assert (SUCCEEDED (hr));
-	//***************************//
+	
 }
 
 void DxCommon::BeginFrame () {
@@ -248,9 +95,6 @@ void DxCommon::BeginFrame () {
 	commandList->RSSetViewports (1, &viewport);
 	//Scissorを設定
 	commandList->RSSetScissorRects (1, &scissorRect);
-	//RootSignatureを設定。PSOに設定しているけど別途設定が必要
-	commandList->SetGraphicsRootSignature (rootSignature.Get ());
-	commandList->SetPipelineState (graphicsPipelineState.Get ());		//PSOを設定
 }
 
 void DxCommon::EndFrame () {
@@ -619,14 +463,6 @@ void DxCommon::CreateSwapChain () {
 void DxCommon::CreateDepthBaffer () {
 	//DepthStencilTextureをウィンドウサイズで作成
 	depthStencilResource = CreateDepthStencilTextureResource (device.Get (), winApi_->kClientWidth, winApi_->kClientHeight);
-
-	//PSO作成時に使う設定だがわかりやすいのでこちらで設定
-	//Depthの機能を有効化する
-	depthStencilDesc.DepthEnable = true;
-	//書き込みします
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	//比較関数はLessEqual。つまり、近ければ描画される
-	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 }
 
 void DxCommon::CreateRTV () {

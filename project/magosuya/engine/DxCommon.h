@@ -14,9 +14,6 @@ using namespace Microsoft::WRL;
 #include "LeakChecker.h"
 #include "InputManager.h"
 
-//BlendStateの個数
-const int kBlendDescNum = 6;
-
 class DxCommon {
 public:		//メンバ関数(mainで呼び出すよう)
 	//デストラクタ
@@ -97,8 +94,6 @@ public:		//アクセッサ
 	ID3D12Device* GetDevice () { return device.Get (); }
 	ID3D12GraphicsCommandList* GetCommandList () { return commandList.Get (); }
 	ID3D12DescriptorHeap* GetsrvDescriptorHeap () { return srvDescriptorHeap.Get (); }
-	ID3D12RootSignature* GetRootSignature () { return rootSignature.Get (); }
-	ID3D12PipelineState* GetPipelineState () { return graphicsPipelineState.Get (); }
 	IDxcUtils* GetDxcUtils () { return dxcUtils.Get(); }
 	IDxcCompiler3* GetDxcCompiler () { return dxcCompiler.Get (); }
 	IDxcIncludeHandler* GetIncludeHandler () { return includeHandler.Get (); }
@@ -170,39 +165,6 @@ private://メンバ変数
 	//FenceのSignalを待つためのイベント
 	HANDLE fenceEvent;
 
-	//DiscriptorRange
-	D3D12_DESCRIPTOR_RANGE descriptorRange[1]{};
-
-	//RootSignature
-	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
-	//RootParameter
-	D3D12_ROOT_PARAMETER rootParameter[4]{};
-
-	//InputLayout
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
-	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-
-	//BlendState(何個か作る)
-	D3D12_BLEND_DESC blendDesc[kBlendDescNum]{};
-
-	//Sampler
-	D3D12_STATIC_SAMPLER_DESC staticSamplers[1]{};
-
-	//RootSignatureの設定をシリアライズしてバイナリにする
-	ComPtr<ID3DBlob> signatureBlob = nullptr;
-	ComPtr<ID3DBlob> errorBlob = nullptr;
-	ComPtr<ID3D12RootSignature> rootSignature = nullptr;
-
-	//RasterizerState
-	D3D12_RASTERIZER_DESC rasterizerDesc{};
-
-	//Shader
-	ComPtr<IDxcBlob> vertexShaderBlob = nullptr;
-	ComPtr<IDxcBlob> pixelShaderBlob = nullptr;
-
-	//depthStencilStateの設定
-	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-
 	//DepthStencilTexture
 	ComPtr<ID3D12Resource> depthStencilResource = nullptr;
 
@@ -211,10 +173,6 @@ private://メンバ変数
 
 	//DSV用ディスクリプタヒープで数は1。DSVはShader内で触るものではないので、ShaderVisibleはfalse
 	ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap{};
-
-	//PSO
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPieplineStateDesc{};
-	ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 
 	//ビューポート
 	D3D12_VIEWPORT viewport{};

@@ -5,8 +5,6 @@
 
 ModelRenderer::ModelRenderer (MagosuyaEngine* magosuya) {
 	magosuya_ = magosuya;
-	rootSignature_ = magosuya_->GetDxCommon ()->GetRootSignature ();
-	pipelineState_ = magosuya_->GetDxCommon ()->GetPipelineState ();
 	for (int i = 0; i < 4; ++i) {
 		color_[i] = 1.0f;
 	}
@@ -48,8 +46,6 @@ void ModelRenderer::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
 		// モデルデータが解放済みなら描画をスキップ
 		return;
 	}
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootSignature (rootSignature_.Get ());
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetPipelineState (pipelineState_.Get ());
 	//どんな形状で描画するのか
 	magosuya_->GetDxCommon ()->GetCommandList ()->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	//頂点バッファをセットする

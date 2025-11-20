@@ -24,10 +24,6 @@ public:		//外部公開メソッド
 	void SetID (const std::string& id) { id_ = id; }
 
 private:	//メンバ変数
-	//ルートシグネチャとパイプラインステート
-	ComPtr<ID3D12RootSignature> rootSignature_;
-	ComPtr<ID3D12PipelineState> pipelineState_;
-
 	//GPUリソース
 	ComPtr<ID3D12Resource> vertexBuffer_;
 	ComPtr<ID3D12Resource> indexBuffer_;

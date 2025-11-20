@@ -86,17 +86,12 @@
     <ClCompile Include="application\scene\PlayScene.cpp" />
     <ClCompile Include="application\scene\ClearScene.cpp" />
     <ClCompile Include="application\scene\GameoverScene.cpp" />
-    <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="externals\imgui\imgui.cpp" />
-    <ClCompile Include="externals\imgui\imgui_demo.cpp" />
-    <ClCompile Include="externals\imgui\imgui_draw.cpp" />
-    <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp" />
-    <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
-    <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="magosuya\utility\particle\Particle.cpp" />
     <ClCompile Include="magosuya\PSO\ShaderManager.cpp" />
     <ClCompile Include="magosuya\PSO\RootSignatureManager.cpp" />
     <ClCompile Include="magosuya\PSO\PSOManager.cpp" />
+    <ClCompile Include="magosuya\PSO\BlendModeManager.cpp" />
+    <ClCompile Include="magosuya\PSO\InputLayoutManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="general\ChangeString.h">
@@ -192,6 +187,8 @@
     <ClInclude Include="magosuya\PSO\ShaderManager.h" />
     <ClInclude Include="magosuya\PSO\RootSignatureManager.h" />
     <ClInclude Include="magosuya\PSO\PSOManager.h" />
+    <ClInclude Include="magosuya\PSO\BlendModeManager.h" />
+    <ClInclude Include="magosuya\PSO\InputLayoutManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ソースファイル">
