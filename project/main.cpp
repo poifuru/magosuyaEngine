@@ -10,6 +10,12 @@
 #pragma comment(lib, "xinput.lib")
 #include <imgui.h>
 #include "MagosuyaEngine.h"
+#include "Windows.h"
+#include "DxCommon.h"
+#include "TextureManager.h"
+#include "ImGuiManager.h"
+#include "ModelManager.h"
+#include "PSOManager.h"
 #include "function.h"
 #include "MathFunction.h"
 #include "struct.h"
@@ -17,7 +23,6 @@
 #include "SphereModel.h"
 #include "Sprite.h"
 #include "DebugCamera.h"
-#include "InputManager.h"
 #include "Particle.h"
 
 //サウンドデータの読み込み関数
@@ -117,11 +122,9 @@ void SoundPlayWave (IXAudio2* xAudio2, const SoundData& soundData) {
 	result = pSourceVoice->Start ();
 }
 
-std::unique_ptr<InputManager> g_inputManager = nullptr;
-
 // Windowsアプリでのエントリーポイント(main関数)
-int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
-	std::unique_ptr<MagosuyaEngine> magosuya = std::make_unique<MagosuyaEngine> ();
+int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
+	MagosuyaEngine* magosuya = MagosuyaEngine::GetInstance ();
 	magosuya->Initialize ();
 
 	HRESULT hr;
@@ -139,10 +142,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	//音声の読み込み
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
 	//テクスチャの読み込み
-	magosuya->LoadTexture ("Resources/uvChecker.png", "uvChecker");
+	TextureManager::GetInstance ()->LoadTexture ("Resources/uvChecker.png", "uvChecker");
 
 	//平行光源のResourceを作成してデフォルト値を書き込む
-	ComPtr<ID3D12Resource> dierctionalLightResource = magosuya->GetDxCommon ()->CreateBufferResource (sizeof (DirectionalLight));
+	ComPtr<ID3D12Resource> dierctionalLightResource = DxCommon::GetInstance()->CreateBufferResource (sizeof (DirectionalLight));
 	DirectionalLight* directionalLightData = nullptr;
 	//書き込むためのアドレス取得
 	dierctionalLightResource->Map (0, nullptr, reinterpret_cast<void**>(&directionalLightData));
@@ -157,8 +160,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	//BGM再生
 	SoundPlayWave (xAudio2.Get (), soundData1);
 
-	std::unique_ptr<Particle> particle = std::make_unique<Particle> (magosuya.get ());
-	particle->SetTexHandle (magosuya->GetTextureHandle ("uvChecker"));
+	std::unique_ptr<Particle> particle = std::make_unique<Particle> (DxCommon::GetInstance());
+	particle->SetTexHandle (TextureManager::GetInstance()->GetTextureHandle ("uvChecker"));
 	particle->Initialize ();
 	Transform transform = particle->GetTransform ();
 	Transform uvTransform = particle->GetUVTransform ();
@@ -180,7 +183,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	//ウィンドウの×ボタンが押されるまでループ
 	while (true) {
 
-		if (magosuya->GetDxCommon ()->GetWinAPI ()->ProcessMessage ()) {
+		if (WindowsAPI::GetInstance ()->ProcessMessage ()) {
 			break;
 		}
 
@@ -236,7 +239,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 		//実際のキー入力処理はここ！
 		// 押した瞬間だけトグル
-		if (g_inputManager->GetRawInput ()->Trigger (VK_TAB)) {
+		if (InputManager::GetInstance()->GetRawInput ()->Trigger (VK_TAB)) {
 			if (!debugMode) {
 				debugMode = true;
 			}
@@ -245,10 +248,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			}
 		}
 
-		if (g_inputManager->GetRawInput ()->Push ('D')) {
+		if (InputManager::GetInstance ()->GetRawInput ()->Push ('D')) {
 			transform.translate.x += 0.01f;
 		}
-		if (g_inputManager->GetRawInput ()->Push ('A')) {
+		if (InputManager::GetInstance ()->GetRawInput ()->Push ('A')) {
 			transform.translate.x -= 0.01f;
 		}
 
@@ -257,10 +260,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		//カメラ
 		cameraMatrix = MakeAffineMatrix (cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 		viewMatrix = Inverse (cameraMatrix);
-		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientWidth) / float (magosuya->GetDxCommon ()->GetWinAPI ()->kClientHeight), 0.1f, 100.0f);
+		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (WindowsAPI::GetInstance ()->kClientWidth) / float (WindowsAPI::GetInstance ()->kClientHeight), 0.1f, 100.0f);
 
-		if (debugMode && !debugCamera->GetTatchImGui()) {
-			debugCamera->Updata (magosuya->GetDxCommon ()->GetWinAPI ()->GetHwnd (), hr, g_inputManager.get ());
+		if (debugMode && !debugCamera->GetTatchImGui ()) {
+			debugCamera->Updata (WindowsAPI::GetInstance ()->GetHwnd (), hr, InputManager::GetInstance ());
 			viewMatrix = debugCamera->GetViewMatrix ();
 			projectionMatrix = debugCamera->GetProjectionMatrix ();
 		}
@@ -279,17 +282,14 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };  // 初期値：白
 
 		//ライティングの設定
-		magosuya->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
+		DxCommon::GetInstance()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
 		//===描画===//
 		particle->Draw ();
-		
+
 		//フレーム終了
-		g_inputManager->EndFrame ();
 		magosuya->EndFrame ();
 	}
-
 	xAudio2.Reset ();
 	SoundUnload (&soundData1);  // バッファ解放
-	magosuya->Finalize ();
 	return 0;
 };

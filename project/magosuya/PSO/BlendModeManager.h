@@ -18,9 +18,13 @@ const int kBlendDescNum = (int)BlendModeType::Count;
 
 class BlendModeManager {
 public:		//メンバ関数
-	//コンストラクタ時に全てのブレンド設定を初期化する
-	BlendModeManager ();
-	~BlendModeManager ();
+	static BlendModeManager* GetInstance() {
+		//初めて呼び出されたときに一回だけ初期化
+		static BlendModeManager instance;
+		return &instance;
+	}
+
+	void Initialize ();
 
 	//BlectModeTypeを受け取って、対応するブレンド設定を返す
 	const D3D12_BLEND_DESC& GetBlendDesc (BlendModeType type) const;

@@ -1,7 +1,7 @@
 #include "InputLayoutManager.h"
 #include <cassert>
 
-InputLayoutManager::InputLayoutManager () {
+void InputLayoutManager::Initialize () {
 	InputLayoutData data;
 
 	//InputLayoutの設定
@@ -42,10 +42,6 @@ InputLayoutManager::InputLayoutManager () {
 
 	// --- 3. キャッシュに登録 ---
 	m_LayoutCache[InputLayoutType::Standard3D] = std::move (data);
-}
-
-InputLayoutManager::~InputLayoutManager () {
-
 }
 
 const D3D12_INPUT_LAYOUT_DESC* InputLayoutManager::GetInputLayout (InputLayoutType type) const {

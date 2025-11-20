@@ -7,18 +7,32 @@ using namespace Microsoft::WRL;
 #include <queue>
 #include <vector>
 #include "struct.h"
-#include "TextureManager.h"
 
 class DxCommon;
+class TextureManager;
 
 class ModelManager {
 public:		//メンバ関数
-	ModelManager (DxCommon* dxCommon, TextureManager* textureManager);
-	~ModelManager ();
+	static ModelManager* GetInstance () {
+		//初めて呼び出されたときに一回だけ初期化
+		static ModelManager instance;
+		return &instance;
+	}
+
+	void Initialize (DxCommon* dxCommon, TextureManager* textureManager);
 
 	ModelData* LoadModelData (const std::string& directoryPath, const std::string& id, bool inversion = false);
 	std::weak_ptr<ModelData> GetModelData (std::string id);
 	void UnloadModelData (const std::string& id);
+
+private:
+	//コンストラクタを禁止
+	ModelManager () = default;
+	// コピーコンストラクタと代入演算子を禁止
+	ModelManager (const ModelManager&) = delete;
+	ModelManager& operator=(const ModelManager&) = delete;
+	ModelManager (ModelManager&&) = delete;
+	ModelManager& operator=(ModelManager&&) = delete;
 
 private:	//内部関数
 	//マテリアルファイルの読み込み関数

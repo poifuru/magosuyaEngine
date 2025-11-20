@@ -11,8 +11,13 @@ using namespace Microsoft::WRL;
 
 class TextureManager {
 public:		//外部公開メソッド
-	TextureManager (DxCommon* dxCommon);
-	~TextureManager ();
+	static TextureManager* GetInstance () {
+		////初めて呼び出されたときに一回だけ初期化
+		static TextureManager instance;
+		return &instance;
+	}
+
+	void Initialize (DxCommon* dxCommon);
 
 	//画像をロードする関数
 	TextureData* LoadTexture (const std::string& filePath, const std::string& ID);
@@ -29,6 +34,15 @@ public:		//外部公開メソッド
 	//アクセッサ
 	const std::vector<ComPtr<ID3D12Resource>>& GetIntermediateResource () const { return intermediateResource_; }
 	const DirectX::TexMetadata& GetMetaData (const std::string& id);
+
+private:
+	//コンストラクタを禁止
+	TextureManager () = default;
+	// コピーコンストラクタと代入演算子を禁止
+	TextureManager (const TextureManager&) = delete;
+	TextureManager& operator=(const TextureManager&) = delete;
+	TextureManager (TextureManager&&) = delete;
+	TextureManager& operator=(TextureManager&&) = delete;
 
 private:	//内部関数
 	//LoadTextureのヘルパー関数

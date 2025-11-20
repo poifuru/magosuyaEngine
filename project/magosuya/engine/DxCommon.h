@@ -16,9 +16,11 @@ using namespace Microsoft::WRL;
 
 class DxCommon {
 public:		//メンバ関数(mainで呼び出すよう)
-	//デストラクタ
-	DxCommon ();
-	~DxCommon ();
+	static DxCommon* GetInstance () {
+		//初めて呼び出されたときに一回だけ初期化
+		static DxCommon instance;
+		return &instance;
+	}
 
 	void Initialize ();
 	void BeginFrame ();
@@ -70,6 +72,15 @@ public:		//メンバ関数(mainで呼び出すよう)
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle (uint32_t index);
 #pragma endregion
 
+private:
+	//コンストラクタを禁止
+	DxCommon () = default;
+	// コピーコンストラクタと代入演算子を禁止
+	DxCommon (const DxCommon&) = delete;
+	DxCommon& operator=(const DxCommon&) = delete;
+	DxCommon (DxCommon&&) = delete;
+	DxCommon& operator=(DxCommon&&) = delete;
+
 private:	//プライベート関数
 	void InitializeFixFPS ();
 	void CreateDevice ();
@@ -90,7 +101,6 @@ private:	//プライベート関数
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
 public:		//アクセッサ
-	WindowsAPI* GetWinAPI () { return winApi_.get (); }
 	ID3D12Device* GetDevice () { return device.Get (); }
 	ID3D12GraphicsCommandList* GetCommandList () { return commandList.Get (); }
 	ID3D12DescriptorHeap* GetsrvDescriptorHeap () { return srvDescriptorHeap.Get (); }
@@ -100,8 +110,6 @@ public:		//アクセッサ
 
 private://メンバ変数
 	LeakChecker leakCheck_{};
-
-	std::unique_ptr<WindowsAPI> winApi_ = nullptr;
 
 	//FPS固定用
 	std::chrono::steady_clock::time_point reference_;

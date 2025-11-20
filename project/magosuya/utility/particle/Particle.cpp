@@ -1,9 +1,10 @@
 #include "Particle.h"
-#include "MagosuyaEngine.h"
+#include "DxCommon.h"
 #include "MathFunction.h"
 
-Particle::Particle (MagosuyaEngine* magosuya) {
-	magosuya_ = magosuya;
+Particle::Particle (DxCommon* dxCommon) {
+	dxCommon_ = dxCommon;
+	commandList_ = dxCommon->GetCommandList ();
 	data_ = std::make_unique<ModelData> ();
 	transform_ = { {1.0f, 1.0f, 1.0f},{0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f} };
 	uvTransform_ = { {1.0f, 1.0f, 1.0f},{0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f} };
@@ -14,7 +15,7 @@ Particle::~Particle () {
 }
 
 void Particle::Initialize () {
-	data_->vertexBuffer = magosuya_->GetDxCommon ()->CreateBufferResource (sizeof (VertexData) * 4);
+	data_->vertexBuffer = dxCommon_->CreateBufferResource (sizeof (VertexData) * 4);
 	// 💡 正しいポインタ（vertexData_）にMapで取得したアドレスを書き込むでやんす！
 	data_->vertexBuffer->Map (0, nullptr, reinterpret_cast<void**>(&vertexData_));
 	data_->vbView.BufferLocation = data_->vertexBuffer->GetGPUVirtualAddress ();
@@ -22,7 +23,7 @@ void Particle::Initialize () {
 	data_->vbView.StrideInBytes = sizeof (VertexData);
 
 	// インデックスバッファ作成
-	data_->indexBuffer = magosuya_->GetDxCommon ()->CreateBufferResource (sizeof (uint32_t) * 6);
+	data_->indexBuffer = dxCommon_->CreateBufferResource (sizeof (uint32_t) * 6);
 	// 💡 正しいポインタ（indexData_）にMapで取得したアドレスを書き込むでやんす！
 	data_->indexBuffer->Map (0, nullptr, reinterpret_cast<void**>(&indexData_));
 	data_->ibView.BufferLocation = data_->indexBuffer->GetGPUVirtualAddress ();
@@ -30,14 +31,14 @@ void Particle::Initialize () {
 	data_->ibView.Format = DXGI_FORMAT_R32_UINT;
 
 	//行列データ
-	matrixBuffer_ = magosuya_->GetDxCommon ()->CreateBufferResource (sizeof (TransformationMatrix));
+	matrixBuffer_ = dxCommon_->CreateBufferResource (sizeof (TransformationMatrix));
 	matrixBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&matrixData_));
 	matrixData_->World = MakeIdentity4x4 ();
 	matrixData_->WVP = MakeIdentity4x4 ();
 	matrixData_->WorldInverseTranspose = MakeIdentity4x4 ();
 
 	//マテリアルデータ
-	materialBuffer_ = magosuya_->GetDxCommon ()->CreateBufferResource (sizeof (Material));
+	materialBuffer_ = dxCommon_->CreateBufferResource (sizeof (Material));
 	materialBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&materialData_));
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData_->enableLighting = true;
@@ -72,12 +73,12 @@ void Particle::Update (Matrix4x4* vp) {
 }
 
 void Particle::Draw () {
-	magosuya_->GetDxCommon ()->GetCommandList ()->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	magosuya_->GetDxCommon ()->GetCommandList ()->IASetVertexBuffers (0, 1, &data_->vbView);   //VBVを設定
-	magosuya_->GetDxCommon ()->GetCommandList ()->IASetIndexBuffer (&data_->ibView);	        //IBVを設定
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootDescriptorTable (2, handle_);
+	commandList_->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	commandList_->IASetVertexBuffers (0, 1, &data_->vbView);   //VBVを設定
+	commandList_->IASetIndexBuffer (&data_->ibView);	        //IBVを設定
+	commandList_->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
+	commandList_->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
+	commandList_->SetGraphicsRootDescriptorTable (2, handle_);
 	//インデックスバッファを使った描画
-	magosuya_->GetDxCommon ()->GetCommandList ()->DrawIndexedInstanced (6, 1, 0, 0, 0);
+	commandList_->DrawIndexedInstanced (6, 1, 0, 0, 0);
 }

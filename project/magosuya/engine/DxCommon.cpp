@@ -14,14 +14,7 @@
 #include "function.h"
 #include "Logger.h"
 #include "ChangeString.h"
-
-DxCommon::DxCommon () {
-
-}
-
-DxCommon::~DxCommon () {
-
-}
+#include "Windows.h"
 
 void DxCommon::Initialize () {
 	HRESULT hr;
@@ -34,9 +27,6 @@ void DxCommon::Initialize () {
 
 	//COMの初期化
 	hr = CoInitializeEx (0, COINIT_MULTITHREADED);
-
-	winApi_ = std::make_unique<WindowsAPI> ();
-	winApi_->Initialize ();
 
 	// 2.FPSの固定化
 	InitializeFixFPS ();
@@ -142,7 +132,7 @@ void DxCommon::EndFrame () {
 void DxCommon::Finalize () {
 	CloseHandle (fenceEvent);
 
-	winApi_->Finalize ();
+	WindowsAPI::GetInstance()->Finalize ();
 	CoUninitialize ();
 }
 
@@ -448,21 +438,21 @@ void DxCommon::CreateSwapChain () {
 	HRESULT hr;
 
 	//スワップチェーンを設定する
-	swapChainDesc.Width = winApi_->kClientWidth;		//画面の幅,ウィンドウのクライアント領域を同じものにしておく
-	swapChainDesc.Height = winApi_->kClientHeight;	//画面の高さ,ウィンドウのクライアント領域を同じものにしておく
+	swapChainDesc.Width = WindowsAPI::GetInstance ()->kClientWidth;		//画面の幅,ウィンドウのクライアント領域を同じものにしておく
+	swapChainDesc.Height = WindowsAPI::GetInstance ()->kClientHeight;	//画面の高さ,ウィンドウのクライアント領域を同じものにしておく
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;	//色の形式
 	swapChainDesc.SampleDesc.Count = 1;	//マルチサンプルしない
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;	//描画のターゲットとして利用する
 	swapChainDesc.BufferCount = 2;	//ダブルバッファ
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;	//モニタにうつしたら、中身を破棄
 	//コマンドキュー,ウィンドウハンドル,設定を渡して生成する
-	hr = dxgiFactory->CreateSwapChainForHwnd (commandQueue.Get (), winApi_->GetHwnd (), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf ()));
+	hr = dxgiFactory->CreateSwapChainForHwnd (commandQueue.Get (), WindowsAPI::GetInstance ()->GetHwnd (), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf ()));
 	assert (SUCCEEDED (hr));
 }
 
 void DxCommon::CreateDepthBaffer () {
 	//DepthStencilTextureをウィンドウサイズで作成
-	depthStencilResource = CreateDepthStencilTextureResource (device.Get (), winApi_->kClientWidth, winApi_->kClientHeight);
+	depthStencilResource = CreateDepthStencilTextureResource (device.Get (), WindowsAPI::GetInstance ()->kClientWidth, WindowsAPI::GetInstance ()->kClientHeight);
 }
 
 void DxCommon::CreateRTV () {
@@ -510,8 +500,8 @@ void DxCommon::CreateDSV () {
 void DxCommon::ViewportRectInit () {
 	//ビューポート設定
 	//クライアント領域のサイズと一緒にして画面全体に表示
-	viewport.Width = static_cast<float>(winApi_->kClientWidth);
-	viewport.Height = static_cast<float>(winApi_->kClientHeight);
+	viewport.Width = static_cast<float>(WindowsAPI::GetInstance ()->kClientWidth);
+	viewport.Height = static_cast<float>(WindowsAPI::GetInstance ()->kClientHeight);
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
@@ -522,9 +512,9 @@ void DxCommon::ScissorRectInit () {
 	//シザー矩形設定
 	//基本的にビューポートと同じ矩形が構成されるようにする
 	scissorRect.left = 0;
-	scissorRect.right = winApi_->kClientWidth;
+	scissorRect.right = WindowsAPI::GetInstance ()->kClientWidth;
 	scissorRect.top = 0;
-	scissorRect.bottom = winApi_->kClientHeight;
+	scissorRect.bottom = WindowsAPI::GetInstance ()->kClientHeight;
 }
 
 void DxCommon::UpdateFixFPS () {

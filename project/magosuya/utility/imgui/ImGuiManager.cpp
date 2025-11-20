@@ -3,10 +3,7 @@
 #include <imgui_impl_dx12.h>
 #include <imgui_impl_win32.h>
 #include "DxCommon.h"
-
-ImGuiManager::ImGuiManager (DxCommon* dxCommon) {
-	dxCommon_ = dxCommon;
-}
+#include "Windows.h"
 
 ImGuiManager::~ImGuiManager () {
 #ifdef USEIMGUI
@@ -27,13 +24,13 @@ void ImGuiManager::Initialize () {
 		"Resources/AppliMincho/PottaOne-Regular.ttf", 17.0f, nullptr,
 		io.Fonts->GetGlyphRangesJapanese ());
 	io.FontDefault = fontJP;
-	ImGui_ImplWin32_Init (dxCommon_->GetWinAPI()->GetHwnd ());
-	ImGui_ImplDX12_Init (dxCommon_->GetDevice(),
+	ImGui_ImplWin32_Init (WindowsAPI::GetInstance()->GetHwnd ());
+	ImGui_ImplDX12_Init (DxCommon::GetInstance()->GetDevice (),
 						 2,
 						 DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
-						 dxCommon_->GetsrvDescriptorHeap(),
-						 dxCommon_->GetsrvDescriptorHeap ()->GetCPUDescriptorHandleForHeapStart (),
-						 dxCommon_->GetsrvDescriptorHeap ()->GetGPUDescriptorHandleForHeapStart ()
+						 DxCommon::GetInstance ()->GetsrvDescriptorHeap(),
+						 DxCommon::GetInstance ()->GetsrvDescriptorHeap ()->GetCPUDescriptorHandleForHeapStart (),
+						 DxCommon::GetInstance ()->GetsrvDescriptorHeap ()->GetGPUDescriptorHandleForHeapStart ()
 	);
 #endif
 }
@@ -43,7 +40,7 @@ void ImGuiManager::Draw () {
 	//ImGuiの内部コマンドを生成する
 	ImGui::Render ();
 	//実際のImGui描画コマンドを詰む
-	ImGui_ImplDX12_RenderDrawData (ImGui::GetDrawData (), dxCommon_->GetCommandList());
+	ImGui_ImplDX12_RenderDrawData (ImGui::GetDrawData (), DxCommon::GetInstance ()->GetCommandList());
 #endif
 }
 

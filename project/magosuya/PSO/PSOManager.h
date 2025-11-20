@@ -46,12 +46,25 @@ struct PSODescriptor {
 
 class PSOManager {
 public:		//メンバ関数
-	PSOManager (DxCommon* dxCommon, ShaderManager* shaderManager, RootSignatureManager* rootSigManager,
-				BlendModeManager* blendModeManager, InputLayoutManager* inputLayoutManager);
-	~PSOManager ();
+	static PSOManager* GetInstance () {
+		//初めて呼び出されたときに一回だけ初期化
+		static PSOManager instance;
+		return &instance;
+	}
+
+	void Initialize (DxCommon* dxCommon);
 
 	//PSODesctiptorを受けとってID3D12PipelineState*を返す
 	ID3D12PipelineState* GetOrCreratePSO (const PSODescriptor& desc);
+
+private:
+	//コンストラクタを禁止
+	PSOManager () = default;
+	// コピーコンストラクタと代入演算子を禁止
+	PSOManager (const PSOManager&) = delete;
+	PSOManager& operator=(const PSOManager&) = delete;
+	PSOManager (PSOManager&&) = delete;
+	PSOManager& operator=(PSOManager&&) = delete;
 
 private:	//ヘルパー関数
 	template<typename T>

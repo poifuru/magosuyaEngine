@@ -8,11 +8,12 @@ using namespace Microsoft::WRL;
 #include "struct.h"
 
 //前方宣言
-class MagosuyaEngine;
+class DxCommon;
+class TextureManager;
 
 class Sprite {
 public:		//メンバ関数  
-	Sprite (MagosuyaEngine* magosuya);
+	Sprite (DxCommon* dxCommon, TextureManager* texManager);
 	~Sprite ();
 
 	void Initialize (Vector3 position);
@@ -82,5 +83,5 @@ private:	//メンバ変数
 	std::unique_ptr<SpriteRenderer> renderer_ = nullptr;
 
 	//ポインタを借りてくる
-	MagosuyaEngine* magosuya_ = nullptr;
+	TextureManager* texManager_ = nullptr;
 };

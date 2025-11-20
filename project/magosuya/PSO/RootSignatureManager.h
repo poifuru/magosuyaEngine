@@ -10,8 +10,13 @@ class DxCommon;
 
 class RootSignatureManager {
 public:		// メンバ関数
-	RootSignatureManager (DxCommon* dxCommon);
-	~RootSignatureManager ();
+	static RootSignatureManager* GetInstance () {
+		//初めて呼び出されたときに一回だけ初期化
+		static RootSignatureManager instance;
+		return &instance;
+	}
+
+	void Initialize (DxCommon* dxCommon);
 
 	//ルートシグネチャの定義を受け取って、生成&キャッシュしてIDを返す
 	//(後で定義情報を含む独自のDescriptor構造体を作って差し替え)
@@ -19,6 +24,15 @@ public:		// メンバ関数
 
 	//IDをもとにID3D12RootSignature*を返す
 	ID3D12RootSignature* GetRootSignature (uint32_t rootSigID) const;
+
+private:
+	//コンストラクタを禁止
+	RootSignatureManager () = default;
+	// コピーコンストラクタと代入演算子を禁止
+	RootSignatureManager (const RootSignatureManager&) = delete;
+	RootSignatureManager& operator=(const RootSignatureManager&) = delete;
+	RootSignatureManager (RootSignatureManager&&) = delete;
+	RootSignatureManager& operator=(RootSignatureManager&&) = delete;
 
 private:	// ヘルパー関数
 	uint64_t ComputeHash (const D3D12_ROOT_SIGNATURE_DESC& desc) const;

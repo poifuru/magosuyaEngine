@@ -2,11 +2,13 @@
 #include <imgui.h>
 #include "function.h"
 #include "MathFunction.h"
-#include "MagosuyaEngine.h"
+#include "TextureManager.h"
+#include "ModelManager.h"
 
-Model::Model (MagosuyaEngine* magosuya) {
-	magosuya_ = magosuya;
-	renderer_ = std::make_unique<ModelRenderer> (magosuya);
+Model::Model (DxCommon* dxCommon, TextureManager* texManager, ModelManager* modelManager) {
+	texManager_ = texManager;
+	modelManager_ = modelManager;
+	renderer_ = std::make_unique<ModelRenderer> (dxCommon);
 }
 
 Model::~Model () {
@@ -33,11 +35,11 @@ void Model::ImGui () {
 }
 
 void Model::SetModelData (const std::string& ID) {
-	modelData_ = magosuya_->GetModelData (ID);
+	modelData_ = modelManager_->GetModelData (ID);
 	renderer_->SetModelData (modelData_);
 	renderer_->SetImGuiID (ID); 
 }
 
 void Model::SetTexture (const std::string& ID) {
-	texture_ = magosuya_->GetTextureHandle (ID);
+	texture_ = texManager_->GetTextureHandle (ID);
 }

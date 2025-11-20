@@ -1,7 +1,7 @@
 #include "BlendModeManager.h"
 #include <cassert>
 
-BlendModeManager::BlendModeManager () {
+void BlendModeManager::Initialize () {
 	//===ブレンド設定を全て初期化する===//
 	//すべての色の要素を書き込む
 	m_BlendDescs[0].RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
@@ -40,10 +40,6 @@ BlendModeManager::BlendModeManager () {
 	m_BlendDescs[(int)BlendModeType::Screen].RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
 	m_BlendDescs[(int)BlendModeType::Screen].RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 	m_BlendDescs[(int)BlendModeType::Screen].RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-}
-
-BlendModeManager::~BlendModeManager () {
-
 }
 
 const D3D12_BLEND_DESC& BlendModeManager::GetBlendDesc (BlendModeType type) const {

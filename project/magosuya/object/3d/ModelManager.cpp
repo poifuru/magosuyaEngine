@@ -3,13 +3,11 @@
 #include <map>
 #include "MagosuyaEngine.h"
 #include "DxCommon.h"
+#include "TextureManager.h"
 
-ModelManager::ModelManager (DxCommon* dxCommon, TextureManager* textureManager) {
+void ModelManager::Initialize (DxCommon* dxCommon, TextureManager* textureManager) {
 	dxCommon_ = dxCommon;
 	textureManager_ = textureManager;
-}
-
-ModelManager::~ModelManager () {
 }
 
 ModelData* ModelManager::LoadModelData (const std::string& directoryPath, const std::string& id, bool inversion) {

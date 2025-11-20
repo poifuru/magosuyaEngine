@@ -6,12 +6,8 @@
 
 UINT TextureManager::nextDescriptorIndex_ = 1;
 
-TextureManager::TextureManager (DxCommon* dxCommon) {
+void TextureManager::Initialize (DxCommon* dxCommon) {
 	dxCommon_ = dxCommon;
-}
-
-TextureManager::~TextureManager () {
-
 }
 
 TextureData* TextureManager::LoadTexture (const std::string& filePath, const std::string& ID) {

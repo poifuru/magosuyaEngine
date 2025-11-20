@@ -6,12 +6,8 @@
 #include "ChangeString.h"
 #include "DxCommon.h"
 
-ShaderManager::ShaderManager (DxCommon* dxCommon) {
+void ShaderManager::Initialize (DxCommon* dxCommon) {
 	dxCommon_ = dxCommon;
-}
-
-ShaderManager::~ShaderManager () {
-
 }
 
 uint32_t ShaderManager::CompileAndCasheShader (const std::wstring& filePath, const wchar_t* profile, std::ofstream& os) {

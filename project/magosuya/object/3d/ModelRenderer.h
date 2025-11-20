@@ -7,11 +7,11 @@ using namespace Microsoft::WRL;
 #include <string>
 #include "struct.h"
 
-class MagosuyaEngine;
+class DxCommon;
 
 class ModelRenderer {
 public:
-	ModelRenderer (MagosuyaEngine* magosuya);
+	ModelRenderer (DxCommon* dxCommon);
 	~ModelRenderer ();
 
 	void Initialize ();
@@ -44,5 +44,6 @@ private:
 	float color_[4];
 
 	//ポインタを借りる
-	MagosuyaEngine* magosuya_ = nullptr;
+	DxCommon* dxCommon_ = nullptr;
+	ID3D12GraphicsCommandList* commandList_ = nullptr;
 };

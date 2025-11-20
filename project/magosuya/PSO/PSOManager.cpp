@@ -1,16 +1,15 @@
 #include "PSOManager.h"
 
-PSOManager::PSOManager (DxCommon* dxCommon, ShaderManager* shaderManager, RootSignatureManager* rootSigManager,
-						BlendModeManager* blendModeManager, InputLayoutManager* inputLayoutManager) {
-	dxCommon_ = dxCommon;
-	shaderManager_ = shaderManager;
-	rootSigManager_ = rootSigManager;
-	blendModeManager_ = blendModeManager;
-	inputLayoutManager_ = inputLayoutManager;
-}
-
-PSOManager::~PSOManager () {
-
+void PSOManager::Initialize (DxCommon* dxCommon) {
+    dxCommon_ = dxCommon;
+    shaderManager_ = ShaderManager::GetInstance ();
+    shaderManager_->Initialize(dxCommon);
+    rootSigManager_ = RootSignatureManager::GetInstance();
+    rootSigManager_->Initialize (dxCommon);
+    blendModeManager_ = BlendModeManager::GetInstance();
+    blendModeManager_->Initialize ();
+    inputLayoutManager_ = InputLayoutManager::GetInstance();
+    inputLayoutManager_->Initialize ();
 }
 
 ID3D12PipelineState* PSOManager::GetOrCreratePSO (const PSODescriptor& desc) {

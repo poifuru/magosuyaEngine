@@ -1,10 +1,11 @@
 #include "ModelRenderer.h"
 #include <imgui.h>
 #include "mathFunction.h"
-#include "MagosuyaEngine.h"
+#include "DxCommon.h"
 
-ModelRenderer::ModelRenderer (MagosuyaEngine* magosuya) {
-	magosuya_ = magosuya;
+ModelRenderer::ModelRenderer (DxCommon* dxCommon) {
+	dxCommon_ = dxCommon;
+	commandList_ = dxCommon->GetCommandList ();
 	for (int i = 0; i < 4; ++i) {
 		color_[i] = 1.0f;
 	}
@@ -16,14 +17,14 @@ ModelRenderer::~ModelRenderer () {
 void ModelRenderer::Initialize () {
 	//===リソースの初期化===//
 	//行列データ
-	matrixBuffer_ = magosuya_->GetDxCommon ()->CreateBufferResource (sizeof (TransformationMatrix));
+	matrixBuffer_ = dxCommon_->CreateBufferResource (sizeof (TransformationMatrix));
 	matrixBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&matrixData_));
 	matrixData_->World = MakeIdentity4x4 ();
 	matrixData_->WVP = MakeIdentity4x4 ();
 	matrixData_->WorldInverseTranspose = MakeIdentity4x4 ();
 
 	//マテリアルデータ
-	materialBuffer_ = magosuya_->GetDxCommon ()->CreateBufferResource (sizeof (Material));
+	materialBuffer_ = dxCommon_->CreateBufferResource (sizeof (Material));
 	materialBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&materialData_));
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData_->enableLighting = true;
@@ -47,18 +48,18 @@ void ModelRenderer::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
 		return;
 	}
 	//どんな形状で描画するのか
-	magosuya_->GetDxCommon ()->GetCommandList ()->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	commandList_->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	//頂点バッファをセットする
-	magosuya_->GetDxCommon ()->GetCommandList ()->IASetVertexBuffers (0, 1, &data->vbView);
+	commandList_->IASetVertexBuffers (0, 1, &data->vbView);
 	//インデックスバッファをセットする
-	magosuya_->GetDxCommon ()->GetCommandList ()->IASetIndexBuffer (&data->ibView);
+	commandList_->IASetIndexBuffer (&data->ibView);
 	//定数バッファのルートパラメータを設定する	
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
+	commandList_->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
+	commandList_->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
 	//テクスチャのSRVを設定
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootDescriptorTable (2, textureHandle);
+	commandList_->SetGraphicsRootDescriptorTable (2, textureHandle);
 	//実際に描画する(後々Index描画に変える)
-	magosuya_->GetDxCommon ()->GetCommandList ()->DrawIndexedInstanced (static_cast<UINT>(data->indexCount), 1, 0, 0, 0);
+	commandList_->DrawIndexedInstanced (static_cast<UINT>(data->indexCount), 1, 0, 0, 0);
 }
 
 void ModelRenderer::ImGui (Transform& transform, Transform& uvTransform) {

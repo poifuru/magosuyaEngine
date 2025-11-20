@@ -4,12 +4,8 @@
 #include "DxCommon.h"
 #include "Logger.h"
 
-RootSignatureManager::RootSignatureManager (DxCommon* dxCommon) {
+void RootSignatureManager::Initialize (DxCommon* dxCommon) {
 	device_ = dxCommon->GetDevice ();
-}
-
-RootSignatureManager::~RootSignatureManager () {
-
 }
 
 uint32_t RootSignatureManager::GetOrCreateRootSignature (const D3D12_ROOT_SIGNATURE_DESC& desc) {

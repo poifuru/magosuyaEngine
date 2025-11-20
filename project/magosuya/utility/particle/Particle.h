@@ -7,11 +7,11 @@ using namespace Microsoft::WRL;
 #include <memory>
 #include "struct.h"
 
-class MagosuyaEngine;
+class DxCommon;
 
 class Particle {
 public:
-	Particle (MagosuyaEngine* magosuya);
+	Particle (DxCommon* dxCommon);
 	~Particle ();
 
 	void Initialize ();
@@ -46,6 +46,7 @@ private:
 	Transform uvTransform_;
 
 	//ポインタを借りる
-	MagosuyaEngine* magosuya_ = nullptr;
+	DxCommon* dxCommon_ = nullptr;
+	ID3D12GraphicsCommandList* commandList_ = nullptr;
 };
 

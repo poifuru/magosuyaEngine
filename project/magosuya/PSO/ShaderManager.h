@@ -18,14 +18,28 @@ struct ShaderInfo {
 
 class ShaderManager {
 public:		// メンバ関数
-	ShaderManager (DxCommon* dxCommon);
-	~ShaderManager ();
+	static ShaderManager* GetInstance () {
+		//初めて呼び出されたときに一回だけ初期化
+		static ShaderManager instance;
+		return &instance;
+	}
+
+	void Initialize (DxCommon* dxCommon);
 
 	// ファイルパスとプロファイルを受け取ってコンパイルしてIDを返す
 	uint32_t CompileAndCasheShader (const std::wstring& filePath, const wchar_t* profile, std::ofstream& os);
 
 	// IDに基づいてD3D12_SHADER_BYTECODEを返す
 	D3D12_SHADER_BYTECODE GetShaderBytecode (uint32_t shaderID) const;
+
+private:
+	//コンストラクタを禁止
+	ShaderManager () = default;
+	// コピーコンストラクタと代入演算子を禁止
+	ShaderManager (const ShaderManager&) = delete;
+	ShaderManager& operator=(const ShaderManager&) = delete;
+	ShaderManager (ShaderManager&&) = delete;
+	ShaderManager& operator=(ShaderManager&&) = delete;
 
 private:	// ヘルパー関数
 	/// <summary>
