@@ -8,6 +8,14 @@ using namespace Microsoft::WRL;
 
 class DxCommon;
 
+//使いたい用途によって設定を変えるため
+enum class RootSigType : uint32_t {
+	Standard3D,       // あなたが定義したCBV x 3 + DescriptorTable x 1 の構成
+	PostProcess,      // ポストエフェクト用（SRV中心）(未実装)
+	UI,               // UI描画用（2D行列とテクスチャ）(未実装)
+	Count
+};
+
 class RootSignatureManager {
 public:		// メンバ関数
 	static RootSignatureManager* GetInstance () {
@@ -20,7 +28,7 @@ public:		// メンバ関数
 
 	//ルートシグネチャの定義を受け取って、生成&キャッシュしてIDを返す
 	//(後で定義情報を含む独自のDescriptor構造体を作って差し替え)
-	uint32_t GetOrCreateRootSignature (const D3D12_ROOT_SIGNATURE_DESC& desc);
+	uint32_t GetOrCreateRootSignature (RootSigType type);
 
 	//IDをもとにID3D12RootSignature*を返す
 	ID3D12RootSignature* GetRootSignature (uint32_t rootSigID) const;
@@ -36,16 +44,24 @@ private:
 
 private:	// ヘルパー関数
 	uint64_t ComputeHash (const D3D12_ROOT_SIGNATURE_DESC& desc) const;
+	
+	D3D12_ROOT_SIGNATURE_DESC CreateRootSigDesc (RootSigType type);
 
 private:	// メンバ変数
+	// 静的配列としてルートパラメータとDescriptorRangeの実体を保持する
+	static D3D12_ROOT_PARAMETER standard3DRootParameters[4];
+	static D3D12_DESCRIPTOR_RANGE standard3DDescriptorRanges[1];
+	static D3D12_STATIC_SAMPLER_DESC standard3DStaticSamplers[1];
+	//***ルートシグネチャの種類を増やしたいときに適宜追加***//
+
 	//ハッシュ値とIDのマップ(逆引き兼キャッシュチェック用)
 	std::unordered_map<uint64_t, uint32_t> m_HashTagID;
 
 	//IDとID3D12RootSignatureの実体データのマップ
 	std::unordered_map<uint32_t, ComPtr<ID3D12RootSignature>> m_RootSigCache;
 
-	//次に割り当てるID(0から連番)
-	uint32_t m_NextID = 0;
+	//次に割り当てるID(0は無効なリソースとして扱われてしまう可能性があるので1から連番)
+	uint32_t m_NextID = 1;
 
 	//ポインタを借りる
 	ID3D12Device* device_ = nullptr;

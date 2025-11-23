@@ -12,9 +12,9 @@ using namespace Microsoft::WRL;
 
 struct PSODescriptor {
 	// --- マネージャーで管理してるID ---
+	uint32_t RootSignatureID = 0;
 	uint32_t VS_ID = 0;										// ShaderManagerから取得したVertex Shader ID
-	uint32_t PS_ID = 0;										// ShaderManagerから取得したPixel Shader ID
-	uint32_t RootSignatureID = 0;							// RootSignatureManagerから取得したID
+	uint32_t PS_ID = 0;										// ShaderManagerから取得したPixel Shader ID							// RootSignatureManagerから取得したID
 	InputLayoutType InputLayoutID = (InputLayoutType)0;		// InputLayoutManagerから取得したID
 	BlendModeType BlendMode = BlendModeType::Opaque;		// BlendModeManagerから取得する
 

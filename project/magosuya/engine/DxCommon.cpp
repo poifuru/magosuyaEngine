@@ -286,7 +286,7 @@ void DxCommon::CreateDevice () {
 	std::ofstream logStream = Logger::Logtext ();
 
 	//デバイス生成の前にデバッグレイヤーを有効化する
-#if defined (Debug) || (Development)
+#if defined USEIMGUI
 	ComPtr<ID3D12Debug1> debugController = nullptr;
 	if (SUCCEEDED (D3D12GetDebugInterface (IID_PPV_ARGS (debugController.GetAddressOf ())))) {
 		//デバッグレイヤーを有効化する
@@ -346,7 +346,7 @@ void DxCommon::CreateDevice () {
 	Logger::Log (logStream, "Complete create D3D12Device!!!\n");
 
 	//警告とかエラーとかが出たら出力ログに出してくれるらしい
-#if defined (Debug) || (Development)
+#if defined USEIMGUI
 	ComPtr<ID3D12InfoQueue> infoQueue = nullptr;
 	if (SUCCEEDED (device->QueryInterface (IID_PPV_ARGS (infoQueue.GetAddressOf ())))) {
 		//ヤバいエラー時に止まる

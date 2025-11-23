@@ -10,7 +10,7 @@ void ShaderManager::Initialize (DxCommon* dxCommon) {
 	dxCommon_ = dxCommon;
 }
 
-uint32_t ShaderManager::CompileAndCasheShader (const std::wstring& filePath, const wchar_t* profile, std::ofstream& os) {
+uint32_t ShaderManager::CompileAndCasheShader (const std::wstring& filePath, const wchar_t* profile) {
 	//ファイルパスとプロファイルを組み合わせたキーを生成
 	std::wstring key = filePath + L"_" + profile;
 
@@ -31,6 +31,9 @@ uint32_t ShaderManager::CompileAndCasheShader (const std::wstring& filePath, con
 	newInfo.ShaderBlob = newBlob;
 	newInfo.FilePath = filePath;
 	newInfo.Profile = profile;
+
+	//IDと実体を結びつける
+	m_ShaderCashe[newID] = std::move (newInfo);
 
 	//逆引き用のマップに登録する
 	m_PathProfileToID[key] = newID;

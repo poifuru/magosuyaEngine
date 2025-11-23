@@ -4,13 +4,50 @@
 #include "DxCommon.h"
 #include "Logger.h"
 
+//static変数の実体定義
+//standard3Dの実体の定義
+D3D12_ROOT_PARAMETER RootSignatureManager::standard3DRootParameters[4] = {
+	// 0番目: CBV (VertexShader)
+	{ D3D12_ROOT_PARAMETER_TYPE_CBV, { 0, 0 }, D3D12_SHADER_VISIBILITY_VERTEX },
+	// 1番目: CBV (PixelShader)
+	{ D3D12_ROOT_PARAMETER_TYPE_CBV, { 1, 0 }, D3D12_SHADER_VISIBILITY_PIXEL },
+	// 2番目: DescriptorTable (PixelShader) <- DescriptorRangesへのポインタは CreateRootSigDesc で設定
+	{ D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE, { 1, standard3DDescriptorRanges }, D3D12_SHADER_VISIBILITY_PIXEL },
+	// 3番目: 平行光源用のCBV (PixelShader)
+	{ D3D12_ROOT_PARAMETER_TYPE_CBV, { 3, 0 }, D3D12_SHADER_VISIBILITY_PIXEL },
+};
+
+D3D12_DESCRIPTOR_RANGE RootSignatureManager::standard3DDescriptorRanges[1] = {
+	// 0番目: SRV
+		{ D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND }
+};
+
+D3D12_STATIC_SAMPLER_DESC RootSignatureManager::standard3DStaticSamplers[1] = {
+	{
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+		0.0f, // MipLODBias
+		0,    // MaxAnisotropy
+		D3D12_COMPARISON_FUNC_NEVER, // ComparisonFunc
+		D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK, // BorderColor
+		0.0f, // MinLOD
+		D3D12_FLOAT32_MAX, // MaxLOD
+		0, // ShaderRegister
+		0, // RegisterSpace
+		D3D12_SHADER_VISIBILITY_PIXEL // ShaderVisibility
+	}
+};
+
 void RootSignatureManager::Initialize (DxCommon* dxCommon) {
 	device_ = dxCommon->GetDevice ();
 }
 
-uint32_t RootSignatureManager::GetOrCreateRootSignature (const D3D12_ROOT_SIGNATURE_DESC& desc) {
+uint32_t RootSignatureManager::GetOrCreateRootSignature (RootSigType type) {
 	std::ofstream os = Logger::Logtext ();
 	HRESULT hr;
+
+	//RootSigTypeからdescを作成
+	D3D12_ROOT_SIGNATURE_DESC desc = CreateRootSigDesc (type);
 
 	//ハッシュを計算する
 	uint64_t hash = ComputeHash (desc);
@@ -65,7 +102,7 @@ ID3D12RootSignature* RootSignatureManager::GetRootSignature (uint32_t rootSigID)
 	// IDが存在するかチェック
 	if (m_RootSigCache.count (rootSigID)) {
 		//存在していたらそれを返す
-		return m_RootSigCache.at (rootSigID).Get();
+		return m_RootSigCache.at (rootSigID).Get ();
 	}
 	// 見つからなかったらassertでnullptrを返す
 	assert (false && "RootSignature ID not found in cache!");
@@ -128,4 +165,27 @@ uint64_t RootSignatureManager::ComputeHash (const D3D12_ROOT_SIGNATURE_DESC& des
 	}
 
 	return hash;
+}
+
+D3D12_ROOT_SIGNATURE_DESC RootSignatureManager::CreateRootSigDesc (RootSigType type) {
+	D3D12_ROOT_SIGNATURE_DESC desc = {};
+
+	//作る設定を分岐させる
+	switch (type) {
+	case RootSigType::Standard3D:
+		//RootSignature
+		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+		//RootParameter作成。複数設定できるので配列
+		desc.pParameters = standard3DRootParameters;				//ルートパラメータ配列へのポインタ
+		desc.NumParameters = _countof (standard3DRootParameters);	//配列の長さ
+
+		//Sampler
+		desc.pStaticSamplers = standard3DStaticSamplers;
+		desc.NumStaticSamplers = _countof (standard3DStaticSamplers);
+
+		break;
+	}
+
+	return desc;
 }

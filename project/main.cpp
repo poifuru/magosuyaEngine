@@ -281,10 +281,11 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		// 色変更用のUI
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };  // 初期値：白
 
-		//ライティングの設定
-		DxCommon::GetInstance()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
+		
 		//===描画===//
 		particle->Draw ();
+		//ライティングの設定
+		DxCommon::GetInstance ()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
 
 		//フレーム終了
 		magosuya->EndFrame ();

@@ -15,16 +15,15 @@ Particle::~Particle () {
 }
 
 void Particle::Initialize () {
+	//頂点バッファ作成
 	data_->vertexBuffer = dxCommon_->CreateBufferResource (sizeof (VertexData) * 4);
-	// 💡 正しいポインタ（vertexData_）にMapで取得したアドレスを書き込むでやんす！
 	data_->vertexBuffer->Map (0, nullptr, reinterpret_cast<void**>(&vertexData_));
 	data_->vbView.BufferLocation = data_->vertexBuffer->GetGPUVirtualAddress ();
 	data_->vbView.SizeInBytes = sizeof (VertexData) * 4;
 	data_->vbView.StrideInBytes = sizeof (VertexData);
 
-	// インデックスバッファ作成
+	//インデックスバッファ作成
 	data_->indexBuffer = dxCommon_->CreateBufferResource (sizeof (uint32_t) * 6);
-	// 💡 正しいポインタ（indexData_）にMapで取得したアドレスを書き込むでやんす！
 	data_->indexBuffer->Map (0, nullptr, reinterpret_cast<void**>(&indexData_));
 	data_->ibView.BufferLocation = data_->indexBuffer->GetGPUVirtualAddress ();
 	data_->ibView.SizeInBytes = sizeof (uint32_t) * 6;
@@ -61,6 +60,15 @@ void Particle::Initialize () {
 	indexData_[3] = 1;
 	indexData_[4] = 3;
 	indexData_[5] = 2;
+
+	//PSO設定
+	desc_.RootSignatureID = RootSignatureManager::GetInstance ()->GetOrCreateRootSignature (RootSigType::Standard3D);
+	desc_.VS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/Object3d.VS.hlsl", L"vs_6_0");
+	desc_.PS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/Object3d.PS.hlsl", L"ps_6_0");
+	desc_.InputLayoutID = InputLayoutType::Standard3D;
+	desc_.BlendMode = BlendModeType::Opaque;
+	rootsignature_ = RootSignatureManager::GetInstance ()->GetRootSignature (desc_.RootSignatureID);
+	pipelineState_ = PSOManager::GetInstance ()->GetOrCreratePSO (desc_);
 }
 
 void Particle::Update (Matrix4x4* vp) {
@@ -73,6 +81,10 @@ void Particle::Update (Matrix4x4* vp) {
 }
 
 void Particle::Draw () {
+	commandList_->SetGraphicsRootSignature (rootsignature_);
+	assert (rootsignature_ != nullptr);
+	commandList_->SetPipelineState (pipelineState_);
+	assert (pipelineState_ != nullptr);
 	commandList_->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandList_->IASetVertexBuffers (0, 1, &data_->vbView);   //VBVを設定
 	commandList_->IASetIndexBuffer (&data_->ibView);	        //IBVを設定

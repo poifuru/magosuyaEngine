@@ -6,6 +6,7 @@ using namespace Microsoft::WRL;
 #include <vector>
 #include <memory>
 #include "struct.h"
+#include "PSOManager.h"
 
 class DxCommon;
 
@@ -25,6 +26,11 @@ public:
 	void SetUVTransform (Transform uvTransform) { uvTransform_ = uvTransform; }
 
 private:
+	//PSOの設定
+	PSODescriptor desc_ = {};
+	ID3D12RootSignature* rootsignature_ = nullptr;
+	ID3D12PipelineState* pipelineState_ = nullptr;
+
 	//モデルデータ
 	std::unique_ptr<ModelData> data_ = nullptr;
 
