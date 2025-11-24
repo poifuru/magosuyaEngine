@@ -10,12 +10,12 @@
 #pragma comment(lib, "xinput.lib")
 #include <imgui.h>
 #include "MagosuyaEngine.h"
-#include "Windows.h"
 #include "DxCommon.h"
 #include "TextureManager.h"
 #include "ImGuiManager.h"
 #include "ModelManager.h"
 #include "PSOManager.h"
+#include "RootSignatureManager.h"
 #include "function.h"
 #include "MathFunction.h"
 #include "struct.h"
@@ -280,12 +280,17 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		//ImGuiと変数を結び付ける
 		// 色変更用のUI
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };  // 初期値：白
+	
+		//RootSignatureをセット
+		ID3D12RootSignature* standardRootSig = RootSignatureManager::GetInstance ()->GetRootSignature (
+			RootSignatureManager::GetInstance ()->GetOrCreateRootSignature (RootSigType::Standard3D)
+		);
 
-		
+		DxCommon::GetInstance ()->GetCommandList ()->SetGraphicsRootSignature (standardRootSig);
+		//ライティングの設定
+		DxCommon::GetInstance()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
 		//===描画===//
 		particle->Draw ();
-		//ライティングの設定
-		DxCommon::GetInstance ()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
 
 		//フレーム終了
 		magosuya->EndFrame ();
