@@ -56,6 +56,8 @@ public:	//メンバ関数
 	void SetTexture (const std::string& ID);
 
 	//アクセッサ
+	Vector3 GetPosition () { return transform_.translate; }
+	void SetPosition (const Vector3& position) { transform_.translate = position; }
 	Transform GetTransform () { return transform_; }
 	void SetTransform (Transform transform) { transform_ = transform; }
 	Transform GetUVTransform () { return uvTransform_; }
