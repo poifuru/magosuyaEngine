@@ -96,17 +96,18 @@ private:	//プライベート関数
 	void ScissorRectInit ();
 	void UpdateFixFPS ();
 
+public:		//アクセッサ
 	//DescriptorHandleを取得する関数(CPUとGPU)
 	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle (const ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
-
-public:		//アクセッサ
 	ID3D12Device* GetDevice () { return device.Get (); }
 	ID3D12GraphicsCommandList* GetCommandList () { return commandList.Get (); }
 	ID3D12DescriptorHeap* GetsrvDescriptorHeap () { return srvDescriptorHeap.Get (); }
 	IDxcUtils* GetDxcUtils () { return dxcUtils.Get(); }
 	IDxcCompiler3* GetDxcCompiler () { return dxcCompiler.Get (); }
 	IDxcIncludeHandler* GetIncludeHandler () { return includeHandler.Get (); }
+	UINT GetDescriptorSizeSrv () { return srvDescriptorHeapSize_; }
+
 
 private://メンバ変数
 	LeakChecker leakCheck_{};

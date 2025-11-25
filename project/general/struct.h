@@ -226,6 +226,22 @@ struct ModelData {
 	D3D12_INDEX_BUFFER_VIEW ibView{};
 };
 
+//パーティクル構造体
+struct ParticleData {
+	Transform transform;
+	Vector3 velocity;
+	Vector4 color;
+	float lifeTime;
+	float currentTime;
+};
+
+//GPUに送るParticleのデータ
+struct ParticleForGPU {
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+	Vector4 color;
+};
+
 //チャンクヘッダ
 struct ChunkHeader {
 	char id[4];		//チャンク毎のID

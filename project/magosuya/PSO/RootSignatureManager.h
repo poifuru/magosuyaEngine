@@ -45,19 +45,20 @@ private:
 
 private:	// ヘルパー関数
 	uint64_t ComputeHash (const D3D12_ROOT_SIGNATURE_DESC& desc) const;
-	
+
 	D3D12_ROOT_SIGNATURE_DESC CreateRootSigDesc (RootSigType type);
 
 private:	// メンバ変数
 	// 静的配列としてルートパラメータとDescriptorRangeの実体を保持する
 	//Standard3D
-	static D3D12_ROOT_PARAMETER standard3DRootParameters[4];
-	static D3D12_DESCRIPTOR_RANGE standard3DDescriptorRanges[1];
-	static D3D12_STATIC_SAMPLER_DESC standard3DStaticSamplers[1];
+	D3D12_DESCRIPTOR_RANGE standard3DDescriptorRanges[1] = {};
+	D3D12_ROOT_PARAMETER standard3DRootParameters[4] = {};
+	D3D12_STATIC_SAMPLER_DESC standard3DStaticSamplers[1] = {};
 	//Particle
-	static D3D12_ROOT_PARAMETER particleRootParameters[4];
-	static D3D12_DESCRIPTOR_RANGE particleDescriptorRanges[1];
-	static D3D12_STATIC_SAMPLER_DESC particleStaticSamplers[1];
+	D3D12_DESCRIPTOR_RANGE particleDescriptorRanges[1] = {};
+	D3D12_DESCRIPTOR_RANGE textureDescriptorRanges[1] = {};
+	D3D12_ROOT_PARAMETER particleRootParameters[3] = {};
+	D3D12_STATIC_SAMPLER_DESC particleStaticSamplers[1] = {};
 	//***ルートシグネチャの種類を増やしたいときに適宜追加***//
 
 	//ハッシュ値とIDのマップ(逆引き兼キャッシュチェック用)

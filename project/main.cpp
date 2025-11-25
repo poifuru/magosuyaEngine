@@ -143,6 +143,7 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
 	//テクスチャの読み込み
 	TextureManager::GetInstance ()->LoadTexture ("Resources/uvChecker.png", "uvChecker");
+	TextureManager::GetInstance ()->LoadTexture ("Resources/circle.png", "circle");
 
 	//平行光源のResourceを作成してデフォルト値を書き込む
 	ComPtr<ID3D12Resource> dierctionalLightResource = DxCommon::GetInstance()->CreateBufferResource (sizeof (DirectionalLight));
@@ -161,10 +162,8 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	SoundPlayWave (xAudio2.Get (), soundData1);
 
 	std::unique_ptr<Particle> particle = std::make_unique<Particle> (DxCommon::GetInstance());
-	particle->SetTexHandle (TextureManager::GetInstance()->GetTextureHandle ("uvChecker"));
+	particle->SetTexHandle (TextureManager::GetInstance()->GetTextureHandle ("circle"));
 	particle->Initialize ();
-	Transform transform = particle->GetTransform ();
-	Transform uvTransform = particle->GetUVTransform ();
 
 	//カメラ用
 	//Transform
@@ -235,6 +234,7 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			ImGui::DragFloat ("intensity", &directionalLightData->intensity, 0.01f);
 		}
 		ImGui::End ();
+		particle->ImGui ();
 #endif
 
 		//実際のキー入力処理はここ！
@@ -246,13 +246,6 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			else {
 				debugMode = false;
 			}
-		}
-
-		if (InputManager::GetInstance ()->GetRawInput ()->Push ('D')) {
-			transform.translate.x += 0.01f;
-		}
-		if (InputManager::GetInstance ()->GetRawInput ()->Push ('A')) {
-			transform.translate.x -= 0.01f;
 		}
 
 		//ゲームの処理//
@@ -270,9 +263,7 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 		//vp行列作成
 		Matrix4x4 vp = Multiply (viewMatrix, projectionMatrix);
-		particle->SetTransform (transform);
-		particle->SetUVTransform (uvTransform);
-		particle->Update (&vp);
+		particle->Update (&cameraMatrix, &vp);
 
 		//光源のdirectionの正規化
 		directionalLightData->direction = Normalize (directionalLightData->direction);
