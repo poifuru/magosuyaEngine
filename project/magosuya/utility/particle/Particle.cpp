@@ -62,9 +62,9 @@ void Particle::Initialize () {
 	indexData_[5] = 2;
 
 	//PSO設定
-	desc_.RootSignatureID = RootSignatureManager::GetInstance ()->GetOrCreateRootSignature (RootSigType::Standard3D);
-	desc_.VS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/Object3d.VS.hlsl", L"vs_6_0");
-	desc_.PS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/Object3d.PS.hlsl", L"ps_6_0");
+	desc_.RootSignatureID = RootSignatureManager::GetInstance ()->GetOrCreateRootSignature (RootSigType::Particle);
+	desc_.VS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/Particle.VS.hlsl", L"vs_6_0");
+	desc_.PS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/Particle.PS.hlsl", L"ps_6_0");
 	desc_.InputLayoutID = InputLayoutType::Standard3D;
 	desc_.BlendMode = BlendModeType::Opaque;
 	rootsignature_ = RootSignatureManager::GetInstance ()->GetRootSignature (desc_.RootSignatureID);
@@ -88,9 +88,9 @@ void Particle::Draw () {
 	commandList_->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandList_->IASetVertexBuffers (0, 1, &data_->vbView);   //VBVを設定
 	commandList_->IASetIndexBuffer (&data_->ibView);	        //IBVを設定
-	commandList_->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
+	commandList_->SetGraphicsRootConstantBufferView (1, matrixBuffer_->GetGPUVirtualAddress ());
 	commandList_->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
 	commandList_->SetGraphicsRootDescriptorTable (2, handle_);
 	//インデックスバッファを使った描画
-	commandList_->DrawIndexedInstanced (6, 1, 0, 0, 0);
+	commandList_->DrawIndexedInstanced (6, 10, 0, 0, 0);
 }

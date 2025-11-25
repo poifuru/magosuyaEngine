@@ -10,9 +10,10 @@ class DxCommon;
 
 //使いたい用途によって設定を変えるため
 enum class RootSigType : uint32_t {
-	Standard3D,       // あなたが定義したCBV x 3 + DescriptorTable x 1 の構成
-	PostProcess,      // ポストエフェクト用（SRV中心）(未実装)
-	UI,               // UI描画用（2D行列とテクスチャ）(未実装)
+	Standard3D,			// あなたが定義したCBV x 3 + DescriptorTable x 1 の構成
+	Particle,			//パーティクル用
+	PostProcess,		// ポストエフェクト用（SRV中心）(未実装)
+	UI,					// UI描画用（2D行列とテクスチャ）(未実装)
 	Count
 };
 
@@ -49,9 +50,14 @@ private:	// ヘルパー関数
 
 private:	// メンバ変数
 	// 静的配列としてルートパラメータとDescriptorRangeの実体を保持する
+	//Standard3D
 	static D3D12_ROOT_PARAMETER standard3DRootParameters[4];
 	static D3D12_DESCRIPTOR_RANGE standard3DDescriptorRanges[1];
 	static D3D12_STATIC_SAMPLER_DESC standard3DStaticSamplers[1];
+	//Particle
+	static D3D12_ROOT_PARAMETER particleRootParameters[4];
+	static D3D12_DESCRIPTOR_RANGE particleDescriptorRanges[1];
+	static D3D12_STATIC_SAMPLER_DESC particleStaticSamplers[1];
 	//***ルートシグネチャの種類を増やしたいときに適宜追加***//
 
 	//ハッシュ値とIDのマップ(逆引き兼キャッシュチェック用)
