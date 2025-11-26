@@ -12,10 +12,12 @@ Particle::Particle (DxCommon* dxCommon) {
 	device_ = dxCommon->GetDevice ();
 	commandList_ = dxCommon->GetCommandList ();
 	data_ = std::make_unique<ModelData> ();
-	for (uint32_t i = 0; i < kMaxParticleNum_; ++i) {
-		particles_[i].transform = { {1.0f, 1.0f, 1.0f},{0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f} };
-		uvTransform_[i] = { {1.0f, 1.0f, 1.0f},{0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f} };
-	}
+	uvTransform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+	//乱数エンジンのインスタンスを作成してrdの結果で初期化する
+	randomEngine_.seed (rd ());
+	emitter_.count = 20;
+	emitter_.frequency = 0.3f;
+	emitter_.frequencyTime = 0.0f;
 }
 
 Particle::~Particle () {
@@ -97,60 +99,63 @@ void Particle::Initialize () {
 	);
 	device_->CreateShaderResourceView (instancingBuffer_.Get (), &particleSrvDesc, particleSrvHandleCPU);
 
-	//particeDataの生成
-	for (uint32_t i = 0; i < kMaxParticleNum_; ++i) {
-		//乱数エンジンのインスタンスを作成してrdの結果で初期化する
-		randomEngine_.seed (rd ());
-		particles_[i] = MakeNewParticle (randomEngine_);
-	}
-
 	billBoardMatrix_ = MakeIdentity4x4 ();
 }
 
 void Particle::Update (Matrix4x4* cameraMatrix, Matrix4x4* vp) {
+	//Emitter更新
+	EmitterUpdate ();
+
 	//numInstanceのリセット
 	numInstance_ = 0;
 	uint32_t dstIndex = 0; //書き込み先インデックス
-	for (uint32_t i = 0; i < kMaxParticleNum_; ++i) {
+	for (particleIterator_ = particles_.begin (); particleIterator_ != particles_.end ();) {
 		//生存可能時間を過ぎていたら更新処理をしない
-		if (particles_[i].lifeTime <= particles_[i].currentTime) {
+		if (particleIterator_->lifeTime <= particleIterator_->currentTime) {
+			particleIterator_ = particles_.erase (particleIterator_);	//生存時間をすぎたパーティクルはリストから削除
 			continue;
 		}
 
-		//速度を反映させる
-		particles_[i].transform.translate += particles_[i].velocity * kDeltaTime;
-		particles_[i].currentTime += kDeltaTime;
-		instancingData_[dstIndex].World = MakeAffineMatrix (
-			particles_[i].transform.scale,
-			particles_[i].transform.rotate,
-			particles_[i].transform.translate
-		);
+		if (dstIndex < kMaxParticleNum_) {
+			//速度を反映させる
+			particleIterator_->transform.translate += particleIterator_->velocity * kDeltaTime;
+			particleIterator_->currentTime += kDeltaTime;
+			instancingData_[dstIndex].World = MakeAffineMatrix (
+				particleIterator_->transform.scale,
+				particleIterator_->transform.rotate,
+				particleIterator_->transform.translate
+			);
 
-		//ビルボードフラグが立っていたら
-		if (useBillBoard) {
-			//カメラのWorld行列の回転成分だけを使う
-			billBoardMatrix_ = *cameraMatrix;
-			billBoardMatrix_.m[3][0] = 0.0f;	//平行移動成分はいらない
-			billBoardMatrix_.m[3][1] = 0.0f;
-			billBoardMatrix_.m[3][2] = 0.0f;
-			billBoardMatrix_.m[3][3] = 1.0f;
+			//ビルボードフラグが立っていたら
+			if (useBillBoard) {
+				//カメラのWorld行列の回転成分だけを使う
+				billBoardMatrix_ = *cameraMatrix;
+				billBoardMatrix_.m[3][0] = 0.0f;	//平行移動成分はいらない
+				billBoardMatrix_.m[3][1] = 0.0f;
+				billBoardMatrix_.m[3][2] = 0.0f;
+				billBoardMatrix_.m[3][3] = 1.0f;
 
-			instancingData_[dstIndex].World = Multiply (instancingData_[dstIndex].World, billBoardMatrix_);
-			instancingData_[dstIndex].WVP = Multiply (instancingData_[dstIndex].World, *vp);
+				instancingData_[dstIndex].World = Multiply (instancingData_[dstIndex].World, billBoardMatrix_);
+				instancingData_[dstIndex].WVP = Multiply (instancingData_[dstIndex].World, *vp);
+			}
+			else {
+				instancingData_[dstIndex].WVP = Multiply (instancingData_[dstIndex].World, *vp);
+			}
+			instancingData_[dstIndex].color = particleIterator_->color;
+			//徐々に透明度を下げて消えるように
+			float alpha = 1.0f - (particleIterator_->currentTime / particleIterator_->lifeTime);
+			instancingData_[dstIndex].color.w = alpha;
+
+			//uvTranform更新
+			materialData_[dstIndex].uvTranform = MakeAffineMatrix (
+				uvTransform_.scale,
+				uvTransform_.rotate,
+				uvTransform_.translate);
 		}
-		else {
-			instancingData_[dstIndex].WVP = Multiply (instancingData_[dstIndex].World, *vp);
-		}
-		instancingData_[dstIndex].color = particles_[i].color;
-		//徐々に透明度を下げて消えるように
-		float alpha = 1.0f - (particles_[i].currentTime / particles_[i].lifeTime);
-		instancingData_[dstIndex].color.w = alpha;
 
-		//uvTranform更新
-		materialData_[dstIndex].uvTranform = MakeAffineMatrix (uvTransform_[i].scale, uvTransform_[i].rotate, uvTransform_[i].translate);
-		
 		//書き込み先インデックスをインクリメント
 		++dstIndex;
+		++particleIterator_;
 	}
 	numInstance_ = dstIndex;
 }
@@ -180,38 +185,62 @@ void Particle::ImGui () {
 		assert (pipelineState_ != nullptr);
 	}
 
-	if (ImGui::Button ("respawn")) {
-		//particeDataの生成
-		for (uint32_t i = 0; i < kMaxParticleNum_; ++i) {
-			//乱数エンジンのインスタンスを作成してrdの結果で初期化する
-			randomEngine_.seed (rd ());
-			particles_[i] = MakeNewParticle (randomEngine_);
-		}
+	if (ImGui::Button ("spawn")) {
+		particles_.splice (particles_.end (), Emit (emitter_, randomEngine_));
 	}
 
-	if (ImGui::Checkbox ("useBillBoard", &useBillBoard)) {
-		
-	}
+	ImGui::Checkbox ("useBillBoard", &useBillBoard);
+
+	ImGui::Separator ();
+
+	ImGui::DragFloat3 ("scale", &emitter_.transform.scale.x, 0.01f, 0.0f, 100.f);
+	ImGui::DragFloat3 ("rotate", &emitter_.transform.rotate.x, 0.01f, -100.0f, 100.f);
+	ImGui::DragFloat3 ("translate", &emitter_.transform.translate.x, 0.01f, -100.0f, 100.f);
 
 	ImGui::End ();
 }
 
-ParticleData Particle::MakeNewParticle (std::mt19937 randomEngine) {
+ParticleData Particle::MakeNewParticle (std::mt19937 randomEngine, const Emitter& emitter_) {
+	//乱数エンジンのインスタンスを作成してrdの結果で初期化する
+	randomEngine.seed (rd ());
+
 	ParticleData data;
 
 	//使う分布を初期化する
-	rand_ = std::uniform_real_distribution<float> (-0.05f, 0.05f);
+	pos_x = std::uniform_real_distribution<float> (-emitter_.transform.scale.x, emitter_.transform.scale.x);
+	pos_y = std::uniform_real_distribution<float> (-emitter_.transform.scale.y, emitter_.transform.scale.y);
+	pos_z = std::uniform_real_distribution<float> (-emitter_.transform.scale.z, emitter_.transform.scale.z);
+	rand_ = std::uniform_real_distribution<float> (-1.0f, 1.0f);
 	randColor_ = std::uniform_real_distribution<float> (0.0f, 1.0f);
-	randTime_ = std::uniform_real_distribution<float> (10.0f, 30.0f);
+	randTime_ = std::uniform_real_distribution<float> (1.0f, 3.0f);
 
-	//Transformの初期化(ちょっとづつずらして配置)
+	//パーティクル情報の初期化
 	data.transform.scale = { 1.0f, 1.0f, 1.0f };
 	data.transform.rotate = { 0.0f, 0.0f, 0.0f };
-	data.transform.translate = { rand_ (randomEngine), rand_ (randomEngine), rand_ (randomEngine) };
+	data.transform.translate = { pos_x (randomEngine), pos_y (randomEngine), pos_z (randomEngine) };
 	data.velocity = { rand_ (randomEngine), rand_ (randomEngine), rand_ (randomEngine) };
 	data.color = { randColor_ (randomEngine), randColor_ (randomEngine), randColor_ (randomEngine), 1.0f };
 	data.lifeTime = randTime_ (randomEngine);
 	data.currentTime = 0.0f;
 
+	//emitterを加味してtranslateを再計算
+	data.transform.translate += emitter_.transform.translate;
+
 	return data;
+}
+
+std::list<ParticleData> Particle::Emit (const Emitter& emitter, std::mt19937& randomEngine) {
+	std::list<ParticleData> particles;
+	for (uint32_t count = 0; count < emitter.count; ++count) {
+		particles.push_back (MakeNewParticle (randomEngine, emitter_));
+	}
+	return particles;
+}
+
+void Particle::EmitterUpdate () {
+	emitter_.frequencyTime += kDeltaTime;	//発生時刻を進める
+	if (emitter_.frequency <= emitter_.frequencyTime) {		//頻度より大きいなら
+		particles_.splice (particles_.end (), Emit (emitter_, randomEngine_));	//particle発生
+		emitter_.frequencyTime -= emitter_.frequency;	//進めた時間を戻す
+	}
 }

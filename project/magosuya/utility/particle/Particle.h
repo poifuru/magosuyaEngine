@@ -4,7 +4,7 @@
 using namespace Microsoft::WRL;
 #include <d3d12.h>
 #include <vector>
-#include <array>
+#include <list>
 #include <memory>
 #include <random>
 #include "struct.h"
@@ -25,8 +25,10 @@ public:
 	uint32_t GetParticleNum () { return kMaxParticleNum_; };
 	void SetTexHandle (D3D12_GPU_DESCRIPTOR_HANDLE handle) { handle_ = handle; }
 
-private:	//ヘルパー関数
-	ParticleData MakeNewParticle (std::mt19937 randomEngine);
+private:	//内部関数
+	ParticleData MakeNewParticle (std::mt19937 randomEngine, const Emitter& emitter_);
+	std::list<ParticleData> Emit (const Emitter& emitter, std::mt19937& randomEngine);
+	void EmitterUpdate ();
 
 private:
 	//PSOの設定
@@ -37,7 +39,7 @@ private:
 	//モデルデータ
 	std::unique_ptr<ModelData> data_ = nullptr;
 	//何個のパーティクルを出すのか
-	const uint32_t kMaxParticleNum_ = 10;
+	const uint32_t kMaxParticleNum_ = 5000;
 	uint32_t numInstance_ = 0; //描画すべきインスタンス数
 
 	//GPUリソース
@@ -56,8 +58,10 @@ private:
 	D3D12_GPU_DESCRIPTOR_HANDLE handle_ = {};
 
 	//位置データ
-	ParticleData particles_[10];
-	Transform uvTransform_[10];
+	std::list<ParticleData> particles_;
+	std::list<ParticleData>::iterator particleIterator_;
+	Transform uvTransform_;
+	Emitter emitter_ = {};
 
 	//速度をランダムに割り当てるための乱数生成器
 	//生成エンジンの型を作る
@@ -67,6 +71,9 @@ private:
 	//実行ごとに異なる値を取得する
 	std::random_device rd;
 	//分布
+	std::uniform_real_distribution<float> pos_x;			//発生位置_x
+	std::uniform_real_distribution<float> pos_y;			//発生位置_y
+	std::uniform_real_distribution<float> pos_z;			//発生位置_z
 	std::uniform_real_distribution<float> rand_;		//速度
 	std::uniform_real_distribution<float> randColor_;	//色
 	std::uniform_real_distribution<float> randTime_;	//パーティクルの生存可能時間

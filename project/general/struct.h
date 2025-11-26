@@ -242,6 +242,14 @@ struct ParticleForGPU {
 	Vector4 color;
 };
 
+//エミッター構造体
+struct Emitter {
+	Transform transform;	//transform
+	uint32_t count;			//発生数
+	float frequency;		//発生頻度
+	float frequencyTime;	//頻度用時刻
+};
+
 //チャンクヘッダ
 struct ChunkHeader {
 	char id[4];		//チャンク毎のID
