@@ -92,14 +92,16 @@ void Particle::Initialize () {
 	particleSrvDesc.Buffer.NumElements = kMaxParticleNum_;
 	particleSrvDesc.Buffer.StructureByteStride = sizeof (ParticleForGPU);
 	particleSrvHandleCPU = dxCommon_->GetCPUDescriptorHandle (
-		dxCommon_->GetsrvDescriptorHeap (), dxCommon_->GetDescriptorSizeSrv (), 100
+		dxCommon_->GetsrvDescriptorHeap (), dxCommon_->GetDescriptorSizeSrv (), descriptorIndex_
 	);
 	particleSrvHandleGPU = dxCommon_->GetGPUDescriptorHandle (
-		dxCommon_->GetsrvDescriptorHeap (), dxCommon_->GetDescriptorSizeSrv (), 100
+		dxCommon_->GetsrvDescriptorHeap (), dxCommon_->GetDescriptorSizeSrv (), descriptorIndex_
 	);
 	device_->CreateShaderResourceView (instancingBuffer_.Get (), &particleSrvDesc, particleSrvHandleCPU);
 
 	billBoardMatrix_ = MakeIdentity4x4 ();
+
+	descriptorIndex_++;
 }
 
 void Particle::Update (Matrix4x4* cameraMatrix, Matrix4x4* vp) {

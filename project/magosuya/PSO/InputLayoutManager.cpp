@@ -15,7 +15,7 @@ void InputLayoutManager::Initialize () {
 		D3D12_APPEND_ALIGNED_ELEMENT,
 		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
 		0
-							 });
+	});
 	//TEXCODE
 	data.elements.push_back ({
 		"TEXCOORD",
@@ -25,8 +25,8 @@ void InputLayoutManager::Initialize () {
 		D3D12_APPEND_ALIGNED_ELEMENT,
 		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
 		0
-							 });
-
+	});
+	//NORMAL
 	data.elements.push_back ({
 		"NORMAL",
 		0,
@@ -35,7 +35,7 @@ void InputLayoutManager::Initialize () {
 		D3D12_APPEND_ALIGNED_ELEMENT,
 		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
 		0
-							 });
+	});
 
 	//Descの作成
 	data.desc.pInputElementDescs = data.elements.data ();
@@ -57,7 +57,7 @@ void InputLayoutManager::Initialize () {
 		D3D12_APPEND_ALIGNED_ELEMENT,
 		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
 		0
-							 });
+	});
 	//TEXCODE
 	data.elements.push_back ({
 		"TEXCOORD",
@@ -67,8 +67,8 @@ void InputLayoutManager::Initialize () {
 		D3D12_APPEND_ALIGNED_ELEMENT,
 		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
 		0
-							 });
-
+	});
+	//COLOR
 	data.elements.push_back ({
 		"COLOR",
 		0,
@@ -77,7 +77,7 @@ void InputLayoutManager::Initialize () {
 		D3D12_APPEND_ALIGNED_ELEMENT,
 		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
 		0
-							 });
+	});
 
 	//Descの作成
 	data.desc.pInputElementDescs = data.elements.data ();
@@ -85,6 +85,38 @@ void InputLayoutManager::Initialize () {
 
 	//キャッシュに登録
 	m_LayoutCache[InputLayoutType::Particle] = std::move (data);
+	//新しい設定を登録するためにdataをclear
+	data.elements.clear ();
+	//******//
+
+	//***Line***//
+	//POSITION
+	data.elements.push_back ({
+		"POSITION",
+		0,
+		DXGI_FORMAT_R32G32B32A32_FLOAT,
+		0,
+		D3D12_APPEND_ALIGNED_ELEMENT,
+		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+		0
+	});
+	//COLOR
+	data.elements.push_back ({
+		"COLOR",
+		0,
+		DXGI_FORMAT_R32G32B32A32_FLOAT,
+		0,
+		D3D12_APPEND_ALIGNED_ELEMENT,
+		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+		0
+	});
+
+	//Descの作成
+	data.desc.pInputElementDescs = data.elements.data ();
+	data.desc.NumElements = (UINT)data.elements.size ();
+
+	//キャッシュに登録
+	m_LayoutCache[InputLayoutType::Line] = std::move (data);
 	//新しい設定を登録するためにdataをclear
 	data.elements.clear ();
 	//******//

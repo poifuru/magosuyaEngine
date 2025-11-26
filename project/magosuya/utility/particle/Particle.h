@@ -31,6 +31,9 @@ private:	//内部関数
 	void EmitterUpdate ();
 
 private:
+	//Descriptorの場所
+	static inline uint32_t descriptorIndex_ = 100;
+
 	//PSOの設定
 	PSODescriptor desc_ = {};
 	ID3D12RootSignature* rootsignature_ = nullptr;

@@ -76,7 +76,7 @@ void ModelRenderer::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
 }
 
 void ModelRenderer::ImGui (Transform& transform, Transform& uvTransform) {
-	std::string label = "##" + tag_;
+	std::string label = "##" + tag_;	//##skydome
 	if (ImGui::ColorEdit4 (("Color" + label).c_str (), color_)) {
 		// 色が変更されたらmaterialDataに反映
 		materialData_->color.x = color_[0];

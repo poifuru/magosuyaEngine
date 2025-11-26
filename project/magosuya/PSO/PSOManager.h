@@ -57,6 +57,8 @@ public:		//メンバ関数
 	//PSODesctiptorを受けとってID3D12PipelineState*を返す
 	ID3D12PipelineState* GetOrCreratePSO (const PSODescriptor& desc);
 
+	void SetPSO (const PSODescriptor& desc, ID3D12GraphicsCommandList* cmdList);
+
 private:
 	//コンストラクタを禁止
 	PSOManager () = default;

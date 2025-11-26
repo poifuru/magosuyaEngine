@@ -98,6 +98,16 @@ ID3D12PipelineState* PSOManager::GetOrCreratePSO (const PSODescriptor& desc) {
     //======//
 }
 
+void PSOManager::SetPSO (const PSODescriptor& desc, ID3D12GraphicsCommandList* cmdList) {
+    uint64_t hash = ComputeHash (desc);
+
+    //if(currentDescHash != hash) {
+    auto pso = GetOrCreratePSO (desc);
+    //cmdList->SetGraphicsRootSignature ();
+    cmdList->SetPipelineState (pso);
+    //}
+}
+
 template<typename T>
 uint64_t PSOManager::hash_combine_simple (uint64_t h, T val) const {
     return (h << 5) | (h >> 59) ^ (uint64_t)val;

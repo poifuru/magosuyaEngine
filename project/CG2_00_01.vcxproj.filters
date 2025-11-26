@@ -9,6 +9,8 @@
     </FxCompile>
     <FxCompile Include="Resources\shader\Particle.VS.hlsl" />
     <FxCompile Include="Resources\shader\Particle.PS.hlsl" />
+    <FxCompile Include="Resources\shader\line.VS.hlsl" />
+    <FxCompile Include="Resources\shader\line.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -277,6 +279,7 @@
       <Filter>シェーダー</Filter>
     </None>
     <None Include="Resources\shader\Particle.hlsli" />
+    <None Include="Resources\shader\line.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

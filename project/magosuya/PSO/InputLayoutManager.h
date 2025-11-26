@@ -6,9 +6,10 @@
 
 // 頂点レイアウトを識別するためのID
 enum class InputLayoutType : uint32_t {
-    Standard3D, // POSITION, TEXCOORD, NORMALを持つレイアウト
-    Particle,
-    MeshShader, // 将来のメッシュシェーダー用(InputLayout不要)
+    Standard3D, //POSITION, TEXCOORD, NORMALを持つレイアウト
+    Particle,   //Particle用
+    Line,       //Line描画用
+    MeshShader, //将来のメッシュシェーダー用(InputLayout不要)
     
     Count           // 設定の個数
 };
