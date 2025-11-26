@@ -224,7 +224,7 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 				cameraTransform = {
 					{1.0f, 1.0f, 1.0f},
 					{0.0f, 0.0f, 0.0f},
-					{0.0f, 0.0f, -10.0f},
+					{0.0f, 0.0f, -30.0f},
 				};
 			}
 			ImGui::DragFloat3 ("cameraScale", &cameraTransform.scale.x, 0.01f);
