@@ -1,16 +1,18 @@
 #pragma once
-#include <d3d12.h>
+#include <Windows.h>
 #include <Wrl.h>
 using namespace Microsoft::WRL;
+#include <d3d12.h>
 #include <vector>
 #include <string>
 #include "struct.h"
+#include "PSOManager.h"
 
-class MagosuyaEngine;
+class DxCommon;
 
 class ModelRenderer {
 public:
-	ModelRenderer (MagosuyaEngine* magosuya);
+	ModelRenderer (DxCommon* dxCommon);
 	~ModelRenderer ();
 
 	void Initialize ();
@@ -28,9 +30,10 @@ private:
 	//モデルデータ
 	std::weak_ptr<ModelData> modelData_;
 
-	//ルートシグネチャとパイプラインステート
-	ComPtr<ID3D12RootSignature> rootSignature_;
-	ComPtr<ID3D12PipelineState> pipelineState_;
+	//PSO
+	PSODescriptor desc_ = {};
+	ID3D12RootSignature* rootsignature_ = nullptr;
+	ID3D12PipelineState* pipelineState_ = nullptr;
 
 	//GPUリソース
 	ComPtr<ID3D12Resource> matrixBuffer_;
@@ -47,5 +50,6 @@ private:
 	float color_[4];
 
 	//ポインタを借りる
-	MagosuyaEngine* magosuya_ = nullptr;
+	DxCommon* dxCommon_ = nullptr;
+	ID3D12GraphicsCommandList* commandList_ = nullptr;
 };

@@ -2,11 +2,12 @@
 #include <DirectXTex.h>
 #include "function.h"
 #include "MathFunction.h"
-#include "MagosuyaEngine.h"
+#include "DxCommon.h"
+#include "TextureManager.h"
 
-Sprite::Sprite (MagosuyaEngine* magosuya) {
-	magosuya_ = magosuya;
-	renderer_ = std::make_unique<SpriteRenderer> (magosuya);
+Sprite::Sprite (DxCommon* dxCommon, TextureManager* texManager) {
+	texManager_ = texManager;
+	renderer_ = std::make_unique<SpriteRenderer> (dxCommon, texManager);
 }
 
 Sprite::~Sprite () {
@@ -31,7 +32,7 @@ void Sprite::Initialize (Vector3 position) {
 }
 
 void Sprite::SetTexture (std::string ID) {
-	handle_ = magosuya_->GetTextureHandle(ID);
+	handle_ = texManager_->GetTextureHandle(ID);
 }
 
 void Sprite::MakewvpMatrix () {
@@ -57,7 +58,7 @@ void Sprite::ImGui () {
 }
 
 void Sprite::AdjustTextureSize () {
-	const DirectX::TexMetadata& metadata = magosuya_->GetMetaData (id_);
+	const DirectX::TexMetadata& metadata = texManager_->GetMetaData (id_);
 
 	textureSize_.x = static_cast<float>(metadata.width);
 	textureSize_.y = static_cast<float>(metadata.height);

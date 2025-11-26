@@ -7,6 +7,8 @@
     <FxCompile Include="Resources\shader\Object3d.VS.hlsl">
       <Filter>シェーダー</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\shader\Particle.VS.hlsl" />
+    <FxCompile Include="Resources\shader\Particle.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -51,13 +53,13 @@
     <ClCompile Include="magosuya\utility\camera\DebugCamera.cpp">
       <Filter>ソースファイル\magosuya\utility\camera</Filter>
     </ClCompile>
-    <ClCompile Include="magosuya\utility\manager\ImGuiManager.cpp">
+    <ClCompile Include="magosuya\utility\imgui\ImGuiManager.cpp">
       <Filter>ソースファイル\magosuya\utility\manager</Filter>
     </ClCompile>
-    <ClCompile Include="magosuya\utility\manager\ModelManager.cpp">
+    <ClCompile Include="magosuya\object\3d\ModelManager.cpp">
       <Filter>ソースファイル\magosuya\utility\manager</Filter>
     </ClCompile>
-    <ClCompile Include="magosuya\utility\manager\TextureManager.cpp">
+    <ClCompile Include="magosuya\object\2d\TextureManager.cpp">
       <Filter>ソースファイル\magosuya\utility\manager</Filter>
     </ClCompile>
     <ClCompile Include="magosuya\utility\input\InputManager.cpp">
@@ -86,14 +88,12 @@
     <ClCompile Include="application\scene\PlayScene.cpp" />
     <ClCompile Include="application\scene\ClearScene.cpp" />
     <ClCompile Include="application\scene\GameoverScene.cpp" />
-    <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="externals\imgui\imgui.cpp" />
-    <ClCompile Include="externals\imgui\imgui_demo.cpp" />
-    <ClCompile Include="externals\imgui\imgui_draw.cpp" />
-    <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp" />
-    <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
-    <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="magosuya\utility\particle\Particle.cpp" />
+    <ClCompile Include="magosuya\PSO\ShaderManager.cpp" />
+    <ClCompile Include="magosuya\PSO\RootSignatureManager.cpp" />
+    <ClCompile Include="magosuya\PSO\PSOManager.cpp" />
+    <ClCompile Include="magosuya\PSO\BlendModeManager.cpp" />
+    <ClCompile Include="magosuya\PSO\InputLayoutManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="general\ChangeString.h">
@@ -141,13 +141,13 @@
     <ClInclude Include="general\struct.h">
       <Filter>ヘッダーファイル\general</Filter>
     </ClInclude>
-    <ClInclude Include="magosuya\utility\manager\ImGuiManager.h">
+    <ClInclude Include="magosuya\utility\imgui\ImGuiManager.h">
       <Filter>ヘッダーファイル\magosuya\utility\manager</Filter>
     </ClInclude>
-    <ClInclude Include="magosuya\utility\manager\ModelManager.h">
+    <ClInclude Include="magosuya\object\3d\ModelManager.h">
       <Filter>ヘッダーファイル\magosuya\utility\manager</Filter>
     </ClInclude>
-    <ClInclude Include="magosuya\utility\manager\TextureManager.h">
+    <ClInclude Include="magosuya\object\2d\TextureManager.h">
       <Filter>ヘッダーファイル\magosuya\utility\manager</Filter>
     </ClInclude>
     <ClInclude Include="magosuya\utility\audio\Sound.h">
@@ -186,6 +186,11 @@
     <ClInclude Include="externals\imgui\imgui_impl_win32.h" />
     <ClInclude Include="externals\imgui\imgui_internal.h" />
     <ClInclude Include="magosuya\utility\particle\Particle.h" />
+    <ClInclude Include="magosuya\PSO\ShaderManager.h" />
+    <ClInclude Include="magosuya\PSO\RootSignatureManager.h" />
+    <ClInclude Include="magosuya\PSO\PSOManager.h" />
+    <ClInclude Include="magosuya\PSO\BlendModeManager.h" />
+    <ClInclude Include="magosuya\PSO\InputLayoutManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ソースファイル">
@@ -271,6 +276,7 @@
     <None Include="Resources\shader\Object3d.hlsli">
       <Filter>シェーダー</Filter>
     </None>
+    <None Include="Resources\shader\Particle.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

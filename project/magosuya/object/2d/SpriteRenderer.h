@@ -1,14 +1,16 @@
 #pragma once
-#include <d3d12.h>
-#include <Wrl.h>
+#include <Windows.h>
+#include <wrl.h>
 using namespace Microsoft::WRL;
+#include <d3d12.h>
 #include "struct.h"
 
-class MagosuyaEngine;
+class DxCommon;
+class TextureManager;
 
 class SpriteRenderer {
 public:		//外部公開メソッド
-	SpriteRenderer (MagosuyaEngine* magosuya);
+	SpriteRenderer (DxCommon* dxCommon, TextureManager* texManager);
 	~SpriteRenderer ();
 
 	void Initialize ();
@@ -23,10 +25,6 @@ public:		//外部公開メソッド
 	void SetID (const std::string& id) { id_ = id; }
 
 private:	//メンバ変数
-	//ルートシグネチャとパイプラインステート
-	ComPtr<ID3D12RootSignature> rootSignature_;
-	ComPtr<ID3D12PipelineState> pipelineState_;
-
 	//GPUリソース
 	ComPtr<ID3D12Resource> vertexBuffer_;
 	ComPtr<ID3D12Resource> indexBuffer_;
@@ -49,6 +47,8 @@ private:	//メンバ変数
 	float color_[4];
 
 	//ポインタを借りる
-	MagosuyaEngine* magosuya_ = nullptr;
+	DxCommon* dxCommon_ = nullptr;
+	ID3D12GraphicsCommandList* commandList_ = nullptr;
+	TextureManager* texManager_ = nullptr;
 };
 

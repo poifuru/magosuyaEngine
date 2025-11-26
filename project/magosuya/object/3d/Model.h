@@ -1,13 +1,16 @@
 #pragma once
+#include <Windows.h>
+#include <Wrl.h>
+using namespace Microsoft::WRL;
 #include <vector>
 #include <d3d12.h>
-#include <wrl.h>
-using namespace Microsoft::WRL;
 #include <memory>
 #include "struct.h"
 #include "ModelRenderer.h"
 
-class MagosuyaEngine;
+class DxCommon;
+class TextureManager;
+class ModelManager;
 
 class Model {
 public:	//メンバ関数
@@ -17,7 +20,7 @@ public:	//メンバ関数
 	/// </summary>
 	/// <param name="directoryPath">3Dモデルファイルが存在するディレクトリのパス。</param>
 	/// <param name="filename">読み込む3Dモデルのファイル名。</param>
-	Model (MagosuyaEngine* magosuya);
+	Model (DxCommon* dxCommon, TextureManager* texManager, ModelManager* modelManager);
 
 	~Model ();
 
@@ -74,5 +77,6 @@ private:		//メンバ変数
 	std::unique_ptr<ModelRenderer> renderer_ = nullptr;
 
 	//ポインタを借りる
-	MagosuyaEngine* magosuya_ = nullptr;
+	TextureManager* texManager_ = nullptr;
+	ModelManager* modelManager_ = nullptr;
 };

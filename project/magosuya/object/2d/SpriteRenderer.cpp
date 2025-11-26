@@ -2,12 +2,13 @@
 #include <imgui.h>
 #include <DirectXTex.h>
 #include "MathFunction.h"
-#include "MagosuyaEngine.h"
+#include "DxCommon.h"
+#include "TextureManager.h"
 
-SpriteRenderer::SpriteRenderer (MagosuyaEngine* magosuya) {
-	magosuya_ = magosuya;
-	rootSignature_ = magosuya_->GetDxCommon ()->GetRootSignature ();
-	pipelineState_ = magosuya_->GetDxCommon ()->GetPipelineState ();
+SpriteRenderer::SpriteRenderer (DxCommon* dxCommon, TextureManager* texManager) {
+	dxCommon_ = DxCommon::GetInstance ();
+	commandList_ = dxCommon->GetCommandList ();
+	texManager_ = TextureManager::GetInstance ();
 
 	for (int i = 0; i < 4; i++) {
 		color_[i] = 1.0f;
@@ -20,13 +21,13 @@ SpriteRenderer::~SpriteRenderer () {
 void SpriteRenderer::Initialize () {
 	//頂点・インデックスバッファ作成 → Mapして vertexData_, indexData_ に保持
 	//それぞれビューの設定も
-	vertexBuffer_ = magosuya_->GetDxCommon ()->CreateBufferResource (sizeof (VertexData) * 4);
+	vertexBuffer_ = dxCommon_->CreateBufferResource (sizeof (VertexData) * 4);
 	vertexBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&vertexData_));
 	vbView_.BufferLocation = vertexBuffer_->GetGPUVirtualAddress ();
 	vbView_.SizeInBytes = sizeof (VertexData) * 4;
 	vbView_.StrideInBytes = sizeof (VertexData);
 
-	indexBuffer_ = magosuya_->GetDxCommon ()->CreateBufferResource (sizeof (uint32_t) * 6);
+	indexBuffer_ = dxCommon_->CreateBufferResource (sizeof (uint32_t) * 6);
 	indexBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&indexData_));
 	ibView_.BufferLocation = indexBuffer_->GetGPUVirtualAddress ();
 	ibView_.SizeInBytes = sizeof (uint32_t) * 6;
@@ -34,11 +35,11 @@ void SpriteRenderer::Initialize () {
 
 	//行列・マテリアル用の定数バッファも作成 → Mapして material_, wvpMatrix_ に保持
 	//初期設定まで済ませる
-	matrixBuffer_ = magosuya_->GetDxCommon ()->CreateBufferResource ((sizeof (Matrix4x4) + 255) & ~255);
+	matrixBuffer_ = dxCommon_->CreateBufferResource ((sizeof (Matrix4x4) + 255) & ~255);
 	matrixBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&matrixData_));
 	*matrixData_ = MakeIdentity4x4 ();
 
-	materialBuffer_ = magosuya_->GetDxCommon ()->CreateBufferResource (sizeof (Material));
+	materialBuffer_ = dxCommon_->CreateBufferResource (sizeof (Material));
 	materialBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&materialData_));
 	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };	//初期カラーは白
 	materialData_->enableLighting = false;
@@ -62,7 +63,7 @@ void SpriteRenderer::Update (Matrix4x4 wvpData, Transform uvTransform, Vector2 a
 
 	//画像切り出し用
 	id_ = id;
-	const DirectX::TexMetadata& metadata = magosuya_->GetMetaData (id_);
+	const DirectX::TexMetadata& metadata = texManager_->GetMetaData (id_);
 	float tex_left = texLeftTop.x / metadata.width;
 	float tex_right = (texLeftTop.x + texSize.x) / metadata.width;
 	float tex_top = texLeftTop.y / metadata.height;
@@ -99,16 +100,14 @@ void SpriteRenderer::Update (Matrix4x4 wvpData, Transform uvTransform, Vector2 a
 }
 
 void SpriteRenderer::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootSignature (rootSignature_.Get ());
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetPipelineState (pipelineState_.Get ());
-	magosuya_->GetDxCommon ()->GetCommandList ()->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	magosuya_->GetDxCommon ()->GetCommandList ()->IASetVertexBuffers (0, 1, &vbView_);   //VBVを設定
-	magosuya_->GetDxCommon ()->GetCommandList ()->IASetIndexBuffer (&ibView_);	        //IBVを設定
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
-	magosuya_->GetDxCommon ()->GetCommandList ()->SetGraphicsRootDescriptorTable (2, textureHandle);
+	commandList_->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	commandList_->IASetVertexBuffers (0, 1, &vbView_);   //VBVを設定
+	commandList_->IASetIndexBuffer (&ibView_);	        //IBVを設定
+	commandList_->SetGraphicsRootConstantBufferView (0, matrixBuffer_->GetGPUVirtualAddress ());
+	commandList_->SetGraphicsRootConstantBufferView (1, materialBuffer_->GetGPUVirtualAddress ());
+	commandList_->SetGraphicsRootDescriptorTable (2, textureHandle);
 	//インデックスバッファを使った描画
-	magosuya_->GetDxCommon ()->GetCommandList ()->DrawIndexedInstanced (6, 1, 0, 0, 0);
+	commandList_->DrawIndexedInstanced (6, 1, 0, 0, 0);
 }
 
 void SpriteRenderer::ImGui (Transform& transform, Transform& uvTransform) {

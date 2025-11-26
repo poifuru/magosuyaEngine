@@ -1,38 +1,44 @@
 #pragma once
 #include <memory>
 #include <string>
-#include "engine/DxCommon.h"
-#include "utility/manager/TextureManager.h"
-#include "utility/manager/ImGuiManager.h"
-#include "utility/manager/ModelManager.h"
+
+//前方宣言
+class WindowsAPI;
+class DxCommon;
+class ImGuiManager;
+class InputManager;
+class TextureManager;
+class ModelManager;
+class PSOManager;
 
 class MagosuyaEngine {
 public:		//メンバ関数
-	//コンストラクタ、デストラクタ
-	MagosuyaEngine ();
+	static MagosuyaEngine* GetInstance () {
+		//初めて呼び出されたときに一回だけ初期化
+		static MagosuyaEngine instance;
+		return &instance;
+	}
 	~MagosuyaEngine ();
 
 	void Initialize ();
 	void BeginFrame ();
 	void EndFrame ();
-	void Finalize ();
 
-#pragma region メンバ変数を便利に
-	void LoadTexture (const std::string& filePath, const std::string& ID);
-	void UnloadTexture (const std::string& filePath);
-	D3D12_GPU_DESCRIPTOR_HANDLE GetTextureHandle (const std::string& ID);
-	const DirectX::TexMetadata& GetMetaData (const std::string& id);
-	void LoadModelData (const std::string& filePath, const std::string& ID, bool inversion = false);
-	void UnloadModelData (const std::string& ID);
-	std::weak_ptr<ModelData> GetModelData (const std::string& ID);
-#pragma endregion
+private:
+	//コンストラクタを禁止
+	MagosuyaEngine () = default;
+	// コピーコンストラクタと代入演算子を禁止
+	MagosuyaEngine (const MagosuyaEngine&) = delete;
+	MagosuyaEngine& operator=(const MagosuyaEngine&) = delete;
+	MagosuyaEngine (MagosuyaEngine&&) = delete;
+	MagosuyaEngine& operator=(MagosuyaEngine&&) = delete;
 
-	//アクセッサ
-	DxCommon* GetDxCommon () { return dxCommon_.get (); }
-
-private:	//メンバ変数
-	std::unique_ptr<DxCommon> dxCommon_;
-	std::unique_ptr<TextureManager> textureManager_;
-	std::unique_ptr<ImGuiManager> imGuiManager_;
-	std::unique_ptr<ModelManager> modelManager_;
+private:
+	WindowsAPI* winApi_ = nullptr;
+	DxCommon* dxCommon_ = nullptr;
+	ImGuiManager* imguiManager_ = nullptr;
+	InputManager* inputManager_ = nullptr;
+	TextureManager* texManager_ = nullptr;
+	ModelManager* modelManager_ = nullptr;
+	PSOManager* psoManager_ = nullptr;
 };

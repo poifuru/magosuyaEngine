@@ -1,19 +1,16 @@
 #pragma once
 #include <Windows.h>
-#include "struct.h"
+#include <Wrl.h>
+using namespace Microsoft::WRL;
 #include <d3d12.h>
 #include <d3d12sdklayers.h>
 #pragma comment(lib, "d3d12.lib")
 #include <dxgi1_6.h>
 #pragma comment(lib, "dxgi.lib")
-#include <wrl.h>
-using namespace Microsoft::WRL;
-#define DIRECTINPUT_VERSION		0x0800	//DirectInputのバージョン指定
-#include <dinput.h>
-#pragma	comment(lib, "dinput8.lib")
 #pragma	comment(lib, "dxguid.lib")
+#include "struct.h"
 #include "MathFunction.h"
-#include "utility/Input/InputManager.h"
+#include "InputManager.h"
 
 class DebugCamera{
 public:	//メンバ関数
