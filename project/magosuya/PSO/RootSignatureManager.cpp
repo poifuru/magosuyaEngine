@@ -16,7 +16,6 @@ void RootSignatureManager::Initialize (DxCommon* dxCommon) {
 	standard3DDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	//Offsetを自動計算
 
 	//RootParameter
-	standard3DRootParameters[4] = {};
 	standard3DRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;		//CBVを使う
 	standard3DRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;	//VertexShaderで使う
 	standard3DRootParameters[0].Descriptor.ShaderRegister = 0;

@@ -141,9 +141,13 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 	//音声の読み込み
 	SoundData soundData1 = SoundLoadWave ("Resources/Sounds/Alarm01.wav");
+
 	//テクスチャの読み込み
 	TextureManager::GetInstance ()->LoadTexture ("Resources/uvChecker.png", "uvChecker");
 	TextureManager::GetInstance ()->LoadTexture ("Resources/circle.png", "circle");
+
+	//モデルデータの読み込み
+	ModelManager::GetInstance ()->LoadModelData ("Resources/skydome", "skydome");
 
 	//平行光源のResourceを作成してデフォルト値を書き込む
 	ComPtr<ID3D12Resource> dierctionalLightResource = DxCommon::GetInstance()->CreateBufferResource (sizeof (DirectionalLight));
@@ -161,13 +165,18 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	//BGM再生
 	SoundPlayWave (xAudio2.Get (), soundData1);
 
+	std::unique_ptr<Model>skydome = std::make_unique<Model> (DxCommon::GetInstance (), TextureManager::GetInstance (), ModelManager::GetInstance ());
+	skydome->SetTexture ("skydome");
+	skydome->SetModelData ("skydome");
+	skydome->Initialize ();
+
 	std::unique_ptr<Particle> particle = std::make_unique<Particle> (DxCommon::GetInstance());
 	particle->SetTexHandle (TextureManager::GetInstance()->GetTextureHandle ("circle"));
 	particle->Initialize ();
 
 	//カメラ用
 	//Transform
-	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -10.0f} };
+	Transform cameraTransform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -30.0f} };
 	Matrix4x4 cameraMatrix = {};
 	Matrix4x4 viewMatrix = {};
 	Matrix4x4 projectionMatrix = {};
@@ -253,7 +262,7 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		//カメラ
 		cameraMatrix = MakeAffineMatrix (cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 		viewMatrix = Inverse (cameraMatrix);
-		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (WindowsAPI::GetInstance ()->kClientWidth) / float (WindowsAPI::GetInstance ()->kClientHeight), 0.1f, 100.0f);
+		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (WindowsAPI::GetInstance ()->kClientWidth) / float (WindowsAPI::GetInstance ()->kClientHeight), 0.1f, 1000.0f);
 
 		if (debugMode && !debugCamera->GetTatchImGui ()) {
 			debugCamera->Updata (WindowsAPI::GetInstance ()->GetHwnd (), hr, InputManager::GetInstance ());
@@ -263,6 +272,8 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 		//vp行列作成
 		Matrix4x4 vp = Multiply (viewMatrix, projectionMatrix);
+
+		skydome->Update (&vp);
 		particle->Update (&cameraMatrix, &vp);
 
 		//光源のdirectionの正規化
@@ -281,6 +292,7 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		//ライティングの設定
 		DxCommon::GetInstance()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
 		//===描画===//
+		skydome->Draw ();
 		particle->Draw ();
 
 		//フレーム終了

@@ -90,10 +90,10 @@ void Particle::Initialize () {
 	particleSrvDesc.Buffer.NumElements = kMaxParticleNum_;
 	particleSrvDesc.Buffer.StructureByteStride = sizeof (ParticleForGPU);
 	particleSrvHandleCPU = dxCommon_->GetCPUDescriptorHandle (
-		dxCommon_->GetsrvDescriptorHeap (), dxCommon_->GetDescriptorSizeSrv (), 3
+		dxCommon_->GetsrvDescriptorHeap (), dxCommon_->GetDescriptorSizeSrv (), 100
 	);
 	particleSrvHandleGPU = dxCommon_->GetGPUDescriptorHandle (
-		dxCommon_->GetsrvDescriptorHeap (), dxCommon_->GetDescriptorSizeSrv (), 3
+		dxCommon_->GetsrvDescriptorHeap (), dxCommon_->GetDescriptorSizeSrv (), 100
 	);
 	device_->CreateShaderResourceView (instancingBuffer_.Get (), &particleSrvDesc, particleSrvHandleCPU);
 
@@ -120,16 +120,27 @@ void Particle::Update (Matrix4x4* cameraMatrix, Matrix4x4* vp) {
 		//速度を反映させる
 		particles_[i].transform.translate += particles_[i].velocity * kDeltaTime;
 		particles_[i].currentTime += kDeltaTime;
-		instancingData_[dstIndex].World = MakeAffineMatrix (particles_[i].transform.scale, particles_[i].transform.rotate, particles_[i].transform.translate);
+		instancingData_[dstIndex].World = MakeAffineMatrix (
+			particles_[i].transform.scale,
+			particles_[i].transform.rotate,
+			particles_[i].transform.translate
+		);
+
+		//ビルボードフラグが立っていたら
 		if (useBillBoard) {
-			billBoardMatrix_ = Multiply (billBoardMatrix_, *cameraMatrix);
+			//カメラのWorld行列の回転成分だけを使う
+			billBoardMatrix_ = *cameraMatrix;
 			billBoardMatrix_.m[3][0] = 0.0f;	//平行移動成分はいらない
 			billBoardMatrix_.m[3][1] = 0.0f;
 			billBoardMatrix_.m[3][2] = 0.0f;
+			billBoardMatrix_.m[3][3] = 1.0f;
 
 			instancingData_[dstIndex].World = Multiply (instancingData_[dstIndex].World, billBoardMatrix_);
+			instancingData_[dstIndex].WVP = Multiply (instancingData_[dstIndex].World, *vp);
 		}
-		instancingData_[dstIndex].WVP = Multiply (instancingData_[dstIndex].World, *vp);
+		else {
+			instancingData_[dstIndex].WVP = Multiply (instancingData_[dstIndex].World, *vp);
+		}
 		instancingData_[dstIndex].color = particles_[i].color;
 		//徐々に透明度を下げて消えるように
 		float alpha = 1.0f - (particles_[i].currentTime / particles_[i].lifeTime);

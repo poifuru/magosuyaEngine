@@ -6,6 +6,7 @@ using namespace Microsoft::WRL;
 #include <vector>
 #include <string>
 #include "struct.h"
+#include "PSOManager.h"
 
 class DxCommon;
 
@@ -28,6 +29,11 @@ public:
 private:
 	//モデルデータ
 	std::weak_ptr<ModelData> modelData_;
+
+	//PSO
+	PSODescriptor desc_ = {};
+	ID3D12RootSignature* rootsignature_ = nullptr;
+	ID3D12PipelineState* pipelineState_ = nullptr;
 
 	//GPUリソース
 	ComPtr<ID3D12Resource> matrixBuffer_;
