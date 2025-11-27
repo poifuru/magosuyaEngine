@@ -96,6 +96,8 @@
     <ClCompile Include="magosuya\PSO\PSOManager.cpp" />
     <ClCompile Include="magosuya\PSO\BlendModeManager.cpp" />
     <ClCompile Include="magosuya\PSO\InputLayoutManager.cpp" />
+    <ClCompile Include="magosuya\mesh\line\LineRenderer.cpp" />
+    <ClCompile Include="magosuya\mesh\Mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="general\ChangeString.h">
@@ -193,6 +195,10 @@
     <ClInclude Include="magosuya\PSO\PSOManager.h" />
     <ClInclude Include="magosuya\PSO\BlendModeManager.h" />
     <ClInclude Include="magosuya\PSO\InputLayoutManager.h" />
+    <ClInclude Include="magosuya\mesh\line\LineRenderer.h" />
+    <ClInclude Include="magosuya\mesh\Mesh.h" />
+    <ClInclude Include="magosuya\mesh\line\LineRenderData.h" />
+    <ClInclude Include="magosuya\mesh\MaxMeshNum.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ソースファイル">

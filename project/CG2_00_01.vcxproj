@@ -85,7 +85,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(SolutionDir)application\scene;$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(SolutionDir)general;$(SolutionDir)magosuya;$(SolutionDir)magosuya\engine;$(SolutionDir)magosuya\object\2d;$(SolutionDir)magosuya\object\3d;$(SolutionDir)magosuya\utility\audio;$(SolutionDir)magosuya\utility\camera;$(SolutionDir)magosuya\utility\input;$(SolutionDir)magosuya\utility\imgui;$(SolutionDir)magosuya\utility\particle;$(SolutionDir)magosuya\PSO</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)application\scene;$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(SolutionDir)general;$(SolutionDir)magosuya;$(SolutionDir)magosuya\engine;$(SolutionDir)magosuya\object\2d;$(SolutionDir)magosuya\object\3d;$(SolutionDir)magosuya\utility\audio;$(SolutionDir)magosuya\utility\camera;$(SolutionDir)magosuya\utility\input;$(SolutionDir)magosuya\utility\imgui;$(SolutionDir)magosuya\utility\particle;$(SolutionDir)magosuya\PSO;$(SolutionDir)magosuya\mesh;$(SolutionDir)magosuya\mesh\line</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -111,7 +111,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(SolutionDir)application\scene;$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(SolutionDir)general;$(SolutionDir)magosuya;$(SolutionDir)magosuya\engine;$(SolutionDir)magosuya\object\2d;$(SolutionDir)magosuya\object\3d;$(SolutionDir)magosuya\utility\audio;$(SolutionDir)magosuya\utility\camera;$(SolutionDir)magosuya\utility\input;$(SolutionDir)magosuya\utility\imgui;$(SolutionDir)magosuya\utility\particle;$(SolutionDir)magosuya\PSO</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)application\scene;$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(SolutionDir)general;$(SolutionDir)magosuya;$(SolutionDir)magosuya\engine;$(SolutionDir)magosuya\object\2d;$(SolutionDir)magosuya\object\3d;$(SolutionDir)magosuya\utility\audio;$(SolutionDir)magosuya\utility\camera;$(SolutionDir)magosuya\utility\input;$(SolutionDir)magosuya\utility\imgui;$(SolutionDir)magosuya\utility\particle;$(SolutionDir)magosuya\PSO;$(SolutionDir)magosuya\mesh;$(SolutionDir)magosuya\mesh\line</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -142,7 +142,7 @@ echo "MaoSuya Engine Builded"</Command>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)application\scene;$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(SolutionDir)general;$(SolutionDir)magosuya;$(SolutionDir)magosuya\engine;$(SolutionDir)magosuya\object\2d;$(SolutionDir)magosuya\object\3d;$(SolutionDir)magosuya\utility\audio;$(SolutionDir)magosuya\utility\camera;$(SolutionDir)magosuya\utility\input;$(SolutionDir)magosuya\utility\imgui;$(SolutionDir)magosuya\utility\particle;$(SolutionDir)magosuya\PSO</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)application\scene;$(SolutionDir)externals\DirectXTex;$(SolutionDir)externals\imgui;$(SolutionDir)general;$(SolutionDir)magosuya;$(SolutionDir)magosuya\engine;$(SolutionDir)magosuya\object\2d;$(SolutionDir)magosuya\object\3d;$(SolutionDir)magosuya\utility\audio;$(SolutionDir)magosuya\utility\camera;$(SolutionDir)magosuya\utility\input;$(SolutionDir)magosuya\utility\imgui;$(SolutionDir)magosuya\utility\particle;$(SolutionDir)magosuya\PSO;$(SolutionDir)magosuya\mesh;$(SolutionDir)magosuya\mesh\line</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -162,6 +162,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClCompile Include="application\scene\ClearScene.cpp" />
     <ClCompile Include="application\scene\GameoverScene.cpp" />
+    <ClCompile Include="magosuya\mesh\line\LineRenderer.cpp" />
     <ClCompile Include="magosuya\PSO\BlendModeManager.cpp" />
     <ClCompile Include="general\Logger.cpp" />
     <ClCompile Include="general\ChangeString.cpp" />
@@ -216,17 +217,24 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="magosuya\PSO\ShaderManager.cpp" />
     <ClCompile Include="magosuya\PSO\RootSignatureManager.cpp" />
     <ClCompile Include="magosuya\PSO\PSOManager.cpp" />
+    <ClCompile Include="magosuya\mesh\Mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shader\line.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">6.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Resources\shader\line.VS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">6.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Resources\shader\Object3d.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -276,6 +284,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClInclude Include="application\scene\Scene.h" />
     <ClInclude Include="application\scene\ClearScene.h" />
+    <ClInclude Include="magosuya\mesh\line\LineRenderData.h" />
+    <ClInclude Include="magosuya\mesh\line\LineRenderer.h" />
+    <ClInclude Include="magosuya\mesh\MaxMeshNum.h" />
     <ClInclude Include="magosuya\PSO\BlendModeManager.h" />
     <ClInclude Include="externals\externals.h" />
     <ClInclude Include="application\scene\GameoverScene.h" />
@@ -334,6 +345,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="magosuya\PSO\ShaderManager.h" />
     <ClInclude Include="magosuya\PSO\RootSignatureManager.h" />
     <ClInclude Include="magosuya\PSO\PSOManager.h" />
+    <ClInclude Include="magosuya\mesh\Mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\shader\line.hlsli" />

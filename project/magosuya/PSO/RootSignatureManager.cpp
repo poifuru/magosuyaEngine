@@ -6,6 +6,7 @@
 
 void RootSignatureManager::Initialize (DxCommon* dxCommon) {
 	device_ = dxCommon->GetDevice ();
+	commandList_ = dxCommon->GetCommandList ();
 
 	//===RootSigTypeごとの定義===///
 	//***standard3D***//
@@ -44,7 +45,7 @@ void RootSignatureManager::Initialize (DxCommon* dxCommon) {
 	standard3DStaticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;	//ありったけのmipmapを使う
 	standard3DStaticSamplers[0].ShaderRegister = 0;	//レジスタ番号0を使う
 	standard3DStaticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;		//PixelShaderで使う
-	//******//
+	//*******//
 
 	//***Particle***//
 	//DescriptorRange(VSで使うt0レジスタ用)
@@ -86,7 +87,26 @@ void RootSignatureManager::Initialize (DxCommon* dxCommon) {
 	particleStaticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;							//ありったけのmipmapを使う
 	particleStaticSamplers[0].ShaderRegister = 0;									//s0を指定
 	particleStaticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;		//PixelShaderで使う
-	//******//
+	//*******//
+
+	//***Line***//
+	//DescriptorRange(VSで使うt0レジスタ用)
+	lineDescriptorRanges[0].BaseShaderRegister = 0;	//0から始まる
+	lineDescriptorRanges[0].NumDescriptors = 1;		//数は1つ
+	lineDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;	//SRVを使う
+	lineDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	//Offsetを自動計算
+	
+	//CBV(b0)用のrootParametor
+	lineRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;			//CBVを使う
+	lineRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;		//Vertex Shaderを使う
+	lineRootParameters[0].Descriptor.ShaderRegister = 0;							//b0番を使う(CBV)
+	
+	//StructuedBuffer(VSのt0)用のDescriptorTable
+	lineRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;					//DescriptorTableを使う
+	lineRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;							//VertexShaderで使う
+	lineRootParameters[1].DescriptorTable.pDescriptorRanges = lineDescriptorRanges;						//t0(SRV)を指定
+	lineRootParameters[1].DescriptorTable.NumDescriptorRanges = _countof (lineDescriptorRanges);		//Tableで利用する数
+	//*******//
 }
 
 uint32_t RootSignatureManager::GetOrCreateRootSignature (RootSigType type) {
@@ -154,6 +174,11 @@ ID3D12RootSignature* RootSignatureManager::GetRootSignature (uint32_t rootSigID)
 	// 見つからなかったらassertでnullptrを返す
 	assert (false && "RootSignature ID not found in cache!");
 	return nullptr;
+}
+
+void RootSignatureManager::SetRootSignature (uint32_t rootSigID) {
+	auto rootSig = GetRootSignature (rootSigID);
+	commandList_->SetGraphicsRootSignature (rootSig);
 }
 
 uint64_t RootSignatureManager::ComputeHash (const D3D12_ROOT_SIGNATURE_DESC& desc) const {
@@ -244,6 +269,19 @@ D3D12_ROOT_SIGNATURE_DESC RootSignatureManager::CreateRootSigDesc (RootSigType t
 		//Sampler
 		desc.pStaticSamplers = particleStaticSamplers;
 		desc.NumStaticSamplers = _countof (particleStaticSamplers);
+		break;
+
+	case RootSigType::Line:
+		//RootSignature
+		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+		//RootParametor
+		desc.pParameters = lineRootParameters;
+		desc.NumParameters = _countof (lineRootParameters);
+
+		//Sampler
+		desc.pStaticSamplers = nullptr;
+		desc.NumStaticSamplers = 0;
 		break;
 	}
 

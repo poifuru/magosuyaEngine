@@ -32,12 +32,10 @@ private:	//内部関数
 
 private:
 	//Descriptorの場所
-	static inline uint32_t descriptorIndex_ = 100;
+	static inline uint32_t descriptorIndex_ = 50;
 
 	//PSOの設定
 	PSODescriptor desc_ = {};
-	ID3D12RootSignature* rootsignature_ = nullptr;
-	ID3D12PipelineState* pipelineState_ = nullptr;
 
 	//モデルデータ
 	std::unique_ptr<ModelData> data_ = nullptr;
@@ -55,7 +53,7 @@ private:
 	ParticleForGPU* instancingData_ = nullptr;
 	Material* materialData_ = nullptr;
 
-	//テクスチャハンドル
+	//ディスクリプタハンドル
 	D3D12_CPU_DESCRIPTOR_HANDLE particleSrvHandleCPU = {};
 	D3D12_GPU_DESCRIPTOR_HANDLE particleSrvHandleGPU = {};
 	D3D12_GPU_DESCRIPTOR_HANDLE handle_ = {};
@@ -86,7 +84,7 @@ private:
 	Matrix4x4 billBoardMatrix_ = {};
 
 	//ImGui用の変数
-	int currentBlendMode_ = static_cast<int>(BlendModeType::Opaque); // 現在のブレンドモードのインデックス
+	int currentBlendMode_ = static_cast<int>(BlendModeType::Additive); // 現在のブレンドモードのインデックス
 	const char* blendModeNames_[6] = { "Opaque", "Alpha", "Additive", "Subtract", "Multiply", "Screen" };
 	const int kBlendModeCount_ = 6;
 

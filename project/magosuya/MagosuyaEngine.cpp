@@ -5,6 +5,7 @@
 #include "ImGuiManager.h"
 #include "ModelManager.h"
 #include "PSOManager.h"
+#include "LineRenderer.h"
 
 MagosuyaEngine::~MagosuyaEngine () {
 	dxCommon_->Finalize ();
@@ -25,6 +26,8 @@ void MagosuyaEngine::Initialize () {
 	modelManager_->Initialize (dxCommon_, texManager_);
 	psoManager_ = PSOManager::GetInstance ();
 	psoManager_->Initialize (dxCommon_);
+	lineRenderer_ = LineRenderer::GetInstance ();
+	lineRenderer_->Initialize (dxCommon_);
 }
 
 void MagosuyaEngine::BeginFrame () {

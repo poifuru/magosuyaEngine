@@ -79,8 +79,7 @@ void Particle::Initialize () {
 	desc_.InputLayoutID = InputLayoutType::Particle;
 	desc_.BlendMode = BlendModeType::Additive;
 	desc_.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;	//Depthの書き込みを行わない
-	rootsignature_ = RootSignatureManager::GetInstance ()->GetRootSignature (desc_.RootSignatureID);
-	pipelineState_ = PSOManager::GetInstance ()->GetOrCreratePSO (desc_);
+	//desc_.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 
 	//particle用SRVを作成する
 	D3D12_SHADER_RESOURCE_VIEW_DESC particleSrvDesc = {};
@@ -163,10 +162,8 @@ void Particle::Update (Matrix4x4* cameraMatrix, Matrix4x4* vp) {
 }
 
 void Particle::Draw () {
-	commandList_->SetGraphicsRootSignature (rootsignature_);
-	assert (rootsignature_ != nullptr);
-	commandList_->SetPipelineState (pipelineState_);
-	assert (pipelineState_ != nullptr);
+	RootSignatureManager::GetInstance ()->SetRootSignature (desc_.RootSignatureID);
+	PSOManager::GetInstance ()->SetPSO (desc_);
 	commandList_->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandList_->IASetVertexBuffers (0, 1, &data_->vbView);   //VBVを設定
 	commandList_->IASetIndexBuffer (&data_->ibView);	        //IBVを設定
@@ -182,9 +179,6 @@ void Particle::ImGui () {
 	ImGui::Begin ("Particle");
 	if (ImGui::Combo ("BlendMode", &currentBlendMode_, blendModeNames_, kBlendModeCount_)) {
 		desc_.BlendMode = static_cast<BlendModeType>(currentBlendMode_);
-		pipelineState_ = PSOManager::GetInstance ()->GetOrCreratePSO (desc_);
-		commandList_->SetPipelineState (pipelineState_);
-		assert (pipelineState_ != nullptr);
 	}
 
 	if (ImGui::Button ("spawn")) {

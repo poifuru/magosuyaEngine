@@ -36,8 +36,6 @@ void ModelRenderer::Initialize () {
 	desc_.PS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/Object3d.PS.hlsl", L"ps_6_0");
 	desc_.InputLayoutID = InputLayoutType::Standard3D;
 	desc_.BlendMode = BlendModeType::Opaque;
-	rootsignature_ = RootSignatureManager::GetInstance ()->GetRootSignature (desc_.RootSignatureID);
-	pipelineState_ = PSOManager::GetInstance ()->GetOrCreratePSO (desc_);
 }
 
 void ModelRenderer::Update (Matrix4x4 world, Matrix4x4 vp, Transform uvTransform) {
@@ -56,10 +54,8 @@ void ModelRenderer::Draw (D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
 		// モデルデータが解放済みなら描画をスキップ
 		return;
 	}
-	commandList_->SetGraphicsRootSignature (rootsignature_);
-	assert (rootsignature_ != nullptr);
-	commandList_->SetPipelineState (pipelineState_);
-	assert (pipelineState_ != nullptr);
+	RootSignatureManager::GetInstance ()->SetRootSignature (desc_.RootSignatureID);
+	PSOManager::GetInstance ()->SetPSO (desc_);
 	//どんな形状で描画するのか
 	commandList_->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	//頂点バッファをセットする
