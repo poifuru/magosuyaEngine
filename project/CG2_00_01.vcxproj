@@ -219,6 +219,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="magosuya\PSO\RootSignatureManager.cpp" />
     <ClCompile Include="magosuya\PSO\PSOManager.cpp" />
     <ClCompile Include="magosuya\mesh\Mesh.cpp" />
+    <ClCompile Include="magosuya\utility\particle\MeshParticle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shader\Cube.PS.hlsl">
@@ -237,7 +238,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.0</ShaderModel>
     </FxCompile>
-    <FxCompile Include="Resources\shader\line.PS.hlsl">
+    <FxCompile Include="Resources\shader\Line.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
@@ -248,7 +249,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Resources\shader\line.VS.hlsl">
+    <FxCompile Include="Resources\shader\Line.VS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>
@@ -371,9 +372,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="magosuya\PSO\RootSignatureManager.h" />
     <ClInclude Include="magosuya\PSO\PSOManager.h" />
     <ClInclude Include="magosuya\mesh\Mesh.h" />
+    <ClInclude Include="magosuya\utility\particle\MeshParticle.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\shader\Mesh.hlsli" />
+    <None Include="Resources\shader\Cube.hlsli" />
+    <None Include="Resources\shader\Line.hlsli" />
     <None Include="Resources\shader\Object3d.hlsli" />
     <None Include="Resources\shader\Particle.hlsli" />
   </ItemGroup>

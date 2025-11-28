@@ -25,7 +25,7 @@ public:
 	void Draw ();
 
 private:	//内部関数
-	void ResetCurrentLineCount () { currentCubeCount_ = 0; }
+	void ResetCurrentCubeCount () { currentCubeCount_ = 0; }
 
 private:
 	//コンストラクタを禁止
@@ -50,8 +50,6 @@ private:
 	std::unique_ptr<CubeVertexData> cubeBuffer_ = nullptr;
 	CubeVertexPositionColor* vertexData_ = nullptr;
 
-	ComPtr<ID3D12Resource> indexBuffer;
-	D3D12_INDEX_BUFFER_VIEW ibView{};
 	uint32_t* indexData_ = nullptr;
 
 	ComPtr<ID3D12Resource> instancingBuffer_ = nullptr;

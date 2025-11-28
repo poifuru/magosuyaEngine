@@ -9,8 +9,8 @@
     </FxCompile>
     <FxCompile Include="Resources\shader\Particle.VS.hlsl" />
     <FxCompile Include="Resources\shader\Particle.PS.hlsl" />
-    <FxCompile Include="Resources\shader\line.VS.hlsl" />
-    <FxCompile Include="Resources\shader\line.PS.hlsl" />
+    <FxCompile Include="Resources\shader\Line.VS.hlsl" />
+    <FxCompile Include="Resources\shader\Line.PS.hlsl" />
     <FxCompile Include="Resources\shader\Cube.PS.hlsl" />
     <FxCompile Include="Resources\shader\Cube.VS.hlsl" />
   </ItemGroup>
@@ -101,6 +101,7 @@
     <ClCompile Include="magosuya\mesh\line\LineRenderer.cpp" />
     <ClCompile Include="magosuya\mesh\Mesh.cpp" />
     <ClCompile Include="magosuya\mesh\cube\CubeRenderer.cpp" />
+    <ClCompile Include="magosuya\utility\particle\MeshParticle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="general\ChangeString.h">
@@ -204,6 +205,7 @@
     <ClInclude Include="magosuya\mesh\MaxMeshNum.h" />
     <ClInclude Include="magosuya\mesh\cube\CubeRenderData.h" />
     <ClInclude Include="magosuya\mesh\cube\CubeRenderer.h" />
+    <ClInclude Include="magosuya\utility\particle\MeshParticle.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ソースファイル">
@@ -290,7 +292,8 @@
       <Filter>シェーダー</Filter>
     </None>
     <None Include="Resources\shader\Particle.hlsli" />
-    <None Include="Resources\shader\Mesh.hlsli" />
+    <None Include="Resources\shader\Line.hlsli" />
+    <None Include="Resources\shader\Cube.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

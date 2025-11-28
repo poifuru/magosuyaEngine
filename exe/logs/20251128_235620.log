@@ -1,0 +1,4 @@
+Begin CompileShader, path:Resources/shader/Cube.PS.hlsl, profile:ps_6_0
+
+Compile Succeeded, path:Resources/shader/Cube.PS.hlsl, profile:ps_6_0
+

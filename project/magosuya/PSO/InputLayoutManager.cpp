@@ -89,7 +89,7 @@ void InputLayoutManager::Initialize () {
 	data.elements.clear ();
 	//******//
 
-	//***Line***//
+	//***LineMesh***//
 	//POSITION
 	data.elements.push_back ({
 		"POSITION",
@@ -116,7 +116,39 @@ void InputLayoutManager::Initialize () {
 	data.desc.NumElements = (UINT)data.elements.size ();
 
 	//キャッシュに登録
-	m_LayoutCache[InputLayoutType::Mesh] = std::move (data);
+	m_LayoutCache[InputLayoutType::LineMesh] = std::move (data);
+	//新しい設定を登録するためにdataをclear
+	data.elements.clear ();
+	//******//
+
+	//***LineMesh***//
+	//POSITION
+	data.elements.push_back ({
+		"POSITION",
+		0,
+		DXGI_FORMAT_R32G32B32_FLOAT,
+		0,
+		D3D12_APPEND_ALIGNED_ELEMENT,
+		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+		0
+							 });
+	//COLOR
+	data.elements.push_back ({
+		"COLOR",
+		0,
+		DXGI_FORMAT_R32G32B32A32_FLOAT,
+		0,
+		D3D12_APPEND_ALIGNED_ELEMENT,
+		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+		0
+							 });
+
+	//Descの作成
+	data.desc.pInputElementDescs = data.elements.data ();
+	data.desc.NumElements = (UINT)data.elements.size ();
+
+	//キャッシュに登録
+	m_LayoutCache[InputLayoutType::CubeMesh] = std::move (data);
 	//新しい設定を登録するためにdataをclear
 	data.elements.clear ();
 	//******//

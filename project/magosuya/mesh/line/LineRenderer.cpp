@@ -70,10 +70,10 @@ void LineRenderer::Initialize (DxCommon* dxCommon) {
 	device_->CreateShaderResourceView (lineBuffer_->vertexBuffer.Get (), &vertexSrvDesc, vertexSrvHandleCPU_);
 
 	//PSOの設定
-	desc_.RootSignatureID = RootSignatureManager::GetInstance ()->GetOrCreateRootSignature (RootSigType::Mesh);
-	desc_.VS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/line.VS.hlsl", L"vs_6_0");
-	desc_.PS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/line.PS.hlsl", L"ps_6_0");
-	desc_.InputLayoutID = InputLayoutType::Mesh;
+	desc_.RootSignatureID = RootSignatureManager::GetInstance ()->GetOrCreateRootSignature (RootSigType::LineMesh);
+	desc_.VS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/Line.VS.hlsl", L"vs_6_0");
+	desc_.PS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/Line.PS.hlsl", L"ps_6_0");
+	desc_.InputLayoutID = InputLayoutType::LineMesh;
 	desc_.BlendMode = BlendModeType::Opaque;
 	desc_.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;	//線を描画
 	PSOManager::GetInstance ()->GetOrCreratePSO (desc_);

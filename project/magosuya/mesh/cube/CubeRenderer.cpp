@@ -32,9 +32,9 @@ void CubeRenderer::Initialize (DxCommon* dxCommon) {
 	cubeBuffer_->ibView.Format = DXGI_FORMAT_R32_UINT;
 
 	//行列バッファー作成とマッピング(頂点2つにつき1つ)
-	instancingBuffer_ = dxCommon_->CreateBufferResource (sizeof (CubeForGPU) * MaxMeshNum::Line);
+	instancingBuffer_ = dxCommon_->CreateBufferResource (sizeof (CubeForGPU) * MaxMeshNum::Cube);
 	instancingBuffer_->Map (0, nullptr, reinterpret_cast<void**>(&instancingData_));
-	for (uint32_t i = 0; i < MaxMeshNum::Line; ++i) {
+	for (uint32_t i = 0; i < MaxMeshNum::Cube; ++i) {
 		instancingData_[i].World = MakeIdentity4x4 ();
 		instancingData_[i].WVP = MakeIdentity4x4 ();
 	}
@@ -64,10 +64,10 @@ void CubeRenderer::Initialize (DxCommon* dxCommon) {
 	vertexSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	vertexSrvDesc.Buffer.FirstElement = 0;
 	vertexSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	vertexSrvDesc.Buffer.NumElements = VertexNum::Cube * MaxMeshNum::Line; // 全頂点数
+	vertexSrvDesc.Buffer.NumElements = VertexNum::Cube * MaxMeshNum::Cube; // 全頂点数
 	vertexSrvDesc.Buffer.StructureByteStride = sizeof (CubeVertexPositionColor); // 1頂点のサイズ
 
-	// LineForGPUのSRV(t0)の後に、頂点バッファのSRV(t1)をセット
+	// CubeForGPUのSRV(t0)の後に、頂点バッファのSRV(t1)をセット
 	// descriptorIndex_ は t0 として使うでやんす
 	const uint32_t vertexDescriptorIndex_ = descriptorIndex_ + 1;
 
@@ -80,18 +80,18 @@ void CubeRenderer::Initialize (DxCommon* dxCommon) {
 	device_->CreateShaderResourceView (cubeBuffer_->vertexBuffer.Get (), &vertexSrvDesc, vertexSrvHandleCPU_);
 
 	//PSOの設定
-	desc_.RootSignatureID = RootSignatureManager::GetInstance ()->GetOrCreateRootSignature (RootSigType::Mesh);
+	desc_.RootSignatureID = RootSignatureManager::GetInstance ()->GetOrCreateRootSignature (RootSigType::CubeMesh);
 	desc_.VS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/Cube.VS.hlsl", L"vs_6_0");
 	desc_.PS_ID = ShaderManager::GetInstance ()->CompileAndCasheShader (L"Resources/shader/Cube.PS.hlsl", L"ps_6_0");
-	desc_.InputLayoutID = InputLayoutType::Mesh;
+	desc_.InputLayoutID = InputLayoutType::CubeMesh;
 	desc_.BlendMode = BlendModeType::Opaque;
 	desc_.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;	//三角形で描画
 	PSOManager::GetInstance ()->GetOrCreratePSO (desc_);
 }
 
 void CubeRenderer::UpdateVertexData (const CubeData* data) {
-	//currentLineNumが最大数を超えていないか
-	if (currentCubeCount_ >= MaxMeshNum::Line) {
+	//currentCubeNumが最大数を超えていないか
+	if (currentCubeCount_ >= MaxMeshNum::Cube) {
 		//超えてたら早期リターン
 		return;
 	}
@@ -101,28 +101,28 @@ void CubeRenderer::UpdateVertexData (const CubeData* data) {
 
 #pragma region 頂点の情報をコピー
 	//オフセットを使ってライン描画に必要な分だけバッファーにコピー
-	vertexData_[offset + 0].position = { data->center.x - data->size, data->center.y - data->size, data->center.z - data->size };
+	vertexData_[offset + 0].position = { data->transform.translate.x - data->size, data->transform.translate.y - data->size, data->transform.translate.z - data->size };
 	vertexData_[offset + 0].color = data->color[0];
 
-	vertexData_[offset + 1].position = { data->center.x - data->size, data->center.y - data->size, data->center.z + data->size };
+	vertexData_[offset + 1].position = { data->transform.translate.x - data->size, data->transform.translate.y - data->size, data->transform.translate.z + data->size };
 	vertexData_[offset + 1].color = data->color[1];
 
-	vertexData_[offset + 2].position = { data->center.x + data->size, data->center.y - data->size, data->center.z + data->size };
+	vertexData_[offset + 2].position = { data->transform.translate.x + data->size, data->transform.translate.y - data->size, data->transform.translate.z + data->size };
 	vertexData_[offset + 2].color = data->color[2];
 
-	vertexData_[offset + 3].position = { data->center.x + data->size, data->center.y - data->size, data->center.z - data->size };
+	vertexData_[offset + 3].position = { data->transform.translate.x + data->size, data->transform.translate.y - data->size, data->transform.translate.z - data->size };
 	vertexData_[offset + 3].color = data->color[3];
 
-	vertexData_[offset + 4].position = { data->center.x - data->size, data->center.y + data->size, data->center.z - data->size };
+	vertexData_[offset + 4].position = { data->transform.translate.x - data->size, data->transform.translate.y + data->size, data->transform.translate.z - data->size };
 	vertexData_[offset + 4].color = data->color[4];
 
-	vertexData_[offset + 5].position = { data->center.x - data->size, data->center.y + data->size, data->center.z + data->size };
+	vertexData_[offset + 5].position = { data->transform.translate.x - data->size, data->transform.translate.y + data->size, data->transform.translate.z + data->size };
 	vertexData_[offset + 5].color = data->color[5];
 
-	vertexData_[offset + 6].position = { data->center.x + data->size, data->center.y + data->size, data->center.z + data->size };
+	vertexData_[offset + 6].position = { data->transform.translate.x + data->size, data->transform.translate.y + data->size, data->transform.translate.z + data->size };
 	vertexData_[offset + 6].color = data->color[6];
 
-	vertexData_[offset + 7].position = { data->center.x + data->size, data->center.y + data->size, data->center.z - data->size };
+	vertexData_[offset + 7].position = { data->transform.translate.x + data->size, data->transform.translate.y + data->size, data->transform.translate.z - data->size };
 	vertexData_[offset + 7].color = data->color[7];
 #pragma endregion
 
@@ -136,54 +136,54 @@ void CubeRenderer::UpdateVertexData (const CubeData* data) {
 	indexData_[indexOffset + 1] = 3;
 	indexData_[indexOffset + 2] = 1;
 
-	indexData_[indexOffset + 3] = 7;
-	indexData_[indexOffset + 4] = 7;
-	indexData_[indexOffset + 5] = 7;
+	indexData_[indexOffset + 3] = 2;
+	indexData_[indexOffset + 4] = 1;
+	indexData_[indexOffset + 5] = 3;
 
 	//上面(4, 5, 6, 7)
-	indexData_[indexOffset + 6] = 7;
+	indexData_[indexOffset + 6] = 4;
 	indexData_[indexOffset + 7] = 7;
-	indexData_[indexOffset + 8] = 7;
+	indexData_[indexOffset + 8] = 5;
 
-	indexData_[indexOffset + 9] = 7;
-	indexData_[indexOffset + 10] = 7;
+	indexData_[indexOffset + 9] = 6;
+	indexData_[indexOffset + 10] = 5;
 	indexData_[indexOffset + 11] = 7;
 
 	//側面1(0, 4, 7 ,3)
-	indexData_[indexOffset + 12] = 7;
-	indexData_[indexOffset + 13] = 7;
-	indexData_[indexOffset + 14] = 7;
+	indexData_[indexOffset + 12] = 0;
+	indexData_[indexOffset + 13] = 3;
+	indexData_[indexOffset + 14] = 4;
 
 	indexData_[indexOffset + 15] = 7;
-	indexData_[indexOffset + 16] = 7;
-	indexData_[indexOffset + 17] = 7;
+	indexData_[indexOffset + 16] = 4;
+	indexData_[indexOffset + 17] = 3;
 
 	//側面2(1, 5, 4, 0)
-	indexData_[indexOffset + 18] = 7;
-	indexData_[indexOffset + 19] = 7;
-	indexData_[indexOffset + 20] = 7;
+	indexData_[indexOffset + 18] = 1;
+	indexData_[indexOffset + 19] = 0;
+	indexData_[indexOffset + 20] = 5;
 
-	indexData_[indexOffset + 21] = 7;
-	indexData_[indexOffset + 22] = 7;
-	indexData_[indexOffset + 23] = 7;
+	indexData_[indexOffset + 21] = 4;
+	indexData_[indexOffset + 22] = 5;
+	indexData_[indexOffset + 23] = 0;
 
 	//側面3(2, 6, 5, 1)
-	indexData_[indexOffset + 24] = 7;
-	indexData_[indexOffset + 25] = 7;
-	indexData_[indexOffset + 26] = 7;
+	indexData_[indexOffset + 24] = 2;
+	indexData_[indexOffset + 25] = 1;
+	indexData_[indexOffset + 26] = 6;
 
-	indexData_[indexOffset + 27] = 7;
-	indexData_[indexOffset + 28] = 7;
-	indexData_[indexOffset + 29] = 7;
+	indexData_[indexOffset + 27] = 5;
+	indexData_[indexOffset + 28] = 6;
+	indexData_[indexOffset + 29] = 1;
 
 	//側面4(3, 7, 6, 2)
-	indexData_[indexOffset + 30] = 7;
-	indexData_[indexOffset + 31] = 7;
+	indexData_[indexOffset + 30] = 3;
+	indexData_[indexOffset + 31] = 2;
 	indexData_[indexOffset + 32] = 7;
 
-	indexData_[indexOffset + 33] = 7;
+	indexData_[indexOffset + 33] = 6;
 	indexData_[indexOffset + 34] = 7;
-	indexData_[indexOffset + 35] = 7;
+	indexData_[indexOffset + 35] = 2;
 #pragma endregion
 
 	//線の数をインクリメント
@@ -208,9 +208,8 @@ void CubeRenderer::Draw () {
 	//RootSignatureとPSOをセット
 	RootSignatureManager::GetInstance ()->SetRootSignature (desc_.RootSignatureID);
 	PSOManager::GetInstance ()->SetPSO (desc_);
-	commandList_->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);		//三角形で描画									//VBVを設定
+	commandList_->IASetPrimitiveTopology (D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);		//三角形で描画	
 	commandList_->IASetIndexBuffer (&cubeBuffer_->ibView);		//IBVを設定
-	commandList_->SetGraphicsRootConstantBufferView (0, instancingBuffer_->GetGPUVirtualAddress ());	//CBVをセット
 	commandList_->SetGraphicsRootDescriptorTable (1, cubeSrvHandleGPU_);
 
 	if (currentCubeCount_ > 0) {
@@ -219,5 +218,5 @@ void CubeRenderer::Draw () {
 	}
 
 	//次フレームのためにカウントをリセット
-	ResetCurrentLineCount ();
+	ResetCurrentCubeCount ();
 }

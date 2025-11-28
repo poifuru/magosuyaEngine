@@ -25,6 +25,7 @@
 #include "DebugCamera.h"
 #include "Particle.h"
 #include "Mesh.h"
+#include "MeshParticle.h"
 
 //サウンドデータの読み込み関数
 SoundData SoundLoadWave (const char* filename) {
@@ -171,8 +172,7 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	skydome->SetModelData ("skydome");
 	skydome->Initialize ();
 
-	std::unique_ptr<Particle> particle = std::make_unique<Particle> (DxCommon::GetInstance ());
-	particle->SetTexHandle (TextureManager::GetInstance ()->GetTextureHandle ("circle"));
+	std::unique_ptr<MeshParticle> particle = std::make_unique<MeshParticle> ();
 	particle->Initialize ();
 
 	//カメラ用
@@ -187,27 +187,13 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	debugCamera->Initialize ();
 	bool debugMode = false;
 
-	LineVertexData lineData[2] = {};
-	lineData[0].position = { -1.0f, 0.0f, 0.0f };
-	lineData[0].color = { 1.0f, 0.0f, 0.0f, 1.0f };
-	lineData[1].position = { 1.0f, 0.0f, 0.0f };
-	lineData[1].color = { 0.0f, 0.0f, 1.0f, 1.0f };
-
-	LineVertexData lineData2[2] = {};
-	lineData2[0].position = { 0.0f, -1.0f, 0.0f };
-	lineData2[0].color = { 1.0f, 1.0f, 0.0f, 1.0f };
-	lineData2[1].position = { 0.0f, 1.0f, 0.0f };
-	lineData2[1].color = { 0.0f, 1.0f, 1.0f, 1.0f };
-
-	LineVertexData lineData3[2] = {};
-	lineData3[0].position = { 0.0f, 0.0f, -1.0f };
-	lineData3[0].color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	lineData3[1].position = { 0.0f, 0.0f, 1.0f };
-	lineData3[1].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-
 	CubeData cube = {};
-	cube.center = { 0.0f, 0.0f, 0.0f };
-	cube.size = 3.0f;
+	cube.transform = { 
+		{1.0f, 1.0f, 1.0f},
+		{0.0f, 0.0f, 0.0f},
+		{0.0f, 0.0f, 0.0f},
+	};
+	cube.size = 1.0f;
 	cube.color[0] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	cube.color[1] = { 1.0f, 0.0f, 0.0f, 1.0f };
 	cube.color[2] = { 0.0f, 1.0f, 0.0f, 1.0f };
@@ -228,7 +214,6 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 		//フレーム開始
 		magosuya->BeginFrame ();
-#ifdef USEIMGUI
 		//FPS表示
 		ImGui::Begin ("Debug Window");
 		ImGui::Text ("FPS: %.1f", ImGui::GetIO ().Framerate);
@@ -275,7 +260,6 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		}
 		ImGui::End ();
 		particle->ImGui ();
-#endif
 
 		//実際のキー入力処理はここ！
 		// 押した瞬間だけトグル
@@ -305,7 +289,7 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		Matrix4x4 vp = Multiply (viewMatrix, projectionMatrix);
 
 		skydome->Update (&vp);
-		particle->Update (&cameraMatrix, &vp);
+		particle->Update (&vp);
 
 		//光源のdirectionの正規化
 		directionalLightData->direction = Normalize (directionalLightData->direction);
@@ -324,10 +308,7 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		DxCommon::GetInstance ()->GetCommandList ()->SetGraphicsRootConstantBufferView (3, dierctionalLightResource->GetGPUVirtualAddress ());
 		//===描画===//
 		skydome->Draw ();
-		//particle->Draw ();
-		Mesh::DrawLine (lineData, vp);
-		Mesh::DrawLine (lineData2, vp);
-		Mesh::DrawLine (lineData3, vp);
+		particle->Draw ();
 		//Mesh::DrawCube (&cube, vp);
 
 		//フレーム終了
