@@ -21,7 +21,7 @@ public:
 
 	void Initialize (DxCommon* dxCommon);
 	void UpdateVertexData (const LineVertexData* data);
-	void TransferData (const LineForGPU* data);
+	void TransferData (const LineForGPU& data);
 	void Draw ();
 
 private:	//内部関数
@@ -54,8 +54,10 @@ private:
 	LineForGPU* instancingData_ = nullptr;
 
 	//ディスクリプタハンドル
-	D3D12_CPU_DESCRIPTOR_HANDLE lineSrvHandleCPU = {};
-	D3D12_GPU_DESCRIPTOR_HANDLE lineSrvHandleGPU = {};
+	D3D12_CPU_DESCRIPTOR_HANDLE lineSrvHandleCPU_ = {};
+	D3D12_GPU_DESCRIPTOR_HANDLE lineSrvHandleGPU_ = {};
+	D3D12_CPU_DESCRIPTOR_HANDLE vertexSrvHandleCPU_ = {};
+	D3D12_GPU_DESCRIPTOR_HANDLE vertexSrvHandleGPU_ = {};
 
 	//ポインタを借りる
 	DxCommon* dxCommon_ = nullptr;

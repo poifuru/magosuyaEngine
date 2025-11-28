@@ -116,7 +116,7 @@ void InputLayoutManager::Initialize () {
 	data.desc.NumElements = (UINT)data.elements.size ();
 
 	//キャッシュに登録
-	m_LayoutCache[InputLayoutType::Line] = std::move (data);
+	m_LayoutCache[InputLayoutType::Mesh] = std::move (data);
 	//新しい設定を登録するためにdataをclear
 	data.elements.clear ();
 	//******//

@@ -12,7 +12,7 @@ class DxCommon;
 enum class RootSigType : uint32_t {
 	Standard3D,			// あなたが定義したCBV x 3 + DescriptorTable x 1 の構成
 	Particle,			//パーティクル用
-	Line,				//ライン描画用
+	Mesh,				//メッシュ描画用
 	PostProcess,		// ポストエフェクト用（SRV中心）(未実装)
 	UI,					// UI描画用（2D行列とテクスチャ）(未実装)
 	Count
@@ -63,7 +63,7 @@ private:	// メンバ変数
 	D3D12_ROOT_PARAMETER particleRootParameters[3] = {};
 	D3D12_STATIC_SAMPLER_DESC particleStaticSamplers[1] = {};
 	//Line
-	D3D12_DESCRIPTOR_RANGE lineDescriptorRanges[1] = {};
+	D3D12_DESCRIPTOR_RANGE lineDescriptorRanges[2] = {};
 	D3D12_ROOT_PARAMETER lineRootParameters[2] = {};
 	//***ルートシグネチャの種類を増やしたいときに適宜追加***//
 

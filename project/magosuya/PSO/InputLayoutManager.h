@@ -8,7 +8,7 @@
 enum class InputLayoutType : uint32_t {
     Standard3D, //POSITION, TEXCOORD, NORMALを持つレイアウト
     Particle,   //Particle用
-    Line,       //Line描画用
+    Mesh,       //Mesh描画用
     MeshShader, //将来のメッシュシェーダー用(InputLayout不要)
     
     Count           // 設定の個数

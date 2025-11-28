@@ -72,7 +72,7 @@ void DebugCamera::Updata(HWND hwnd, HRESULT hr, InputManager* inputManager) {
 	//マウスで視点移動
 	//回転処理(左クリックしながらドラッグ)
 	// カーソル非表示
-	if (inputManager->GetRawInput ()->TriggerMouse(MouseButton::LEFT)) {
+	if (inputManager->GetRawInput ()->TriggerMouse(MouseButton::MIDDLE)) {
 		ShowCursor(FALSE);
 
 		// クライアント領域の矩形を取得
@@ -95,13 +95,13 @@ void DebugCamera::Updata(HWND hwnd, HRESULT hr, InputManager* inputManager) {
 		// カーソルをウィンドウのクライアント領域に制限するでやんす！
 		ClipCursor (&clientRect);
 	}
-	if (inputManager->GetRawInput ()->ReleaseMouse (MouseButton::LEFT)) {
+	if (inputManager->GetRawInput ()->ReleaseMouse (MouseButton::MIDDLE)) {
 		// カーソルの制限を解除（NULLを指定）
 		ClipCursor (NULL);
 		ShowCursor (TRUE);
 	}
 
-	if (inputManager->GetRawInput ()->PushMouse (MouseButton::LEFT)) {
+	if (inputManager->GetRawInput ()->PushMouse (MouseButton::MIDDLE)) {
 		transform_.rotate.y += inputManager->GetRawInput ()->GetMouseDeltaX() * sensitivity_;
 		transform_.rotate.x += inputManager->GetRawInput ()->GetMouseDeltaY () * sensitivity_;
 

@@ -195,9 +195,27 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 	LineVertexData lineData2[2] = {};
 	lineData2[0].position = { 0.0f, -1.0f, 0.0f };
-	lineData2[0].color = { 1.0f, 0.0f, 0.0f, 1.0f };
+	lineData2[0].color = { 1.0f, 1.0f, 0.0f, 1.0f };
 	lineData2[1].position = { 0.0f, 1.0f, 0.0f };
-	lineData2[1].color = { 0.0f, 0.0f, 1.0f, 1.0f };
+	lineData2[1].color = { 0.0f, 1.0f, 1.0f, 1.0f };
+
+	LineVertexData lineData3[2] = {};
+	lineData3[0].position = { 0.0f, 0.0f, -1.0f };
+	lineData3[0].color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	lineData3[1].position = { 0.0f, 0.0f, 1.0f };
+	lineData3[1].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+	CubeData cube = {};
+	cube.center = { 0.0f, 0.0f, 0.0f };
+	cube.size = 3.0f;
+	cube.color[0] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	cube.color[1] = { 1.0f, 0.0f, 0.0f, 1.0f };
+	cube.color[2] = { 0.0f, 1.0f, 0.0f, 1.0f };
+	cube.color[3] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	cube.color[4] = { 1.0f, 1.0f, 0.0f, 1.0f };
+	cube.color[5] = { 0.0f, 1.0f, 1.0f, 1.0f };
+	cube.color[6] = { 1.0f, 0.0f, 1.0f, 1.0f };
+	cube.color[7] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	/*********************************/
 
 	/*メインループ！！！！！！！！！*/
@@ -277,7 +295,7 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		viewMatrix = Inverse (cameraMatrix);
 		projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (WindowsAPI::GetInstance ()->kClientWidth) / float (WindowsAPI::GetInstance ()->kClientHeight), 0.1f, 1000.0f);
 
-		if (debugMode && !debugCamera->GetTatchImGui ()) {
+		if (debugMode) {
 			debugCamera->Updata (WindowsAPI::GetInstance ()->GetHwnd (), hr, InputManager::GetInstance ());
 			viewMatrix = Inverse (debugCamera->GetWorldMatrix());
 			projectionMatrix = MakePerspectiveFOVMatrix (0.45f, float (WindowsAPI::GetInstance ()->kClientWidth) / float (WindowsAPI::GetInstance ()->kClientHeight), 0.1f, 1000.0f);
@@ -309,6 +327,8 @@ int WINAPI WinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		//particle->Draw ();
 		Mesh::DrawLine (lineData, vp);
 		Mesh::DrawLine (lineData2, vp);
+		Mesh::DrawLine (lineData3, vp);
+		//Mesh::DrawCube (&cube, vp);
 
 		//フレーム終了
 		magosuya->EndFrame ();

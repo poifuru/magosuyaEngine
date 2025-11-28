@@ -89,12 +89,19 @@ void RootSignatureManager::Initialize (DxCommon* dxCommon) {
 	particleStaticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;		//PixelShaderで使う
 	//*******//
 
-	//***Line***//
-	//DescriptorRange(VSで使うt0レジスタ用)
+	//***Mesh***//
+	//DescriptorRange
+	//行列データのインスタンシング用(VSで使うt0レジスタ用)
 	lineDescriptorRanges[0].BaseShaderRegister = 0;	//0から始まる
 	lineDescriptorRanges[0].NumDescriptors = 1;		//数は1つ
 	lineDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;	//SRVを使う
 	lineDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	//Offsetを自動計算
+
+	//頂点データのインスタンシング用(VSで使うt1レジスタ用)
+	lineDescriptorRanges[1].BaseShaderRegister = 1;	// t1
+	lineDescriptorRanges[1].NumDescriptors = 1;
+	lineDescriptorRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	lineDescriptorRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	
 	//CBV(b0)用のrootParametor
 	lineRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;			//CBVを使う
@@ -271,7 +278,7 @@ D3D12_ROOT_SIGNATURE_DESC RootSignatureManager::CreateRootSigDesc (RootSigType t
 		desc.NumStaticSamplers = _countof (particleStaticSamplers);
 		break;
 
-	case RootSigType::Line:
+	case RootSigType::Mesh:
 		//RootSignature
 		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
