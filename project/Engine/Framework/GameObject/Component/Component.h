@@ -30,6 +30,9 @@ public:
 	GameObject* GetGameObject() const { return gameObject_; }
 	void SetIsDebugMode(bool flag) { isDebugMode_ = flag; }
 
+	// TransformAddressを取得
+	D3D12_GPU_VIRTUAL_ADDRESS GetTransformAddress() const;
+
 protected:
 	GameObject* gameObject_ = nullptr;	// 親オブジェクトへのポインタ
 	bool isDebugMode_ = true;			// デバッグモード中であるか

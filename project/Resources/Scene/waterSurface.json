@@ -118,7 +118,7 @@
                             ]
                         }
                     },
-                    "modelPath": "Resources/WaterSurface/waterSurface.obj",
+                    "modelPath": "Resources/plane/plane.obj",
                     "nearFadeDistance": 30.0,
                     "numActiveWaves": 2,
                     "texPath": "Resources/WaterSurface/waterSurface_normal (2).png",

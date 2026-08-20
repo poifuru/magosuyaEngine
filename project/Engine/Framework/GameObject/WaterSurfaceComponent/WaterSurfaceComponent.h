@@ -1,8 +1,10 @@
 #pragma once
-#include "MeshRendererComponent.h"
+#include "Component.h"
 #include "ConstantBuffer.h"
+#include "MeshData.h"
+#include "Material.h"
 
-class WaterSurfaceComponent : public MeshRendererComponent {
+class WaterSurfaceComponent : public Component {
 public:
 	void Initialize() override;
 
@@ -15,15 +17,25 @@ public:
 
 	const char* GetName() const override { return "Water Surface"; }
 
+	MyEngine::Rendering::StaticMesh* GetMesh() const { return mesh_.get(); }
+
+	MyEngine::Rendering::Material* GetMaterial() const { return material_.get(); }
+
+	void SetTexture(const std::string& textureName);
+
 	// 水面のワールド範囲 (Min) を取得
 	Vector2 GetWaterMin() const;
 
 	// 水面のサイズ (Size) を取得
 	Vector2 GetWaterSize() const;
 
+	// カスタムバッファを取得
 	D3D12_GPU_VIRTUAL_ADDRESS GetCustomBufferAddress() const {
 		return waterSurfaceBuffer_.GetGPUVirtualAddress();
 	}
+
+private:
+	void GenerateMesh();
 
 private:
 	// 波のパラメータ
@@ -48,6 +60,19 @@ private:
 		Vector2 waterMin; 
 		Vector2 waterSize;
 	};
+
+private:
+	// メッシュとマテリアルを直接持たせる
+	std::unique_ptr<MyEngine::Rendering::StaticMesh> mesh_;
+	std::unique_ptr<MyEngine::Rendering::Material> material_;
+	std::string texPath_ = "white1x1";		// デフォルトテクスチャ
+	uint32_t texIndex_ = 0;
+
+	// メッシュ用のパラメータ
+	float width_ = 500.0f;
+	float depth_ = 500.0f;
+	int subdivisionX_ = 10000;
+	int subdivisionZ_ = 10000;
 
 	float time_ = 0.0f;
 

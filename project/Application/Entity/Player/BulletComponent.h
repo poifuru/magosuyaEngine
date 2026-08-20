@@ -4,7 +4,7 @@
 class BulletComponent : public Component {
 public:
 	BulletComponent() = default;
-	~BulletComponent() override = default;
+	~BulletComponent() override;
 
 	void Initialize() override;
 	void Update() override;
@@ -17,6 +17,7 @@ public:
 	float GetMaxDistance() const { return maxDistance_; }
 
 	void SetTarget(GameObject* target) { target_ = target; }
+	void SetOutlineObject(GameObject* outlineObj) { outlineObj_ = outlineObj; }
 
 private:
 	Vector3 direction_{};			// 向き
@@ -29,4 +30,5 @@ private:
 	bool isSubmerged_ = false;       // 水面下潜入フラグ
 
 	GameObject* target_ = nullptr; // 追尾対象
+	GameObject* outlineObj_ = nullptr; // アウトライン用オブジェクト
 };

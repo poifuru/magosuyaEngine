@@ -29,6 +29,9 @@ public:
 	//アクティブカメラの更新処理
 	void Update ();
 
+	// 現在アクティブな仮想カメラを取得
+	VirtualCameraComponent* GetCurrentVirtualCamera() const { return currentVirtualCamera_; }
+
 	// メインカメラの登録
 	void RegisterMainCamera(MainCameraComponent* mainCamera) { mainCamera_ = mainCamera; }
 

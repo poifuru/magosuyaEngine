@@ -51,7 +51,7 @@ void VirtualFollowCamera::Update() {
 		}
 
 		// 常にターゲットの方を向く（LookAt回転）の計算
-		Vector3 targetCenter = Math::Add(target_->GetTransform().translate, { 0.0f, 2.5f, 0.0f }); // ターゲットの位置（注視点）
+		Vector3 targetCenter = Math::Add(target_->GetTransform().translate, { 0.0f, targetOffsetY_, 0.0f }); // ターゲットの位置（注視点）
 		Vector3 direction = Math::Subtract(targetCenter, myTransform.translate); // カメラから見たターゲットへの方向
 
 		if(Math::Length(direction) > 0.001f) {
@@ -77,6 +77,7 @@ void VirtualFollowCamera::ImGui() {
 		target_ = nullptr; // ターゲットを再検索させる
 	}
 	ImGui::DragFloat3("Offset", &offset_.x, 0.1f);
+	ImGui::DragFloat("Target Center Y Offset", &targetOffsetY_, 0.1f, 0.0f, 15.0f);
 	ImGui::SliderFloat("Delay", &delay_, 0.0f, 1.0f);
 }
 
@@ -85,6 +86,7 @@ void VirtualFollowCamera::Serialize(json& j) const {
 	j["type"] = "VirtualFollowCamera";
 	j["targetName"] = targetName_;
 	j["offset"] = { offset_.x, offset_.y, offset_.z };
+	j["targetOffsetY"] = targetOffsetY_;
 	j["delay"] = delay_;
 	j["angleX"] = angleX_;
 	j["angleY"] = angleY_;
@@ -96,6 +98,7 @@ void VirtualFollowCamera::Deserialize(const json& j) {
 	if (j.contains("offset")) {
 		offset_ = { j["offset"][0], j["offset"][1], j["offset"][2] };
 	}
+	if (j.contains("targetOffsetY")) targetOffsetY_ = j["targetOffsetY"];
 	if (j.contains("delay")) delay_ = j["delay"];
 	if (j.contains("angleX")) angleX_ = j["angleX"];
 	if (j.contains("angleY")) angleY_ = j["angleY"];

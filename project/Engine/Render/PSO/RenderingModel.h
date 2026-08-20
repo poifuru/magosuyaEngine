@@ -9,6 +9,7 @@ namespace MyEngine::Rendering {
 		Particle,		// パーティクル
 		WaterSurface,	// 水面
 		BoatWake,		// 航跡波
+		OutlineObject,	// 単体オブジェクト用アウトライン
 
 		// ポストエフェクト用
 		PostEffect_CopyImage,		// コピー

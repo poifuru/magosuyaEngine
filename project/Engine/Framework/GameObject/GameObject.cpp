@@ -1,8 +1,9 @@
 #include "PCH.h"
 #include "GameObject.h"
 #include "Component.h"
-#include "BaseScene.h"
 #include "ComponentType.h"
+#include "GraphicsDevice.h"
+#include "CameraOrganizer.h"
 
 GameObject::GameObject(SceneContext* context, const std::string& name)
 	: context_(context), name_(name) {
@@ -10,6 +11,9 @@ GameObject::GameObject(SceneContext* context, const std::string& name)
 	transform_.scale = { 1.0f, 1.0f, 1.0f };
 	transform_.rotate = { 0.0f, 0.0f, 0.0f };
 	transform_.translate = { 0.0f, 0.0f, 0.0f };
+
+	auto* device = context_->graphicsDevice->GetDevice();
+	transformBuffer_.Initialize(device);
 }
 
 GameObject::~GameObject() = default;
@@ -24,6 +28,20 @@ void GameObject::Update() {
 	for (auto& component : components_) {
 		component->Update();
 	}
+
+	// アフィン行列作成
+	Matrix4x4 world = Math::MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
+	
+	// カメラデータを取得
+	CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+
+	TransformMatrixData transformData{};
+	transformData.World = world;
+	transformData.WVP = Math::Multiply(world, cameraData.vp);
+	transformData.WorldInverseTranspose = Math::MakeIdentity4x4();
+
+	// バッファ更新
+	transformBuffer_.Update(transformData);
 }
 
 void GameObject::ImGui() {
@@ -271,6 +289,16 @@ void GameObject::ImGui() {
 		else {
 			ImGui::TextDisabled("Boat Wake Component (Already Added)");
 		}
+		// テキスト表示コンポーネント
+		if(GetComponent<TextDrawerComponent>() == nullptr) {
+			if(ImGui::MenuItem("Text Drawer Component")) {
+				auto* newComp = AddComponent<TextDrawerComponent>();
+				newComp->Initialize();
+			}
+		}
+		else {
+			ImGui::TextDisabled("Text Drawer Component (Already Added)");
+		}
 
 		// コンポーネントが増えたらここに
 		ImGui::EndPopup();
@@ -406,6 +434,11 @@ void GameObject::Deserialize(const json& j) {
 			else if(type == "BoatWakeComponent") {
 				auto* comp = GetComponent<BoatWakeComponent>();
 				if(!comp) comp = AddComponent<BoatWakeComponent>();
+				comp->Deserialize(compJ);
+			}
+			else if(type == "TextDrawerComponent") {
+				auto* comp = GetComponent<TextDrawerComponent>();
+				if(!comp) comp = AddComponent<TextDrawerComponent>();
 				comp->Deserialize(compJ);
 			}
 		}

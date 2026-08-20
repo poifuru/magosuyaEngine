@@ -220,19 +220,32 @@ void MyEngine::Rendering::Renderer::Draw(std::vector<std::unique_ptr<GameObject>
 				}
 			}
 		}
+		// テキストドローワーの描画 
+		if(auto* textDrawer = obj->GetComponent<TextDrawerComponent>()) {
+			for(const auto& model : textDrawer->GetCharacterModels()) {
+				if(model) {
+					auto* modelData = model->GetModelData();
+					auto* material = model->GetMaterial();
+					auto transformAddr = model->GetTransformGPUAddress();
+					if(modelData && material) {
+						for(const auto& mesh : modelData->meshes) {
+							Submit(mesh, material, transformAddr, objectName);
+						}
+					}
+				}
+			}
+		}
 		// 水面コンポーネントの描画
 		if(auto* waterComp = obj->GetComponent<WaterSurfaceComponent>()) {
-			if(auto* model = waterComp->GetModel()) {
-				auto* modelData = model->GetModelData();
-				auto* material = model->GetMaterial();
-				auto transformAddr = model->GetTransformGPUAddress();
-				auto customAddr = waterComp->GetCustomBufferAddress();
-
-				if(modelData && material) {
-					for(const auto& mesh : modelData->meshes) {
-						// Submitをオーバーロードするか、引数を拡張して customAddr を渡す
-						Submit(mesh, material, transformAddr, objectName, customAddr);
-					}
+			if(auto* mesh  = waterComp->GetMesh()) {
+				if(auto* material = waterComp->GetMaterial()) {
+					Submit(
+						*mesh, 
+						material, 
+						waterComp->GetTransformAddress(), 
+						objectName, 
+						waterComp->GetCustomBufferAddress()
+					);
 				}
 			}
 		}
@@ -349,6 +362,11 @@ void MyEngine::Rendering::Renderer::InitializeShaderTable() {
 	uint32_t wakePS = sm->CompileAndCacheShader(L"Resources/Shader/BoatWake.PS.hlsl", L"ps_6_0");
 	shaderTable_[MakeShaderKey(ShadingModel::BoatWake, InputLayoutType::BoatWake)] = { wakeVS, wakePS };
 
+	// OutlineObject x Standard3D
+	uint32_t outObjVS = sm->CompileAndCacheShader(L"Resources/Shader/OutlineObject.VS.hlsl", L"vs_6_0");
+	uint32_t outObjPS = sm->CompileAndCacheShader(L"Resources/Shader/OutlineObject.PS.hlsl", L"ps_6_0");
+	shaderTable_[MakeShaderKey(ShadingModel::OutlineObject, InputLayoutType::Standard3D)] = { outObjVS, outObjPS };
+
 	//*** PostEffect ***//
 	// VSは共通
 	uint32_t postEffectVS = sm->CompileAndCacheShader(L"Resources/shader/Fullscreen.VS.hlsl", L"vs_6_0");
@@ -412,9 +430,13 @@ void MyEngine::Rendering::Renderer::Submit(
 		? D3D12_DEPTH_WRITE_MASK_ALL
 		: D3D12_DEPTH_WRITE_MASK_ZERO;
 
-	desc.CullMode = material->IsDoubleSided()
-		? D3D12_CULL_MODE_NONE
-		: D3D12_CULL_MODE_BACK;
+	if (material->GetShadingModel() == ShadingModel::OutlineObject) {
+		desc.CullMode = D3D12_CULL_MODE_FRONT;
+	} else {
+		desc.CullMode = material->IsDoubleSided()
+			? D3D12_CULL_MODE_NONE
+			: D3D12_CULL_MODE_BACK;
+	}
 
 	// PSOManagerに渡してPSOを取得（なければ生成・キャッシュ）
 	ID3D12PipelineState* pso = psoManager_->GetOrCreatePSO(

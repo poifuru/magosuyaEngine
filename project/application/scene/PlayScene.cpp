@@ -11,6 +11,7 @@
 #include "GraphicsDevice.h"
 #include "LightManager.h"
 #include "PostEffectManager.h"
+#include "TutorialManager.h"
 
 PlayScene::PlayScene() = default;
 PlayScene::~PlayScene() = default;
@@ -69,6 +70,10 @@ void PlayScene::Initialize() {
 
 	postEffectManager_ = std::make_unique<PostEffectManager>();
 	postEffectManager_->Initialize(context_->graphicsDevice->GetDevice());
+
+	// チュートリアルマネージャーの初期化
+	tutorialManager_ = std::make_unique<TutorialManager>();
+	tutorialManager_->Initialize(this);
 }
 
 void PlayScene::Update(CameraData* cameraData) {
@@ -100,10 +105,18 @@ void PlayScene::Update(CameraData* cameraData) {
 	}
 #endif
 
+	// チュートリアルの更新
+	if (tutorialManager_) {
+		tutorialManager_->Update();
+	}
+
 	// 全オブジェクトの更新
 	for (auto& obj : gameObjects_) {
 		obj->Update();
 	}
+
+	// 当たり判定の実行
+	CollisionManager::GetInstance()->UpdateAllCollisions();
 
 	// ループ終了後に、追加待ちのオブジェクトをメインリストに合流させる！
 	if (!createQueue_.empty()) {
@@ -112,9 +125,6 @@ void PlayScene::Update(CameraData* cameraData) {
 		}
 		createQueue_.clear(); // キューを空にする
 	}
-
-	// 当たり判定の実行
-	CollisionManager::GetInstance()->UpdateAllCollisions();
 
 	// 死亡フラグが立っているオブジェクトを削除
 	CleanupObject();

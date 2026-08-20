@@ -20,7 +20,8 @@ private:
 	std::string targetName_ = "";
 	GameObject* target_ = nullptr;
 
-	Vector3 offset_ = { 0.0f, 5.0f, -30.0f }; // ターゲットからの距離
+	Vector3 offset_ = { 0.0f, 6.5f, -28.0f }; // ターゲットからの距離 (高さを少し上げて見下ろし角を調整)
+	float targetOffsetY_ = 3.8f;              // 注視点の高さオフセット (画面中央と自機の被りを防ぐ)
 	float delay_ = 0.1f;                      // 追従の遅延 (0 = 遅延なし, 1 = 動かない)
 
 	// カメラの回転角

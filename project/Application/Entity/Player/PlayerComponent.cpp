@@ -299,17 +299,35 @@ void PlayerComponent::Shoot() {
 		// 弾用の GameObject を生成
 		auto bulletObj = std::make_unique<GameObject>(context, "PlayerBullet");
 
-		// MeshRendererComponent を追加してモデルを設定
+		// 弾本体のメッシュ
 		auto* meshRenderer = bulletObj->AddComponent<MeshRendererComponent>();
 		meshRenderer->SetModel("Resources/bullet/bullet.obj");
 		meshRenderer->SetTexture("Resources/bullet/bullet.png");
 
-		// 弾を大きく見やすく拡大表示
-		bulletObj->GetTransform().scale = { 2.5f, 2.5f, 2.5f };
+		// 弾を大きく見やすく拡大表示 (適正サイズ 1.2倍)
+		bulletObj->GetTransform().scale = { 1.2f, 1.2f, 1.2f };
 
 		// 水面の下に潜り込んでも深度テストで遮蔽されず、水面越しに弾モデルが常にくっきり描画される設定！
 		meshRenderer->SetDepthEnable(false);
 		meshRenderer->SetBlendMode(MyEngine::Rendering::BlendModeType::Alpha);
+		meshRenderer->SetEnableLighting(false); // 暗闇や水深でも常に明るく目立つように！
+
+		// 弾専用のアウトライン（黒色外枠ライン）用オブジェクトを生成
+		auto outlineObj = std::make_unique<GameObject>(context, "BulletOutline");
+		auto* outlineRenderer = outlineObj->AddComponent<MeshRendererComponent>();
+		outlineRenderer->SetModel("Resources/bullet/bullet.obj");
+		outlineRenderer->SetTexture("Resources/bullet/bullet.png");
+		outlineRenderer->SetDepthEnable(false);
+		if (auto* model = outlineRenderer->GetModel()) {
+			if (auto* mat = model->GetMaterial()) {
+				mat->SetShadingModel(MyEngine::Rendering::ShadingModel::OutlineObject);
+				mat->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f }); // 黒色の輪郭線
+			}
+		}
+		// 弾本体(1.2)よりほんの少し大きく膨らませて(1.28)外枠を作る
+		outlineObj->GetTransform().scale = { 1.28f, 1.28f, 1.28f };
+		outlineObj->Initialize();
+		outlineObj->SetSerializable(false);
 
 		// 弾の挙動コンポーネントと当たり判定コンポーネントを追加
 		auto* bulletComp = bulletObj->AddComponent<BulletComponent>();
@@ -322,6 +340,7 @@ void PlayerComponent::Shoot() {
 		bulletComp->SetSpeed(harpoonSpeed_);
 		bulletComp->SetHomingStrength(harpoonHomingStrength_);
 		bulletComp->SetMaxDistance(harpoonMaxDistance_);
+		bulletComp->SetOutlineObject(outlineObj.get()); // 💡 アウトラインオブジェクトの移動・寿命を同期！
 
 		// 当たり判定の大きさを設定する（モデル拡大に合わせて 1.2f に拡張）
 		colliderComp->SetRadius(1.2f);
@@ -359,17 +378,21 @@ void PlayerComponent::Shoot() {
 		bulletObj->GetTransform().translate = bulletSpawnPos;
 
 		// 方向の計算
-		Vector3 targetPos = { 0.0f, 0.0f, 100.0f };
-		if (reticleObject_) {
-			targetPos = reticleObject_->GetTransform().translate;
+		CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+		Vector3 camPos = { cameraData.world.m[3][0], cameraData.world.m[3][1], cameraData.world.m[3][2] };
+		Vector3 camForward = { cameraData.world.m[2][0], cameraData.world.m[2][1], cameraData.world.m[2][2] };
 
-			// もし敵をロックオンしているなら、その敵の座標を直接狙う
+		Vector3 targetPos = Math::Add(camPos, Math::Multiply(100.0f, camForward)); // カメラ正面100m先
+
+		// もし敵をロックオンしているなら、その敵の座標を直接狙う！
+		if (reticleObject_) {
 			if (auto* reticleComp = reticleObject_->GetComponent<ReticleComponent>()) {
 				if (auto* lockOnEnemy = reticleComp->GetLockOnTarget()) {
-					targetPos = lockOnEnemy->GetTransform().translate; // 敵の座標に上書き
+					targetPos = lockOnEnemy->GetTransform().translate;
 				}
 			}
 		}
+
 		Vector3 direction = Math::Subtract(targetPos, bulletObj->GetTransform().translate);
 		if (Math::Length(direction) > 0.001f) {
 			direction = Math::Normalize(direction);
@@ -391,6 +414,10 @@ void PlayerComponent::Shoot() {
 		}
 		bulletObj->GetTransform().rotate = bulletRot; // 回転を適用
 
+		// アウトライン用のトランスフォームも一致させて追加
+		outlineObj->GetTransform().translate = bulletSpawnPos;
+		outlineObj->GetTransform().rotate = bulletRot;
+
 		// 弾発射時の位置から水飛沫マズルブラストを10個飛び散らせる！
 		ParticleSpawner::SpawnWaterSplash(context, 
 										{ bulletObj->GetTransform().translate.x, 
@@ -404,6 +431,7 @@ void PlayerComponent::Shoot() {
 
 		// シーンのオブジェクトリストに追加
 		context->gameObjects->push_back(std::move(bulletObj));
+		context->gameObjects->push_back(std::move(outlineObj));
 		cooltime_ = 0.25f;
 	}
 }
@@ -539,13 +567,22 @@ void PlayerComponent::UpdateCanonRotation() {
 		hasCapturedCanonInitialRot_ = true;
 	}
 
-	// 1. 狙っているターゲット位置（カメラ正面のレティクル位置固定）を取得
-	Vector3 targetPos = { 0.0f, 0.0f, 100.0f };
+	// 狙っているターゲット位置（カメラ正面のレティクル位置固定）を取得
+	CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+	Vector3 camPos = { cameraData.world.m[3][0], cameraData.world.m[3][1], cameraData.world.m[3][2] };
+	Vector3 camForward = { cameraData.world.m[2][0], cameraData.world.m[2][1], cameraData.world.m[2][2] };
+
+	Vector3 targetPos = Math::Add(camPos, Math::Multiply(100.0f, camForward));
+
 	if (reticleObject_) {
-		targetPos = reticleObject_->GetTransform().translate;
+		if (auto* reticleComp = reticleObject_->GetComponent<ReticleComponent>()) {
+			if (auto* lockOnEnemy = reticleComp->GetLockOnTarget()) {
+				targetPos = lockOnEnemy->GetTransform().translate;
+			}
+		}
 	}
 
-	// 2. 自機位置からの方向ベクトル
+	// 自機位置からの方向ベクトル
 	Vector3 canonWorldPos = gameObject_->GetTransform().translate;
 	Vector3 dir = Math::Subtract(targetPos, canonWorldPos);
 

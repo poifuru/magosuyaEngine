@@ -16,3 +16,4 @@
 #include "GameDirectorComponent.h"
 #include "WaterSurfaceComponent.h"
 #include "BoatWakeComponent.h"
+#include "TextDrawerComponent.h"

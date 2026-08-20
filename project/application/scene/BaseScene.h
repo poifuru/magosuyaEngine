@@ -60,6 +60,8 @@ public:
 
 	virtual PostEffectManager* GetPostEffectManager() { return nullptr; }
 
+	SceneContext* GetContext() const { return context_; }
+
 protected:
 	// 借りてきたポインタ群
 	SceneContext* context_ = nullptr;

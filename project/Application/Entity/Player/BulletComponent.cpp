@@ -6,6 +6,12 @@
 #include "BaseScene.h"
 #include "../../../../Engine/Editor/ParticleEditor/ParticleSpawner.h"
 
+BulletComponent::~BulletComponent() {
+	if (outlineObj_) {
+		outlineObj_->Destroy();
+	}
+}
+
 void BulletComponent::Initialize() {
 	if (isInitialized_) return;
 	isInitialized_ = true;
@@ -69,6 +75,12 @@ void BulletComponent::Update() {
 	}
 	trans.rotate = bulletRot;
 
+	// アウトライン用オブジェクトが存在すれば位置・回転を同期する！
+	if (outlineObj_) {
+		outlineObj_->GetTransform().translate = trans.translate;
+		outlineObj_->GetTransform().rotate = trans.rotate;
+	}
+
 	// 弾の飛翔軌跡（加算合成の輝く水色トレイル）を生成。水面の下に潜っても100%透けて見える！
 	ParticleSpawner::SpawnBulletGlowTrail(gameObject_->GetContext(), trans.translate, direction_);
 
@@ -84,6 +96,7 @@ void BulletComponent::Update() {
 	float traveledDist = Math::Length(Math::Subtract(currentPos, startPosition_));
 	if (traveledDist >= maxDistance_) {
 		ParticleSpawner::SpawnWaterSplash(gameObject_->GetContext(), currentPos, 6);
+		if (outlineObj_) outlineObj_->Destroy();
 		gameObject_->Destroy();
 		return;
 	}
@@ -91,6 +104,7 @@ void BulletComponent::Update() {
 	// 3. 寿命チェック
 	activeTimer_ -= kDeltaTime;
 	if (activeTimer_ <= 0.0f) {
+		if (outlineObj_) outlineObj_->Destroy();
 		gameObject_->Destroy(); // 親のオブジェクトを破壊（デスフラグを立てる）
 	}
 }

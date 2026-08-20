@@ -1,5 +1,8 @@
 #pragma once
 #include "BaseScene.h"
+#include "TransformMatrixData.h"
+#include "ConstantBuffer.h"
+
 using json = nlohmann::json;
 
 class Component;
@@ -38,6 +41,11 @@ public:
 
 	void SetSerializable(bool flag) { isSerializable_ = flag; }
 	bool IsSerializable() const { return isSerializable_; }
+
+	// TransformBufferのアドレスを取得
+	D3D12_GPU_VIRTUAL_ADDRESS GetTransformGPUAddress() const {
+		return transformBuffer_.GetGPUVirtualAddress();
+	}
 
 	// --- コンポーネント操作のテンプレート関数 --- //
 	// コンポーネントの追加
@@ -89,6 +97,7 @@ public:
 private:
 	std::string name_;
 	EulerTransform transform_;
+	ConstantBuffer<TransformMatrixData> transformBuffer_;
 	std::vector<std::unique_ptr<Component>> components_;
 	bool isDead_ = false;
 	bool isSerializable_ = true;	// シリアライズするかのフラグ

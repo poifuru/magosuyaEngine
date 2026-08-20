@@ -74,6 +74,8 @@
     <ClCompile Include="Engine\Framework\GameObject\MeshRendererComponent\MeshRendererComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\SpriteComponent\SpriteComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\NumberDrawerComponent\NumberDrawerComponent.cpp" />
+    <ClCompile Include="Engine\Framework\GameObject\TextDrawerComponent\TextDrawerComponent.cpp" />
+    <ClCompile Include="Application\Tutorial\TutorialManager.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\GameDirectorComponent\GameDirectorComponent.cpp" />
     <ClCompile Include="externals\imgui\ImGuizmo.cpp" />
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
@@ -116,6 +118,7 @@
     <ClCompile Include="Engine\Graphics\PostEffect\Dissolve.cpp" />
     <ClCompile Include="Engine\Graphics\PostEffect\RadialBlur.cpp" />
     <ClCompile Include="Engine\Graphics\PostEffect\RandomNoise.cpp" />
+    <ClCompile Include="Engine\Framework\GameObject\Component\Component.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -221,6 +224,8 @@
     <ClInclude Include="Engine\Framework\GameObject\MeshRendererComponent\MeshRendererComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\SpriteComponent\SpriteComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\NumberDrawerComponent\NumberDrawerComponent.h" />
+    <ClInclude Include="Engine\Framework\GameObject\TextDrawerComponent\TextDrawerComponent.h" />
+    <ClInclude Include="Application\Tutorial\TutorialManager.h" />
     <ClInclude Include="Engine\Framework\GameObject\GameDirectorComponent\GameDirectorComponent.h" />
     <ClInclude Include="externals\imgui\ImGuizmo.h" />
     <ClInclude Include="Engine\Editor\Command\ICommand.h" />
