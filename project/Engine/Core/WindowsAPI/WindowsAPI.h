@@ -28,8 +28,8 @@ public:
 	void RegisterEngine(MyEngine::LowLevel::Engine* engine) { engine_ = engine; }
 
 	HWND GetHwnd() { return hwnd_; }
-	int32_t GetWindowWidth() { return windowWidth_; }
-	int32_t GetWindowHeight() { return windowHeight_; }
+	int32_t& GetWindowWidth() { return windowWidth_; }
+	int32_t& GetWindowHeight() { return windowHeight_; }
 	float GetAspectRatio() const { return static_cast<float>(windowWidth_) / static_cast<float>(windowHeight_); }
 
 private:

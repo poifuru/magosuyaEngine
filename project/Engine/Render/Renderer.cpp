@@ -3,6 +3,7 @@
 #include "DescriptorHeapManager.h"
 #include "SwapChain.h"
 #include "RootSignatureManager.h"
+#include "WindowsAPI.h"
 #include "ShaderManager.h"
 #include "InputLayoutManager.h"
 #include "BlendModeManager.h"
@@ -77,8 +78,8 @@ void MyEngine::Rendering::Renderer::Initialize(
 namespace {
 	void SetupViewport(ID3D12GraphicsCommandList* cmdList) {
 		D3D12_VIEWPORT viewport{};
-		viewport.Width = 1280.0f;
-		viewport.Height = 720.0f;
+		viewport.Width = static_cast<FLOAT>(WindowsAPI::GetInstance()->GetWindowWidth());
+		viewport.Height = static_cast<FLOAT>(WindowsAPI::GetInstance()->GetWindowHeight());
 		viewport.TopLeftX = 0.0f;
 		viewport.TopLeftY = 0.0f;
 		viewport.MinDepth = 0.0f;
@@ -91,8 +92,8 @@ namespace {
 		D3D12_RECT scissorRect{};
 		scissorRect.left = 0;
 		scissorRect.top = 0;
-		scissorRect.right = 1280;
-		scissorRect.bottom = 720;
+		scissorRect.right = WindowsAPI::GetInstance()->GetWindowWidth();
+		scissorRect.bottom = WindowsAPI::GetInstance()->GetWindowHeight();
 
 		cmdList->RSSetScissorRects(1, &scissorRect);
 	}
@@ -561,7 +562,8 @@ void MyEngine::Rendering::Renderer::Pingpong(PostEffectManager* postEffectManage
 		cmdList_->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 
 		// 深度が必要なエフェクトかチェック
-		bool isDepthEffect = (effect->GetShadingModel() == ShadingModel::PostEffect_Outline);
+		bool isDepthEffect = (effect->GetShadingModel() == ShadingModel::PostEffect_Outline ||
+							  effect->GetShadingModel() == ShadingModel::PostEffect_Fog);
 
 		if (isDepthEffect) {
 			// 深度バッファを DEPTH_WRITE -> PIXEL_SHADER_RESOURCE へ遷移

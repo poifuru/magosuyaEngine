@@ -2,7 +2,7 @@
 #include "Fog.h"
 
 void Fog::Initialize(ID3D12Device* device) {
-	MyEngine::Rendering::ShadingModel::PostEffect_Fog;
+	shadingModel_ = MyEngine::Rendering::ShadingModel::PostEffect_Fog;
 
 	// リソースの初期化
 	buffer_ = std::make_unique<ConstantBuffer<FogForGPU>>();

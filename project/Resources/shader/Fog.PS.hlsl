@@ -17,7 +17,7 @@ struct FogBuffer
 
 ConstantBuffer<FogBuffer> gFogBuffer : register(b0);
 Texture2D<float4> gTexture : register(t0, space2); // 描画済みのシーンカラー
-Texture2D<float> gDepthTexture : register(t1, space2); // 深度バッファ (R32_FLOATなど)
+Texture2D<float> gDepthTexture : register(t1, space1); // 深度バッファ (R32_FLOATなど)
 SamplerState gSampler : register(s0);
 
 struct PixelShaderOutput

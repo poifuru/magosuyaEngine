@@ -3,6 +3,7 @@
 #include "CameraOrganizer.h"
 #include "GameObject.h"
 #include "MathFunction.h"
+#include "WindowsAPI.h"
 
 void MainCameraComponent::Initialize() {
 	// マネージャに実体カメラとして登録
@@ -27,8 +28,8 @@ void MainCameraComponent::UpdateMatrix() {
 	// ビュー行列（ワールドの逆行列）
 	cameraData_.view = Math::Inverse(cameraData_.world);
 
-	// プロジェクション行列（アスペクト比は仮で 16:9）
-	float aspectRatio = 16.0f / 9.0f;
+	// プロジェクション行列
+	float aspectRatio = WindowsAPI::GetInstance()->GetAspectRatio();
 	cameraData_.proj = Math::MakePerspectiveFOVMatrix(CameraOrganizer::GetInstance()->GetActiveFov(), aspectRatio, near_, far_);
 
 	// VP行列

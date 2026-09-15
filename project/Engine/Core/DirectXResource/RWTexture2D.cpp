@@ -70,7 +70,7 @@ void RWTexture2D::Initialize(
 void RWTexture2D::Release() {
 	if (resource_) {
 		if (heapManager_) {
-			if (srvDescriptorIndex_ != 0) {
+			if (srvDescriptorIndex_ != heapManager_->kInvalidDescriptorIndex) {
 				heapManager_->FreeIndex(srvDescriptorIndex_);
 			}
 			if (uavDescriptorIndex_ != 0) {
