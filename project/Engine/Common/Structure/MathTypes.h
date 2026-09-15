@@ -117,7 +117,7 @@ struct Matrix3x3 {
 		Matrix3x3 result;
 		for(int i = 0; i < 3; ++i) {
 			for(int j = 0; j < 3; ++j) {
-				result.m[i][i] = 
+				result.m[i][j] = 
 					m[i][0] * other.m[0][j] +
 					m[i][1] * other.m[1][j] +
 					m[i][2] * other.m[2][j];

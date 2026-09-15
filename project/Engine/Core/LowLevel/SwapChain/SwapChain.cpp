@@ -162,7 +162,7 @@ void MyEngine::LowLevel::SwapChain::Resize(uint32_t width, uint32_t height) {
 		kBufferCount,
 		width,
 		height,
-		DXGI_FORMAT_R8G8B8A8_UNORM,
+		DXGI_FORMAT_R16G16B16A16_FLOAT,
 		0
 	);
 	assert(SUCCEEDED(hr));
@@ -171,7 +171,7 @@ void MyEngine::LowLevel::SwapChain::Resize(uint32_t width, uint32_t height) {
 	uint32_t rtvDescriptorSize = d3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleStart = rtvHeap_->GetCPUDescriptorHandleForHeapStart();
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	rtvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 	for (uint32_t i = 0; i < kBufferCount; ++i) {
 		hr = swapChain_->GetBuffer(i, IID_PPV_ARGS(&swapChainResources_[i]));

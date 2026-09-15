@@ -3,6 +3,8 @@
 namespace MyEngine::LowLevel {
 	class DescriptorHeapManager {
 	public:
+		static constexpr uint32_t kInvalidDescriptorIndex = UINT32_MAX;
+
 		DescriptorHeapManager();
 		~DescriptorHeapManager() = default;
 
@@ -44,12 +46,14 @@ namespace MyEngine::LowLevel {
 		DescriptorHeapManager& operator=(DescriptorHeapManager&&) = delete;
 
 	private:
+		uint32_t descriptorIndex_ = kInvalidDescriptorIndex;
+
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap_;
 		uint32_t descriptorSize_ = 0;
 
 		// インデックスのアロケーション管理用
 		uint32_t maxDescriptors_ = 0;
-		uint32_t nextIndex_ = 0;
+		uint32_t nextIndex_ = 1;
 		std::queue<uint32_t> freeIndices_;
 	};
 }

@@ -2,6 +2,7 @@
 #include "RenderTexture.h"
 #include "DescriptorHeapManager.h"
 #include "Function.h"
+#include "WindowsAPI.h"
 
 void MyEngine::Rendering::RenderTexture::Initialize(ID3D12Device* device, MyEngine::LowLevel::DescriptorHeapManager* heapManager) {
 	// オフスクリーンレンダリング用のクリアカラー
@@ -13,8 +14,8 @@ void MyEngine::Rendering::RenderTexture::Initialize(ID3D12Device* device, MyEngi
 	// リソース作成
 	CreateRenderTextureResource(
 		device,
-		1280,
-		720,
+		WindowsAPI::GetInstance()->GetWindowWidth(),
+		WindowsAPI::GetInstance()->GetWindowHeight(),
 		renderFormat,
 		kRenderTargetClearValue
 	);
