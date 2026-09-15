@@ -21,8 +21,13 @@ struct Ray {
 
 // 線分
 struct Segment {
-	Vector3 origin; //始点
-	Vector3 diff;	//終点への差分ベクトル
+	Vector3 origin;   // 始点
+	Vector3 endpoint; // 終点
+
+	// 差分ベクトル（終点 - 始点）が必要なときは関数で取る
+	Vector3 GetDiff() const {
+		return endpoint - origin;
+	}
 };
 
 // 平面

@@ -11,7 +11,9 @@
 #include "GraphicsDevice.h"
 #include "LightManager.h"
 #include "PostEffectManager.h"
+#include "Dissolve.h"
 #include "TutorialManager.h"
+#include "TextureManager.h"
 
 PlayScene::PlayScene() = default;
 PlayScene::~PlayScene() = default;
@@ -74,6 +76,14 @@ void PlayScene::Initialize() {
 	// チュートリアルマネージャーの初期化
 	tutorialManager_ = std::make_unique<TutorialManager>();
 	tutorialManager_->Initialize(this);
+
+	// ノイズ画像をロードしてセット
+	uint32_t noiseIndex = context_->textureManager->LoadTexture("Resources/Noise/fire_noise.png");
+
+	// PostEffectManager 経由で Dissolve にセット
+	if(auto* dissolve = postEffectManager_->GetEffect<Dissolve>(PostEffectType::Dissolve)) {
+		dissolve->SetMaskTextureIndex(noiseIndex);
+	}
 }
 
 void PlayScene::Update(CameraData* cameraData) {

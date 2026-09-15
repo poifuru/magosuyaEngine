@@ -9,7 +9,7 @@ struct Dissolve
 
 ConstantBuffer<Dissolve> gDissolve : register(b0);
 Texture2D<float4> gTexture : register(t0, space2);
-Texture2D<float4> gMaskTexture : register(t1, space2);
+Texture2D<float4> gMaskTexture : register(t0, space1);
 SamplerState gSampler : register(s0);
 
 struct PixelShaderOutput

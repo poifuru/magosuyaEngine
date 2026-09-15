@@ -40,13 +40,13 @@ namespace Math {
 	}
 
 	Vector3 Normalize (const Vector3& v) {
-		float nor = sqrtf (powf (v.x, 2) + powf (v.y, 2) + powf (v.z, 2));
+		float length = Length(v);
 
-		return {
-			v.x / nor,
-			v.y / nor,
-			v.z / nor
-		};
+		if (length <= std::numeric_limits<float>::epsilon()) {
+			return {};
+		}
+
+		return v / length;
 	}
 
 	Vector3 Cross (const Vector3& v1, const Vector3& v2) {
@@ -580,21 +580,30 @@ namespace Math {
 	}
 
 	Vector3 ClosestPoint (const Vector3& point, const Segment& segment) {
-		Vector3 ab = Subtract (segment.diff, segment.origin);
+		// 始点から終点へのベクトル ab
+		Vector3 ab = Subtract (segment.endpoint, segment.origin);
 		Vector3 ap = Subtract (point, segment.origin);
 
-		float t = Dot (ap, ab) / (powf (ab.x, 2) + powf (ab.y, 2) + powf (ab.z, 2));
+		// ab の長さの2乗
+		float lenSq = Dot(ab, ab);
 
-		if (t < 0) {
+		// ゼロ長Segment（始点 == 終点）のチェック
+		if (lenSq <= 1e-6f) { // 1e-6f は極小値（イプシロン）
+			return segment.origin; // 線分じゃなくて点なので、最接近点は始点そのもの
+		}
+
+		// 通常の射影パラメータ t の計算
+		float t = Dot(ap, ab) / lenSq;
+
+		// 線分なので [0, 1] の範囲にクランプ
+		if (t < 0.0f) {
 			return segment.origin;
 		}
-		if (t > 1) {
-			return segment.diff;
+		if (t > 1.0f) {
+			return segment.endpoint;
 		}
-		else {
-			Vector3 projection = Add (segment.origin, Multiply (t, ab));
-			return projection;
-		}
+		// 射影した点を計算して返す
+		return Add(segment.origin, Multiply(t, ab));
 	}
 
 	bool IsCollision (const Sphere& s1, const Sphere& s2) {
@@ -617,7 +626,7 @@ namespace Math {
 	}
 
 	bool IsCollision (const Segment& segment, const Plane& plane) {
-		float dot = Dot (plane.normal, segment.diff);
+		float dot = Dot (plane.normal, segment.GetDiff());
 
 		if (dot == 0.0f) {
 			return false;
@@ -643,7 +652,7 @@ namespace Math {
 		Vector3 normal = Cross (edge0, Subtract (v2, v0));
 
 		// セグメントと平面の交差チェック
-		float dot = Dot (normal, segment.diff);
+		float dot = Dot (normal, segment.GetDiff());
 		if (dot == 0.0f) {
 			return false;
 		}
@@ -654,7 +663,7 @@ namespace Math {
 		}
 
 		// 交点を求める
-		Vector3 P = Add (segment.origin, Multiply (t, segment.diff));
+		Vector3 P = Add (segment.origin, Multiply (t, segment.GetDiff()));
 
 		// 三角形内にあるかチェック
 		Vector3 c0 = Subtract (P, v0);
@@ -746,7 +755,7 @@ namespace Math {
 	}
 
 	bool IsCollision (const AABB& aabb, const Segment& segment) {
-		Vector3 dir = Subtract (segment.diff, segment.origin);
+		Vector3 dir = Subtract (segment.endpoint, segment.origin);
 		float tmin = 0.0f;
 		float tmax = 1.0f;
 

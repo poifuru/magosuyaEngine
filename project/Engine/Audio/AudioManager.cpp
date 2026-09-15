@@ -6,9 +6,14 @@ AudioManager::~AudioManager() {
 }
 
 void AudioManager::Initialize() {
+	// 再初期化に備えてフラグをリセット
+	isFinalized_ = false;
+
 	HRESULT hr;
 	//XAudio2を初期化
 	hr = XAudio2Create(&xAudio2_, 0, XAUDIO2_DEFAULT_PROCESSOR);
+	assert(SUCCEEDED(hr));
+
 	//マスターボイスの初期化
 	hr = xAudio2_->CreateMasteringVoice(&masterVoice_);
 	assert(SUCCEEDED(hr));
@@ -19,6 +24,11 @@ void AudioManager::Initialize() {
 }
 
 void AudioManager::Update() {
+	// 終了処理済み、またはエンジンが動いていないなら再生しない
+	if (isFinalized_ || !xAudio2_) {
+		return;
+	}
+
 	//再生が終わった音声を削除する
 	for (auto it = activeVoices_.begin(); it != activeVoices_.end();) {
 		XAUDIO2_VOICE_STATE state;
@@ -154,7 +164,21 @@ void AudioManager::UnloadAll() {
 }
 
 uint32_t AudioManager::Play(const std::string& name, AudioType type, bool loop) {
-	const AudioData& data = audioResources_[name];
+	// 終了処理済み、またはエンジンが動いていないなら再生しない
+	if (isFinalized_ || !xAudio2_) {
+		return 0;
+	}
+
+	// 読み込まれていない音声名なら再生せずに弾く
+	auto it = audioResources_.find(name);
+
+	if (it == audioResources_.end()) {
+		return 0; // 無効なIDとして0を返して終了
+	}
+
+	// 存在するデータを取り出す
+	const AudioData& data = it->second;
+
 	IXAudio2SourceVoice* pSourceVoice = nullptr;
 
 	//xAudio2_を使って生成

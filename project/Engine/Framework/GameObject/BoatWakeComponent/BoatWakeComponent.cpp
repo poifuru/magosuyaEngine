@@ -103,9 +103,6 @@ void BoatWakeComponent::Update() {
 	transformData.WVP = Math::Multiply(transformData.World, cameraData.vp); // ViewProjectionそのまま
 	transformData.WorldInverseTranspose = Math::MakeIdentity4x4();
 	transformBuffer_.Update(transformData);
-
-	// 頂点データの更新
-	//GenerateMesh();
 }
 
 void BoatWakeComponent::ImGui() {
@@ -164,7 +161,7 @@ void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 	Vector2 forward = {};
 	if(auto* playerComp = GetGameObject()->FindComponentInScene<PlayerComponent>()) {
 		Vector3 forward3D = playerComp->GetForward();
-		Math::Normalize(forward3D);
+		forward3D = Math::Normalize(forward3D);
 
 		forward.x = forward3D.x;
 		forward.y = forward3D.z;
@@ -191,58 +188,4 @@ void BoatWakeComponent::SetTexture(const std::string& textureName) {
 	texIndex_ = context->textureManager->LoadTexture(texPath_);
 
 	material_->SetTextureIndex(texIndex_);
-}
-
-void BoatWakeComponent::GenerateMesh() {
-	vertices_.clear();
-	std::vector<uint32_t> indices;
-	if(points_.size() < 2) return;
-
-	size_t count = points_.size();
-	for(size_t i = 0; i < count; ++i) {
-		const WakePoint& pt = points_[i];
-		float lifeRatio = pt.age / maxLifetime_;
-		float alpha = 1.0f - lifeRatio; // 時間経過で透明に
-		float currentWidth = trailWidth_ * (1.0f + lifeRatio * widthExpandRate_); // 後ろに行くほど広がる(V字)
-		float v = static_cast<float>(i) / static_cast<float>(count - 1);
-
-		// 左右の頂点位置を外側に展開
-		Vector3 leftPos = {
-			pt.position.x - pt.rightDir.x * (currentWidth * 0.5f),
-			pt.position.y - pt.rightDir.y * (currentWidth * 0.5f),
-			pt.position.z - pt.rightDir.z * (currentWidth * 0.5f)
-		};
-
-		Vector3 rightPos = {
-			pt.position.x + pt.rightDir.x * (currentWidth * 0.5f),
-			pt.position.y + pt.rightDir.y * (currentWidth * 0.5f),
-			pt.position.z + pt.rightDir.z * (currentWidth * 0.5f)
-		};
-
-		WakeVertex leftVert{ leftPos, alpha, Vector2(0.0f, v) };
-		WakeVertex rightVert{ rightPos, alpha, Vector2(1.0f, v) };
-
-		vertices_.push_back(leftVert);
-		vertices_.push_back(rightVert);
-
-		// 2回目のループ(i=1)以降で、直前の頂点ペアと繋ぐインデックスを追加
-		if (i > 0) {
-			uint32_t base = static_cast<uint32_t>((i - 1) * 2);
-			// 三角形1 (前回の左, 前回の右, 今回の左)
-			indices.push_back(base + 0);
-			indices.push_back(base + 1);
-			indices.push_back(base + 2);
-			// 三角形2 (今回の左, 前回の右, 今回の右)
-			indices.push_back(base + 2);
-			indices.push_back(base + 1);
-			indices.push_back(base + 3);
-		}
-
-		// 最大頂点数を超えないようガード
-		if(vertices_.size() >= kMaxVertices) break;
-	}
-
-	// 最後にバッファを更新
-	auto* device = GetGameObject()->GetContext()->graphicsDevice->GetDevice();
-	mesh_.Initialize(device, vertices_, indices);
 }

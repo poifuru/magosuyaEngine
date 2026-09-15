@@ -7,7 +7,9 @@ public:
 	void Initialize(ID3D12Device* device) override;
 	void ImGui() override;
 	D3D12_GPU_VIRTUAL_ADDRESS GetConstantBufferAddress() const override;
+
 	uint32_t GetExtraSrvIndex() const override { return maskTextureSrvIndex_; }
+	void SetMaskTextureIndex(uint32_t textureIndex) { maskTextureSrvIndex_ = textureIndex; }
 
 private:
 	struct alignas(16) DissolveForGPU {
