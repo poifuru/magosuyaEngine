@@ -392,7 +392,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\PostEffect\CopyImage.h" />
     <ClInclude Include="Engine\Graphics\PostEffect\Fog.h" />
     <ClInclude Include="Engine\Graphics\PostEffect\ColorGrading.h" />
-    <ClInclude Include="Engine\Common\Utility\DeltaTime.h" />
+    <ClInclude Include="Engine\Common\Utility\GameTime.h" />
     <ClInclude Include="Engine\Graphics\light\DirectionalLight.h" />
     <ClInclude Include="Engine\Graphics\light\BaseLight.h" />
     <ClInclude Include="Engine\Graphics\light\LightManager.h" />

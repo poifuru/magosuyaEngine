@@ -30,7 +30,7 @@ void MyEngine::LowLevel::Engine::Initialize() {
 
 	InputManager::GetInstance()->Initialize(WindowsAPI::GetInstance()->GetHwnd());
 
-	frameRateController_ = std::make_unique<MyEngine::LowLevel::FrameRateController>();
+	frameRateController_ = MyEngine::LowLevel::FrameRateController::GetInstance();
 
 	device_ = std::make_unique<MyEngine::LowLevel::GraphicsDevice>();
 	device_->Initialize();

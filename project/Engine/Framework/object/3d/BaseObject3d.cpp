@@ -111,9 +111,12 @@ uint8_t BaseObject3d::GetLayer() const {
 }
 
 Matrix4x4 BaseObject3d::CalculateWorldMatrix() {
-	if (parentTransform_) {
-		return Math::MakeAffineMatrix(parentTransform_->scale, parentTransform_->rotate, parentTransform_->translate);
-	}
+	Matrix4x4 localMatrix = Math::MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
 
-	return Math::MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
+	if (parentTransform_) {
+		Matrix4x4 parentMatrix = Math::MakeAffineMatrix(parentTransform_->scale, parentTransform_->rotate, parentTransform_->translate);
+		// ローカル行列 × 親のワールド行列
+		return Math::Multiply(localMatrix, parentMatrix);
+	}
+	return localMatrix;
 }

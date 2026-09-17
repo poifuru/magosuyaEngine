@@ -1,7 +1,6 @@
 #include "PCH.h"
 #include "EnemyManagerComponent.h"
 #include "GameObject.h"
-#include "DeltaTime.h"
 #include "BirdEnemyComponent.h"
 #include "FishEnemyComponent.h"
 #include "ColliderComponent.h"
@@ -39,7 +38,7 @@ void EnemyManagerComponent::Update() {
 	}
 
 	// 時間経過でタイマーを減算
-	spawnTimer_ -= kDeltaTime;
+	spawnTimer_ -= Time::GetDeltaTime();
 	if (spawnTimer_ <= 0.0f) {
 		spawnTimer_ = spawnInterval_;
 

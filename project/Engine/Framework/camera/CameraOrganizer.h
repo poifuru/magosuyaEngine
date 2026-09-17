@@ -41,6 +41,9 @@ public:
 	// 仮想カメラの登録解除
 	void UnregisterVirtualCamera(VirtualCameraComponent* virtualCamera);
 
+	// メインカメラの登録解除
+	void UnregisterMainCamera(MainCameraComponent* mainCamera);
+
 	// 外部から描画情報をもらうためのインターフェース
 	CameraData& GetCameraData();
 	float GetActiveFov() const { return currentFov_; }

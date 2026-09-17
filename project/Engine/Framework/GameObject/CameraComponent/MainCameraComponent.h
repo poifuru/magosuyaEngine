@@ -5,7 +5,7 @@
 class MainCameraComponent : public Component {
 public:
 	MainCameraComponent() = default;
-	~MainCameraComponent() override = default;
+	~MainCameraComponent() override;
 
 	void Initialize() override;
 	void Update() override;

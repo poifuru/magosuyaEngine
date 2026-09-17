@@ -48,10 +48,12 @@ void TextureManager::Initialize (ID3D12Device* device, ID3D12GraphicsCommandList
 }
 
 uint32_t TextureManager::LoadTexture (const std::string& filePath, bool isSRGB) {
+	std::string key = MakeKey(filePath, isSRGB);
+
 	// すでに同じパスで読み込まれていたら、新しく作らずに参照カウントだけ増やしてインデックスを返す
-	if (textureMap_.count(filePath)) {
-		textureMap_.at(filePath).refCount++;
-		return textureMap_.at(filePath).textureIndex;
+	if (textureMap_.count(key)) {
+		textureMap_.at(key).refCount++;
+		return textureMap_.at(key).textureIndex;
 	}
 
 	HRESULT hr = S_OK;
@@ -75,9 +77,12 @@ uint32_t TextureManager::LoadTexture (const std::string& filePath, bool isSRGB) 
 	if (FAILED(hr)) {
 		OutputDebugStringW((L"[Warning] テクスチャのロードに失敗しました: " + filePathW + L"\n").c_str());
 
-		// ダミーの参照を1個増やして、ダミーのインデックスを返す
-		textureMap_.at("white1x1").refCount++;
-		return textureMap_.at("white1x1").textureIndex;
+		// 失敗したファイルパス（key）のまま、ダミーのインデックスを持つTextureDataをマップに追加する
+		TextureData dummyData = textureMap_.at("white1x1");
+		dummyData.refCount = 1; // 1で新規登録
+		textureMap_[key] = dummyData;
+
+		return dummyData.textureIndex;
 	}
 
 	// ミップマップの自動生成
@@ -121,14 +126,16 @@ uint32_t TextureManager::LoadTexture (const std::string& filePath, bool isSRGB) 
 	heapManager_->CreateSRVforTexture2D(newData.textureIndex, newData.textureResource.Get(), srvDesc);
 
 	// マップに登録して、割り当てられたインデックス番号を返す
-	textureMap_[filePath] = newData;
+	textureMap_[key] = newData;
 	return newData.textureIndex;
 }
 
-void TextureManager::UnloadTexture(const std::string& filePath) {
-	if (!textureMap_.count(filePath)) return;
+void TextureManager::UnloadTexture(const std::string& filePath, bool isSRGB) {
+	std::string key = MakeKey(filePath, isSRGB);
 
-	TextureData& data = textureMap_.at(filePath);
+	if (!textureMap_.count(key)) return;
+
+	TextureData& data = textureMap_.at(key);
 	data.refCount--;
 
 	// 誰も使わなくなったら完全にメモリから削除する
@@ -137,7 +144,7 @@ void TextureManager::UnloadTexture(const std::string& filePath) {
 		heapManager_->FreeIndex(data.textureIndex);
 
 		// キャッシュマップから削除
-		textureMap_.erase(filePath);
+		textureMap_.erase(key);
 	}
 }
 
@@ -146,8 +153,10 @@ void TextureManager::ClearIntermediateResource () {
 	intermediateResources_.clear();
 }
 
-uint32_t TextureManager::GetTextureIndex(const std::string& filePath) const  {
-	auto it = textureMap_.find(filePath);
+uint32_t TextureManager::GetTextureIndex(const std::string& filePath, bool isSRGB) const  {
+	std::string key = filePath + (isSRGB ? "_sRGB" : "_Linear");
+
+	auto it = textureMap_.find(key);
 	if (it != textureMap_.end()) {
 		return it->second.textureIndex;
 	}
@@ -228,4 +237,8 @@ Microsoft::WRL::ComPtr<ID3D12Resource> TextureManager::UploadTextureData(
 	cmdList->ResourceBarrier(1, &barrier);
 
 	return intermediateResource;
+}
+
+std::string TextureManager::MakeKey(const std::string& filePath, bool isSRGB) {
+	return filePath + (isSRGB ? "_sRGB" : "_Linear");
 }

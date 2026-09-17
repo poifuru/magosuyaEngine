@@ -1,6 +1,7 @@
 #include "PCH.h"
 #include "ModelFactory.h"
 #include "Model.h"
+#include "MeshData.h"
 #include "ModelManager.h"
 #include "TextureManager.h"
 #include "GraphicsDevice.h"
@@ -35,13 +36,17 @@ std::unique_ptr<MyEngine::Rendering::Model> ModelFactory::CreateModel(
 	transformBuffer->Initialize(device_->GetDevice());
 	model->SetTransformBuffer(std::move(transformBuffer));
 
+	// textureIndexが0のとき、モデル側にデフォルトテクスチャがあればそれを使う
+	uint32_t finalTextureIndex = textureIndex;
+	if (finalTextureIndex == 0 && !tempModelData->defaultTextureIndices.empty()) {
+		finalTextureIndex = tempModelData->defaultTextureIndices[0];
+	}
+
 	// 新しいマテリアルを作成して初期化
 	auto material = std::make_shared<MyEngine::Rendering::Material>();
-	material->Initialize(
-		device_,
-		heapManager_
-	);
-	material->SetTextureIndex(textureIndex);
+	material->Initialize(device_, heapManager_);
+
+	material->SetTextureIndex(finalTextureIndex);
 	material->SetShadingModel(MyEngine::Rendering::ShadingModel::Standard);
 	// モデルにマテリアルをセット
 	model->SetMaterial(material);

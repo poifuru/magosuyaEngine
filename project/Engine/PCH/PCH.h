@@ -87,3 +87,4 @@
 // 自作ヘッダー
 #include "MathTypes.h"
 #include "Transform.h"
+#include "GameTime.h"

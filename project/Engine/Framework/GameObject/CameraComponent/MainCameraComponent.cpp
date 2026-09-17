@@ -5,6 +5,10 @@
 #include "MathFunction.h"
 #include "WindowsAPI.h"
 
+MainCameraComponent::~MainCameraComponent() {
+	CameraOrganizer::GetInstance()->UnregisterMainCamera(this);
+}
+
 void MainCameraComponent::Initialize() {
 	// マネージャに実体カメラとして登録
 	CameraOrganizer::GetInstance()->RegisterMainCamera(this);

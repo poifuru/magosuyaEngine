@@ -8,7 +8,7 @@ namespace MyEngine::Rendering {
 	class RenderTexture {
 	public:
 		RenderTexture() = default;
-		~RenderTexture() = default;
+		~RenderTexture();
 
 		/// <summary>
 		/// 初期化
@@ -25,10 +25,16 @@ namespace MyEngine::Rendering {
 		// 状態を安全に変更する関数
 		void ChangeState(ID3D12GraphicsCommandList* cmdList, D3D12_RESOURCE_STATES newState);
 
+		// レンダーテクスチャサイズを変更する
+		void Resize(ID3D12Device* device, uint32_t width, uint32_t height);
+
 		// アクセッサ
 		ID3D12Resource* GetResource() const { return resource_.Get(); }
 		D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptorHandle() const { return rtvHandle_; }
 		uint32_t GetSrvIndex() const { return srvIndex_; }
+
+	private:
+		void Release();
 
 	private:
 		// RenderTextureのリソース
@@ -43,5 +49,7 @@ namespace MyEngine::Rendering {
 
 		// 初期状態を覚えておく（作成時は PIXEL_SHADER_RESOURCE ）
 		D3D12_RESOURCE_STATES currentState_ = D3D12_RESOURCE_STATE_RENDER_TARGET  ;
+
+		MyEngine::LowLevel::DescriptorHeapManager* heapManager_ = nullptr;
 	};
 }

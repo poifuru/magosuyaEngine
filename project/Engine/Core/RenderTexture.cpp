@@ -4,7 +4,13 @@
 #include "Function.h"
 #include "WindowsAPI.h"
 
+MyEngine::Rendering::RenderTexture::~RenderTexture() {
+	Release();
+}
+
 void MyEngine::Rendering::RenderTexture::Initialize(ID3D12Device* device, MyEngine::LowLevel::DescriptorHeapManager* heapManager) {
+	heapManager_ = heapManager;
+
 	// オフスクリーンレンダリング用のクリアカラー
 	const Vector4 kRenderTargetClearValue{ 0.14f, 0.14f, 0.14f, 1.0f }; // SwapChainのClear色と合わせる
 
@@ -102,4 +108,39 @@ void MyEngine::Rendering::RenderTexture::ChangeState(
 			MyEngine::Utility::TransitionBarrier(cmdList, resource_.Get(), currentState_, newState);
 			currentState_ = newState; // 現在の状態を更新！
 		}
+}
+
+void MyEngine::Rendering::RenderTexture::Resize(ID3D12Device* device, uint32_t width, uint32_t height) {
+	if (!resource_) return;
+
+	// 古いGPUリソースを解放
+	resource_.Reset();
+
+	// 変更後のサイズでリソースを再生成
+	const Vector4 kRenderTargetClearValue{ 0.14f, 0.14f, 0.14f, 1.0f };
+	DXGI_FORMAT renderFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	CreateRenderTextureResource(device, width, height, renderFormat, kRenderTargetClearValue);
+
+	// RTVを再生成
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+	rtvDesc.Format = renderFormat;
+	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	device->CreateRenderTargetView(resource_.Get(), &rtvDesc, rtvHandle_);
+
+	// 既存の srvIndex_ の場所に新しいリソースのSRVを上書き
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = renderFormat;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+	heapManager_->CreateSRVforTexture2D(srvIndex_, resource_.Get(), srvDesc);
+}
+
+void MyEngine::Rendering::RenderTexture::Release() {
+	if (heapManager_ && srvIndex_ != 0) {
+		heapManager_->FreeIndex(srvIndex_); // ヒープのインデックスを返却
+		srvIndex_ = 0;
+	}
+	resource_.Reset();
+	rtvHeap_.Reset();
 }

@@ -86,7 +86,7 @@ namespace MyEngine::LowLevel {
 		LeakChecker leakCheck_{};
 
 		// ---上から順に初期化、下から順に破棄--- //
-		std::unique_ptr<MyEngine::LowLevel::FrameRateController> frameRateController_;
+		MyEngine::LowLevel::FrameRateController* frameRateController_ = nullptr;
 		std::unique_ptr<MyEngine::LowLevel::GraphicsDevice> device_;
 		std::unique_ptr<MyEngine::LowLevel::DxcCompiler> dxcCompiler_;
 		std::unique_ptr<MyEngine::LowLevel::CommandQueue> cmdQueue_;

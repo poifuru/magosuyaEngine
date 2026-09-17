@@ -1,7 +1,6 @@
 #include "PCH.h"
 #include "BulletComponent.h"
 #include "GameObject.h"
-#include "DeltaTime.h"
 #include "MathFunction.h"
 #include "BaseScene.h"
 #include "../../../../Engine/Editor/ParticleEditor/ParticleSpawner.h"
@@ -64,7 +63,7 @@ void BulletComponent::Update() {
 
 	// 移動処理
 	auto& trans = gameObject_->GetTransform();
-	trans.translate = Math::Add(trans.translate, Math::Multiply(speed_ * kDeltaTime, direction_));
+	trans.translate = Math::Add(trans.translate, Math::Multiply(speed_ * Time::GetDeltaTime(), direction_));
 
 	// 弾の回転も進行方向に向ける
 	Vector3 bulletRot = { 0.0f, 0.0f, 0.0f };
@@ -102,7 +101,7 @@ void BulletComponent::Update() {
 	}
 
 	// 3. 寿命チェック
-	activeTimer_ -= kDeltaTime;
+	activeTimer_ -= Time::GetDeltaTime();
 	if (activeTimer_ <= 0.0f) {
 		if (outlineObj_) outlineObj_->Destroy();
 		gameObject_->Destroy(); // 親のオブジェクトを破壊（デスフラグを立てる）

@@ -14,9 +14,11 @@ void ModelManager::Initialize(ID3D12Device* device, TextureManager* textureManag
 }
 
 uint32_t ModelManager::LoadModelData(const std::string& filePath, bool inversion) {
+	std::string key = MakeKey(filePath, inversion);
+
 	// すでに読み込まれていたら既存データを返す
-	if(modelPathToIndexMap_.count(filePath)) {
-		return modelPathToIndexMap_.at(filePath);
+	if(modelPathToIndexMap_.count(key)) {
+		return modelPathToIndexMap_.at(key);
 	}
 
 	// 新規読み込み
@@ -44,7 +46,7 @@ uint32_t ModelManager::LoadModelData(const std::string& filePath, bool inversion
 
 	uint32_t index = static_cast<uint32_t>(models_.size());
 	models_.push_back(newData);
-	modelPathToIndexMap_[filePath] = index;
+	modelPathToIndexMap_[key] = index;
 
 	return index;
 }
@@ -54,9 +56,14 @@ std::weak_ptr<MyEngine::Rendering::ModelData> ModelManager::GetModelData(uint32_
 	return models_[index];
 }
 
-void ModelManager::UnloadModelData(uint32_t index) {
-	if (index < models_.size()) {
-		models_[index].reset();
+void ModelManager::UnloadModelData(const std::string& filePath, bool inversion) {
+	std::string key = MakeKey(filePath, inversion);
+	auto it = modelPathToIndexMap_.find(key);
+
+	if (it != modelPathToIndexMap_.end()) {
+		uint32_t index = it->second;
+		models_[index].reset();         // モデルのデータを削除
+		modelPathToIndexMap_.erase(it); // マップからも完全に消去
 	}
 }
 
@@ -296,4 +303,8 @@ Microsoft::WRL::ComPtr<ID3D12Resource> ModelManager::CreateBufferResource(size_t
 	);
 	assert(SUCCEEDED(hr));
 	return resource;
+}
+
+std::string ModelManager::MakeKey(const std::string& filePath, bool inversion) {
+	return filePath + (inversion ? "_inv_true" : "_inv_false");
 }

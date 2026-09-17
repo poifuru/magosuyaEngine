@@ -22,7 +22,7 @@ public:
 
 	uint32_t LoadModelData(const std::string& filePath, bool inversion = false);
 	std::weak_ptr<MyEngine::Rendering::ModelData> GetModelData(uint32_t index);
-	void UnloadModelData(uint32_t index);
+	void UnloadModelData(const std::string& filePath, bool inversion = false);
 
 	Animation* LoadAnimationData(const std::string& directoryPath, const std::string& fileName);
 	std::weak_ptr<Animation> GetAnimationData(std::string id);
@@ -50,6 +50,9 @@ private:
 
 	// DX12バッファ生成用の内部ヘルパー
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
+
+	// マップキー作成関数
+	std::string MakeKey(const std::string& filePath, bool inversion);
 
 private:
 	std::vector<std::shared_ptr<MyEngine::Rendering::ModelData>> models_;

@@ -3,7 +3,6 @@
 #include "GameObject.h"
 #include "BaseScene.h"
 #include "GraphicsDevice.h"
-#include "DeltaTime.h"
 #include "MathFunction.h"
 #include "TextureManager.h"
 #include "CameraOrganizer.h"
@@ -55,7 +54,7 @@ void BoatWakeComponent::Update() {
 
 	// 寿命管理
 	for(size_t i = 0; i < points_.size(); ) {
-		points_[i].age += kDeltaTime;
+		points_[i].age += Time::GetDeltaTime();
 		if(points_[i].age >= maxLifetime_) {
 			points_.erase(points_.begin() + i);
 		}
@@ -168,7 +167,7 @@ void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 	}
 
 	// CSを実行してテクスチャを更新
-	rippleSim_.Dispatch(cmdList, boatPos, speed, kDeltaTime, waterMin, waterSize, forward);
+	rippleSim_.Dispatch(cmdList, boatPos, speed, Time::GetDeltaTime(), waterMin, waterSize, forward);
 
 	// CSが作ったテクスチャのインデックスをマテリアルへ指定
 	if (material_) {

@@ -183,7 +183,7 @@
     <ClInclude Include="application\scene\TestScene.h" />
     <ClInclude Include="Engine\Framework\Object\3d\SkyboxComponent.h" />
     <ClInclude Include="Engine\Core\RenderTexture.h" />
-    <ClInclude Include="Engine\Common\Utility\DeltaTime.h" />
+    <ClInclude Include="Engine\Common\Utility\GameTime.h" />
     <ClInclude Include="application\entity\player\BulletComponent.h" />
     <ClInclude Include="application\entity\player\ReticleComponent.h" />
     <ClInclude Include="Application\Collider\Collision.h" />

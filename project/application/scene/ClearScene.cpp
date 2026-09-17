@@ -7,7 +7,7 @@
 //#include "SceneType.h"
 //
 ////デルタタイムを定義
-//const float kDeltaTime = 1.0f / 60.0f;
+//const float Time::GetDeltaTime() = 1.0f / 60.0f;
 //
 //ClearScene::ClearScene () {
 //	TextureManager::GetInstance()->LoadTexture("Resources/clear.png", "clear");

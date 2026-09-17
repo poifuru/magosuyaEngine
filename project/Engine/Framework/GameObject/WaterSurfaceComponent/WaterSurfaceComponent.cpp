@@ -1,6 +1,5 @@
 #include "PCH.h"
 #include "WaterSurfaceComponent.h"
-#include "DeltaTime.h"
 #include "BaseScene.h"
 #include "GameObject.h"
 #include "GraphicsDevice.h"
@@ -53,7 +52,7 @@ void WaterSurfaceComponent::Update() {
 	Component::Update();
 
 	// 時間を進める
-	time_ += kDeltaTime;
+	time_ += Time::GetDeltaTime();
 
 	// マテリアルデータを更新する
 	if(material_) {

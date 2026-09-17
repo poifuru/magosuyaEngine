@@ -1056,9 +1056,9 @@ namespace Math {
 
 		//ドット積が1に近い（角度がほぼ0）場合は、ゼロ除算を避けるために線形補間（Lerp）に切り替えるのが安全
 		if(dot > 0.9995f) {
-			//線形補間して正規化（簡易版）
+			//線形補間して正規化
 			Quaternion result = q0 * (1.0f - t) + targetQ1 * t;
-			return result;
+			return Normalize(result);
 		}
 
 		//なす角thetaを求める

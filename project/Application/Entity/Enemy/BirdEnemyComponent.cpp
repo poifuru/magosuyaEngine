@@ -1,7 +1,6 @@
 #include "PCH.h"
 #include "BirdEnemyComponent.h"
 #include "GameObject.h"
-#include "DeltaTime.h"
 #include "MeshRendererComponent.h"
 #include "../../../../Engine/Editor/ParticleEditor/ParticleSpawner.h"
 #include "GameDirectorComponent.h"
@@ -59,7 +58,7 @@ void BirdEnemyComponent::Update() {
 
 	// 死亡演出の更新
 	if (isDead_) {
-		deathTimer_ += kDeltaTime;
+		deathTimer_ += Time::GetDeltaTime();
 		const float kDeathDuration = 1.0f; // 1.0秒で消滅
 		float progress = deathTimer_ / kDeathDuration;
 		if (progress >= 1.0f) {
@@ -107,7 +106,7 @@ void BirdEnemyComponent::Update() {
 	switch (state_) {
 	case BirdState::Patrol: {
 		// 初期位置付近をゆっくりと小旋回して遠方待機する
-		angle_ += (speed_ * 0.5f) * kDeltaTime;
+		angle_ += (speed_ * 0.5f) * Time::GetDeltaTime();
 		if (angle_ > 3.14159265f * 2.0f) {
 			angle_ -= 3.14159265f * 2.0f;
 		}
@@ -147,14 +146,14 @@ void BirdEnemyComponent::Update() {
 	case BirdState::Circle: {
 		// プレイヤーの位置を追従（XZ平面）
 		if (foundPlayer) {
-			float lerpRate = 5.0f * kDeltaTime; // 追従速度を上げてガタつき防止
+			float lerpRate = 5.0f * Time::GetDeltaTime(); // 追従速度を上げてガタつき防止
 			center_.x += (playerPos.x - center_.x) * lerpRate;
 			center_.z += (playerPos.z - center_.z) * lerpRate;
 			center_.y = playerPos.y + baseHeight_;
 		}
 
 		// 自転進行角
-		float nextAngle = angle_ + speed_ * kDeltaTime;
+		float nextAngle = angle_ + speed_ * Time::GetDeltaTime();
 
 		// 隊列（フォーメーション）アラインメント: 複数の鳥が旋回中の場合、リーダー（0番目）を基準に等角度にアラインする
 		if (totalBirds_ > 1) {
@@ -170,11 +169,11 @@ void BirdEnemyComponent::Update() {
 				}
 
 				if (leader && leader != this) {
-					float leaderNextAngle = leader->GetAngle() + speed_ * kDeltaTime;
+					float leaderNextAngle = leader->GetAngle() + speed_ * Time::GetDeltaTime();
 					float targetAngle = leaderNextAngle + (3.14159265f * 2.0f / static_cast<float>(totalBirds_)) * static_cast<float>(formationIndex_);
 					
 					// 自転後の角度 nextAngle を目標位相 targetAngle に向けてスムーズに統合（ガタつき完全消滅）
-					nextAngle = LerpAngle(nextAngle, targetAngle, 2.0f * kDeltaTime);
+					nextAngle = LerpAngle(nextAngle, targetAngle, 2.0f * Time::GetDeltaTime());
 				}
 			}
 		}
@@ -188,7 +187,7 @@ void BirdEnemyComponent::Update() {
 		}
 
 		// currentRadius_ を本来の radius_ へ滑らかに引き締める（ガクッとするワープの完全防止）
-		currentRadius_ += (radius_ - currentRadius_) * 2.0f * kDeltaTime;
+		currentRadius_ += (radius_ - currentRadius_) * 2.0f * Time::GetDeltaTime();
 
 		// 円の軌道上の座標を計算（実効半径 currentRadius_ を使用）
 		Vector3 nextPos = {
@@ -205,7 +204,7 @@ void BirdEnemyComponent::Update() {
 		targetRot.z = 0.0f;
 
 		// タイマー更新とフォーメーション連鎖ダイブの判定（1.0秒間隔の連続ウェーブ攻撃）
-		stateTimer_ += kDeltaTime;
+		stateTimer_ += Time::GetDeltaTime();
 		float diveInterval = 1.0f; // 鳥ごとの攻撃待機間隔（秒）
 		float totalWaitTime = circleDuration_ + static_cast<float>(formationIndex_) * diveInterval;
 
@@ -225,7 +224,7 @@ void BirdEnemyComponent::Update() {
 
 		if (dist > 0.1f) {
 			Vector3 dir = Math::Normalize(toTarget);
-			trans.translate += dir * diveSpeed_ * kDeltaTime;
+			trans.translate += dir * diveSpeed_ * Time::GetDeltaTime();
 
 			// 水平方向の向きベクトルを記憶（上昇時の通り抜けに使用）
 			Vector3 horiz = { dir.x, 0.0f, dir.z };
@@ -257,7 +256,7 @@ void BirdEnemyComponent::Update() {
 		Vector3 moveDir = { diveHorizDir_.x, 1.0f, diveHorizDir_.z };
 		moveDir = Math::Normalize(moveDir);
 
-		trans.translate += moveDir * ascentSpeed_ * kDeltaTime;
+		trans.translate += moveDir * ascentSpeed_ * Time::GetDeltaTime();
 
 		// 進行方向（前上）を向く
 		targetRot.y = std::atan2(moveDir.x, moveDir.z) + 1.570796f;
@@ -284,7 +283,7 @@ void BirdEnemyComponent::Update() {
 	}
 
 	// 角度を最短ルートで滑らかに補間する（360度大回転スピン防止）
-	float rotLerpRate = rotLerpSpeed_ * kDeltaTime;
+	float rotLerpRate = rotLerpSpeed_ * Time::GetDeltaTime();
 	if (rotLerpRate > 1.0f) rotLerpRate = 1.0f;
 	trans.rotate = LerpEuler(trans.rotate, targetRot, rotLerpRate);
 }

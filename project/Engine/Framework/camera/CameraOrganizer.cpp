@@ -42,7 +42,7 @@ void CameraOrganizer::Update() {
 		// 一旦ローカル変数に退避させておく
 		VirtualCameraComponent* preCam = preVirtualCamera_;
 
-		blendTimer_ += 1.0f / 60.0f; // デルタタイム（仮で1/60固定）
+		blendTimer_ += Time::GetDeltaTime(); // デルタタイム（仮で1/60固定）
 		float t = blendTimer_ / blendDuration_;
 		if (t >= 1.0f) {
 			t = 1.0f;
@@ -64,7 +64,7 @@ void CameraOrganizer::Update() {
 
 	// カメラシェイク処理
 	if (shakeTimer_ > 0.0f) {
-		shakeTimer_ -= (1.0f / 60.0f);
+		shakeTimer_ -= Time::GetDeltaTime();
 		if (shakeTimer_ < 0.0f) shakeTimer_ = 0.0f;
 
 		if (shakeDuration_ > 0.0f) {
@@ -108,6 +108,12 @@ void CameraOrganizer::UnregisterVirtualCamera(VirtualCameraComponent* virtualCam
 	}
 	if(currentVirtualCamera_ == virtualCamera) currentVirtualCamera_ = nullptr;
 	if(preVirtualCamera_ == virtualCamera) preVirtualCamera_ = nullptr;
+}
+
+void CameraOrganizer::UnregisterMainCamera(MainCameraComponent* mainCamera) {
+	if (mainCamera_ == mainCamera) {
+		mainCamera_ = nullptr;
+	}
 }
 
 CameraData& CameraOrganizer::GetCameraData() {

@@ -1,7 +1,6 @@
 #include "PCH.h"
 #include "FishEnemyComponent.h"
 #include "GameObject.h"
-#include "DeltaTime.h"
 #include "MeshRendererComponent.h"
 #include "../../../../Engine/Editor/ParticleEditor/ParticleSpawner.h"
 #include "GameDirectorComponent.h"
@@ -55,7 +54,7 @@ void FishEnemyComponent::Update() {
 
 	// 死亡演出の更新
 	if (isDead_) {
-		deathTimer_ += kDeltaTime;
+		deathTimer_ += Time::GetDeltaTime();
 		const float kDeathDuration = 1.0f; // 1.0秒で消滅
 		float progress = deathTimer_ / kDeathDuration;
 		if (progress >= 1.0f) {
@@ -100,7 +99,7 @@ void FishEnemyComponent::Update() {
 	case FishState::Submerge: {
 		// 水面より少し下に体を沈める
 		float targetY = waterSurfaceY_ - 0.5f;
-		trans.translate.y += (targetY - trans.translate.y) * 5.0f * kDeltaTime;
+		trans.translate.y += (targetY - trans.translate.y) * 5.0f * Time::GetDeltaTime();
 
 		if (foundPlayer) {
 			Vector3 toPlayer = playerPos - trans.translate;
@@ -113,7 +112,7 @@ void FishEnemyComponent::Update() {
 				Vector3 rightDir = { -fwdDir.z, 0.0f, fwdDir.x };
 
 				// 左右にゆらゆら揺れるサイン波（S字蛇行進行）
-				swimPhase_ += speed_ * 1.5f * kDeltaTime;
+				swimPhase_ += speed_ * 1.5f * Time::GetDeltaTime();
 				float sway = std::sin(swimPhase_) * 0.8f; // 左右の揺れ幅
 
 				// 接近移動ベクトル = (プレイヤー方向への前進) + (左右への波状揺れ)
@@ -123,7 +122,7 @@ void FishEnemyComponent::Update() {
 				);
 
 				// 移動の適用
-				trans.translate += moveVel * kDeltaTime;
+				trans.translate += moveVel * Time::GetDeltaTime();
 
 				// 頭（向き）を進行方向に滑らかに向かせる
 				if (Math::Length(moveVel) > 0.001f) {
@@ -136,7 +135,7 @@ void FishEnemyComponent::Update() {
 
 			// プレイヤーが近く（25m以内）にいて一定の潜水時間が経過したら水面ジャンプ攻撃！
 			if (distXZ < 25.0f) {
-				stateTimer_ += kDeltaTime;
+				stateTimer_ += Time::GetDeltaTime();
 				if (stateTimer_ >= submergeDuration_) {
 					stateTimer_ = 0.0f;
 					state_ = FishState::Jump;
@@ -161,19 +160,19 @@ void FishEnemyComponent::Update() {
 			}
 		} else {
 			// プレイヤーが見つからない場合はその場で優雅に円を描いて泳ぐ
-			swimPhase_ += speed_ * 0.5f * kDeltaTime;
-			trans.translate.x += std::cos(swimPhase_) * speed_ * kDeltaTime;
-			trans.translate.z += std::sin(swimPhase_) * speed_ * kDeltaTime;
+			swimPhase_ += speed_ * 0.5f * Time::GetDeltaTime();
+			trans.translate.x += std::cos(swimPhase_) * speed_ * Time::GetDeltaTime();
+			trans.translate.z += std::sin(swimPhase_) * speed_ * Time::GetDeltaTime();
 			targetRot.y = swimPhase_ + 1.570796f;
 		}
 		break;
 	}
 	case FishState::Jump: {
 		// 速度を適用
-		trans.translate += velocity_ * kDeltaTime;
+		trans.translate += velocity_ * Time::GetDeltaTime();
 
 		// 重力を適用
-		velocity_.y += gravity_ * kDeltaTime;
+		velocity_.y += gravity_ * Time::GetDeltaTime();
 
 		// 進行方向を向かせる目標回転
 		if (Math::Length(velocity_) > 0.1f) {
@@ -201,7 +200,7 @@ void FishEnemyComponent::Update() {
 	}
 
 	// 角度を最短ルートで滑らかに補間する（360度大回転スピン防止）
-	float rotLerpRate = rotLerpSpeed_ * kDeltaTime;
+	float rotLerpRate = rotLerpSpeed_ * Time::GetDeltaTime();
 	if (rotLerpRate > 1.0f) rotLerpRate = 1.0f;
 	trans.rotate = LerpEuler(trans.rotate, targetRot, rotLerpRate);
 }

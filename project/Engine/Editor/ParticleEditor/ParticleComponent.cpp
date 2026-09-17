@@ -1,7 +1,6 @@
 #include "PCH.h"
 #include "ParticleComponent.h"
 #include "GameObject.h"
-#include "DeltaTime.h"
 #include "MeshRendererComponent.h"
 #include "CameraOrganizer.h" // 💡 カメラデータ取得用
 #include "BaseCamera.h"
@@ -15,16 +14,16 @@ void ParticleComponent::Update() {
 	if (!gameObject_) return;
 
 	// 1. 寿命のカウントダウン
-	lifeTime_ -= kDeltaTime;
+	lifeTime_ -= Time::GetDeltaTime();
 	if (lifeTime_ <= 0.0f) {
 		gameObject_->Destroy(); // 寿命が尽きたら消滅
 		return;
 	}
 
 	// 2. 移動と重力の適用
-	velocity_.y -= gravity_ * kDeltaTime;
+	velocity_.y -= gravity_ * Time::GetDeltaTime();
 	auto& trans = gameObject_->GetTransform();
-	trans.translate = Math::Add(trans.translate, Math::Multiply(kDeltaTime, velocity_));
+	trans.translate = Math::Add(trans.translate, Math::Multiply(Time::GetDeltaTime(), velocity_));
 
 	// 💡 ビルボード設定（常にカメラの方向を向くように回転をコピーする）
 	CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();

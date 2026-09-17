@@ -59,58 +59,57 @@ D3D12_SHADER_BYTECODE MyEngine::Rendering::ShaderManager::GetShaderBytecode (uin
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> MyEngine::Rendering::ShaderManager::CompilerShader (const std::wstring& filePath, const wchar_t* profile) {
-	/*1.hlslファイルを読み込む*/
-	//これからシェーダーをコンパイルする旨をログに出力する
-	LogManager::GetInstance()->LogManager::Log (String::ConvertString (std::format (L"Begin CompileShader, path:{}, profile:{}\n", filePath, profile)));
-	//hlslファイルを読む
+	// hlslファイルを読み込む
+	// これからシェーダーをコンパイルする旨をログに出力する
+	LogManager::GetInstance()->LogManager::Log (String::ConvertString (std::format (L"シェーダーコンパイル開始, path:{}, profile:{}\n", filePath, profile)));
+	// hlslファイルを読む
 	Microsoft::WRL::ComPtr<IDxcBlobEncoding> shaderSource = nullptr;
 	HRESULT hr = dxcUtils_->LoadFile (filePath.c_str (), nullptr, &shaderSource);
-	//読めなかったらあきらめる
+	// 読めなかったらあきらめる
 	assert (SUCCEEDED (hr));
-	//読み込んだファイルの内容を設定する
+	// 読み込んだファイルの内容を設定する
 	DxcBuffer shaderSourceBuffer = {};
 	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer ();
 	shaderSourceBuffer.Size = shaderSource->GetBufferSize ();
-	shaderSourceBuffer.Encoding = DXC_CP_UTF8;//UTF_8の文字コードであることを通知
+	shaderSourceBuffer.Encoding = DXC_CP_UTF8;// UTF_8の文字コードであることを通知
 
-	/*2.compileする*/
+	// compileする
 	LPCWSTR arguments[] = {
-		filePath.c_str (),			//コンパイル対象のhlslファイル名
-		L"-E", L"main",				//エントリーポイントの指定。基本的にmain以外にはしない
-		L"-T", profile,				//ShaderProfileの設定
-		L"-Zi", L"-Qembed_debug",	//デバッグ用の情報を埋め込む
-		L"-Od",						//最適化を外しておく
-		L"-Zpr",					//メモリレイアウトは最優先
+		filePath.c_str (),			// コンパイル対象のhlslファイル名
+		L"-E", L"main",				// エントリーポイントの指定。基本的にmain以外にはしない
+		L"-T", profile,				// ShaderProfileの設定
+		L"-Zi", L"-Qembed_debug",	// デバッグ用の情報を埋め込む
+		L"-Od",						// 最適化を外しておく
+		L"-Zpr",					// メモリレイアウトは最優先
 	};
-	//実際にshaderをコンパイルする
+	// 実際にshaderをコンパイルする
 	Microsoft::WRL::ComPtr<IDxcResult> shaderResult = nullptr;
 	hr = dxcCompiler_->Compile (
-		&shaderSourceBuffer,		//読み込んだファイル
-		arguments,					//コンパイルオプション
-		_countof (arguments),		//コンパイルオプションの数
-		includeHandler_,				//includeが含まれた諸々
-		IID_PPV_ARGS (shaderResult.GetAddressOf ())	//コンパイル結果
+		&shaderSourceBuffer,		// 読み込んだファイル
+		arguments,					// コンパイルオプション
+		_countof (arguments),		// コンパイルオプションの数
+		includeHandler_,				// includeが含まれた諸々
+		IID_PPV_ARGS (shaderResult.GetAddressOf ())	// コンパイル結果
 	);
-	//コンパイルエラーではなくdxcが起動できないなど致命的な状況
+	// コンパイルエラーではなくdxcが起動できないなど致命的な状況
 	assert (SUCCEEDED (hr));
 
-	/*3.警告・エラーが出ていないか確認する*/
-	//警告・エラーが出てたらログに出して止める
+	// 警告・エラーが出てたらログに出す
 	Microsoft::WRL::ComPtr<IDxcBlobUtf8> shaderError = nullptr;
 	shaderResult->GetOutput (DXC_OUT_ERRORS, IID_PPV_ARGS (shaderError.GetAddressOf ()), nullptr);
 	if (shaderError != nullptr && shaderError->GetStringLength () != 0) {
 		LogManager::GetInstance()->LogManager::Log (shaderError->GetStringPointer ());
-		//警告・エラーダメゼッタイ
-		assert (false);
 	}
 
-	/*4.compile結果を受け取って返す*/
-	//コンパイル結果から実行用のバイナリ部分を取得
+	// 実際にコンパイル結果（バイナリ）が取得できたかで判定
 	Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob = nullptr;
-	hr = shaderResult->GetOutput (DXC_OUT_OBJECT, IID_PPV_ARGS (shaderBlob.GetAddressOf ()), nullptr);
-	assert (SUCCEEDED (hr));
-	//成功したらログを出す
-	LogManager::GetInstance()->LogManager::Log (String::ConvertString (std::format (L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
-	//実行用のバイナリを返却
-	return shaderBlob.Get ();
+	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(shaderBlob.GetAddressOf()), nullptr);
+
+	// バイナリの取得に失敗したときだけ止める
+	if (FAILED(hr) || !shaderBlob) {
+		assert(false && "シェーダーコンパイルに失敗しました");
+		return nullptr;
+	}
+
+	return shaderBlob.Get();
 }

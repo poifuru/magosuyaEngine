@@ -3,6 +3,7 @@
 #include "ModelManager.h"
 #include "TextureManager.h"
 #include "ModelFactory.h"
+#include "CommandManager.h"
 
 struct ID3D12GraphicsCommandList;
 namespace MyEngine::LowLevel {
@@ -54,6 +55,7 @@ public:
 	// シーン遷移用のテンプレート関数
 	template <typename T>
 	void ChangeScene() {
+		CommandManager::GetInstance()->Clear();
 		auto nextScene = std::make_unique<T>();
 		nextScene->SetContext(&context_);
 		nextScene->SetRenderer(renderer_);

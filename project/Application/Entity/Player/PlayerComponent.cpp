@@ -6,7 +6,6 @@
 #include "InputManager.h"
 #include "RawInput.h"
 #include "GamePad.h"
-#include "DeltaTime.h"
 #include "MathFunction.h"
 #include "CameraOrganizer.h"
 #include "BaseCamera.h" // CameraDataの定義があるヘッダー
@@ -62,12 +61,12 @@ void PlayerComponent::Update() {
 
 	// クールタイム更新
 	if(cooltime_ > 0.0f) {
-		cooltime_ -= kDeltaTime;
+		cooltime_ -= Time::GetDeltaTime();
 	}
 
 	// 無敵タイマーと被弾点滅演出
 	if (invincibilityTimer_ > 0.0f) {
-		invincibilityTimer_ -= kDeltaTime;
+		invincibilityTimer_ -= Time::GetDeltaTime();
 		if (invincibilityTimer_ < 0.0f) invincibilityTimer_ = 0.0f;
 
 		// 赤く点滅
@@ -201,7 +200,7 @@ void PlayerComponent::Move() {
 		while (diffYaw > 3.14159265f) diffYaw -= 6.2831853f;
 
 		// 旋回速度 (値が小さいほどゆっくり曲がる)
-		gameObject_->GetTransform().rotate.y += diffYaw * currentTurnSpeed * kDeltaTime;
+		gameObject_->GetTransform().rotate.y += diffYaw * currentTurnSpeed * Time::GetDeltaTime();
 
 		// 上下の旋回目標角度 (Pitch)
 		float xzLength = std::sqrt(moveDir.x * moveDir.x + moveDir.z * moveDir.z);
@@ -210,7 +209,7 @@ void PlayerComponent::Move() {
 		float diffPitch = targetPitch - currentPitch;
 		while (diffPitch < -3.14159265f) diffPitch += 6.2831853f;
 		while (diffPitch > 3.14159265f) diffPitch -= 6.2831853f;
-		gameObject_->GetTransform().rotate.x += diffPitch * currentTurnSpeed * kDeltaTime;
+		gameObject_->GetTransform().rotate.x += diffPitch * currentTurnSpeed * Time::GetDeltaTime();
 
 		// 移動ベクトルのブレンド (前進 dirRatioZ_ : 入力 dirRatioX_)
 		// 潜水艦の「現在の正面方向」のベクトルを計算する
@@ -235,9 +234,9 @@ void PlayerComponent::Move() {
 		}
 
 		// 加速度を設定
-		acceleration_.x = actualMoveDir.x * currentSpeed * kDeltaTime;
-		acceleration_.y = actualMoveDir.y * currentSpeed * kDeltaTime;
-		acceleration_.z = actualMoveDir.z * currentSpeed * kDeltaTime;
+		acceleration_.x = actualMoveDir.x * currentSpeed * Time::GetDeltaTime();
+		acceleration_.y = actualMoveDir.y * currentSpeed * Time::GetDeltaTime();
+		acceleration_.z = actualMoveDir.z * currentSpeed * Time::GetDeltaTime();
 		velocity_.x += acceleration_.x;
 		velocity_.y += acceleration_.y;
 		velocity_.z += acceleration_.z;

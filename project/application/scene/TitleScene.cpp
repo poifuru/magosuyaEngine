@@ -11,7 +11,7 @@
 //#include "AudioManager.h"
 //
 ////デルタタイムを定義
-//const float kDeltaTime = 1.0f / 60.0f;
+//const float Time::GetDeltaTime() = 1.0f / 60.0f;
 //
 //TitleScene::TitleScene() {
 //	TextureManager::GetInstance()->LoadTexture("Resources/titleScene/title.png", "title");
