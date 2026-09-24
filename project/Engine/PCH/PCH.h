@@ -25,7 +25,8 @@
 #include <dxgidebug.h>      // デバッグ層のメモリリーク検出用
 #endif
 
-#include <d3dx12.h>         // Microsoft公式のDX12補助構造体（※別途ダウンロードが必要な場合あり）
+#include <d3dx12.h>         // Microsoft公式のDX12補助構造体
+#include <psapi.h>			// デバッグ用プロファイル
 
 // PIX
 #include <pix3.h>

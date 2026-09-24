@@ -13,24 +13,61 @@ ImGuiManager::~ImGuiManager() {
 
 void ImGuiManager::Finalize() {
 #ifdef USEIMGUI
-	if (ImGui::GetCurrentContext()) {
+	if(ImGui::GetCurrentContext()) {
 		ImGui_ImplDX12_Shutdown();
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 	}
+
+	EditorManager::GetInstance()->Finalize();
 #endif
 }
 
 void ImGuiManager::Initialize(
-	ID3D12Device* device, 
+	ID3D12Device* device,
 	ID3D12CommandQueue* cmdQueue,
 	MyEngine::LowLevel::DescriptorHeapManager* heapManager
 ) {
 #ifdef USEIMGUI
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	ImGui::StyleColorsDark();
+
+	ImGuiStyle& style = ImGui::GetStyle();
+
+	//タブの上の線を消す
+	style.TabBarOverlineSize = 0.0f;
+
+	// メニューバー
+	style.Colors[ImGuiCol_MenuBarBg] = { 0.02f, 0.02f, 0.02f, 1.00f };
+	style.Colors[ImGuiCol_PopupBg] = { 0.12f, 0.15f, 0.20f, 0.95f };
+
+	// タイトル
+	style.Colors[ImGuiCol_TitleBgActive] = { 0.1f, 0.1f, 0.1f, 1.00f };
+	style.Colors[ImGuiCol_TitleBg] = { 0.05f, 0.05f, 0.05f, 1.00f };
+	style.Colors[ImGuiCol_TitleBgCollapsed] = { 0.05f, 0.05f, 0.05f, 1.00f };
+
+	// タブ
+	style.Colors[ImGuiCol_Tab] = { 0.05f, 0.05f, 0.05f, 1.00f };
+	style.Colors[ImGuiCol_TabActive] = { 0.15f, 0.15f, 0.15f, 1.00f };
+	style.Colors[ImGuiCol_TabHovered] = { 0.1f, 0.1f, 0.1f, 1.00f };
+	style.Colors[ImGuiCol_TabUnfocusedActive] = { 0.05f, 0.05f, 0.05f, 1.00f };
+	style.Colors[ImGuiCol_TabUnfocused] = { 0.05f, 0.05f, 0.05f, 1.00f };
+
+	// ボタン
+	style.Colors[ImGuiCol_Button] = { 0.05f, 0.05f, 0.05f, 1.00f };
+	style.Colors[ImGuiCol_ButtonHovered] = { 0.1f, 0.1f, 0.1f, 1.00f };
+	style.Colors[ImGuiCol_ButtonActive] = { 0.15f, 0.15f, 0.15f, 1.00f };
+
+	// 選択ハイライト
+	style.Colors[ImGuiCol_Header] = { 0.05f, 0.05f, 0.05f, 1.00f };
+	style.Colors[ImGuiCol_HeaderHovered] = { 0.1f, 0.1f, 0.1f, 1.00f };
+	style.Colors[ImGuiCol_HeaderActive] = { 0.15f, 0.15f, 0.15f, 1.00f };
+
+	
+
 	ImGuiIO& io = ImGui::GetIO();
 	ImFont* fontJP = io.Fonts->AddFontFromFileTTF(
 		"Resources/AppliMincho/PottaOne-Regular.ttf", 17.0f, nullptr,
@@ -45,11 +82,13 @@ void ImGuiManager::Initialize(
 	initInfo.RTVFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	initInfo.SrvDescriptorHeap = heapManager->GetHeap();
 	initInfo.UserData = heapManager;
-	
+
 	initInfo.SrvDescriptorAllocFn = ImGuiManager::AllocDescriptor;
 	initInfo.SrvDescriptorFreeFn = ImGuiManager::FreeDescriptor;
 
 	ImGui_ImplDX12_Init(&initInfo);
+
+	EditorManager::GetInstance()->Initialize();
 #endif
 }
 
@@ -89,6 +128,7 @@ void ImGuiManager::RenderDockingSpace(
 	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoNavFocus;
 	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+	window_flags |= ImGuiWindowFlags_MenuBar;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);

@@ -11,7 +11,7 @@
     <ClCompile Include="Engine\Common\Utility\ChangeString.cpp" />
     <ClCompile Include="Engine\Render\PSO\InputLayoutManager.cpp" />
     <ClCompile Include="Engine\Editor\ImGui\ImGuiManager.cpp" />
-    <ClCompile Include="Engine\Editor\ImGui\EditorManager.cpp" />
+    <ClCompile Include="Engine\Editor\Window\EditorManager.cpp" />
     <ClCompile Include="Engine\Core\LeakChecker.cpp" />
     <ClCompile Include="Engine\Common\Utility\Function.cpp" />
     <ClCompile Include="Engine\Core\Input\GamePad.cpp" />
@@ -119,6 +119,8 @@
     <ClCompile Include="Engine\Graphics\PostEffect\RadialBlur.cpp" />
     <ClCompile Include="Engine\Graphics\PostEffect\RandomNoise.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\Component\Component.cpp" />
+    <ClCompile Include="Engine\Editor\Window\IEditorWindow.cpp" />
+    <ClCompile Include="Engine\Editor\Window\PerformanceWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -145,7 +147,7 @@
     <ClInclude Include="Engine\Common\Utility\ChangeString.h" />
     <ClInclude Include="Engine\Render\PSO\InputLayoutManager.h" />
     <ClInclude Include="Engine\Editor\ImGui\ImGuiManager.h" />
-    <ClInclude Include="Engine\Editor\ImGui\EditorManager.h" />
+    <ClInclude Include="Engine\Editor\Window\EditorManager.h" />
     <ClInclude Include="Engine\Core\LeakChecker.h" />
     <ClInclude Include="Engine\Core\Input\GamePad.h" />
     <ClInclude Include="Engine\Common\Utility\Function.h" />
@@ -267,6 +269,8 @@
     <ClInclude Include="Engine\Graphics\PostEffect\RadialBlur.h" />
     <ClInclude Include="Engine\Graphics\PostEffect\RandomNoise.h" />
     <ClInclude Include="Engine\Graphics\PostEffect\PostEffectType.h" />
+    <ClInclude Include="Engine\Editor\Window\IEditorWindow.h" />
+    <ClInclude Include="Engine\Editor\Window\PerformanceWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />
