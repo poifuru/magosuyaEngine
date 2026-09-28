@@ -57,7 +57,7 @@ void ImGuiManager::Initialize(
 	style.Colors[ImGuiCol_TabUnfocused] = { 0.05f, 0.05f, 0.05f, 1.00f };
 
 	// ボタン
-	style.Colors[ImGuiCol_Button] = { 0.05f, 0.05f, 0.05f, 1.00f };
+	style.Colors[ImGuiCol_Button] = { 0.30f, 0.30f, 0.30f, 1.00f };
 	style.Colors[ImGuiCol_ButtonHovered] = { 0.1f, 0.1f, 0.1f, 1.00f };
 	style.Colors[ImGuiCol_ButtonActive] = { 0.15f, 0.15f, 0.15f, 1.00f };
 
@@ -65,8 +65,6 @@ void ImGuiManager::Initialize(
 	style.Colors[ImGuiCol_Header] = { 0.05f, 0.05f, 0.05f, 1.00f };
 	style.Colors[ImGuiCol_HeaderHovered] = { 0.1f, 0.1f, 0.1f, 1.00f };
 	style.Colors[ImGuiCol_HeaderActive] = { 0.15f, 0.15f, 0.15f, 1.00f };
-
-	
 
 	ImGuiIO& io = ImGui::GetIO();
 	ImFont* fontJP = io.Fonts->AddFontFromFileTTF(
