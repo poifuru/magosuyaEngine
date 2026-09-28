@@ -20,6 +20,9 @@ public:
 	bool IsFirstPerson() const { return isFirstPerson_; }
 	void SetFirstPerson(bool flag);
 
+	bool IsUnderwater() const { return isUnderwater_; }
+	void SetUnderwater(bool flag) { isUnderwater_ = flag; }
+
 private:
 	void UpdateTargetVisibility();
 
@@ -38,4 +41,7 @@ private:
 	// カメラの回転角
 	float angleX_ = 0.2f; // 上下回転（Pitch: 最初は少し見下ろす角度にする）
 	float angleY_ = 0.0f; // 左右回転（Yaw）
+
+	// 水中フェーズフラグ
+	bool isUnderwater_ = false;
 };

@@ -7,6 +7,7 @@
 #include "RawInput.h"
 #include "GamePad.h"
 #include "MeshRendererComponent.h"
+#include "PlayerComponent.h"
 #include <algorithm>
 #include <cmath>
 
@@ -68,6 +69,11 @@ void VirtualFollowCamera::Update() {
 		const float maxPitch = 80.0f * (3.14159265f / 180.0f);
 		angleX_ = std::clamp(angleX_, -maxPitch, maxPitch);
 
+		// プレイヤーが水中に入っているかを自動同期
+		if (auto* playerComp = target_->GetComponent<PlayerComponent>()) {
+			isUnderwater_ = playerComp->IsUnderwater();
+		}
+
 		auto& myTransform = gameObject_->GetTransform();
 
 		if (isFirstPerson_) {
@@ -93,10 +99,18 @@ void VirtualFollowCamera::Update() {
 			// 自身の座標を滑らかに補間して追従させる
 			myTransform.translate = Math::Lerp(myTransform.translate, targetPos, 1.0f - delay_);
 
-			// カメラが水面（Y = 0.0f）より下に行かないように制限する！
-			const float kMinCameraY = 0.5f; // 水面の高さ
-			if (myTransform.translate.y < kMinCameraY) {
-				myTransform.translate.y = kMinCameraY;
+			// 水上フェーズでは水面（Y = 0.5f）より下に行かないように制限
+			// 水中フェーズでは水面（Y = -0.8f）より上に出ないように制限
+			if (!isUnderwater_) {
+				const float kMinCameraY = 0.5f; // 水面の高さ
+				if (myTransform.translate.y < kMinCameraY) {
+					myTransform.translate.y = kMinCameraY;
+				}
+			} else {
+				const float kMaxCameraY = -0.8f; // 水面下
+				if (myTransform.translate.y > kMaxCameraY) {
+					myTransform.translate.y = kMaxCameraY;
+				}
 			}
 
 			// 常にターゲットの方を向く（LookAt回転）の計算
@@ -120,6 +134,7 @@ void VirtualFollowCamera::ImGui() {
 	VirtualCameraComponent::ImGui(); // 親のImGui（優先度・FOV）を描画
 
 	ImGui::Separator();
+	ImGui::Checkbox("Is Underwater", &isUnderwater_);
 	if (ImGui::Checkbox("First Person Mode (V Key)", &isFirstPerson_)) {
 		UpdateTargetVisibility();
 	}
@@ -147,6 +162,7 @@ void VirtualFollowCamera::Serialize(json& j) const {
 	j["angleY"] = angleY_;
 	j["isFirstPerson"] = isFirstPerson_;
 	j["firstPersonOffset"] = { firstPersonOffset_.x, firstPersonOffset_.y, firstPersonOffset_.z };
+	j["isUnderwater"] = isUnderwater_;
 }
 
 void VirtualFollowCamera::Deserialize(const json& j) {
@@ -164,6 +180,9 @@ void VirtualFollowCamera::Deserialize(const json& j) {
 	}
 	if (j.contains("firstPersonOffset")) {
 		firstPersonOffset_ = { j["firstPersonOffset"][0], j["firstPersonOffset"][1], j["firstPersonOffset"][2] };
+	}
+	if (j.contains("isUnderwater")) {
+		isUnderwater_ = j["isUnderwater"];
 	}
 	UpdateTargetVisibility();
 }

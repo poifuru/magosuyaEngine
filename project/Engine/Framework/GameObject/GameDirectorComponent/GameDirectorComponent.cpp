@@ -4,6 +4,8 @@
 #include "BaseScene.h"
 #include "NumberDrawerComponent.h"
 #include "VirtualFollowCamera.h"
+#include "PlayerComponent.h"
+#include "EnemyManagerComponent.h"
 #include "imgui.h"
 #include "LogManager.h" // ログ出力用（存在すれば）
 
@@ -41,6 +43,24 @@ void GameDirectorComponent::ImGui() {
 		currentKills_ = 0;
 		isBossEventTriggered_ = false;
 		UpdateUI();
+
+		// 水上モードにリセット
+		if (gameObject_ && gameObject_->GetContext() && gameObject_->GetContext()->activeGameObjects) {
+			for (auto& obj : *(gameObject_->GetContext()->activeGameObjects)) {
+				if (auto* player = obj->GetComponent<PlayerComponent>()) {
+					if (auto* move = player->GetMovement()) {
+						move->SetUnderwater(false);
+						obj->GetTransform().translate.y = 0.3f;
+					}
+				}
+				if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
+					followCam->SetUnderwater(false);
+				}
+				if (auto* enemyMgr = obj->GetComponent<EnemyManagerComponent>()) {
+					enemyMgr->SetSpawningEnabled(true);
+				}
+			}
+		}
 	}
 #endif
 }
@@ -75,25 +95,31 @@ void GameDirectorComponent::NotifyEnemyDead() {
 
 void GameDirectorComponent::OnTargetKillsAchieved() {
 	// 目標撃破数を達成したときの処理！
-	// ボス出現イベントムービーを流して水中フェーズに移行する
-	
+	// 水上から水中フェーズ（ボスフェーズ）へ移行
 #ifdef _DEBUG
-	OutputDebugStringA("--- Game Director: Target Kills Achieved! Triggering Boss Spawn Event ---\n");
+	OutputDebugStringA("--- Game Director: Target Kills Achieved! Transitioning to Underwater Phase ---\n");
 #endif
 
-	// FixedPointCameraオブジェクトを検索して最優先に切り替え
+	isBossEventTriggered_ = true;
+
 	if (gameObject_) {
 		SceneContext* context = gameObject_->GetContext();
 		if (context && context->activeGameObjects) {
 			for (auto& obj : *(context->activeGameObjects)) {
-				if (obj->GetName() == "FixedPointCamera") {
-					if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
-						followCam->SetPriority(100); // 優先度を最大に引き上げて切り替える
-#ifdef _DEBUG
-						OutputDebugStringA("Game Director: FixedPointCamera found and priority set to 100.\n");
-#endif
-						break;
-					}
+				// 1. プレイヤーを水中へ潜航させる
+				if (auto* player = obj->GetComponent<PlayerComponent>()) {
+					player->TransitionToUnderwater();
+				}
+
+				// 2. 追従カメラを水中モードに切り替える
+				if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
+					followCam->SetUnderwater(true);
+				}
+
+				// 3. 雑魚敵マネージャーの新規スポーンを停止し、水上の敵を一掃
+				if (auto* enemyMgr = obj->GetComponent<EnemyManagerComponent>()) {
+					enemyMgr->SetSpawningEnabled(false);
+					enemyMgr->ClearAllEnemies();
 				}
 			}
 		}

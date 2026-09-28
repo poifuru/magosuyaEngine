@@ -83,6 +83,16 @@ const Vector3& PlayerComponent::GetForward() const {
 	return movement_ ? movement_->GetForward() : s_defaultForward;
 }
 
+void PlayerComponent::TransitionToUnderwater() {
+	if (movement_) {
+		movement_->TransitionToUnderwater();
+	}
+}
+
+bool PlayerComponent::IsUnderwater() const {
+	return movement_ ? movement_->IsUnderwater() : false;
+}
+
 void PlayerComponent::ResolveReticle(const std::vector<std::unique_ptr<GameObject>>& gameObjects) {
 	for (const auto& obj : gameObjects) {
 		if (obj && obj->GetComponent<ReticleComponent>()) {

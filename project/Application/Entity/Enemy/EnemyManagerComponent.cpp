@@ -37,12 +37,29 @@ void EnemyManagerComponent::Update() {
 		}
 	}
 
+	if (!isSpawningEnabled_) return;
+
 	// 時間経過でタイマーを減算
 	spawnTimer_ -= Time::GetDeltaTime();
 	if (spawnTimer_ <= 0.0f) {
 		spawnTimer_ = spawnInterval_;
 
 		SpawnEnemy();
+	}
+}
+
+void EnemyManagerComponent::ClearAllEnemies() {
+	if (!gameObject_) return;
+	auto* context = gameObject_->GetContext();
+	if (!context || !context->activeGameObjects) return;
+
+	for (const auto& obj : *(context->activeGameObjects)) {
+		if (auto* bird = obj->GetComponent<BirdEnemyComponent>()) {
+			bird->OnDead();
+		}
+		if (auto* fish = obj->GetComponent<FishEnemyComponent>()) {
+			fish->OnDead();
+		}
 	}
 }
 
@@ -133,6 +150,10 @@ void EnemyManagerComponent::SpawnEnemy() {
 }
 
 void EnemyManagerComponent::ImGui() {
+	ImGui::Checkbox("Spawning Enabled", &isSpawningEnabled_);
+	if (ImGui::Button("Clear All Enemies")) {
+		ClearAllEnemies();
+	}
 	ImGui::DragInt("Max Enemies", &maxEnemies_, 1, 1, 100);
 	ImGui::DragFloat("Spawn Interval", &spawnInterval_, 0.1f, 0.5f, 60.0f);
 	ImGui::DragFloat("Spawn Radius", &spawnRadius_, 0.5f, 5.0f, 100.0f);
@@ -154,6 +175,7 @@ void EnemyManagerComponent::Serialize(json& j) const {
 	j["maxEnemies"] = maxEnemies_;
 	j["spawnInterval"] = spawnInterval_;
 	j["spawnRadius"] = spawnRadius_;
+	j["isSpawningEnabled"] = isSpawningEnabled_;
 }
 
 void EnemyManagerComponent::Deserialize(const json& j) {
@@ -161,4 +183,5 @@ void EnemyManagerComponent::Deserialize(const json& j) {
 	if (j.contains("maxEnemies")) maxEnemies_ = j["maxEnemies"];
 	if (j.contains("spawnInterval")) spawnInterval_ = j["spawnInterval"];
 	if (j.contains("spawnRadius")) spawnRadius_ = j["spawnRadius"];
+	if (j.contains("isSpawningEnabled")) isSpawningEnabled_ = j["isSpawningEnabled"];
 }

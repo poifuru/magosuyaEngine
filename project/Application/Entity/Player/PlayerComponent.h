@@ -37,6 +37,10 @@ public:
 
 	const Vector3& GetForward() const;
 
+	// 水中フェーズ
+	void TransitionToUnderwater();
+	bool IsUnderwater() const;
+
 	// サブシステムへのアクセサ
 	PlayerMovement* GetMovement() const { return movement_.get(); }
 	PlayerWeapon* GetWeapon() const { return weapon_.get(); }

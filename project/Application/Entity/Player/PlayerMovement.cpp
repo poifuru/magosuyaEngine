@@ -7,6 +7,7 @@
 #include "MathFunction.h"
 #include "CameraOrganizer.h"
 #include "BaseCamera.h"
+#include "../../../../Engine/Editor/ParticleEditor/ParticleSpawner.h"
 #include <algorithm>
 #include <cmath>
 
@@ -21,6 +22,17 @@ void PlayerMovement::Initialize() {
 	maxSpeed_ = 2.5f;
 	brakeTurnSpeedMultiplier_ = 3.0f;
 	brakeMoveSpeedMultiplier_ = 0.2f;
+
+	isUnderwater_ = false;
+	isDiving_ = false;
+	targetDepthY_ = -30.0f;
+	diveSpeed_ = 15.0f;
+}
+
+void PlayerMovement::TransitionToUnderwater() {
+	if (isUnderwater_) return;
+	isUnderwater_ = true;
+	isDiving_ = true;
 }
 
 void PlayerMovement::Update(GameObject* gameObject) {
@@ -31,6 +43,31 @@ void PlayerMovement::Update(GameObject* gameObject) {
 void PlayerMovement::Move(GameObject* gameObject) {
 	if (!gameObject) return;
 
+	// 潜航演出中の処理
+	if (isDiving_) {
+		float currentY = gameObject->GetTransform().translate.y;
+		if (currentY > targetDepthY_) {
+			currentY -= diveSpeed_ * Time::GetDeltaTime();
+			if (currentY <= targetDepthY_) {
+				currentY = targetDepthY_;
+				isDiving_ = false;
+			}
+		} else {
+			isDiving_ = false;
+		}
+		gameObject->GetTransform().translate.y = currentY;
+
+		// 潜航時に水飛沫エフェクトを発生
+		static float splashInterval = 0.0f;
+		splashInterval += Time::GetDeltaTime();
+		if (splashInterval >= 0.1f && currentY > -5.0f) {
+			splashInterval = 0.0f;
+			if (gameObject->GetContext()) {
+				ParticleSpawner::SpawnWaterSplash(gameObject->GetContext(), gameObject->GetTransform().translate, 5);
+			}
+		}
+	}
+
 	// 起動時に合計が 1.0f からズレていた場合のための自動補正
 	dirRatioZ_ = std::clamp(dirRatioZ_, 0.0f, 1.0f);
 	dirRatioX_ = 1.0f - dirRatioZ_;
@@ -39,7 +76,10 @@ void PlayerMovement::Move(GameObject* gameObject) {
 	InputManager* input = InputManager::GetInstance();
 
 	// ブレーキ入力の判定
-	bool isBrakePressed = input->GetRawInput()->Push(VK_SPACE);
+	bool isBrakePressed = false;
+	if (!isUnderwater_ && input->GetRawInput()->Push(VK_SPACE)) {
+		isBrakePressed = true;
+	}
 	if (input->GetGamePad()->IsConection()) {
 		if (input->GetGamePad()->PushButton(Button::A)) {
 			isBrakePressed = true;
@@ -61,7 +101,7 @@ void PlayerMovement::Move(GameObject* gameObject) {
 	Vector3 camForward = { camWorld.m[2][0], camWorld.m[2][1], camWorld.m[2][2] };
 	Vector3 camRight = { camWorld.m[0][0], camWorld.m[0][1], camWorld.m[0][2] };
 
-	// 前後左右の移動はすべて水平方向（XZ平面）に制限
+	// 前後左右の移動は水平方向（XZ平面）に制限して基準ベクトルを作成
 	camForward.y = 0.0f;
 	camRight.y = 0.0f;
 	if (Math::Length(camForward) > 0.001f) camForward = Math::Normalize(camForward);
@@ -72,6 +112,22 @@ void PlayerMovement::Move(GameObject* gameObject) {
 	if (input->GetRawInput()->Push('S')) { moveDir = Math::Subtract(moveDir, camForward); }
 	if (input->GetRawInput()->Push('A')) { moveDir = Math::Subtract(moveDir, camRight); }
 	if (input->GetRawInput()->Push('D')) { moveDir = Math::Add(moveDir, camRight); }
+
+	// 水中での上下移動（Spaceで上昇、Shiftで下降）
+	if (isUnderwater_ && !isDiving_) {
+		float vertMove = 0.0f;
+		if (input->GetRawInput()->Push(VK_SPACE)) { vertMove += 1.0f; }
+		if (input->GetRawInput()->Push(VK_SHIFT)) { vertMove -= 1.0f; }
+
+		if (input->GetGamePad()->IsConection()) {
+			if (input->GetGamePad()->PushButton(Button::R)) { vertMove += 1.0f; }
+			if (input->GetGamePad()->PushButton(Button::L)) { vertMove -= 1.0f; }
+		}
+
+		if (vertMove != 0.0f) {
+			velocity_.y += vertMove * currentSpeed * Time::GetDeltaTime() * 2.0f;
+		}
+	}
 
 	// ゲームパッド入力で移動方向を蓄積
 	if (input->GetGamePad()->IsConection()) {
@@ -87,7 +143,6 @@ void PlayerMovement::Move(GameObject* gameObject) {
 		moveDir = Math::Normalize(moveDir);
 
 		// 向き（Yaw回転 / Pitch回転）を徐々に補間して近づける
-		// 左右の旋回目標角度 (Yaw)
 		float targetYaw = std::atan2(moveDir.x, moveDir.z);
 		float currentYaw = gameObject->GetTransform().rotate.y;
 
@@ -109,7 +164,6 @@ void PlayerMovement::Move(GameObject* gameObject) {
 		gameObject->GetTransform().rotate.x += diffPitch * currentTurnSpeed * Time::GetDeltaTime();
 
 		// 移動ベクトルのブレンド (前進 dirRatioZ_ : 入力 dirRatioX_)
-		// 潜水艦の「現在の正面方向」のベクトルを計算する
 		float cy = std::cos(gameObject->GetTransform().rotate.y);
 		float sy = std::sin(gameObject->GetTransform().rotate.y);
 		float cx = std::cos(gameObject->GetTransform().rotate.x);
@@ -140,7 +194,6 @@ void PlayerMovement::Move(GameObject* gameObject) {
 	}
 
 	// 速度の減衰と制限
-	// 通常は attenuationRate_ だが、ブレーキ中は強いブレーキにする
 	float currentAttenuation = attenuationRate_;
 	if (isBrakePressed) {
 		currentAttenuation = brakeAttenuationRate_;
@@ -164,10 +217,39 @@ void PlayerMovement::Move(GameObject* gameObject) {
 	gameObject->GetTransform().translate.x += velocity_.x;
 	gameObject->GetTransform().translate.y += velocity_.y;
 	gameObject->GetTransform().translate.z += velocity_.z;
+
+	// 水深・水面の制限
+	if (isUnderwater_) {
+		const float kWaterMaxY = -2.0f;  // 水面より少し下
+		const float kWaterMinY = -90.0f; // 海底の手前
+		if (gameObject->GetTransform().translate.y > kWaterMaxY) {
+			gameObject->GetTransform().translate.y = kWaterMaxY;
+			if (velocity_.y > 0.0f) velocity_.y = 0.0f;
+		}
+		if (gameObject->GetTransform().translate.y < kWaterMinY) {
+			gameObject->GetTransform().translate.y = kWaterMinY;
+			if (velocity_.y < 0.0f) velocity_.y = 0.0f;
+		}
+	}
+	else {
+		// 水上フェーズでは水面に位置を維持
+		gameObject->GetTransform().translate.y = 0.3f;
+		velocity_.y = 0.0f;
+	}
 }
 
 void PlayerMovement::ImGui() {
 #ifdef USEIMGUI
+	ImGui::Separator();
+	ImGui::Text("--- Underwater Phase ---");
+	if (ImGui::Checkbox("Is Underwater", &isUnderwater_)) {
+		if (isUnderwater_) {
+			isDiving_ = true;
+		}
+	}
+	ImGui::DragFloat("Target Depth Y", &targetDepthY_, 0.5f, -90.0f, -5.0f);
+	ImGui::DragFloat("Dive Speed", &diveSpeed_, 0.5f, 1.0f, 50.0f);
+
 	ImGui::Separator();
 	ImGui::DragFloat("Speed (Power)", &speed_, 0.01f, 0.0f, 5.0f);
 	ImGui::DragFloat("Max Speed", &maxSpeed_, 0.05f, 0.5f, 10.0f); 
@@ -201,6 +283,8 @@ void PlayerMovement::Serialize(json& j) const {
 	j["dirRatioX"] = dirRatioX_;
 	j["brakeTurnSpeedMultiplier"] = brakeTurnSpeedMultiplier_;
 	j["brakeMoveSpeedMultiplier"] = brakeMoveSpeedMultiplier_;
+	j["isUnderwater"] = isUnderwater_;
+	j["targetDepthY"] = targetDepthY_;
 }
 
 void PlayerMovement::Deserialize(const json& j) {
@@ -213,4 +297,6 @@ void PlayerMovement::Deserialize(const json& j) {
 	if (j.contains("dirRatioX")) dirRatioX_ = j["dirRatioX"];
 	if (j.contains("brakeTurnSpeedMultiplier")) brakeTurnSpeedMultiplier_ = j["brakeTurnSpeedMultiplier"];
 	if (j.contains("brakeMoveSpeedMultiplier")) brakeMoveSpeedMultiplier_ = j["brakeMoveSpeedMultiplier"];
+	if (j.contains("isUnderwater")) isUnderwater_ = j["isUnderwater"];
+	if (j.contains("targetDepthY")) targetDepthY_ = j["targetDepthY"];
 }
