@@ -179,6 +179,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="application\entity\player\PlayerComponent.cpp" />
+    <ClCompile Include="application\entity\player\PlayerHealth.cpp" />
+    <ClCompile Include="application\entity\player\PlayerMovement.cpp" />
+    <ClCompile Include="application\entity\player\PlayerTurret.cpp" />
+    <ClCompile Include="application\entity\player\PlayerWeapon.cpp" />
     <ClCompile Include="application\scene\ClearScene.cpp" />
     <ClCompile Include="application\scene\GameoverScene.cpp" />
     <ClCompile Include="application\entity\Entity.cpp" />
@@ -457,6 +461,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\primitive\Mesh.h" />
     <ClInclude Include="Engine\Core\SRV\SRVManager.h" />
     <ClInclude Include="application\entity\player\PlayerComponent.h" />
+    <ClInclude Include="application\entity\player\PlayerHealth.h" />
+    <ClInclude Include="application\entity\player\PlayerMovement.h" />
+    <ClInclude Include="application\entity\player\PlayerTurret.h" />
+    <ClInclude Include="application\entity\player\PlayerWeapon.h" />
     <ClInclude Include="Engine\Graphics\light\PointLight.h" />
     <ClInclude Include="Engine\Graphics\light\SpotLight.h" />
     <ClInclude Include="Engine\Graphics\light\RectLight.h" />

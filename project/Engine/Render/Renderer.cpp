@@ -170,8 +170,8 @@ void MyEngine::Rendering::Renderer::Draw(std::vector<std::unique_ptr<GameObject>
 
 		// 3Dモデルの描画
 		if(auto* meshRenderer = obj->GetComponent<MeshRendererComponent>()) {
-			// MeshRendererComponentを継承してるComponentの場合
-			if(!obj->GetComponent<WaterSurfaceComponent>()) {
+			// 非表示設定なら描画をスキップ
+			if(meshRenderer->IsVisible() && !obj->GetComponent<WaterSurfaceComponent>()) {
 				if(auto* model = meshRenderer->GetModel()) {
 					auto* modelData = model->GetModelData();
 					auto* material = model->GetMaterial();

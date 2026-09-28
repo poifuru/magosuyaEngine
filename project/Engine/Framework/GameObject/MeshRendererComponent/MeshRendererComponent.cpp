@@ -56,6 +56,10 @@ void MeshRendererComponent::ImGui() {
 	}
 	ImGui::Spacing();
 
+	// 表示・非表示のチェックボックス
+	ImGui::Checkbox("Visible", &isVisible_);
+	ImGui::Spacing();
+
 	// 既存のModelクラスが持っているImGuiの調整機能もそのまま呼べる
 	if(model_) {
 		model_->ImGui("Model Material");
@@ -67,6 +71,7 @@ void MeshRendererComponent::Serialize(json& j) const {
 	j["modelPath"] = modelPath_;
 	j["texPath"] = texPath_;
 	j["isDepthEnable"] = isDepthEnable_;
+	j["isVisible"] = isVisible_;
 
 	if (model_) {
 		if (auto material = model_->GetMaterial()) {
@@ -95,6 +100,9 @@ void MeshRendererComponent::Deserialize(const json& j) {
 	}
 	if (j.contains("isDepthEnable")) {
 		isDepthEnable_ = j["isDepthEnable"];
+	}
+	if (j.contains("isVisible")) {
+		isVisible_ = j["isVisible"];
 	}
 
 	if (model_ && j.contains("material")) {

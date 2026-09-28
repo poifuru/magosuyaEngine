@@ -48,6 +48,10 @@ public:
 	// 両面表示を設定する関数
 	void SetDoubleSided(bool flag);
 
+	// 表示・非表示を設定する関数
+	void SetVisible(bool flag) { isVisible_ = flag; }
+	bool IsVisible() const { return isVisible_; }
+
 private:
 	std::unique_ptr<MyEngine::Rendering::Model> model_ = nullptr;
 	std::string modelPath_ = "Resources/AnimatedCube/AnimatedCube.gltf";	// デフォルトモデル
@@ -55,4 +59,5 @@ private:
 	uint32_t modelIndex_ = 0;
 	uint32_t texIndex_ = 0;
 	bool isDepthEnable_ = true;
+	bool isVisible_ = true;
 };
