@@ -6,6 +6,9 @@
 #include "VirtualFollowCamera.h"
 #include "PlayerComponent.h"
 #include "EnemyManagerComponent.h"
+#include "MeshRendererComponent.h"
+#include "ColliderComponent.h"
+#include "Boss.h"
 #include "imgui.h"
 #include "LogManager.h" // ログ出力用（存在すれば）
 
@@ -59,6 +62,9 @@ void GameDirectorComponent::ImGui() {
 				if (auto* enemyMgr = obj->GetComponent<EnemyManagerComponent>()) {
 					enemyMgr->SetSpawningEnabled(true);
 				}
+				if (obj->GetName() == "Boss" || obj->GetComponent<BossComponent>() != nullptr) {
+					obj->Destroy();
+				}
 			}
 		}
 	}
@@ -105,10 +111,15 @@ void GameDirectorComponent::OnTargetKillsAchieved() {
 	if (gameObject_) {
 		SceneContext* context = gameObject_->GetContext();
 		if (context && context->activeGameObjects) {
+			Vector3 playerPos = { 0.0f, -30.0f, 0.0f };
+			float playerYaw = 0.0f;
+
 			for (auto& obj : *(context->activeGameObjects)) {
 				// 1. プレイヤーを水中へ潜航させる
 				if (auto* player = obj->GetComponent<PlayerComponent>()) {
 					player->TransitionToUnderwater();
+					playerPos = obj->GetTransform().translate;
+					playerYaw = obj->GetTransform().rotate.y;
 				}
 
 				// 2. 追従カメラを水中モードに切り替える
@@ -121,6 +132,47 @@ void GameDirectorComponent::OnTargetKillsAchieved() {
 					enemyMgr->SetSpawningEnabled(false);
 					enemyMgr->ClearAllEnemies();
 				}
+			}
+
+			// 4. ボスの生成（既に存在していないか確認）
+			bool bossExists = false;
+			for (const auto& obj : *(context->activeGameObjects)) {
+				if (obj->GetName() == "Boss" || obj->GetComponent<BossComponent>() != nullptr) {
+					bossExists = true;
+					break;
+				}
+			}
+
+			if (!bossExists && context->gameObjects) {
+				auto bossObj = std::make_unique<GameObject>(context, "Boss");
+
+				// プレイヤーの前方約45m、水深-35mに出現
+				float spawnDist = 45.0f;
+				Vector3 spawnPos = playerPos;
+				spawnPos.x += std::sin(playerYaw) * spawnDist;
+				spawnPos.z += std::cos(playerYaw) * spawnDist;
+				spawnPos.y = -35.0f;
+
+				bossObj->GetTransform().translate = spawnPos;
+				bossObj->GetTransform().scale = { 8.0f, 8.0f, 8.0f };
+				bossObj->GetTransform().rotate.y = playerYaw + 3.14159265f; // プレイヤーの方を向く
+
+				// レンダラー設定（巨大深海魚モデル）
+				auto* mesh = bossObj->AddComponent<MeshRendererComponent>();
+				mesh->SetModel("Resources/Enemy/smallFish/smallFish.obj");
+				mesh->SetTexture("white1x1");
+				mesh->SetColor({ 0.6f, 0.7f, 0.95f, 1.0f });
+
+				// ボス挙動・当たり判定
+				bossObj->AddComponent<BossComponent>();
+				auto* collider = bossObj->AddComponent<ColliderComponent>();
+
+				bossObj->Initialize();
+				collider->SetRadius(8.0f);
+
+				bossObj->SetSerializable(false);
+
+				context->gameObjects->push_back(std::move(bossObj));
 			}
 		}
 	}

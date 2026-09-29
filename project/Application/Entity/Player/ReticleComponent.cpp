@@ -10,6 +10,7 @@
 #include "WindowsAPI.h"
 #include "FishEnemyComponent.h"
 #include "BirdEnemyComponent.h"
+#include "Boss.h"
 
 void ReticleComponent::Initialize() {
 	// すでに初期化済み（ロード済み）なら、デフォルト値での上書きをスキップする
@@ -67,7 +68,9 @@ void ReticleComponent::Update() {
 			// プレイヤー自身、弾、レティクル、カメラ以外の「コライダー付きオブジェクト」をすべて敵とみなす
 			bool isEnemy = (obj->GetComponent<BirdEnemyComponent>() != nullptr || 
 							obj->GetComponent<FishEnemyComponent>() != nullptr ||
-							obj->GetName() == "Enemy");
+							obj->GetComponent<BossComponent>() != nullptr ||
+							obj->GetName() == "Enemy" ||
+							obj->GetName() == "Boss");
 
 			if(isEnemy && obj->GetComponent<ColliderComponent>() != nullptr) {
 

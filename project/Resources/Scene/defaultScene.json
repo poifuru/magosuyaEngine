@@ -5,6 +5,7 @@
             "components": [
                 {
                     "isDepthEnable": true,
+                    "isVisible": true,
                     "material": {
                         "color": [
                             1.0,
@@ -52,9 +53,11 @@
                     "harpoonMaxDistance": 30.0,
                     "harpoonSpeed": 100.0,
                     "hp": 0,
+                    "isUnderwater": false,
                     "maxHp": 5,
                     "maxSpeed": 0.5,
                     "speed": 0.15000000596046448,
+                    "targetDepthY": -30.0,
                     "turnSpeed": 0.10000000149011612,
                     "type": "PlayerComponent"
                 },
@@ -133,13 +136,13 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    213.04547119140625,
-                    0.5,
-                    -168.81338500976563
+                    -55.364166259765625,
+                    131.36148071289063,
+                    -73.29861450195313
                 ],
                 "rotation": [
-                    -0.08981304615736008,
-                    -1.688560128211975,
+                    0.4182012677192688,
+                    1.915164828300476,
                     0.0
                 ],
                 "scale": [
@@ -153,7 +156,7 @@
             "components": [
                 {
                     "fov": 0.44999998807907104,
-                    "priority": 10,
+                    "priority": 20,
                     "sensitivity": 0.0010000000474974513,
                     "speed": 0.30000001192092896,
                     "type": "VirtualDebugCamera"
@@ -181,16 +184,23 @@
         {
             "components": [
                 {
-                    "angleX": -0.08626396954059601,
-                    "angleY": 130.25833129882813,
+                    "angleX": 0.43873563408851624,
+                    "angleY": 129.73316955566406,
                     "delay": 0.5,
+                    "firstPersonOffset": [
+                        0.0,
+                        1.2000000476837158,
+                        0.0
+                    ],
                     "fov": 0.5,
+                    "isFirstPerson": false,
+                    "isUnderwater": false,
                     "offset": [
                         0.0,
                         5.099999904632568,
                         -70.0
                     ],
-                    "priority": 20,
+                    "priority": 10,
                     "targetName": "Player",
                     "targetOffsetY": 6.0,
                     "type": "VirtualFollowCamera"
@@ -199,13 +209,13 @@
             "name": "FollowCamera",
             "transform": {
                 "position": [
-                    213.04547119140625,
-                    0.5,
-                    -168.81338500976563
+                    192.3366241455078,
+                    35.17266082763672,
+                    -140.3647918701172
                 ],
                 "rotation": [
-                    -0.08981304615736008,
-                    -1.688560128211975,
+                    0.43381792306900024,
+                    -2.21372127532959,
                     0.0
                 ],
                 "scale": [
@@ -368,6 +378,7 @@
             "components": [
                 {
                     "isDepthEnable": true,
+                    "isVisible": true,
                     "material": {
                         "color": [
                             0.9233871102333069,
@@ -425,6 +436,7 @@
         {
             "components": [
                 {
+                    "isSpawningEnabled": true,
                     "maxEnemies": 5,
                     "spawnInterval": 5.0,
                     "spawnRadius": 40.0,
@@ -713,13 +725,20 @@
                     "angleX": 0.20000000298023224,
                     "angleY": 0.0,
                     "delay": 0.10000000149011612,
+                    "firstPersonOffset": [
+                        0.0,
+                        1.2000000476837158,
+                        0.0
+                    ],
                     "fov": 0.44999998807907104,
+                    "isFirstPerson": false,
+                    "isUnderwater": false,
                     "offset": [
                         0.0,
                         5.0,
                         -10.0
                     ],
-                    "priority": 20,
+                    "priority": 10,
                     "targetName": "",
                     "targetOffsetY": 3.799999952316284,
                     "type": "VirtualFollowCamera"
@@ -747,6 +766,7 @@
         {
             "components": [
                 {
+                    "isSpawningEnabled": true,
                     "maxEnemies": 5,
                     "spawnInterval": 7.0,
                     "spawnRadius": 100.0,

@@ -12,7 +12,6 @@
 #include "LightManager.h"
 #include "PostEffectManager.h"
 #include "Dissolve.h"
-#include "TutorialManager.h"
 #include "TextureManager.h"
 
 PlayScene::PlayScene() = default;
@@ -73,10 +72,6 @@ void PlayScene::Initialize() {
 	postEffectManager_ = std::make_unique<PostEffectManager>();
 	postEffectManager_->Initialize(context_->graphicsDevice->GetDevice());
 
-	// チュートリアルマネージャーの初期化
-	tutorialManager_ = std::make_unique<TutorialManager>();
-	tutorialManager_->Initialize(this);
-
 	// ノイズ画像をロードしてセット
 	uint32_t noiseIndex = context_->textureManager->LoadTexture("Resources/Noise/fire_noise.png");
 
@@ -115,11 +110,6 @@ void PlayScene::Update(CameraData* cameraData) {
 	}
 #endif
 
-	// チュートリアルの更新
-	if (tutorialManager_) {
-		tutorialManager_->Update();
-	}
-
 	// 全オブジェクトの更新
 	for (auto& obj : gameObjects_) {
 		obj->Update();
@@ -128,7 +118,7 @@ void PlayScene::Update(CameraData* cameraData) {
 	// 当たり判定の実行
 	CollisionManager::GetInstance()->UpdateAllCollisions();
 
-	// ループ終了後に、追加待ちのオブジェクトをメインリストに合流させる！
+	// ループ終了後に、追加待ちのオブジェクトをメインリストに合流させる
 	if (!createQueue_.empty()) {
 		for (auto& newObj : createQueue_) {
 			gameObjects_.push_back(std::move(newObj));

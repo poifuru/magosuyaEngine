@@ -4,6 +4,7 @@
 #include "CollisionManager.h"
 #include "BirdEnemyComponent.h"
 #include "FishEnemyComponent.h"
+#include "Boss.h"
 #include "PlayerComponent.h"
 #include "MathFunction.h"
 
@@ -86,10 +87,14 @@ void ColliderComponent::OnCollision(CollisionObject* other) {
 
 	bool isMyEnemy = (myObj->GetComponent<BirdEnemyComponent>() != nullptr || 
 					  myObj->GetComponent<FishEnemyComponent>() != nullptr ||
-					  myObj->GetName() == "Enemy");
+					  myObj->GetComponent<BossComponent>() != nullptr ||
+					  myObj->GetName() == "Enemy" ||
+					  myObj->GetName() == "Boss");
 	bool isOtherEnemy = (otherObj->GetComponent<BirdEnemyComponent>() != nullptr || 
 						 otherObj->GetComponent<FishEnemyComponent>() != nullptr ||
-						 otherObj->GetName() == "Enemy");
+						 otherObj->GetComponent<BossComponent>() != nullptr ||
+						 otherObj->GetName() == "Enemy" ||
+						 otherObj->GetName() == "Boss");
 
 	bool isMyPlayer = (myObj->GetName() == "Player" || myObj->GetComponent<PlayerComponent>() != nullptr);
 	bool isOtherPlayer = (otherObj->GetName() == "Player" || otherObj->GetComponent<PlayerComponent>() != nullptr);
@@ -97,21 +102,32 @@ void ColliderComponent::OnCollision(CollisionObject* other) {
 	// 1. 自分が「敵」で、相手が「弾」なら敵消滅/撃破処理
 	if (isMyEnemy && otherObj->GetName() == "PlayerBullet") {
 		bool alreadyDead = false;
-		if (auto* bird = myObj->GetComponent<BirdEnemyComponent>()) {
+		if (auto* boss = myObj->GetComponent<BossComponent>()) {
+			alreadyDead = boss->IsDead();
+			boss->TakeDamage(1);
+			if (boss->IsDead()) {
+				CollisionManager::GetInstance()->UnregisterObject(this);
+			}
+		}
+		else if (auto* bird = myObj->GetComponent<BirdEnemyComponent>()) {
 			alreadyDead = bird->IsDead();
 			bird->OnDead();
+			if (!alreadyDead) {
+				CollisionManager::GetInstance()->UnregisterObject(this);
+			}
 		}
 		else if (auto* fish = myObj->GetComponent<FishEnemyComponent>()) {
 			alreadyDead = fish->IsDead();
 			fish->OnDead();
+			if (!alreadyDead) {
+				CollisionManager::GetInstance()->UnregisterObject(this);
+			}
 		}
 		else {
 			myObj->Destroy();
-		}
-
-		if (!alreadyDead) {
 			CollisionManager::GetInstance()->UnregisterObject(this);
 		}
+
 		otherObj->Destroy();
 	}
 
