@@ -1,6 +1,6 @@
 #include "PCH.h"
 #include "RenderTexture.h"
-#include "DescriptorHeapManager.h"
+#include "SrvDescriptorHeap.h"
 #include "Function.h"
 #include "WindowsAPI.h"
 
@@ -8,7 +8,7 @@ MyEngine::Rendering::RenderTexture::~RenderTexture() {
 	Release();
 }
 
-void MyEngine::Rendering::RenderTexture::Initialize(ID3D12Device* device, MyEngine::LowLevel::DescriptorHeapManager* heapManager) {
+void MyEngine::Rendering::RenderTexture::Initialize(ID3D12Device* device, MyEngine::LowLevel::SrvDescriptorHeap* heapManager) {
 	heapManager_ = heapManager;
 
 	// オフスクリーンレンダリング用のクリアカラー

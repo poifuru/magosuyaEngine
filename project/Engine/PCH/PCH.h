@@ -89,3 +89,4 @@
 #include "MathTypes.h"
 #include "Transform.h"
 #include "GameTime.h"
+#include "Logger.h"

@@ -31,7 +31,7 @@ public:
 	// 初期化
 	void Initialize(
 		ID3D12Device* device,
-		MyEngine::LowLevel::DescriptorHeapManager& heapManager,
+		MyEngine::LowLevel::SrvDescriptorHeap& heapManager,
 		MyEngine::Rendering::ShaderManager& shaderManager,
 		MyEngine::Rendering::RootSignatureManager& rootSigManager,
 		uint32_t width = 512,

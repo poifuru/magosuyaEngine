@@ -2,7 +2,7 @@
 #include "GameObject.h"
 
 namespace MyEngine::LowLevel {
-	class DescriptorHeapManager;
+	class SrvDescriptorHeap;
 	class SwapChain;
 }
 
@@ -39,17 +39,17 @@ namespace MyEngine::Rendering {
 			IDxcUtils* dxcUtils,
 			IDxcCompiler3* dxcCompiler,
 			IDxcIncludeHandler* includeHandler,
-			MyEngine::LowLevel::DescriptorHeapManager* heapManager,
+			MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
 			MyEngine::LowLevel::SwapChain* swapChain
 		);
 
 		void RenderScene(
 			ID3D12GraphicsCommandList* cmdList,
-			MyEngine::LowLevel::DescriptorHeapManager* heapManager
+			MyEngine::LowLevel::SrvDescriptorHeap* heapManager
 		);
 
 		void DispatchCS(
-			MyEngine::LowLevel::DescriptorHeapManager* heapManager
+			MyEngine::LowLevel::SrvDescriptorHeap* heapManager
 			);
 
 		void Draw(std::vector<std::unique_ptr<GameObject>>& objects);
@@ -102,7 +102,7 @@ namespace MyEngine::Rendering {
 	private:
 		ID3D12Device* device_ = nullptr;
 		ID3D12GraphicsCommandList* cmdList_ = nullptr;
-		MyEngine::LowLevel::DescriptorHeapManager* heapManager_ = nullptr;
+		MyEngine::LowLevel::SrvDescriptorHeap* heapManager_ = nullptr;
 		MyEngine::LowLevel::SwapChain* swapChain_ = nullptr;
 
 		std::unique_ptr<MyEngine::Rendering::RootSignatureManager> rootSigManager_;

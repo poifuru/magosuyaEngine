@@ -1,21 +1,21 @@
 #include "PCH.h"
 #include <Windows.h>
-#include "LogManager.h"
+#include "Logger.h"
 #include <chrono>
 #include <fstream>
 #include <filesystem>
 #include <debugapi.h>
 
 // ログを出力する関数
-void LogManager::Log (const std::string& message) {
+void Logger::Log (const std::string& message) {
 	if(os_.is_open()) {
 		os_ << message << std::endl;
 		os_.flush(); // 毎回フラッシュしておくとクラッシュしてもログが残る
 	}
-	OutputDebugStringA (message.c_str ());
+	OutputDebugStringA ((message + "\n").c_str());
 }
 
-LogManager::~LogManager() {
+Logger::~Logger() {
 	// ファイルを開いていたら閉じる
 	if(os_.is_open()) {
 		os_.flush();
@@ -23,7 +23,7 @@ LogManager::~LogManager() {
 	}
 }
 
-std::ofstream LogManager::Logtext () {
+std::ofstream Logger::Logtext () {
 	// ログのディレクトリを用意
 	std::filesystem::create_directory ("../logs");
 	// 現在時刻を取得(UTC時刻)

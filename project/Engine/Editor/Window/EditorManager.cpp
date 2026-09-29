@@ -1,7 +1,7 @@
 #include "PCH.h"
 #include "EditorManager.h"
 #include "RenderTexture.h"
-#include "DescriptorHeapManager.h"
+#include "SrvDescriptorHeap.h"
 
 // 各ウィンドウクラス
 #include "PerformanceWindow.h"
@@ -26,7 +26,7 @@ void EditorManager::Finalize() {
 
 void EditorManager::UpdateAndDraw(
 	ID3D12Device* device,
-	MyEngine::LowLevel::DescriptorHeapManager* heapManager,
+	MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
 	MyEngine::Rendering::RenderTexture* renderTexture
 ) {
 #ifdef USEIMGUI
@@ -110,7 +110,7 @@ void EditorManager::DrawMenuBar() {
 }
 
 void EditorManager::DrawGameWindow(
-	MyEngine::LowLevel::DescriptorHeapManager* heapManager,
+	MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
 	MyEngine::Rendering::RenderTexture* renderTexture
 ) {
 	// ギズモ操作中はウィンドウが動かないようにする

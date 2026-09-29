@@ -5,7 +5,7 @@
 
 namespace MyEngine::LowLevel {
 	class GraphicsDevice;
-	class DescriptorHeapManager;
+	class SrvDescriptorHeap;
 }
 
 namespace MyEngine::Rendering {
@@ -23,7 +23,7 @@ namespace MyEngine::Rendering {
 		// デバイスやヒープを用いて初期化
 		void Initialize(
 			MyEngine::LowLevel::GraphicsDevice* device,
-			MyEngine::LowLevel::DescriptorHeapManager* heapManager
+			MyEngine::LowLevel::SrvDescriptorHeap* heapManager
 		);
 
 		void Update();

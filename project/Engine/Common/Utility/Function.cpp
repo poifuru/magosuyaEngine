@@ -1,6 +1,6 @@
 #include "PCH.h"
 #include "Function.h"
-#include "LogManager.h"
+#include "Logger.h"
 #include "String.h"
 
 //クラッシュハンドルを登録するための関数

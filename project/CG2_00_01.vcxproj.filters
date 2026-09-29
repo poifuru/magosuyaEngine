@@ -7,7 +7,7 @@
     <ClCompile Include="Engine\Graphics\primitive\cube\CubeRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\primitive\line\LineRenderer.cpp" />
     <ClCompile Include="Engine\Render\PSO\BlendModeManager.cpp" />
-    <ClCompile Include="Engine\Common\Utility\LogManager.cpp" />
+    <ClCompile Include="Engine\Common\Utility\Logger.cpp" />
     <ClCompile Include="Engine\Common\Utility\ChangeString.cpp" />
     <ClCompile Include="Engine\Render\PSO\InputLayoutManager.cpp" />
     <ClCompile Include="Engine\Editor\ImGui\ImGuiManager.cpp" />
@@ -53,7 +53,7 @@
     <ClCompile Include="application\scene\DebugScene.cpp" />
     <ClCompile Include="application\scene\TestScene.cpp" />
     <ClCompile Include="Engine\Framework\Object\3d\SkyboxComponent.cpp" />
-    <ClCompile Include="Engine\Core\RenderTexture.cpp" />
+    <ClCompile Include="Engine\Core\LowLevel\RenderTexture\RenderTexture.cpp" />
     <ClCompile Include="application\entity\player\BulletComponent.cpp" />
     <ClCompile Include="application\entity\player\ReticleComponent.cpp" />
     <ClCompile Include="Application\Collider\CollisionManager.cpp" />
@@ -68,7 +68,7 @@
     <ClCompile Include="Engine\Render\RenderSystem\RenderSystem.cpp" />
     <ClCompile Include="Engine\Framework\Buffer\Animation.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsCommand\CommandContext.cpp" />
-    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\DescriptorHeapManager.cpp" />
+    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\SrvDescriptorHeap.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\FrameRate\FrameRateController.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsDevice\GraphicsDevice.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\SwapChain\SwapChain.cpp" />
@@ -125,6 +125,10 @@
     <ClCompile Include="Engine\Framework\GameObject\Component\Component.cpp" />
     <ClCompile Include="Engine\Editor\Window\IEditorWindow.cpp" />
     <ClCompile Include="Engine\Editor\Window\PerformanceWindow.cpp" />
+    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\RtvDescriptorHeap.cpp" />
+    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\DsvDescriptorHeap.cpp" />
+    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\BaseDescriptorHeap.cpp" />
+    <ClCompile Include="Engine\Core\LowLevel\DepthTexture\DepthTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -147,7 +151,7 @@
     <ClInclude Include="externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
-    <ClInclude Include="Engine\Common\Utility\LogManager.h" />
+    <ClInclude Include="Engine\Common\Utility\Logger.h" />
     <ClInclude Include="Engine\Common\Utility\ChangeString.h" />
     <ClInclude Include="Engine\Render\PSO\InputLayoutManager.h" />
     <ClInclude Include="Engine\Editor\ImGui\ImGuiManager.h" />
@@ -192,7 +196,7 @@
     <ClInclude Include="application\scene\DebugScene.h" />
     <ClInclude Include="application\scene\TestScene.h" />
     <ClInclude Include="Engine\Framework\Object\3d\SkyboxComponent.h" />
-    <ClInclude Include="Engine\Core\RenderTexture.h" />
+    <ClInclude Include="Engine\Core\LowLevel\RenderTexture\RenderTexture.h" />
     <ClInclude Include="Engine\Common\Utility\GameTime.h" />
     <ClInclude Include="application\entity\player\BulletComponent.h" />
     <ClInclude Include="application\entity\player\ReticleComponent.h" />
@@ -223,7 +227,7 @@
     <ClInclude Include="Engine\Framework\Buffer\MaterialData.h" />
     <ClInclude Include="Engine\Framework\Buffer\Animation.h" />
     <ClInclude Include="Engine\Core\LowLevel\GraphicsCommand\CommandContext.h" />
-    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\DescriptorHeapManager.h" />
+    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\SrvDescriptorHeap.h" />
     <ClInclude Include="Engine\Core\LowLevel\FrameRate\FrameRateController.h" />
     <ClInclude Include="Engine\Core\LowLevel\GraphicsDevice\GraphicsDevice.h" />
     <ClInclude Include="Engine\Core\LowLevel\SwapChain\SwapChain.h" />
@@ -279,6 +283,10 @@
     <ClInclude Include="Engine\Graphics\PostEffect\PostEffectType.h" />
     <ClInclude Include="Engine\Editor\Window\IEditorWindow.h" />
     <ClInclude Include="Engine\Editor\Window\PerformanceWindow.h" />
+    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\RtvDescriptorHeap.h" />
+    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\DsvDescriptorHeap.h" />
+    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\BaseDescriptorHeap.h" />
+    <ClInclude Include="Engine\Core\LowLevel\DepthTexture\DepthTexture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />

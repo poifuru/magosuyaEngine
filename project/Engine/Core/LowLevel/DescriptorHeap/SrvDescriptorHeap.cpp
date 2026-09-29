@@ -1,9 +1,9 @@
 #include "PCH.h"
-#include "DescriptorHeapManager.h"
+#include "SrvDescriptorHeap.h"
 
-MyEngine::LowLevel::DescriptorHeapManager::DescriptorHeapManager() = default;
+MyEngine::LowLevel::SrvDescriptorHeap::SrvDescriptorHeap() = default;
 
-void MyEngine::LowLevel::DescriptorHeapManager::Initialize(ID3D12Device* device, uint32_t maxDescriptors) {
+void MyEngine::LowLevel::SrvDescriptorHeap::Initialize(ID3D12Device* device, uint32_t maxDescriptors) {
 	assert(device != nullptr);
 	maxDescriptors_ = maxDescriptors;
 
@@ -14,14 +14,14 @@ void MyEngine::LowLevel::DescriptorHeapManager::Initialize(ID3D12Device* device,
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	heapDesc.NumDescriptors = maxDescriptors_;
-	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; // シェーダーから見えるようにする！
+	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; // シェーダーから見えるようにする
 	heapDesc.NodeMask = 0;
 
 	HRESULT hr = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(heap_.GetAddressOf()));
 	assert(SUCCEEDED(hr));
 }
 
-uint32_t MyEngine::LowLevel::DescriptorHeapManager::AllocateIndex() {
+uint32_t MyEngine::LowLevel::SrvDescriptorHeap::AllocateIndex() {
 	// 返却された空き枠(キュー)があれば、優先的にそこを再利用する
 	if(!freeIndices_.empty()) {
 		uint32_t index = freeIndices_.front();
@@ -37,12 +37,12 @@ uint32_t MyEngine::LowLevel::DescriptorHeapManager::AllocateIndex() {
 	return index;
 }
 
-void MyEngine::LowLevel::DescriptorHeapManager::FreeIndex(uint32_t index) {
+void MyEngine::LowLevel::SrvDescriptorHeap::FreeIndex(uint32_t index) {
 	// 使い終わったインデックスを再利用リストに積む
 	freeIndices_.push(index);
 }
 
-void MyEngine::LowLevel::DescriptorHeapManager::CreateCBV(uint32_t index, const D3D12_CONSTANT_BUFFER_VIEW_DESC& desc) {
+void MyEngine::LowLevel::SrvDescriptorHeap::CreateCBV(uint32_t index, const D3D12_CONSTANT_BUFFER_VIEW_DESC& desc) {
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	HRESULT hr = heap_->GetDevice(IID_PPV_ARGS(device.GetAddressOf()));
 	assert(SUCCEEDED(hr));
@@ -50,7 +50,7 @@ void MyEngine::LowLevel::DescriptorHeapManager::CreateCBV(uint32_t index, const 
 	device->CreateConstantBufferView(&desc, cpuHandle);
 }
 
-void MyEngine::LowLevel::DescriptorHeapManager::CreateSRVforTexture2D(uint32_t index, ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC& desc) {
+void MyEngine::LowLevel::SrvDescriptorHeap::CreateSRVforTexture2D(uint32_t index, ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC& desc) {
 	// 瞬間的に生デバイスを取得
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	HRESULT hr = heap_->GetDevice(IID_PPV_ARGS(device.GetAddressOf()));
@@ -61,7 +61,7 @@ void MyEngine::LowLevel::DescriptorHeapManager::CreateSRVforTexture2D(uint32_t i
 	device->CreateShaderResourceView(resource, &desc, cpuHandle);
 }
 
-void MyEngine::LowLevel::DescriptorHeapManager::CreateUAVforTexture2D(uint32_t index, ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC& desc) {
+void MyEngine::LowLevel::SrvDescriptorHeap::CreateUAVforTexture2D(uint32_t index, ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC& desc) {
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	HRESULT hr = heap_->GetDevice(IID_PPV_ARGS(device.GetAddressOf()));
 	assert(SUCCEEDED(hr));
@@ -70,7 +70,7 @@ void MyEngine::LowLevel::DescriptorHeapManager::CreateUAVforTexture2D(uint32_t i
 	device->CreateUnorderedAccessView(resource, nullptr, &desc, cpuHandle);
 }
 
-void MyEngine::LowLevel::DescriptorHeapManager::SetGraphicsHeap(ID3D12GraphicsCommandList* cmdList) {
+void MyEngine::LowLevel::SrvDescriptorHeap::SetGraphicsHeap(ID3D12GraphicsCommandList* cmdList) {
 	assert(cmdList != nullptr);
 
 	// コマンドリストにこのヒープをセットする(ドローコールより前に一回だけ呼ぶ)
@@ -78,26 +78,26 @@ void MyEngine::LowLevel::DescriptorHeapManager::SetGraphicsHeap(ID3D12GraphicsCo
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE MyEngine::LowLevel::DescriptorHeapManager::GetCpuHandle(uint32_t index) const {
+D3D12_CPU_DESCRIPTOR_HANDLE MyEngine::LowLevel::SrvDescriptorHeap::GetCpuHandle(uint32_t index) const {
 	assert(index < maxDescriptors_);
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = heap_->GetCPUDescriptorHandleForHeapStart();
 	handle.ptr += static_cast<SIZE_T>(index) * descriptorSize_;
 	return handle;
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE MyEngine::LowLevel::DescriptorHeapManager::GetGpuHandle(uint32_t index) const {
+D3D12_GPU_DESCRIPTOR_HANDLE MyEngine::LowLevel::SrvDescriptorHeap::GetGpuHandle(uint32_t index) const {
 	assert(index < maxDescriptors_);
 	D3D12_GPU_DESCRIPTOR_HANDLE handle = heap_->GetGPUDescriptorHandleForHeapStart();
 	handle.ptr += static_cast<SIZE_T>(index) * descriptorSize_;
 	return handle;
 }
 
-uint32_t MyEngine::LowLevel::DescriptorHeapManager::GetIndex(D3D12_CPU_DESCRIPTOR_HANDLE handle) const {
+uint32_t MyEngine::LowLevel::SrvDescriptorHeap::GetIndex(D3D12_CPU_DESCRIPTOR_HANDLE handle) const {
 	D3D12_CPU_DESCRIPTOR_HANDLE startHandle = heap_->GetCPUDescriptorHandleForHeapStart();
 	return static_cast<uint32_t>((handle.ptr - startHandle.ptr) / descriptorSize_);
 }
 
-uint32_t MyEngine::LowLevel::DescriptorHeapManager::GetIndex(D3D12_GPU_DESCRIPTOR_HANDLE handle) const {
+uint32_t MyEngine::LowLevel::SrvDescriptorHeap::GetIndex(D3D12_GPU_DESCRIPTOR_HANDLE handle) const {
 	D3D12_GPU_DESCRIPTOR_HANDLE startHandle = heap_->GetGPUDescriptorHandleForHeapStart();
 	return static_cast<uint32_t>((handle.ptr - startHandle.ptr) / descriptorSize_);
 }

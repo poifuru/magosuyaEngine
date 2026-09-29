@@ -2,7 +2,7 @@
 
 // 前方宣言
 namespace MyEngine::LowLevel {
-	class DescriptorHeapManager;
+	class SrvDescriptorHeap;
 }
 
 class RWTexture2D {
@@ -13,7 +13,7 @@ public:
 	// 2Dテクスチャの解像度とフォーマットを指定して初期化
 	void Initialize(
 		ID3D12Device* device,
-		MyEngine::LowLevel::DescriptorHeapManager& heapManager,
+		MyEngine::LowLevel::SrvDescriptorHeap& heapManager,
 		uint32_t width,
 		uint32_t height,
 		DXGI_FORMAT format = DXGI_FORMAT_R16G16B16A16_FLOAT
@@ -50,5 +50,5 @@ private:
 	D3D12_CPU_DESCRIPTOR_HANDLE uavCpuHandle_{};
 	D3D12_GPU_DESCRIPTOR_HANDLE uavGpuHandle_{};
 	uint32_t uavDescriptorIndex_ = 0;
-	MyEngine::LowLevel::DescriptorHeapManager* heapManager_ = nullptr;
+	MyEngine::LowLevel::SrvDescriptorHeap* heapManager_ = nullptr;
 };

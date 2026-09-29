@@ -8,7 +8,7 @@ class GameObject;
 
 namespace MyEngine::LowLevel {
 	class GraphicsDevice;
-	class DescriptorHeapManager;
+	class SrvDescriptorHeap;
 }
 
 namespace MyEngine::Rendering {
@@ -28,7 +28,7 @@ struct SceneContext {
 	ModelFactory* modelFactory = nullptr;
 	ModelManager* modelManager = nullptr;
 	MyEngine::LowLevel::GraphicsDevice* graphicsDevice = nullptr;
-	MyEngine::LowLevel::DescriptorHeapManager* heapManager = nullptr;
+	MyEngine::LowLevel::SrvDescriptorHeap* heapManager = nullptr;
 	MyEngine::Rendering::RootSignatureManager* rootSigManager = nullptr;
 	MyEngine::Rendering::PSOManager* psoManager = nullptr;
 	MyEngine::Rendering::ShaderManager* shaderManager = nullptr;

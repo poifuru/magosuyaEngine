@@ -8,7 +8,7 @@
 struct ID3D12GraphicsCommandList;
 namespace MyEngine::LowLevel {
 	class GraphicsDevice;
-	class DescriptorHeapManager;
+	class SrvDescriptorHeap;
 }
 
 namespace MyEngine::Rendering {
@@ -30,7 +30,7 @@ public:
 	void Initialize(
 		MyEngine::LowLevel::GraphicsDevice* graphicsDevice,
 		ID3D12GraphicsCommandList* cmdList,
-		MyEngine::LowLevel::DescriptorHeapManager* heapManager,
+		MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
 		MyEngine::Rendering::RootSignatureManager* rootSigManager, 
 		MyEngine::Rendering::PSOManager* psoManager,
 		MyEngine::Rendering::ShaderManager* shaderManager,

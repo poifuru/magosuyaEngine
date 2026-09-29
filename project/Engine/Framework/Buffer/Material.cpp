@@ -1,13 +1,13 @@
 #include "PCH.h"
 #include "Material.h"
 #include "GraphicsDevice.h"
-#include "DescriptorHeapManager.h"
+#include "SrvDescriptorHeap.h"
 #include "MathFunction.h"
 #include "ColorUtils.h"
 
 void MyEngine::Rendering::Material::Initialize(
 	MyEngine::LowLevel::GraphicsDevice* device,
-	MyEngine::LowLevel::DescriptorHeapManager* heapManager
+	MyEngine::LowLevel::SrvDescriptorHeap* heapManager
 ) {
 	buffer_ = std::make_unique<StructuredBuffer<MaterialData>>();
 	buffer_->Initialize(device->GetDevice(), *heapManager, 1);

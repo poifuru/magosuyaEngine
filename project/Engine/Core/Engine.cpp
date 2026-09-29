@@ -8,8 +8,8 @@
 #include "CommandQueue.h"
 #include "CommandList.h"
 #include "SwapChain.h"
-#include "DescriptorHeapManager.h"
-#include "LogManager.h"
+#include "SrvDescriptorHeap.h"
+#include "Logger.h"
 #include "RenderTexture.h"
 
 // プロファイラ用の静的変数定義
@@ -26,7 +26,7 @@ void MyEngine::LowLevel::Engine::Initialize() {
 	WindowsAPI::GetInstance()->Initialize(1280, 720);
 	WindowsAPI::GetInstance()->RegisterEngine(this);
 
-	LogManager::GetInstance()->Initialize();
+	Logger::GetInstance()->Initialize();
 
 	InputManager::GetInstance()->Initialize(WindowsAPI::GetInstance()->GetHwnd());
 
@@ -53,7 +53,7 @@ void MyEngine::LowLevel::Engine::Initialize() {
 		WindowsAPI::GetInstance()->GetWindowHeight()
 	);
 
-	heapManager_ = std::make_unique<MyEngine::LowLevel::DescriptorHeapManager>();
+	heapManager_ = std::make_unique<MyEngine::LowLevel::SrvDescriptorHeap>();
 	heapManager_->Initialize(device_->GetDevice(), 4096);
 
 	swapChain_->CreateDepthSRV(device_->GetDevice(), heapManager_.get());

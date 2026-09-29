@@ -10,7 +10,7 @@
 #include "ColliderComponent.h"
 #include "Boss.h"
 #include "imgui.h"
-#include "LogManager.h" // ログ出力用（存在すれば）
+#include "Logger.h" // ログ出力用（存在すれば）
 
 void GameDirectorComponent::Initialize() {
 	if (isInitialized_) return;

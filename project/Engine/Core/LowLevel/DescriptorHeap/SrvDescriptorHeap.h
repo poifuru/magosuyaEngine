@@ -1,12 +1,12 @@
 #pragma once
 
 namespace MyEngine::LowLevel {
-	class DescriptorHeapManager {
+	class SrvDescriptorHeap {
 	public:
 		static constexpr uint32_t kInvalidDescriptorIndex = UINT32_MAX;
 
-		DescriptorHeapManager();
-		~DescriptorHeapManager() = default;
+		SrvDescriptorHeap();
+		~SrvDescriptorHeap() = default;
 
 		/// <summary>
 		/// 初期化時に1つの巨大なディスクリプターヒープを作る
@@ -40,10 +40,10 @@ namespace MyEngine::LowLevel {
 
 	public:
 		// コピー・移動の禁止
-		DescriptorHeapManager(const DescriptorHeapManager&) = delete;
-		DescriptorHeapManager& operator=(const DescriptorHeapManager&) = delete;
-		DescriptorHeapManager(DescriptorHeapManager&&) = delete;
-		DescriptorHeapManager& operator=(DescriptorHeapManager&&) = delete;
+		SrvDescriptorHeap(const SrvDescriptorHeap&) = delete;
+		SrvDescriptorHeap& operator=(const SrvDescriptorHeap&) = delete;
+		SrvDescriptorHeap(SrvDescriptorHeap&&) = delete;
+		SrvDescriptorHeap& operator=(SrvDescriptorHeap&&) = delete;
 
 	private:
 		uint32_t descriptorIndex_ = kInvalidDescriptorIndex;

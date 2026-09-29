@@ -19,7 +19,7 @@ Game::Game() {
 		engine_->GetDxcUtils(),
 		engine_->GetDxcCompiler(),
 		engine_->GetIncludeHandler(),
-		engine_->GetDescriptorHeapManager(),
+		engine_->GetSrvDescriptorHeap(),
 		engine_->GetSwapChain()
 	);
 
@@ -34,7 +34,7 @@ Game::Game() {
 	sceneManager_->Initialize(
 		engine_->GetGraphicsDevice(),
 		engine_->GetCommandList(),
-		engine_->GetDescriptorHeapManager(),
+		engine_->GetSrvDescriptorHeap(),
 		renderer_->GetRootSigManager(),
 		renderer_->GetPSOManager(),
 		renderer_->GetShaderManager(),
@@ -53,7 +53,7 @@ Game::Game() {
 	ImGuiManager::GetInstance()->Initialize(
 		engine_->GetDevice(),
 		engine_->GetCommandQueue(),
-		engine_->GetDescriptorHeapManager()
+		engine_->GetSrvDescriptorHeap()
 	);
 }
 
@@ -80,7 +80,7 @@ void Game::Run() {
  		// ImGui 新しいフレーム開始
  		ImGuiManager::GetInstance()->BeginFrame(
  			engine_->GetDevice(),
- 			engine_->GetDescriptorHeapManager(),
+ 			engine_->GetSrvDescriptorHeap(),
 			renderer_->GetFinalRenderTexture()
  		);
  
@@ -103,7 +103,7 @@ void Game::Run() {
 		auto startRender = std::chrono::high_resolution_clock::now();
 		
 		// rendererで実際に描画
-		renderer_->RenderScene(engine_->GetCommandList(), engine_->GetDescriptorHeapManager());
+		renderer_->RenderScene(engine_->GetCommandList(), engine_->GetSrvDescriptorHeap());
 
 		// SwapChainの切り替え(USEIMGUI時)
 		engine_->BeginSwapChainRender();
