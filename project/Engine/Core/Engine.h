@@ -9,7 +9,7 @@ namespace MyEngine::LowLevel {
 	class CommandQueue;
 	class CommandList;
 	class SwapChain;
-	class SrvDescriptorHeap;
+	class SrvDescriptorHeapPool;
 }
 
 namespace MyEngine::Rendering {
@@ -79,7 +79,7 @@ namespace MyEngine::LowLevel {
 		IDxcCompiler3* GetDxcCompiler();
 		IDxcIncludeHandler* GetIncludeHandler();
 
-		MyEngine::LowLevel::SrvDescriptorHeap* GetSrvDescriptorHeap() { return heapManager_.get(); }
+		MyEngine::LowLevel::SrvDescriptorHeapPool* GetSrvDescriptorHeapPool() { return heapManager_.get(); }
 		MyEngine::LowLevel::SwapChain* GetSwapChain() { return swapChain_.get(); }
 
 	private:
@@ -92,7 +92,7 @@ namespace MyEngine::LowLevel {
 		std::unique_ptr<MyEngine::LowLevel::CommandQueue> cmdQueue_;
 		std::unique_ptr<MyEngine::LowLevel::CommandList> cmdList_;
 		std::unique_ptr<MyEngine::LowLevel::SwapChain> swapChain_;
-		std::unique_ptr<MyEngine::LowLevel::SrvDescriptorHeap> heapManager_;
+		std::unique_ptr<MyEngine::LowLevel::SrvDescriptorHeapPool> heapManager_;
 
 		// 静的プロファイル用変数
 		static float sUpdateTime_;

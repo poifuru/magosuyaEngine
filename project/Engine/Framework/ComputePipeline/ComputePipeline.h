@@ -2,7 +2,7 @@
 #include "ConstantBuffer.h"
 #include "RWTexture2D.h"
 #include "ShaderManager.h"
-#include "SrvDescriptorHeap.h"
+#include "SrvDescriptorHeapPool.h"
 #include "Function.h"
 
 template <typename T>
@@ -13,7 +13,7 @@ public:
 
 	void Initialize(
 		ID3D12Device* device,
-		MyEngine::LowLevel::SrvDescriptorHeap& heapManager,
+		MyEngine::LowLevel::SrvDescriptorHeapPool& heapManager,
 		MyEngine::Rendering::ShaderManager& shaderManager,
 		const std::wstring& shaderPath,
 		ID3D12RootSignature* computeRootSignature,
@@ -97,5 +97,5 @@ private:
 	uint32_t width_ = 512;
 	uint32_t height_ = 512;
 
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager_ = nullptr;
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager_ = nullptr;
 };

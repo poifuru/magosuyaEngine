@@ -2,7 +2,7 @@
 #include "SwapChain.h"
 #include "CommandList.h"
 #include "Function.h"
-#include "SrvDescriptorHeap.h"
+#include "SrvDescriptorHeapPool.h"
 
 MyEngine::LowLevel::SwapChain::SwapChain() = default;
 
@@ -197,7 +197,7 @@ void MyEngine::LowLevel::SwapChain::Resize(uint32_t width, uint32_t height) {
 
 void MyEngine::LowLevel::SwapChain::CreateDepthSRV(
 	ID3D12Device* device, 
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager
 ){
 	heapManager_ = heapManager;
 

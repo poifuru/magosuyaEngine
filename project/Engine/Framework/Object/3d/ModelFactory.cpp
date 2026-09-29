@@ -5,11 +5,11 @@
 #include "ModelManager.h"
 #include "TextureManager.h"
 #include "GraphicsDevice.h"
-#include "SrvDescriptorHeap.h"
+#include "SrvDescriptorHeapPool.h"
 
 void ModelFactory::Initialize(
 	MyEngine::LowLevel::GraphicsDevice* device,
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
 	ModelManager* modelManager,
 	TextureManager* textureManager
 ) {

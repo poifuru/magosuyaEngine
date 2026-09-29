@@ -2,7 +2,7 @@
 #include "IEditorWindow.h"
 
 namespace MyEngine::LowLevel {
-	class SrvDescriptorHeap;
+	class SrvDescriptorHeapPool;
 }
 
 namespace MyEngine::Rendering {
@@ -24,7 +24,7 @@ public:
 	// 毎フレームImGuiManagerで呼び出す
 	void UpdateAndDraw(
 		ID3D12Device* device,
-		MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
+		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
 		MyEngine::Rendering::RenderTexture* renderTexture
 	);
 
@@ -61,7 +61,7 @@ private:
 
 	// 各ウィンドウの描画関数を小分けにする
 	void DrawGameWindow(
-		MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
+		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
 		MyEngine::Rendering::RenderTexture* renderTexture
 	);
 

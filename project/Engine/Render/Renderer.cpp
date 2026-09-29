@@ -1,6 +1,6 @@
 #include "PCH.h"
 #include "Renderer.h"
-#include "SrvDescriptorHeap.h"
+#include "SrvDescriptorHeapPool.h"
 #include "SwapChain.h"
 #include "RootSignatureManager.h"
 #include "WindowsAPI.h"
@@ -28,7 +28,7 @@ void MyEngine::Rendering::Renderer::Initialize(
 	IDxcUtils* dxcUtils,
 	IDxcCompiler3* dxcCompiler,
 	IDxcIncludeHandler* includeHandler,
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
 	MyEngine::LowLevel::SwapChain* swapChain
 ) {
 	device_ = device;
@@ -101,7 +101,7 @@ namespace {
 
 void MyEngine::Rendering::Renderer::RenderScene(
 	ID3D12GraphicsCommandList* cmdList,
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager
 ) {
 	cmdList_ = cmdList;
 
@@ -144,7 +144,7 @@ void MyEngine::Rendering::Renderer::RenderScene(
 }
 
 void MyEngine::Rendering::Renderer::DispatchCS(
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager
 ) {
 	// CSでディスクリプタヒープを使う前にコマンドリストへセットする
 	if(heapManager) {

@@ -1,5 +1,5 @@
 #pragma once
-#include "SrvDescriptorHeap.h"
+#include "SrvDescriptorHeapPool.h"
 
 // 構造化バッファのクラステンプレート
 template <typename T>
@@ -10,7 +10,7 @@ public:
 	~StructuredBuffer() { Release(); }
 
 	// 要素数(count)を指定して初期化
-	void Initialize(ID3D12Device* device, MyEngine::LowLevel::SrvDescriptorHeap& heapManager, size_t count) {
+	void Initialize(ID3D12Device* device, MyEngine::LowLevel::SrvDescriptorHeapPool& heapManager, size_t count) {
 		Release();
 		assert(device != nullptr);
 
@@ -57,7 +57,7 @@ public:
 		srvDesc.Buffer.NumElements = static_cast<UINT>(elementCount_);
 		srvDesc.Buffer.StructureByteStride = static_cast<UINT>(sizeof(T));
 
-		// SrvDescriptorHeapで、このインデックス位置へSRVを焼き付ける
+		// SrvDescriptorHeapPoolで、このインデックス位置へSRVを焼き付ける
 		heapManager_->CreateSRVforTexture2D(descriptorIndex_, buffer_.Get(), srvDesc);
 	}
 
@@ -120,5 +120,5 @@ private:
 	size_t elementCount_ = 0;
 
 	uint32_t descriptorIndex_ = 0;
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager_ = nullptr;
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager_ = nullptr;
 };

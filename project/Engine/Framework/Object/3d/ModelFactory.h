@@ -3,7 +3,7 @@
 // 前方宣言
 namespace MyEngine::LowLevel {
 	class GraphicsDevice;
-	class SrvDescriptorHeap;
+	class SrvDescriptorHeapPool;
 }
 
 namespace MyEngine::Rendering {
@@ -20,7 +20,7 @@ public:
 
 	void Initialize(
 		MyEngine::LowLevel::GraphicsDevice* device,
-		MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
+		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
 		ModelManager* modelManager,
 		TextureManager* textureManager
 	);
@@ -40,7 +40,7 @@ public:
 
 private:
 	MyEngine::LowLevel::GraphicsDevice* device_ = nullptr;
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager_ = nullptr;
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager_ = nullptr;
 
 	ModelManager* modelManager_ = nullptr;
 	TextureManager* textureManager_ = nullptr;

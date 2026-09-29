@@ -1,6 +1,6 @@
 #include "PCH.h"
 #include "TextureManager.h"
-#include "SrvDescriptorHeap.h"
+#include "SrvDescriptorHeapPool.h"
 #include "ChangeString.h"
 
 TextureManager::~TextureManager() {
@@ -9,7 +9,7 @@ TextureManager::~TextureManager() {
 	intermediateResources_.clear();
 }
 
-void TextureManager::Initialize (ID3D12Device* device, ID3D12GraphicsCommandList* cmdList, MyEngine::LowLevel::SrvDescriptorHeap* heapManager) {
+void TextureManager::Initialize (ID3D12Device* device, ID3D12GraphicsCommandList* cmdList, MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager) {
 	device_ = device;
 	cmdList_ = cmdList;
 	heapManager_ = heapManager;

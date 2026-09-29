@@ -1,7 +1,7 @@
 #pragma once
 
 namespace MyEngine::LowLevel {
-	class SrvDescriptorHeap;
+	class SrvDescriptorHeapPool;
 }
 
 namespace MyEngine::Rendering {
@@ -19,7 +19,7 @@ public:
 	void Initialize(
 		ID3D12Device* device,
 		ID3D12CommandQueue* cmdQueue,
-		MyEngine::LowLevel::SrvDescriptorHeap* heapManager
+		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager
 	);
 
 	void Finalize();
@@ -28,14 +28,14 @@ public:
 
 	void BeginFrame(
 		ID3D12Device* device,
-		MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
+		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
 		MyEngine::Rendering::RenderTexture* renderTexture
 	);
 
 private:
 	void RenderDockingSpace(
 		ID3D12Device* device,
-		MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
+		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
 		MyEngine::Rendering::RenderTexture* renderTexture
 	);
 

@@ -8,7 +8,7 @@
 #include "CommandQueue.h"
 #include "CommandList.h"
 #include "SwapChain.h"
-#include "SrvDescriptorHeap.h"
+#include "SrvDescriptorHeapPool.h"
 #include "Logger.h"
 #include "RenderTexture.h"
 
@@ -53,7 +53,7 @@ void MyEngine::LowLevel::Engine::Initialize() {
 		WindowsAPI::GetInstance()->GetWindowHeight()
 	);
 
-	heapManager_ = std::make_unique<MyEngine::LowLevel::SrvDescriptorHeap>();
+	heapManager_ = std::make_unique<MyEngine::LowLevel::SrvDescriptorHeapPool>();
 	heapManager_->Initialize(device_->GetDevice(), 4096);
 
 	swapChain_->CreateDepthSRV(device_->GetDevice(), heapManager_.get());

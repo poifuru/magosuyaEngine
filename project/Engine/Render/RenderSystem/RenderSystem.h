@@ -5,7 +5,7 @@
 
 // 前方宣言
 namespace MyEngine::LowLevel{
-	class SrvDescriptorHeap;
+	class SrvDescriptorHeapPool;
 }
 namespace MyEngine::Rendering {
 	class PSOManager;
@@ -29,7 +29,7 @@ namespace MyEngine::Rendering {
 		// リソース初期化用
 		void Initialize(
 			ID3D12Device* device,
-			MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
+			MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
 			PSOManager* psoManager,
 			const ShaderManager* shaderManager,
 			const InputLayoutManager* inputLayoutManager,
@@ -65,7 +65,7 @@ namespace MyEngine::Rendering {
 
 	private:
 		ID3D12Device* device_ = nullptr;
-		MyEngine::LowLevel::SrvDescriptorHeap* heapManager_ = nullptr;
+		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager_ = nullptr;
 		PSOManager* psoManager_ = nullptr;
 		const ShaderManager* shaderManager_ = nullptr;
 		const InputLayoutManager* inputLayoutManager_ = nullptr;

@@ -4,7 +4,7 @@
 #include <imgui_impl_dx12.h>
 #include <imgui_impl_win32.h>
 #include "WindowsAPI.h"
-#include "SrvDescriptorHeap.h"
+#include "SrvDescriptorHeapPool.h"
 #include "EditorManager.h"
 
 ImGuiManager::~ImGuiManager() {
@@ -26,7 +26,7 @@ void ImGuiManager::Finalize() {
 void ImGuiManager::Initialize(
 	ID3D12Device* device,
 	ID3D12CommandQueue* cmdQueue,
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager
 ) {
 #ifdef USEIMGUI
 	IMGUI_CHECKVERSION();
@@ -78,7 +78,7 @@ void ImGuiManager::Initialize(
 	initInfo.CommandQueue = cmdQueue;
 	initInfo.NumFramesInFlight = 3;
 	initInfo.RTVFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
-	initInfo.SrvDescriptorHeap = heapManager->GetHeap();
+	initInfo.SrvDescriptorHeapPool = heapManager->GetHeap();
 	initInfo.UserData = heapManager;
 
 	initInfo.SrvDescriptorAllocFn = ImGuiManager::AllocDescriptor;
@@ -99,7 +99,7 @@ void ImGuiManager::Draw(ID3D12GraphicsCommandList* cmdList) {
 
 void ImGuiManager::BeginFrame(
 	ID3D12Device* device,
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
 	MyEngine::Rendering::RenderTexture* renderTexture
 ) {
 #ifdef USEIMGUI
@@ -113,7 +113,7 @@ void ImGuiManager::BeginFrame(
 
 void ImGuiManager::RenderDockingSpace(
 	ID3D12Device* device,
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
 	MyEngine::Rendering::RenderTexture* renderTexture
 ) {
 #ifdef USEIMGUI
@@ -149,7 +149,7 @@ void ImGuiManager::RenderDockingSpace(
 
 void ImGuiManager::AllocDescriptor(ImGui_ImplDX12_InitInfo* info, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_desc_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_desc_handle) {
 	// UserData から heapManager を取り出す
-	auto* mgr = static_cast<MyEngine::LowLevel::SrvDescriptorHeap*>(info->UserData);
+	auto* mgr = static_cast<MyEngine::LowLevel::SrvDescriptorHeapPool*>(info->UserData);
 
 	// コールバック内でインデックスをアロケートする
 	uint32_t index = mgr->AllocateIndex();
@@ -158,7 +158,7 @@ void ImGuiManager::AllocDescriptor(ImGui_ImplDX12_InitInfo* info, D3D12_CPU_DESC
 }
 
 void ImGuiManager::FreeDescriptor(ImGui_ImplDX12_InitInfo* info, D3D12_CPU_DESCRIPTOR_HANDLE cpu_desc_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_desc_handle) {
-	auto* mgr = static_cast<MyEngine::LowLevel::SrvDescriptorHeap*>(info->UserData);
+	auto* mgr = static_cast<MyEngine::LowLevel::SrvDescriptorHeapPool*>(info->UserData);
 
 	// ハンドルからインデックスを逆引きして解放する
 	uint32_t index = mgr->GetIndex(cpu_desc_handle);

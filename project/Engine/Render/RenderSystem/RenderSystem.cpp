@@ -1,13 +1,13 @@
 #include "PCH.h"
 #include "RenderSystem.h"
 #include "PSOManager.h"
-#include "SrvDescriptorHeap.h"
+#include "SrvDescriptorHeapPool.h"
 #include "ShaderManager.h"
 #include "LightManager.h"
 
 void MyEngine::Rendering::RenderSystem::Initialize(
 	ID3D12Device* device,
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
 	PSOManager* psoManager,
 	const ShaderManager* shaderManager,
 	const InputLayoutManager* inputLayoutManager,

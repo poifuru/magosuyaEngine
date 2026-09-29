@@ -4,7 +4,7 @@
 
 void RippleSimulator::Initialize(
 	ID3D12Device* device,
-	MyEngine::LowLevel::SrvDescriptorHeap& heapManager,
+	MyEngine::LowLevel::SrvDescriptorHeapPool& heapManager,
 	MyEngine::Rendering::ShaderManager& shaderManager,
 	MyEngine::Rendering::RootSignatureManager& rootSigManager,
 	uint32_t width,

@@ -4,13 +4,13 @@
 struct SceneContext;
 struct CameraData;
 class GameObject;
-namespace MyEngine::LowLevel { class SrvDescriptorHeap; }
+namespace MyEngine::LowLevel { class SrvDescriptorHeapPool; }
 namespace MyEngine::Rendering { class RenderTexture; }
 
 // ウィンドウで参照したい情報の構造体
 struct EditorContext {
 	ID3D12Device* device = nullptr;
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager = nullptr;
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager = nullptr;
 	MyEngine::Rendering::RenderTexture* renderTexture = nullptr;
 	SceneContext* sceneContext = nullptr;
 	GameObject** selectedObject = nullptr;

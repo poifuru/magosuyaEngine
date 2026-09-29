@@ -3,7 +3,7 @@
 #include "BasePostEffect.h"
 
 namespace MyEngine::LowLevel {
-	class SrvDescriptorHeap;
+	class SrvDescriptorHeapPool;
 }
 
 namespace MyEngine::Rendering {

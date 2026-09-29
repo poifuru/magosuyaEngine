@@ -1,7 +1,7 @@
 #pragma once
 
 namespace MyEngine::LowLevel {
-	class SrvDescriptorHeap;
+	class SrvDescriptorHeapPool;
 }
 
 namespace MyEngine::Rendering {
@@ -13,7 +13,7 @@ namespace MyEngine::Rendering {
 		/// <summary>
 		/// 初期化
 		/// </summary>
-		void Initialize(ID3D12Device* device, MyEngine::LowLevel::SrvDescriptorHeap* heapManager);
+		void Initialize(ID3D12Device* device, MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager);
 
 		/// <summary>
 		/// RenderTexture生成関数
@@ -50,6 +50,6 @@ namespace MyEngine::Rendering {
 		// 初期状態を覚えておく（作成時は PIXEL_SHADER_RESOURCE ）
 		D3D12_RESOURCE_STATES currentState_ = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
-		MyEngine::LowLevel::SrvDescriptorHeap* heapManager_ = nullptr;
+		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager_ = nullptr;
 	};
 }

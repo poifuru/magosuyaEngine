@@ -2,7 +2,7 @@
 #include "TextureData.h"
 
 namespace MyEngine::LowLevel {
-	class SrvDescriptorHeap;
+	class SrvDescriptorHeapPool;
 }
 
 class TextureManager {
@@ -10,7 +10,7 @@ public:		//外部公開メソッド
 	TextureManager() = default;
 	~TextureManager(); // 終了時に残ったテクスチャがあれば解放する
 
-	void Initialize (ID3D12Device* device, ID3D12GraphicsCommandList* cmdList, MyEngine::LowLevel::SrvDescriptorHeap* heapManager);
+	void Initialize (ID3D12Device* device, ID3D12GraphicsCommandList* cmdList, MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager);
 
 	//画像をロードする関数
 	uint32_t LoadTexture (const std::string& filePath, bool isSRGB = true);
@@ -54,6 +54,6 @@ private:	//メンバ変数
 
 	ID3D12Device* device_ = nullptr;
 	ID3D12GraphicsCommandList* cmdList_ = nullptr;
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager_ = nullptr;
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager_ = nullptr;
 };
 

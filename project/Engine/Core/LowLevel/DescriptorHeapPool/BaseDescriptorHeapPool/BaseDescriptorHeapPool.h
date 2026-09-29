@@ -1,10 +1,10 @@
 #pragma once
 
 namespace MyEngine::LowLevel {
-	class BaseDescriptorHeap {
+	class BaseDescriptorHeapPool {
 	public:
 		// コンストラクタ
-		BaseDescriptorHeap(
+		BaseDescriptorHeapPool(
 			ID3D12Device* device,
 			D3D12_DESCRIPTOR_HEAP_TYPE heapType,
 			uint32_t maxDescriptors,
@@ -12,7 +12,7 @@ namespace MyEngine::LowLevel {
 		);
 
 		// デストラクタ
-		virtual ~BaseDescriptorHeap() = default;
+		virtual ~BaseDescriptorHeapPool() = default;
 
 		// インデックスの割り当て
 		uint32_t AllocateIndex();
@@ -23,6 +23,9 @@ namespace MyEngine::LowLevel {
 		// Cpuハンドルの取得
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle(uint32_t index) const;
 
+		// インデックスからCpuハンドルを逆算する
+		uint32_t GetIndex(D3D12_CPU_DESCRIPTOR_HANDLE handle) const;
+
 		// ヒープの取得
 		ID3D12DescriptorHeap* GetHeap() const { return heap_.Get(); }
 
@@ -32,7 +35,7 @@ namespace MyEngine::LowLevel {
 		// ディスクリプタ最大数の取得
 		uint32_t GetMaxDescriptors() const { return maxDescriptors_; }
 
-	private:
+	protected:
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap_;	// ヒープそのもの
 		uint32_t descriptorSize_ = 0;	// 型ごとのサイズ(バイト)
 		uint32_t maxDescriptors_ = 0;	// ディスクリプタの最大数

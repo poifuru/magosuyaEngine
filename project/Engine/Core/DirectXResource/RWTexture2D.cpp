@@ -1,11 +1,11 @@
 #include "PCH.h"
 #include "RWTexture2D.h"
-#include "SrvDescriptorHeap.h"
+#include "SrvDescriptorHeapPool.h"
 #include "Function.h"
 
 void RWTexture2D::Initialize(
 	ID3D12Device* device, 
-	MyEngine::LowLevel::SrvDescriptorHeap& heapManager,
+	MyEngine::LowLevel::SrvDescriptorHeapPool& heapManager,
 	uint32_t width,
 	uint32_t height,
 	DXGI_FORMAT format

@@ -998,7 +998,7 @@ bool ImGui_ImplDX12_Init(ImGui_ImplDX12_InitInfo* init_info)
     bd->RTVFormat = init_info->RTVFormat;
     bd->DSVFormat = init_info->DSVFormat;
     bd->numFramesInFlight = init_info->NumFramesInFlight;
-    bd->pd3dSrvDescHeap = init_info->SrvDescriptorHeap;
+    bd->pd3dSrvDescHeap = init_info->SrvDescriptorHeapPool;
     bd->tearingSupport = false;
 
     io.BackendRendererUserData = (void*)bd;
@@ -1038,7 +1038,7 @@ bool ImGui_ImplDX12_Init(ID3D12Device* device, int num_frames_in_flight, DXGI_FO
     init_info.Device = device;
     init_info.NumFramesInFlight = num_frames_in_flight;
     init_info.RTVFormat = rtv_format;
-    init_info.SrvDescriptorHeap = srv_descriptor_heap;
+    init_info.SrvDescriptorHeapPool = srv_descriptor_heap;
     init_info.LegacySingleSrvCpuDescriptor = font_srv_cpu_desc_handle;
     init_info.LegacySingleSrvGpuDescriptor = font_srv_gpu_desc_handle;
 

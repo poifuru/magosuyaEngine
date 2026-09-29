@@ -1,7 +1,7 @@
 #include "PCH.h"
-#include "BaseDescriptorHeap.h"
+#include "BaseDescriptorHeapPool.h"
 
-MyEngine::LowLevel::BaseDescriptorHeap::BaseDescriptorHeap(
+MyEngine::LowLevel::BaseDescriptorHeapPool::BaseDescriptorHeapPool(
 	ID3D12Device* device,
 	D3D12_DESCRIPTOR_HEAP_TYPE heapType,
 	uint32_t maxDescriptors,
@@ -39,7 +39,7 @@ MyEngine::LowLevel::BaseDescriptorHeap::BaseDescriptorHeap(
 	}
 }
 
-uint32_t MyEngine::LowLevel::BaseDescriptorHeap::AllocateIndex() {
+uint32_t MyEngine::LowLevel::BaseDescriptorHeapPool::AllocateIndex() {
 	// 返却された空き枠(キュー)があれば、優先的にそこを再利用する
 	if(!freeIndices_.empty()) {
 		uint32_t index = freeIndices_.front();
@@ -59,14 +59,19 @@ uint32_t MyEngine::LowLevel::BaseDescriptorHeap::AllocateIndex() {
 	return index;
 }
 
-void MyEngine::LowLevel::BaseDescriptorHeap::FreeIndex(uint32_t index) {
+void MyEngine::LowLevel::BaseDescriptorHeapPool::FreeIndex(uint32_t index) {
 	// 使い終わったインデックスを再利用リストに積む
 	freeIndices_.push(index);
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE MyEngine::LowLevel::BaseDescriptorHeap::GetCpuHandle(uint32_t index) const {
+D3D12_CPU_DESCRIPTOR_HANDLE MyEngine::LowLevel::BaseDescriptorHeapPool::GetCpuHandle(uint32_t index) const {
 	assert(index < maxDescriptors_);
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = heap_->GetCPUDescriptorHandleForHeapStart();
 	handle.ptr += static_cast<SIZE_T>(index) * descriptorSize_;
 	return handle;
+}
+
+uint32_t MyEngine::LowLevel::BaseDescriptorHeapPool::GetIndex(D3D12_CPU_DESCRIPTOR_HANDLE handle) const {
+	D3D12_CPU_DESCRIPTOR_HANDLE startHandle = heap_->GetCPUDescriptorHandleForHeapStart();
+	return static_cast<uint32_t>((handle.ptr - startHandle.ptr) / descriptorSize_);
 }

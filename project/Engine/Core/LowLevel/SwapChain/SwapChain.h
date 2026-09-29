@@ -7,7 +7,7 @@
 // 前方宣言
 namespace MyEngine::LowLevel {
 	class CommandList;
-	class SrvDescriptorHeap;
+	class SrvDescriptorHeapPool;
 }
 
 namespace MyEngine::LowLevel {
@@ -52,7 +52,7 @@ namespace MyEngine::LowLevel {
 
 		void Resize(uint32_t width, uint32_t height);
 
-		void CreateDepthSRV(ID3D12Device* device, MyEngine::LowLevel::SrvDescriptorHeap* heapManager);
+		void CreateDepthSRV(ID3D12Device* device, MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager);
 
 		// --- アクセッサ --- //
 		uint32_t GetCurrentBackBufferIndex() const { return swapChain_->GetCurrentBackBufferIndex(); }
@@ -86,6 +86,6 @@ namespace MyEngine::LowLevel {
 		uint32_t dsvSrvIndex_ = 0; // 深度SRVインデックス
 
 		// ポインタ
-		MyEngine::LowLevel::SrvDescriptorHeap* heapManager_;
+		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager_;
 	};
 }

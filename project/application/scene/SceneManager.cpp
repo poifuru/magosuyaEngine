@@ -6,7 +6,7 @@
 void SceneManager::Initialize(
 	MyEngine::LowLevel::GraphicsDevice* graphicsDevice,
 	ID3D12GraphicsCommandList* cmdList,
-	MyEngine::LowLevel::SrvDescriptorHeap* heapManager,
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
 	MyEngine::Rendering::RootSignatureManager* rootSigManager, 
 	MyEngine::Rendering::PSOManager* psoManager,
 	MyEngine::Rendering::ShaderManager* shaderManager,

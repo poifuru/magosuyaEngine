@@ -12,7 +12,7 @@
     <ClCompile Include="Engine\Render\PSO\InputLayoutManager.cpp" />
     <ClCompile Include="Engine\Editor\ImGui\ImGuiManager.cpp" />
     <ClCompile Include="Engine\Editor\Window\EditorManager.cpp" />
-    <ClCompile Include="Engine\Core\LeakChecker.cpp" />
+    <ClCompile Include="Engine\Core\LeakChecker\LeakChecker.cpp" />
     <ClCompile Include="Engine\Common\Utility\Function.cpp" />
     <ClCompile Include="Engine\Core\Input\GamePad.cpp" />
     <ClCompile Include="Engine\Core\Input\InputManager.cpp" />
@@ -32,7 +32,6 @@
     <ClCompile Include="Engine\Render\PSO\PSOManager.cpp" />
     <ClCompile Include="Engine\Graphics\primitive\Mesh.cpp" />
     <ClCompile Include="Engine\Common\Utility\Easing.cpp" />
-    <ClCompile Include="Engine\Core\SRV\SRVManager.cpp" />
     <ClCompile Include="application\entity\Entity.cpp" />
     <ClCompile Include="Engine\Render\PSO\ShaderManager.cpp" />
     <ClCompile Include="Engine\Framework\Object\3d\BaseObject3d.cpp" />
@@ -68,7 +67,7 @@
     <ClCompile Include="Engine\Render\RenderSystem\RenderSystem.cpp" />
     <ClCompile Include="Engine\Framework\Buffer\Animation.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsCommand\CommandContext.cpp" />
-    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\SrvDescriptorHeap.cpp" />
+    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeapPool\SrvDescriptorHeapPool\SrvDescriptorHeapPool.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\FrameRate\FrameRateController.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsDevice\GraphicsDevice.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\SwapChain\SwapChain.cpp" />
@@ -125,10 +124,11 @@
     <ClCompile Include="Engine\Framework\GameObject\Component\Component.cpp" />
     <ClCompile Include="Engine\Editor\Window\IEditorWindow.cpp" />
     <ClCompile Include="Engine\Editor\Window\PerformanceWindow.cpp" />
-    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\RtvDescriptorHeap.cpp" />
-    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\DsvDescriptorHeap.cpp" />
-    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\BaseDescriptorHeap.cpp" />
+    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeapPool\RtvDescriptorHeapPool\RtvDescriptorHeapPool.cpp" />
+    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeapPool\DsvDescriptorHeapPool\DsvDescriptorHeapPool.cpp" />
+    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeapPool\BaseDescriptorHeapPool\BaseDescriptorHeapPool.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DepthTexture\DepthTexture.cpp" />
+    <ClCompile Include="Engine\Core\LowLevel\DescriptorHeapPool\DescriptorHeapPoolContext\DescriptorHeapPoolContext.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -156,7 +156,7 @@
     <ClInclude Include="Engine\Render\PSO\InputLayoutManager.h" />
     <ClInclude Include="Engine\Editor\ImGui\ImGuiManager.h" />
     <ClInclude Include="Engine\Editor\Window\EditorManager.h" />
-    <ClInclude Include="Engine\Core\LeakChecker.h" />
+    <ClInclude Include="Engine\Core\LeakChecker\LeakChecker.h" />
     <ClInclude Include="Engine\Core\Input\GamePad.h" />
     <ClInclude Include="Engine\Common\Utility\Function.h" />
     <ClInclude Include="Engine\Common\Utility\MathFunction.h" />
@@ -173,7 +173,6 @@
     <ClInclude Include="application\scene\TitleScene.h" />
     <ClInclude Include="application\scene\PlayScene.h" />
     <ClInclude Include="Engine\Common\Utility\Easing.h" />
-    <ClInclude Include="Engine\Core\SRV\SRVManager.h" />
     <ClInclude Include="application\entity\Entity.h" />
     <ClInclude Include="application\entity\player\PlayerComponent.h" />
     <ClInclude Include="application\entity\player\PlayerHealth.h" />
@@ -227,7 +226,7 @@
     <ClInclude Include="Engine\Framework\Buffer\MaterialData.h" />
     <ClInclude Include="Engine\Framework\Buffer\Animation.h" />
     <ClInclude Include="Engine\Core\LowLevel\GraphicsCommand\CommandContext.h" />
-    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\SrvDescriptorHeap.h" />
+    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeapPool\SrvDescriptorHeapPool\SrvDescriptorHeapPool.h" />
     <ClInclude Include="Engine\Core\LowLevel\FrameRate\FrameRateController.h" />
     <ClInclude Include="Engine\Core\LowLevel\GraphicsDevice\GraphicsDevice.h" />
     <ClInclude Include="Engine\Core\LowLevel\SwapChain\SwapChain.h" />
@@ -283,10 +282,11 @@
     <ClInclude Include="Engine\Graphics\PostEffect\PostEffectType.h" />
     <ClInclude Include="Engine\Editor\Window\IEditorWindow.h" />
     <ClInclude Include="Engine\Editor\Window\PerformanceWindow.h" />
-    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\RtvDescriptorHeap.h" />
-    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\DsvDescriptorHeap.h" />
-    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\BaseDescriptorHeap.h" />
+    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeapPool\RtvDescriptorHeapPool\RtvDescriptorHeapPool.h" />
+    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeapPool\DsvDescriptorHeapPool\DsvDescriptorHeapPool.h" />
+    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeapPool\BaseDescriptorHeapPool\BaseDescriptorHeapPool.h" />
     <ClInclude Include="Engine\Core\LowLevel\DepthTexture\DepthTexture.h" />
+    <ClInclude Include="Engine\Core\LowLevel\DescriptorHeapPool\DescriptorHeapPoolContext\DescriptorHeapPoolContext.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />
