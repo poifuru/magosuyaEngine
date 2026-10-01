@@ -14,20 +14,25 @@ void SceneManager::Initialize(
 	MyEngine::Rendering::BlendModeManager* blendModeManager
 ) {
 	// マネージャー群を初期化
-	textureManager_.Initialize(graphicsDevice->GetDevice(), cmdList, heapManager);
-	modelManager_.Initialize(graphicsDevice->GetDevice(), &textureManager_);
-	modelFactory_.Initialize(graphicsDevice,
+	textureManager_ = std::make_unique<TextureManager>();
+	textureManager_->Initialize(graphicsDevice->GetDevice(), cmdList, heapManager);
+
+	modelManager_ = std::make_unique<ModelManager>();
+	modelManager_->Initialize(graphicsDevice->GetDevice(), textureManager_.get());
+
+	modelFactory_ = std::make_unique<ModelFactory>();
+	modelFactory_->Initialize(graphicsDevice,
 							 heapManager,
-							 &modelManager_,
-							 &textureManager_
+							 modelManager_.get(),
+							 textureManager_.get()
 	);
 
 	// シーン配布用のコンテキストを組み立てる
 	context_.graphicsDevice = graphicsDevice;
 	context_.heapManager = heapManager;
-	context_.textureManager = &textureManager_;
-	context_.modelFactory = &modelFactory_;
-	context_.modelManager = &modelManager_;
+	context_.textureManager = textureManager_.get();
+	context_.modelFactory = modelFactory_.get();
+	context_.modelManager = modelManager_.get();
 	context_.rootSigManager = rootSigManager;
 	context_.psoManager = psoManager;
 	context_.shaderManager = shaderManager;

@@ -192,6 +192,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Application\Collider\ColliderComponent.cpp" />
     <ClCompile Include="Application\Entity\Enemy\BirdEnemyComponent.cpp" />
     <ClCompile Include="Application\Entity\Enemy\EnemyManagerComponent.cpp" />
+    <ClCompile Include="Engine\Editor\Window\AssetBrowserWindow.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\DescriptorHeapPoolContext\DescriptorHeapPoolContext.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DepthTexture\DepthTexture.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\DsvDescriptorHeapPool\DsvDescriptorHeapPool.cpp" />
@@ -295,6 +296,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Core\LowLevel\GraphicsDevice\GraphicsDeviceCreator.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsCommand\GraphicsCommandCreator.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\BaseDescriptorHeapPool\BaseDescriptorHeapPool.cpp" />
+    <ClCompile Include="Engine\Editor\Window\GameViewWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Engine\Common\Utility\MathFunction.cpp" />
     <ClCompile Include="Engine\Framework\Object\2d\Sprite.cpp" />
@@ -359,6 +361,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Application\Collider\ColliderComponent.h" />
     <ClInclude Include="Application\Entity\Enemy\BirdEnemyComponent.h" />
     <ClInclude Include="Application\Entity\Enemy\EnemyManagerComponent.h" />
+    <ClInclude Include="Engine\Editor\Window\AssetBrowserWindow.h" />
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\DescriptorHeapPoolContext\DescriptorHeapPoolContext.h" />
     <ClInclude Include="Engine\Core\LowLevel\DepthTexture\DepthTexture.h" />
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\DsvDescriptorHeapPool\DsvDescriptorHeapPool.h" />
@@ -511,6 +514,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\RtvDescriptorHeapPool\RtvDescriptorHeapPool.h" />
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\BaseDescriptorHeapPool\BaseDescriptorHeapPool.h" />
     <ClInclude Include="Engine\Core\LowLevel\RenderTargetFactory\RenderTargetFactory.h" />
+    <ClInclude Include="Engine\Editor\Window\GameViewWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

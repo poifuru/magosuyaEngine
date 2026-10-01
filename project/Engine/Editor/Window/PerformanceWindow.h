@@ -3,10 +3,12 @@
 
 class PerformanceWindow : public IEditorWindow {
 public:
+	// コンストラクタ
 	PerformanceWindow();
-	~PerformanceWindow() = default;
-	
-	void Initialize() override;
 
+	// デストラクタ
+	~PerformanceWindow() = default;
+
+	// 更新と描画
 	void UpdateAndDraw(const EditorContext& context) override;
 };

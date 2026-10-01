@@ -8,6 +8,7 @@
 #include "RenderTexture.h"
 #include "InputManager.h"
 #include "WindowsAPI.h"
+#include "SceneManager.h"
 
 Game::Game() {
 	engine_ = std::make_unique<MyEngine::LowLevel::Engine>();
@@ -45,15 +46,16 @@ Game::Game() {
 	sceneManager_->ChangeScene<PlayScene>();
 	sceneManager_->SetRenderer(renderer_.get());
 
-	// コマンドリストを実行し、GPUのアップロード完了を待つ
-	engine_->ExecuteCommandList();
-
 	// ImGuiの初期化
 	ImGuiManager::GetInstance()->Initialize(
 		engine_->GetDevice(),
 		engine_->GetCommandQueue(),
-		engine_->GetSrvDescriptorHeapPool()
+		engine_->GetSrvDescriptorHeapPool(),
+		sceneManager_->GetTextureManager()
 	);
+
+	// コマンドリストを実行し、GPUのアップロード完了を待つ
+	engine_->ExecuteCommandList();
 }
 
 Game::~Game() {

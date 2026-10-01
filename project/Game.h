@@ -1,6 +1,4 @@
 #pragma once
-#include <memory>
-#include "SceneManager.h"
 
 namespace MyEngine::LowLevel {
 	class Engine;
@@ -9,6 +7,8 @@ namespace MyEngine::LowLevel {
 namespace MyEngine::Rendering {
 	class Renderer;
 }
+
+class SceneManager;
 
 class Game {
 public:

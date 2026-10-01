@@ -9,6 +9,10 @@ namespace MyEngine::Rendering {
 	class RenderTexture;
 }
 
+class GameObject;
+class SceneContext;
+class TextureManager;
+
 class EditorManager {
 public:
 	static EditorManager* GetInstance() {
@@ -28,7 +32,10 @@ public:
 		MyEngine::Rendering::RenderTexture* renderTexture
 	);
 
-	// ウィンドウ登録用の関数
+	// アセットブラウザウィンドウのアイコン取得用
+	void LoadAssetBrowserIcon(TextureManager* texManager);
+
+	// 任意のウィンドウ型を登録する
 	template <typename T, typename... Args>
 	T* RegisterWindow(Args&&... args) {
 		auto window = std::make_unique<T>(std::forward<Args>(args)...);
@@ -37,15 +44,27 @@ public:
 		return ptr;
 	}
 
+	// 任意のウィンドウ型を取得する
+	template <typename T>
+	T* GetWindow() const {
+		for (auto& window : windows_) {
+			T* ptr = dynamic_cast<T*>(window.get());
+			if (ptr) {
+				return ptr;
+			}
+		}
+		return nullptr;
+	}
+
 	// 外部がゲーム画面の状態を知るためのゲッター
-	bool IsGameWindowHovered() const { return isGameWindowHovered_; }
-	bool IsGameWindowFocused() const { return isGameWindowFocused_; }
-	ImVec2 GetGameScreenPos() const { return gameScreenPos_; }
-	ImVec2 GetGameScreenSize() const { return gameScreenSize_; }
+	bool IsGameWindowHovered() const;
+	bool IsGameWindowFocused() const;
+	ImVec2 GetGameScreenPos() const;
+	ImVec2 GetGameScreenSize() const;
 
 	// ギズモがアクティブかどうかを設定・取得する
-	void SetGizmoActive(bool active) { isGizmoActive_ = active; }
-	bool IsGizmoActive() const { return isGizmoActive_; }
+	void SetGizmoActive(bool active);
+	bool IsGizmoActive() const;
 
 	// レイアウト設定の保存と復元
 	void SaveLayoutSettings();
@@ -59,24 +78,13 @@ private:
 	// メニューバー表示
 	void DrawMenuBar();
 
-	// 各ウィンドウの描画関数を小分けにする
-	void DrawGameWindow(
-		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
-		MyEngine::Rendering::RenderTexture* renderTexture
-	);
-
 private:
+	// エディタウィンドウクラス配列
 	std::vector<std::unique_ptr<IEditorWindow>> windows_;
+
+	// エディタのレイアウト保存用
 	const std::string settingsFilePath_ = "Resources/Editor/editor_settings.json";
 
-	bool isGameWindowHovered_ = false;
-	bool isGameWindowFocused_ = false;
-	bool isGameWindowDragging_ = false;
-	bool isGizmoActive_ = false;
+	// 選択中のGameObject管理
 
-	// アスペクト比変更用
-	int selectedAspectIndex_ = 0; // 0: 16:9, 1: 4:3, 2: 自由 (Free)
-
-	ImVec2 gameScreenPos_ = { 0.0f, 0.0f };
-	ImVec2 gameScreenSize_ = { 0.0f, 0.0f };
 };

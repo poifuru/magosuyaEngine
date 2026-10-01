@@ -3,10 +3,8 @@
 #include "Engine.h"
 #include "RenderSystem.h"
 
-PerformanceWindow::PerformanceWindow() : IEditorWindow("パフォーマンス", true) {}
-
-void PerformanceWindow::Initialize() {
-	IEditorWindow::Initialize();
+PerformanceWindow::PerformanceWindow()
+	: IEditorWindow("パフォーマンス", true) {
 }
 
 void PerformanceWindow::UpdateAndDraw(const EditorContext& context) {

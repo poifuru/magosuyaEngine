@@ -52,6 +52,8 @@ public:
 		return nullptr;
 	}
 
+	TextureManager* GetTextureManager() { return textureManager_.get(); }
+
 	// シーン遷移用のテンプレート関数
 	template <typename T>
 	void ChangeScene() {
@@ -67,9 +69,9 @@ private:
 	std::unique_ptr<BaseScene> currentScene_ = nullptr;
 
 	// マネージャーの実体を SceneManager が所有する
-	ModelManager modelManager_;
-	TextureManager textureManager_;
-	ModelFactory modelFactory_;
+	std::unique_ptr<TextureManager> textureManager_ = nullptr;
+	std::unique_ptr<ModelManager> modelManager_ = nullptr;
+	std::unique_ptr<ModelFactory> modelFactory_ = nullptr;
 
 	// 各シーンへ配布する SceneContext の情報
 	SceneContext context_;

@@ -130,6 +130,8 @@
     <ClCompile Include="Engine\Core\LowLevel\DepthTexture\DepthTexture.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\DescriptorHeapPoolContext\DescriptorHeapPoolContext.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\RenderTargetFactory\RenderTargetFactory.cpp" />
+    <ClCompile Include="Engine\Editor\Window\GameViewWindow.cpp" />
+    <ClCompile Include="Engine\Editor\Window\AssetBrowserWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -289,6 +291,8 @@
     <ClInclude Include="Engine\Core\LowLevel\DepthTexture\DepthTexture.h" />
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\DescriptorHeapPoolContext\DescriptorHeapPoolContext.h" />
     <ClInclude Include="Engine\Core\LowLevel\RenderTargetFactory\RenderTargetFactory.h" />
+    <ClInclude Include="Engine\Editor\Window\GameViewWindow.h" />
+    <ClInclude Include="Engine\Editor\Window\AssetBrowserWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />

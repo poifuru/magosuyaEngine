@@ -4,13 +4,19 @@
 struct SceneContext;
 struct CameraData;
 class GameObject;
-namespace MyEngine::LowLevel { class SrvDescriptorHeapPool; }
-namespace MyEngine::Rendering { class RenderTexture; }
+
+namespace MyEngine::LowLevel { 
+	class SrvDescriptorHeapPool;
+}
+
+namespace MyEngine::Rendering { 
+	class RenderTexture;
+}
 
 // ウィンドウで参照したい情報の構造体
 struct EditorContext {
 	ID3D12Device* device = nullptr;
-	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager = nullptr;
+	MyEngine::LowLevel::SrvDescriptorHeapPool* srvHeap = nullptr;
 	MyEngine::Rendering::RenderTexture* renderTexture = nullptr;
 	SceneContext* sceneContext = nullptr;
 	GameObject** selectedObject = nullptr;
@@ -20,10 +26,11 @@ struct EditorContext {
 // エディタウィンドウの親クラス
 class IEditorWindow {
 public:
+	// コンストラクタ
 	IEditorWindow(const std::string& name, bool defaultOpen = true);
-	virtual ~IEditorWindow() = default;
 
-	virtual void Initialize();
+	// デストラクタ
+	virtual ~IEditorWindow() = default;
 
 	// 毎フレーム呼ばれる描画・更新
 	virtual void UpdateAndDraw(const EditorContext& context) = 0;
