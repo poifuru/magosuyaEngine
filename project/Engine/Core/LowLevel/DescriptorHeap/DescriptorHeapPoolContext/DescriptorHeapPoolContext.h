@@ -6,14 +6,11 @@
 namespace MyEngine::LowLevel {
 	class DescriptorHeapPoolContext {
 	public:
-		// コンテキスト
-		DescriptorHeapPoolContext() = default;
+		// 3つのプールを一括初期化
+		DescriptorHeapPoolContext(ID3D12Device* device);
 
 		// デストラクタ
 		~DescriptorHeapPoolContext() = default;
-
-		// 3つのプールを一括初期化
-		void Initialize(ID3D12Device* device);
 
 		// 各プールへのアクセッサ
 		DsvDescriptorHeapPool* GetDsvPool() const { return dsvPool_.get(); }

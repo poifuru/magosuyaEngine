@@ -2,7 +2,7 @@
 #include "GameObject.h"
 
 namespace MyEngine::LowLevel {
-	class SrvDescriptorHeapPool;
+	class DescriptorHeapPoolContext;;
 	class SwapChain;
 }
 
@@ -10,6 +10,7 @@ class PostEffectManager;
 
 namespace MyEngine::Rendering {
 	class RenderTexture;
+	class DepthTexture;
 	class RenderSystem;
 	class RootSignatureManager;
 	class ShaderManager;
@@ -31,17 +32,18 @@ namespace MyEngine::Rendering {
 
 	class Renderer {
 	public:
-		Renderer();
-		~Renderer();
-
-		void Initialize(
+		// コンストラクタ
+		Renderer(
 			ID3D12Device* device,
 			IDxcUtils* dxcUtils,
 			IDxcCompiler3* dxcCompiler,
 			IDxcIncludeHandler* includeHandler,
-			MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
+			MyEngine::LowLevel::DescriptorHeapPoolContext* heapContext,
 			MyEngine::LowLevel::SwapChain* swapChain
 		);
+
+		// デストラクタ
+		~Renderer();
 
 		void RenderScene(
 			ID3D12GraphicsCommandList* cmdList,
@@ -50,7 +52,7 @@ namespace MyEngine::Rendering {
 
 		void DispatchCS(
 			MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager
-			);
+		);
 
 		void Draw(std::vector<std::unique_ptr<GameObject>>& objects);
 
@@ -67,8 +69,8 @@ namespace MyEngine::Rendering {
 		void SetPostEffectManager(PostEffectManager* postEffectManager) { postEffectManager_ = postEffectManager; }
 
 		// 最終的な描画結果の RenderTexture を取得するゲッター
-		RenderTexture* GetFinalRenderTexture() const { 
-			return finalRenderTexture_ ? finalRenderTexture_ : renderTexture_.get(); 
+		RenderTexture* GetFinalRenderTexture() const {
+			return finalRenderTexture_ ? finalRenderTexture_ : renderTexture_.get();
 		}
 
 	private:
@@ -99,10 +101,13 @@ namespace MyEngine::Rendering {
 		void Pingpong(PostEffectManager* postEffectManager);
 		void SetBackBufferAsRenderTarget();
 
+		// ビューポートとシザーレクトを現在の解像度に合わせる
+		void SetViewportAndScissorRect();
+
 	private:
 		ID3D12Device* device_ = nullptr;
 		ID3D12GraphicsCommandList* cmdList_ = nullptr;
-		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager_ = nullptr;
+		MyEngine::LowLevel::DescriptorHeapPoolContext* heapContext_ = nullptr;
 		MyEngine::LowLevel::SwapChain* swapChain_ = nullptr;
 
 		std::unique_ptr<MyEngine::Rendering::RootSignatureManager> rootSigManager_;
@@ -113,6 +118,7 @@ namespace MyEngine::Rendering {
 
 		std::unique_ptr<MyEngine::Rendering::RenderSystem> renderSystem_;
 		std::unique_ptr<MyEngine::Rendering::RenderTexture> renderTexture_;
+		std::unique_ptr<MyEngine::Rendering::DepthTexture> sceneDepthTexture_;
 		// ピンポン用の中間テクスチャ2枚
 		std::unique_ptr<MyEngine::Rendering::RenderTexture> workTextures_[2];
 
@@ -121,7 +127,7 @@ namespace MyEngine::Rendering {
 
 		// objectsの参照を覚えておく
 		std::vector<std::unique_ptr<GameObject>>* currentObjects_ = nullptr;
-		
+
 		// PostEffectManagerの参照
 		PostEffectManager* postEffectManager_ = nullptr;
 

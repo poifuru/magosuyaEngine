@@ -115,8 +115,8 @@ void ReticleComponent::Update() {
 		// 位置ずれ解消
 		gameObject_->GetTransform().translate = { 0.0f, 0.0f, 0.0f };
 
-		float screenW = static_cast<float>(WindowsAPI::GetInstance()->GetWindowWidth());
-		float screenH = static_cast<float>(WindowsAPI::GetInstance()->GetWindowHeight());
+		float screenW = 1280.0f;
+		float screenH = 720.0f;
 		Vector2 finalPos = { screenW * 0.5f + spriteOffset_.x, screenH * 0.5f + spriteOffset_.y };
 
 		sprite->SetAnchorPoint({ 0.5f, 0.5f });

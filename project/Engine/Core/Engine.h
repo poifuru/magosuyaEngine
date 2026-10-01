@@ -1,22 +1,21 @@
 #pragma once
 #include "LeakChecker.h"
 
-// 前方宣言
+namespace MyEngine::Rendering {
+	class RenderTexture;
+}
+
 namespace MyEngine::LowLevel {
+	// 前方宣言
 	class FrameRateController;
 	class GraphicsDevice;
 	class DxcCompiler;
 	class CommandQueue;
 	class CommandList;
 	class SwapChain;
+	class DescriptorHeapPoolContext;
 	class SrvDescriptorHeapPool;
-}
 
-namespace MyEngine::Rendering {
-	class RenderTexture;
-}
-
-namespace MyEngine::LowLevel {
 	class Engine {
 	public:
 		Engine();
@@ -79,7 +78,8 @@ namespace MyEngine::LowLevel {
 		IDxcCompiler3* GetDxcCompiler();
 		IDxcIncludeHandler* GetIncludeHandler();
 
-		MyEngine::LowLevel::SrvDescriptorHeapPool* GetSrvDescriptorHeapPool() { return heapManager_.get(); }
+		MyEngine::LowLevel::DescriptorHeapPoolContext* GetHeapPoolContext() { return heapContext_.get(); }
+		MyEngine::LowLevel::SrvDescriptorHeapPool* GetSrvDescriptorHeapPool();
 		MyEngine::LowLevel::SwapChain* GetSwapChain() { return swapChain_.get(); }
 
 	private:
@@ -92,7 +92,7 @@ namespace MyEngine::LowLevel {
 		std::unique_ptr<MyEngine::LowLevel::CommandQueue> cmdQueue_;
 		std::unique_ptr<MyEngine::LowLevel::CommandList> cmdList_;
 		std::unique_ptr<MyEngine::LowLevel::SwapChain> swapChain_;
-		std::unique_ptr<MyEngine::LowLevel::SrvDescriptorHeapPool> heapManager_;
+		std::unique_ptr<MyEngine::LowLevel::DescriptorHeapPoolContext> heapContext_;
 
 		// 静的プロファイル用変数
 		static float sUpdateTime_;

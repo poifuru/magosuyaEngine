@@ -8,7 +8,7 @@
 #include "CommandQueue.h"
 #include "CommandList.h"
 #include "SwapChain.h"
-#include "SrvDescriptorHeapPool.h"
+#include "DescriptorHeapPoolContext.h"
 #include "Logger.h"
 #include "RenderTexture.h"
 
@@ -44,19 +44,17 @@ void MyEngine::LowLevel::Engine::Initialize() {
 	cmdList_ = std::make_unique<MyEngine::LowLevel::CommandList>();
 	cmdList_->Initialize(device_->GetDevice());
 
-	swapChain_ = std::make_unique<MyEngine::LowLevel::SwapChain>();
-	swapChain_->Initialize(
+	heapContext_ = std::make_unique<MyEngine::LowLevel::DescriptorHeapPoolContext>(device_->GetDevice());
+
+	swapChain_ = std::make_unique<MyEngine::LowLevel::SwapChain>(
+		device_->GetDevice(),
 		device_->GetDxgiFactory(),
 		cmdQueue_->GetCommandQueue(),
 		WindowsAPI::GetInstance()->GetHwnd(),
 		WindowsAPI::GetInstance()->GetWindowWidth(),
-		WindowsAPI::GetInstance()->GetWindowHeight()
+		WindowsAPI::GetInstance()->GetWindowHeight(),
+		heapContext_->GetRtvPool()
 	);
-
-	heapManager_ = std::make_unique<MyEngine::LowLevel::SrvDescriptorHeapPool>();
-	heapManager_->Initialize(device_->GetDevice(), 4096);
-
-	swapChain_->CreateDepthSRV(device_->GetDevice(), heapManager_.get());
 }
 
 bool MyEngine::LowLevel::Engine::ProcessMessage() {
@@ -147,4 +145,8 @@ IDxcCompiler3* MyEngine::LowLevel::Engine::GetDxcCompiler() {
 
 IDxcIncludeHandler* MyEngine::LowLevel::Engine::GetIncludeHandler() {
 	return dxcCompiler_->GetIncludeHandler();
+}
+
+MyEngine::LowLevel::SrvDescriptorHeapPool* MyEngine::LowLevel::Engine::GetSrvDescriptorHeapPool() {
+	return heapContext_ ? heapContext_->GetSrvPool() : nullptr;
 }

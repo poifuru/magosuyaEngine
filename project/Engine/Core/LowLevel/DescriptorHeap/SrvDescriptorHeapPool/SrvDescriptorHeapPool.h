@@ -27,5 +27,9 @@ namespace MyEngine::LowLevel {
 
 		// インデックスからGpuハンドルを逆算する
 		uint32_t GetIndex(D3D12_GPU_DESCRIPTOR_HANDLE handle) const;
+
+	public:
+		// 基底クラスのGetIndexを呼べるようにするため
+		using BaseDescriptorHeapPool::GetIndex;
 	};
 }

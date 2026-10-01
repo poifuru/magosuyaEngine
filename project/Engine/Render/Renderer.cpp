@@ -1,6 +1,6 @@
 #include "PCH.h"
 #include "Renderer.h"
-#include "SrvDescriptorHeapPool.h"
+#include "DescriptorHeapPoolContext.h"
 #include "SwapChain.h"
 #include "RootSignatureManager.h"
 #include "WindowsAPI.h"
@@ -10,6 +10,8 @@
 #include "PSOManager.h"
 #include "RenderSystem.h"
 #include "RenderTexture.h"
+#include "DepthTexture.h"
+#include "RenderTargetFactory.h"
 #include "RenderingModel.h"
 #include "CameraOrganizer.h"
 #include "Function.h"
@@ -20,19 +22,16 @@
 #include "PostEffectManager.h"
 #include "Outline.h"
 
-MyEngine::Rendering::Renderer::Renderer() = default;
-MyEngine::Rendering::Renderer::~Renderer() = default;
-
-void MyEngine::Rendering::Renderer::Initialize(
+MyEngine::Rendering::Renderer::Renderer(
 	ID3D12Device* device,
-	IDxcUtils* dxcUtils,
-	IDxcCompiler3* dxcCompiler,
+	IDxcUtils* dxcUtils, 
+	IDxcCompiler3* dxcCompiler, 
 	IDxcIncludeHandler* includeHandler,
-	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
+	MyEngine::LowLevel::DescriptorHeapPoolContext* heapContext, 
 	MyEngine::LowLevel::SwapChain* swapChain
 ) {
 	device_ = device;
-	heapManager_ = heapManager;
+	heapContext_ = heapContext;
 	swapChain_ = swapChain;
 
 	rootSigManager_ = std::make_unique<MyEngine::Rendering::RootSignatureManager>();
@@ -56,7 +55,7 @@ void MyEngine::Rendering::Renderer::Initialize(
 	renderSystem_ = std::make_unique<MyEngine::Rendering::RenderSystem>();
 	renderSystem_->Initialize(
 		device,
-		heapManager,
+		heapContext_->GetSrvPool(),
 		psoManager_.get(),
 		shaderManager_.get(),
 		inputLayoutManager_.get(),
@@ -64,22 +63,43 @@ void MyEngine::Rendering::Renderer::Initialize(
 		rootSigManager_->GetCommonRootSignature()
 	);
 
-	renderTexture_ = std::make_unique<MyEngine::Rendering::RenderTexture>();
-	renderTexture_->Initialize(device, heapManager);
+	// ファクトリを使って生成
+	renderTexture_ =
+		MyEngine::LowLevel::RenderTargetFactory::CreateRenderTexture(
+			device,
+			heapContext,
+			WindowsAPI::GetInstance()->GetWindowWidth(),
+			WindowsAPI::GetInstance()->GetWindowHeight()
+		);
+
+	sceneDepthTexture_ =
+		MyEngine::LowLevel::RenderTargetFactory::CreateDepthTexture(
+			device,
+			heapContext,
+			WindowsAPI::GetInstance()->GetWindowWidth(),
+			WindowsAPI::GetInstance()->GetWindowHeight()
+		);
 
 	for(int i = 0; i < 2; ++i) {
-		workTextures_[i] = std::make_unique<MyEngine::Rendering::RenderTexture>();
-		workTextures_[i]->Initialize(device, heapManager);
+		workTextures_[i] = 
+			MyEngine::LowLevel::RenderTargetFactory::CreateRenderTexture(
+				device,
+				heapContext,
+				WindowsAPI::GetInstance()->GetWindowWidth(),
+				WindowsAPI::GetInstance()->GetWindowHeight()
+			);
 	}
 
 	InitializeShaderTable();
 }
 
+MyEngine::Rendering::Renderer::~Renderer() = default;
+
 namespace {
 	void SetupViewport(ID3D12GraphicsCommandList* cmdList) {
 		D3D12_VIEWPORT viewport{};
-		viewport.Width = static_cast<FLOAT>(WindowsAPI::GetInstance()->GetWindowWidth());
-		viewport.Height = static_cast<FLOAT>(WindowsAPI::GetInstance()->GetWindowHeight());
+		viewport.Width = 1280.0f;
+		viewport.Height = 720.0f;
 		viewport.TopLeftX = 0.0f;
 		viewport.TopLeftY = 0.0f;
 		viewport.MinDepth = 0.0f;
@@ -92,8 +112,8 @@ namespace {
 		D3D12_RECT scissorRect{};
 		scissorRect.left = 0;
 		scissorRect.top = 0;
-		scissorRect.right = WindowsAPI::GetInstance()->GetWindowWidth();
-		scissorRect.bottom = WindowsAPI::GetInstance()->GetWindowHeight();
+		scissorRect.right = 1280;
+		scissorRect.bottom = 720;
 
 		cmdList->RSSetScissorRects(1, &scissorRect);
 	}
@@ -110,7 +130,7 @@ void MyEngine::Rendering::Renderer::RenderScene(
 
 	// レンダーターゲットと深度バッファを renderTexture_ にセット
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = renderTexture_->GetDescriptorHandle();
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = swapChain_->GetDsvHandle();
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = sceneDepthTexture_->GetDescriptorHandle();
 	cmdList_->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 
 	// レンダーターゲットと深度バッファをクリア
@@ -320,7 +340,11 @@ void MyEngine::Rendering::Renderer::ExecutePostProcess(
 	lastEffect_ = true;
 	// 画面（バックバッファ）にも描画しておく
 	SetBackBufferAsRenderTarget();
+
 	lastEffect_ = true;
+
+	SetViewportAndScissorRect();
+
 	SubmitPostEffect(
 		cmdList_,
 		ShadingModel::PostEffect_CopyImage,
@@ -508,8 +532,8 @@ void MyEngine::Rendering::Renderer::SubmitPostEffect(
 	}
 
 	// テクスチャ SRV (t0: 入力画面, t1: ディゾルブ用マスク等) のバインド
-	D3D12_GPU_DESCRIPTOR_HANDLE texHandle = heapManager_->GetGpuHandle(srcTextureSrvIndex);
-	D3D12_GPU_DESCRIPTOR_HANDLE extraTexHandle = heapManager_->GetGpuHandle(extraSrvIndex);
+	D3D12_GPU_DESCRIPTOR_HANDLE texHandle = heapContext_->GetSrvPool()->GetGpuHandle(srcTextureSrvIndex);
+	D3D12_GPU_DESCRIPTOR_HANDLE extraTexHandle = heapContext_->GetSrvPool()->GetGpuHandle(extraSrvIndex);
 
 	cmdList_->SetGraphicsRootDescriptorTable(3, texHandle);
 	if(extraSrvIndex != 0) {
@@ -567,12 +591,7 @@ void MyEngine::Rendering::Renderer::Pingpong(PostEffectManager* postEffectManage
 
 		if (isDepthEffect) {
 			// 深度バッファを DEPTH_WRITE -> PIXEL_SHADER_RESOURCE へ遷移
-			MyEngine::Utility::TransitionBarrier(
-				cmdList_,
-				swapChain_->GetDepthBufferResource(),
-				D3D12_RESOURCE_STATE_DEPTH_WRITE,
-				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-			);
+			sceneDepthTexture_->ChangeState(cmdList_, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		}
 
 		// 描画実行
@@ -586,12 +605,7 @@ void MyEngine::Rendering::Renderer::Pingpong(PostEffectManager* postEffectManage
 
 		if (isDepthEffect) {
 			// 深度バッファを PIXEL_SHADER_RESOURCE -> DEPTH_WRITE へ戻す
-			MyEngine::Utility::TransitionBarrier(
-				cmdList_,
-				swapChain_->GetDepthBufferResource(),
-				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-				D3D12_RESOURCE_STATE_DEPTH_WRITE
-			);
+			sceneDepthTexture_->ChangeState(cmdList_, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		}
 
 		// 今書き込んだバッファを SRV (読み込み用) にバリア遷移
@@ -612,4 +626,27 @@ void MyEngine::Rendering::Renderer::SetBackBufferAsRenderTarget() {
 
 	// レンダーターゲットに設定 (バックバッファへ描画)
 	cmdList_->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+}
+
+void MyEngine::Rendering::Renderer::SetViewportAndScissorRect() {
+	float winWidth = static_cast<float>(WindowsAPI::GetInstance()->GetWindowWidth());
+	float winHeight = static_cast<float>(WindowsAPI::GetInstance()->GetWindowHeight());
+
+	D3D12_VIEWPORT backBufferViewport{};
+	backBufferViewport.Width = winWidth;
+	backBufferViewport.Height = winHeight;
+	backBufferViewport.TopLeftX = 0.0f;
+	backBufferViewport.TopLeftY = 0.0f;
+	backBufferViewport.MinDepth = 0.0f;
+	backBufferViewport.MaxDepth = 1.0f;
+
+	cmdList_->RSSetViewports(1, &backBufferViewport);
+
+	D3D12_RECT backBufferScissorRect{};
+	backBufferScissorRect.left = 0;
+	backBufferScissorRect.top = 0;
+	backBufferScissorRect.right = static_cast<LONG>(winWidth);
+	backBufferScissorRect.bottom = static_cast<LONG>(winHeight);
+
+	cmdList_->RSSetScissorRects(1, &backBufferScissorRect);
 }

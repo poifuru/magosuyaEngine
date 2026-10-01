@@ -1,7 +1,6 @@
 #include "PCH.h"
 #include "CopyImage.h"
 #include "RenderTexture.h"
-#include "SRVManager.h"
 
 void CopyImageEffect::Initialize(ID3D12Device* /*device*/) {
 	shadingModel_ = MyEngine::Rendering::ShadingModel::PostEffect_CopyImage;

@@ -13,13 +13,12 @@ Game::Game() {
 	engine_ = std::make_unique<MyEngine::LowLevel::Engine>();
 	engine_->Initialize();
 
-	renderer_ = std::make_unique<MyEngine::Rendering::Renderer>();
-	renderer_->Initialize(
+	renderer_ = std::make_unique<MyEngine::Rendering::Renderer>(
 		engine_->GetDevice(),
 		engine_->GetDxcUtils(),
 		engine_->GetDxcCompiler(),
 		engine_->GetIncludeHandler(),
-		engine_->GetSrvDescriptorHeapPool(),
+		engine_->GetHeapPoolContext(),
 		engine_->GetSwapChain()
 	);
 

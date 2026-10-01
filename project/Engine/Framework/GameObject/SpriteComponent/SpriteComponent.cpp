@@ -58,9 +58,9 @@ void SpriteComponent::Update() {
 		mat->SetUvTranslate({ 1.0f, 0.0f, 0.0f });
 	}
 
-	// 画面サイズの取得
-	float screenWidth = static_cast<float>(WindowsAPI::GetInstance()->GetWindowWidth());
-	float screenHeight = static_cast<float>(WindowsAPI::GetInstance()->GetWindowHeight());
+	// 画面サイズ
+	float screenWidth = 1280.0f;
+	float screenHeight = 720.0f;
 
 	// 平行投影行列の計算 (Nearを-1.0fに拡張してZ=0.0fのクリップを防止)
 	Matrix4x4 projection = Math::MakeOrthographicMatrix(0.0f, 0.0f, screenWidth, screenHeight, -1.0f, 100.0f);

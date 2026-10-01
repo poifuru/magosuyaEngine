@@ -3,6 +3,7 @@
 
 namespace MyEngine::LowLevel {
 	class DsvDescriptorHeapPool : public BaseDescriptorHeapPool {
+	public:
 		// コンストラクタ
 		DsvDescriptorHeapPool(ID3D12Device* device, uint32_t maxDescriptors = 32);
 

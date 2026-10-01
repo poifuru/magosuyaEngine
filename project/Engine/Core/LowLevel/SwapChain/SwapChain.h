@@ -4,36 +4,28 @@
 
 #pragma once
 
-// 前方宣言
 namespace MyEngine::LowLevel {
+	// 前方宣言
 	class CommandList;
-	class SrvDescriptorHeapPool;
-}
+	class RtvDescriptorHeapPool;
 
-namespace MyEngine::LowLevel {
 	class SwapChain {
 	public:
-		// トリプルバッファリングのためのバッファ数定数
-		static constexpr uint32_t kBufferCount = 3;
+		// ダブルバッファリングのためのバッファ数定数(未実装)
+		static constexpr uint32_t kBufferCount = 2;
 
-		SwapChain();
-		~SwapChain() = default;
-
-		/// <summary>
-		/// 初期化処理
-		/// </summary>
-		/// <param name="dxgiFactory">DXGIファクトリー</param>
-		/// <param name="cmdQueue">コマンドキュー</param>
-		/// <param name="hwnd">ウィンドウハンドル</param>
-		/// <param name="width">ウィンドウサイズ(横)</param>
-		/// <param name="height">ウィンドウサイズ(縦)</param>
-		void Initialize(
+		// コンストラクタ
+		SwapChain(
+			ID3D12Device* device,
 			IDXGIFactory7* dxgiFactory,
 			ID3D12CommandQueue* cmdQueue,
 			HWND hwnd,
 			int32_t width,
-			int32_t height
+			int32_t height,
+			MyEngine::LowLevel::RtvDescriptorHeapPool* rtvPool
 		);
+
+		~SwapChain() = default;
 
 		/// <summary>
 		/// 画面をフリップさせる
@@ -52,40 +44,17 @@ namespace MyEngine::LowLevel {
 
 		void Resize(uint32_t width, uint32_t height);
 
-		void CreateDepthSRV(ID3D12Device* device, MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager);
-
 		// --- アクセッサ --- //
 		uint32_t GetCurrentBackBufferIndex() const { return swapChain_->GetCurrentBackBufferIndex(); }
 		ID3D12Resource* GetBackBufferResource(uint32_t index) const { return swapChainResources_[index].Get(); }
 		D3D12_CPU_DESCRIPTOR_HANDLE GetRtvHandle(uint32_t index) const { return rtvHandles_[index]; }
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferRtvHandle() const { return GetRtvHandle(GetCurrentBackBufferIndex()); }
-		D3D12_CPU_DESCRIPTOR_HANDLE GetDsvHandle() const { return dsvHandle_; }
-		uint32_t GetDepthSrvIndex() const { return dsvSrvIndex_; }
-		ID3D12Resource* GetDepthBufferResource() const { return depthBuffer_.Get(); }
-
-	public:
-		// コピー・移動禁止
-		SwapChain(const SwapChain&) = delete;
-		SwapChain& operator=(const SwapChain&) = delete;
-		SwapChain(SwapChain&&) = delete;
-		SwapChain& operator=(SwapChain&&) = delete;
-
+		
 	private:
 		Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain_;
 
 		std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, kBufferCount> swapChainResources_;
 		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, kBufferCount> rtvHandles_;
-
-		// RTV専用のディスクリプタヒープ
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap_;
-
-		// デプスバッファ関連
-		Microsoft::WRL::ComPtr<ID3D12Resource> depthBuffer_;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap_;
-		D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle_{};
-		uint32_t dsvSrvIndex_ = 0; // 深度SRVインデックス
-
-		// ポインタ
-		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager_;
+		std::array<uint32_t, kBufferCount> rtvIndices_{}; // 借りたスロット番号
 	};
 }

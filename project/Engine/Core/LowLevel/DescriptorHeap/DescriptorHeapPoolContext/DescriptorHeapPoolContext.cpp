@@ -1,7 +1,7 @@
 #include "PCH.h"
 #include "DescriptorHeapPoolContext.h"
 
-void MyEngine::LowLevel::DescriptorHeapPoolContext::Initialize(ID3D12Device* device) {
+MyEngine::LowLevel::DescriptorHeapPoolContext::DescriptorHeapPoolContext(ID3D12Device* device) {
 	assert(device != nullptr);
 
 	dsvPool_ = std::make_unique<DsvDescriptorHeapPool>(device);

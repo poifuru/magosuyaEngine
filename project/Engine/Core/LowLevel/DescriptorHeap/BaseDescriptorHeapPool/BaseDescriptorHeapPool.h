@@ -3,6 +3,9 @@
 namespace MyEngine::LowLevel {
 	class BaseDescriptorHeapPool {
 	public:
+		static constexpr uint32_t kInvalidDescriptorIndex = UINT32_MAX;
+
+	public:
 		// コンストラクタ
 		BaseDescriptorHeapPool(
 			ID3D12Device* device,
