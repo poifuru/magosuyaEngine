@@ -3,7 +3,7 @@
 #include "Renderer.h"
 #include "RenderSystem.h"
 #include "CameraOrganizer.h"
-#include "LevelEditor.h"
+#include "EditorManager.h"
 #include "ComponentType.h"
 #include "InputManager.h"
 #include "RawInput.h"
@@ -19,25 +19,6 @@ PlayScene::~PlayScene() = default;
 
 void PlayScene::Initialize() {
 	if (!context_) return;
-
-#ifdef USEIMGUI
-	levelEditor_ = std::make_unique<LevelEditor>();
-	levelEditor_->Initialize(context_);
-
-	// 初回ロード時に defaultScene.json が存在すれば読み込む
-	const std::string defaultScenePath = "Resources/Scene/defaultScene.json";
-	if (std::filesystem::exists(defaultScenePath)) {
-		levelEditor_->LoadScene(defaultScenePath, gameObjects_, selectedObject_);
-	}
-#else
-	// リリースビルドでも、シーンのロードだけは行う
-	const std::string defaultScenePath = "Resources/Scene/defaultScene.json";
-	if (std::filesystem::exists(defaultScenePath)) {
-		LevelEditor tempEditor;
-		tempEditor.Initialize(context_);
-		tempEditor.LoadScene(defaultScenePath, gameObjects_, selectedObject_);
-	}
-#endif
 
 	// --- カメラの初期優先度設定 ---
 	for (auto& obj : gameObjects_) {
@@ -65,6 +46,32 @@ void PlayScene::Initialize() {
 	// 本番の生存リストをセット
 	context_->activeGameObjects = &gameObjects_;
 
+	// 起動時に defaultScene.json があれば読み込む
+	const std::string defaultScenePath = "Resources/Scene/defaultScene.json";
+	if (std::filesystem::exists(defaultScenePath)) {
+		std::ifstream file(defaultScenePath);
+		if (file.is_open()) {
+			nlohmann::json sceneJ;
+			file >> sceneJ;
+			if (sceneJ.contains("objects")) {
+				for (const auto& objJ : sceneJ["objects"]) {
+					auto newObj = std::make_unique<GameObject>(context_, objJ["name"]);
+					newObj->Deserialize(objJ);
+					newObj->Initialize();
+					gameObjects_.push_back(std::move(newObj));
+				}
+				for (auto& obj : gameObjects_) {
+					if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
+						followCam->ResolveTarget(gameObjects_);
+					}
+					if (auto* player = obj->GetComponent<PlayerComponent>()) {
+						player->ResolveReticle(gameObjects_);
+					}
+				}
+			}
+		}
+	}
+
 	// ライトマネージャーの初期化
 	lightManager_ = std::make_unique<LightManager>();
 	lightManager_->Initialize(context_->graphicsDevice->GetDevice());
@@ -79,6 +86,9 @@ void PlayScene::Initialize() {
 	if(auto* dissolve = postEffectManager_->GetEffect<Dissolve>(PostEffectType::Dissolve)) {
 		dissolve->SetMaskTextureIndex(noiseIndex);
 	}
+
+	// EditorManagerにContextをセット
+	EditorManager::GetInstance()->SetSceneContext(context_);
 }
 
 void PlayScene::Update(CameraData* cameraData) {
@@ -157,8 +167,7 @@ void PlayScene::Update(CameraData* cameraData) {
 #ifdef USEIMGUI
 	postEffectManager_->ImGui();
 
-	// エディタの更新処理に丸投げ！
-	levelEditor_->Update(gameObjects_, selectedObject_, cameraData);
+	selectedObject_ = EditorManager::GetInstance()->GetSelectedObject();
 #endif
 }
 

@@ -132,6 +132,9 @@
     <ClCompile Include="Engine\Core\LowLevel\RenderTargetFactory\RenderTargetFactory.cpp" />
     <ClCompile Include="Engine\Editor\Window\GameViewWindow.cpp" />
     <ClCompile Include="Engine\Editor\Window\AssetBrowserWindow.cpp" />
+    <ClCompile Include="Engine\Editor\Window\HierarchyWindow.cpp" />
+    <ClCompile Include="Engine\Editor\Window\InspectorWindow.cpp" />
+    <ClCompile Include="Engine\Editor\Window\GizmoWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -293,6 +296,9 @@
     <ClInclude Include="Engine\Core\LowLevel\RenderTargetFactory\RenderTargetFactory.h" />
     <ClInclude Include="Engine\Editor\Window\GameViewWindow.h" />
     <ClInclude Include="Engine\Editor\Window\AssetBrowserWindow.h" />
+    <ClInclude Include="Engine\Editor\Window\HierarchyWindow.h" />
+    <ClInclude Include="Engine\Editor\Window\InspectorWindow.h" />
+    <ClInclude Include="Engine\Editor\Window\GizmoWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />

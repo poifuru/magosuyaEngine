@@ -4,6 +4,7 @@
 #include "SrvDescriptorHeapPool.h"
 #include "GameObject.h"
 #include "ComponentType.h"
+#include "EditorManager.h"
 
 AssetBrowserWindow::AssetBrowserWindow()
 	: IEditorWindow("アセットブラウザ", true) {
@@ -70,7 +71,7 @@ void AssetBrowserWindow::UpdateAndDraw(const EditorContext& context) {
 	if (columnCount < 1) columnCount = 1;
 
 	ImGui::Columns(columnCount, nullptr, false);
-	GameObject* selectedObject = (context.selectedObject ? *context.selectedObject : nullptr);
+	GameObject* selectedObject = EditorManager::GetInstance()->GetSelectedObject();
 
 	if (std::filesystem::exists(currentDirectory_) && std::filesystem::is_directory(currentDirectory_)) {
 		int id = 0;

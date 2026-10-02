@@ -78,15 +78,15 @@ void Game::Run() {
  			win->SetFullscreen(!win->IsFullscreen(), true); 
  		}
  
- 		// ImGui 新しいフレーム開始
- 		ImGuiManager::GetInstance()->BeginFrame(
- 			engine_->GetDevice(),
- 			engine_->GetSrvDescriptorHeapPool(),
-			renderer_->GetFinalRenderTexture()
- 		);
- 
  		//フレーム開始
  		engine_->BeginFrame(renderer_->GetRenderTexture()->GetDescriptorHandle());
+
+		// ImGui 新しいフレーム開始
+		ImGuiManager::GetInstance()->BeginFrame(
+			engine_->GetDevice(),
+			engine_->GetSrvDescriptorHeapPool(),
+			renderer_->GetFinalRenderTexture()
+		);
 
 		// --- Update (ゲーム更新・描画コマンド登録) の計測 ---
 		auto startUpdate = std::chrono::high_resolution_clock::now();

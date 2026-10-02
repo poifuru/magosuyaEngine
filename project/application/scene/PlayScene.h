@@ -4,7 +4,6 @@
 
 class LightManager;
 class PostEffectManager;
-class LevelEditor;
 class TutorialManager;
 
 class PlayScene : public BaseScene {
@@ -34,8 +33,6 @@ private:
 	std::unique_ptr<PostEffectManager> postEffectManager_ = nullptr;
 
 #ifdef USEIMGUI
-	// エディタインスタンス
-	std::unique_ptr<LevelEditor> levelEditor_ = nullptr;
 	bool isDebugMode_ = true;
 #endif
 };

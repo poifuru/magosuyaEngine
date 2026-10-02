@@ -10,7 +10,8 @@ namespace MyEngine::Rendering {
 }
 
 class GameObject;
-class SceneContext;
+struct SceneContext;
+
 class TextureManager;
 
 class EditorManager {
@@ -70,6 +71,15 @@ public:
 	void SaveLayoutSettings();
 	void LoadLayoutSettings();
 
+	// 選択中のGameObject管理
+	GameObject* GetSelectedObject() const { return selectedObject_; }
+	void SetSelectedObject(GameObject* obj) { selectedObject_ = obj; }
+	void ClearSelectedObject() { selectedObject_ = nullptr; }
+
+	// シーンコンテキストの受け渡し用
+	void SetSceneContext(SceneContext* context) { sceneContext_ = context; }
+	SceneContext* GetSceneContext() const { return sceneContext_; }
+
 private:
 	EditorManager() = default;
 	EditorManager(const EditorManager&) = delete;
@@ -85,6 +95,9 @@ private:
 	// エディタのレイアウト保存用
 	const std::string settingsFilePath_ = "Resources/Editor/editor_settings.json";
 
-	// 選択中のGameObject管理
+	// 選択中GameObjectのポインタ
+	GameObject* selectedObject_ = nullptr;
 
+	// SceneContext
+	SceneContext* sceneContext_ = nullptr;
 };

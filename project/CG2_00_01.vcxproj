@@ -297,6 +297,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Core\LowLevel\GraphicsCommand\GraphicsCommandCreator.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\BaseDescriptorHeapPool\BaseDescriptorHeapPool.cpp" />
     <ClCompile Include="Engine\Editor\Window\GameViewWindow.cpp" />
+    <ClCompile Include="Engine\Editor\Window\HierarchyWindow.cpp" />
+    <ClCompile Include="Engine\Editor\Window\InspectorWindow.cpp" />
+    <ClCompile Include="Engine\Editor\Window\GizmoWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Engine\Common\Utility\MathFunction.cpp" />
     <ClCompile Include="Engine\Framework\Object\2d\Sprite.cpp" />
@@ -515,6 +518,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\BaseDescriptorHeapPool\BaseDescriptorHeapPool.h" />
     <ClInclude Include="Engine\Core\LowLevel\RenderTargetFactory\RenderTargetFactory.h" />
     <ClInclude Include="Engine\Editor\Window\GameViewWindow.h" />
+    <ClInclude Include="Engine\Editor\Window\HierarchyWindow.h" />
+    <ClInclude Include="Engine\Editor\Window\InspectorWindow.h" />
+    <ClInclude Include="Engine\Editor\Window\GizmoWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

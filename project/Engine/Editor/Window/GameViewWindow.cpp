@@ -2,6 +2,12 @@
 #include "GameViewWindow.h"
 #include "RenderTexture.h"
 #include "SrvDescriptorHeapPool.h"
+#include "GizmoWindow.h"
+#include "CameraOrganizer.h"
+#include "MathFunction.h"
+#include "CommandManager.h"
+#include "TransformCommand.h"
+#include "EditorManager.h"
 
 GameViewWindow::GameViewWindow() 
 	: IEditorWindow("ゲーム", true) {
@@ -10,11 +16,11 @@ GameViewWindow::GameViewWindow()
 
 void GameViewWindow::UpdateAndDraw(const EditorContext& context) {
 	// 閉じていたら何もしない
-	if (!isOpen_) return;
+	if(!isOpen_) return;
 
 	// ギズモ操作中はウィンドウが動かないようにする
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_None;
-	if (isGizmoActive_) {
+	if(isGizmoActive_) {
 		windowFlags |= ImGuiWindowFlags_NoMove;
 	}
 
@@ -32,26 +38,26 @@ void GameViewWindow::UpdateAndDraw(const EditorContext& context) {
 	isFocused_ = ImGui::IsWindowFocused();
 
 	// ドラッグ判定
-	if (isWinHovered && ImGui::IsAnyMouseDown()) {
+	if(isWinHovered && ImGui::IsAnyMouseDown()) {
 		isDragging_ = true;
 	}
-	if (!ImGui::IsAnyMouseDown()) {
+	if(!ImGui::IsAnyMouseDown()) {
 		isDragging_ = false;
 	}
 	isHovered_ = isWinHovered || isDragging_;
 
 	// RenderTextureの描画
-	if (context.renderTexture && context.srvHeap) {
+	if(context.renderTexture && context.srvHeap) {
 		uint32_t srvIndex = context.renderTexture->GetSrvIndex();
 		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = context.srvHeap->GetGpuHandle(srvIndex);
 		ImVec2 availSize = ImGui::GetContentRegionAvail();
 		ImVec2 screenPos = ImGui::GetCursorScreenPos();
 		float targetAspect = 16.0f / 9.0f;
 		bool isAspectFixed = true;
-		if (selectedAspectIndex_ == 0) {
+		if(selectedAspectIndex_ == 0) {
 			targetAspect = 16.0f / 9.0f;
 		}
-		else if (selectedAspectIndex_ == 1) {
+		else if(selectedAspectIndex_ == 1) {
 			targetAspect = 4.0f / 3.0f;
 		}
 		else {
@@ -60,9 +66,9 @@ void GameViewWindow::UpdateAndDraw(const EditorContext& context) {
 		ImVec2 imageSize = availSize;
 
 		// アスペクト比固定のセンタリング計算
-		if (isAspectFixed && availSize.y > 0.0f) {
+		if(isAspectFixed && availSize.y > 0.0f) {
 			float availAspect = availSize.x / availSize.y;
-			if (availAspect > targetAspect) {
+			if(availAspect > targetAspect) {
 				imageSize.y = availSize.y;
 				imageSize.x = availSize.y * targetAspect;
 			}
@@ -84,6 +90,66 @@ void GameViewWindow::UpdateAndDraw(const EditorContext& context) {
 
 		// 画像描画
 		ImGui::Image((ImTextureID)gpuHandle.ptr, imageSize);
+
+		// ギズモ描画
+		GameObject* selectedObject = EditorManager::GetInstance()->GetSelectedObject();
+		if(selectedObject != nullptr) {
+			auto& camData = CameraOrganizer::GetInstance()->GetCameraData();
+			auto& transform = selectedObject->GetTransform();
+			Matrix4x4 worldMatrix = Math::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::BeginFrame();
+			ImGuizmo::AllowAxisFlip(false);
+
+			// GizmoWindow から現在の操作モードを取得
+			ImGuizmo::OPERATION currentOp = ImGuizmo::TRANSLATE;
+			ImGuizmo::MODE currentMode = ImGuizmo::LOCAL;
+			if(auto* gizmoWin = EditorManager::GetInstance()->GetWindow<GizmoWindow>()) {
+				currentOp = gizmoWin->GetOperation();
+				currentMode = gizmoWin->GetMode();
+			}
+
+			// 描画範囲をゲーム画面に合わせる
+			ImGuizmo::SetRect(gameScreenPos_.x, gameScreenPos_.y, gameScreenSize_.x, gameScreenSize_.y);
+
+			// 右手系補正
+			Matrix4x4 projGizmo = camData.proj;
+			projGizmo.m[2][2] = projGizmo.m[2][2] * 2.0f - projGizmo.m[2][3];
+			projGizmo.m[3][2] = projGizmo.m[3][2] * 2.0f;
+			ImGuizmo::SetAlternativeWindow(ImGui::GetCurrentWindow());
+			ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
+			isGizmoActive_ = ImGuizmo::IsOver() || ImGuizmo::IsUsing();
+			static EulerTransform transformBeforeDrag;
+			static bool wasUsingGizmo = false;
+			if(ImGuizmo::IsOver() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+				transformBeforeDrag = transform;
+			}
+			ImGuizmo::Manipulate(
+				&camData.view.m[0][0],
+				&projGizmo.m[0][0],
+				currentOp,
+				currentMode,
+				&worldMatrix.m[0][0]
+			);
+			if(ImGuizmo::IsUsing()) {
+				wasUsingGizmo = true;
+				float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+				ImGuizmo::DecomposeMatrixToComponents(&worldMatrix.m[0][0], matrixTranslation, matrixRotation, matrixScale);
+				transform.translate = { matrixTranslation[0], matrixTranslation[1], matrixTranslation[2] };
+				const float DEG_TO_RAD = 3.14159265f / 180.0f;
+				transform.rotate = {
+					matrixRotation[0] * DEG_TO_RAD,
+					matrixRotation[1] * DEG_TO_RAD,
+					matrixRotation[2] * DEG_TO_RAD
+				};
+				transform.scale = { matrixScale[0], matrixScale[1], matrixScale[2] };
+			}
+			else if(wasUsingGizmo) {
+				wasUsingGizmo = false;
+				auto command = std::make_unique<TransformCommand>(selectedObject, transformBeforeDrag, transform);
+				CommandManager::GetInstance()->AddAndExecute(std::move(command));
+			}
+		}
+		ImGui::End();
 	}
-	ImGui::End();
 }

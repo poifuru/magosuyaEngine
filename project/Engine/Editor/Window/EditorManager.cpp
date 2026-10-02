@@ -2,17 +2,24 @@
 #include "EditorManager.h"
 #include "RenderTexture.h"
 #include "SrvDescriptorHeapPool.h"
+#include "CommandManager.h"
 
 // 各ウィンドウクラス
 #include "PerformanceWindow.h"
 #include "GameViewWindow.h"
 #include "AssetBrowserWindow.h"
+#include "HierarchyWindow.h"
+#include "InspectorWindow.h"
+#include "GizmoWindow.h"
 
 void EditorManager::Initialize() {
 	// ウィンドウを登録
 	RegisterWindow<PerformanceWindow>();
 	RegisterWindow<GameViewWindow>();
 	RegisterWindow<AssetBrowserWindow>();
+	RegisterWindow<HierarchyWindow>();
+	RegisterWindow<InspectorWindow>();
+	RegisterWindow<GizmoWindow>();
 
 	// 前回の開閉状態を復元
 	LoadLayoutSettings();
@@ -29,8 +36,16 @@ void EditorManager::UpdateAndDraw(
 	MyEngine::Rendering::RenderTexture* renderTexture
 ) {
 #ifdef USEIMGUI
+	// Ctrl + Z で Undo (元に戻す)
+	if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z)) {
+		CommandManager::GetInstance()->Undo();
+	}
+	// Ctrl + Y で Redo (やり直す)
+	if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Y)) {
+		CommandManager::GetInstance()->Redo();
+	}
+
 	//*** 各ウィンドウを順番に描画していく ***//
-	
 	// メニューバー
 	DrawMenuBar();
 
@@ -39,6 +54,8 @@ void EditorManager::UpdateAndDraw(
 	context.device = device;
 	context.srvHeap = srvHeap;
 	context.renderTexture = renderTexture;
+	context.sceneContext = sceneContext_;
+	context.selectedObject = &selectedObject_;
 	for (auto& window : windows_) {
 		window->UpdateAndDraw(context);
 	}
