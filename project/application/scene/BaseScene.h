@@ -21,6 +21,7 @@ namespace MyEngine::Rendering {
 }
 
 class PostEffectManager;
+class SceneManager;
 
 // シーンで必要になる高レベルマネージャーや低レイヤー参照のポインタを束ねた薄い構造体
 struct SceneContext {
@@ -40,6 +41,9 @@ struct SceneContext {
 
 	// 現在シーンに存在する生存オブジェクトリストへのポインタ
 	std::vector<std::unique_ptr<GameObject>>* activeGameObjects = nullptr;
+
+	// シーン遷移の進行状況を知るため
+	SceneManager* sceneManager = nullptr;
 };
 
 class BaseScene {

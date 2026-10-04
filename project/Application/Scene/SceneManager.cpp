@@ -2,6 +2,7 @@
 #include "SceneManager.h"
 #include "RenderSystem.h"
 #include "GraphicsDevice.h"
+#include "GameTime.h"
 
 void SceneManager::Initialize(
 	MyEngine::LowLevel::GraphicsDevice* graphicsDevice,
@@ -38,23 +39,59 @@ void SceneManager::Initialize(
 	context_.shaderManager = shaderManager;
 	context_.inputLayoutManager = inputLayoutManager;
 	context_.blendModeManager = blendModeManager;
+	context_.sceneManager = this;
 }
 
 void SceneManager::Update(CameraData* cameraData) {
-	if (currentScene_) {
-		currentScene_->Update(cameraData);
+	// シーンの遷移中なら
+	if(transitionState_ == SceneTransitionState::Transitioning) {
+		// タイマーを進める
+		transitionTimer_ += Time::GetDeltaTime();
+
+		// 両方のシーンを更新
+		if(currentScene_) {
+			currentScene_->Update(cameraData);
+		}
+		if(nextScene_) {
+			nextScene_->Update(cameraData);
+		}
+
+		// 予定の時間が立ったら遷移完了
+		if(transitionTimer_ >= transitionDuration_) {
+			CommandManager::GetInstance()->Clear();
+			currentScene_ = std::move(nextScene_);
+			nextScene_ = nullptr;
+			transitionState_ = SceneTransitionState::None;
+			transitionTimer_ = 0.0f;
+			transitionDuration_ = 0.0f;
+		}
+	}
+	else {
+		// 遷移していない時は現在シーンだけを更新
+		if(currentScene_) {
+			currentScene_->Update(cameraData);
+		}
 	}
 }
 
 void SceneManager::Draw(MyEngine::Rendering::Renderer* renderer) {
+	// 現在シーンを描画
 	if (currentScene_) {
 		currentScene_->Draw(renderer);
+	}
+
+	// 遷移中なら次のシーンも重ねて描画
+	if(transitionState_ == SceneTransitionState::Transitioning && nextScene_) {
+		nextScene_->Draw(renderer);
 	}
 }
 
 void SceneManager::DrawUI() {
 	if (currentScene_) {
 		currentScene_->DrawUI();
+	}
+	if (transitionState_ == SceneTransitionState::Transitioning && nextScene_) {
+		nextScene_->DrawUI();
 	}
 }
 
@@ -63,4 +100,17 @@ PostEffectManager* SceneManager::GetPostEffectManager() const {
 		return currentScene_->GetPostEffectManager();
 	}
 	return nullptr;
+}
+
+float SceneManager::GetTransitionPogress() const {
+	if(transitionDuration_ <= 0.0f) {
+		return 1.0f;
+	}
+
+	float progress = transitionTimer_ / transitionDuration_;
+	if(progress > 1.0f) {
+		progress = 1.0f;
+	}
+
+	return progress;
 }
