@@ -3,6 +3,12 @@
 #include "RenderTexture.h"
 #include "SrvDescriptorHeapPool.h"
 #include "CommandManager.h"
+#include "BaseScene.h"
+#include "GameObject.h"
+#include "VirtualDebugCamera.h"
+#include "VirtualFollowCamera.h"
+#include "PlayerComponent.h"
+#include "CameraOrganizer.h"
 
 // 各ウィンドウクラス
 #include "PerformanceWindow.h"
@@ -127,6 +133,105 @@ void EditorManager::LoadLayoutSettings() {
 			if (root["ウィンドウ"].contains(name)) {
 				window->SetOpen(root["ウィンドウ"][name].get<bool>());
 			}
+		}
+	}
+}
+
+void EditorManager::Play() {
+	if (playState_ == EditorPlayState::Edit) {
+		// 再生前のシーン状態をスナップショットとしてメモリに保存
+		sceneSnapshot_.clear();
+		if (sceneContext_ && sceneContext_->activeGameObjects) {
+			sceneSnapshot_["objects"] = nlohmann::json::array();
+			for (auto& obj : *sceneContext_->activeGameObjects) {
+				if (obj->IsSerializable()) {
+					sceneSnapshot_["objects"].push_back(obj->Serialize());
+				}
+			}
+		}
+	}
+	playState_ = EditorPlayState::Play;
+
+	// ゲームプレイ用カメラ（追従カメラ）を優先にする
+	if (sceneContext_ && sceneContext_->activeGameObjects) {
+		for (auto& obj : *sceneContext_->activeGameObjects) {
+			if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
+				followCam->SetPriority(20); // 追従カメラを高優先度
+			}
+			if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
+				debugCam->SetPriority(10);  // デバッグカメラを低優先度
+			}
+		}
+	}
+}
+
+void EditorManager::Pause() {
+	if (playState_ == EditorPlayState::Play) {
+		playState_ = EditorPlayState::Pause;
+		// 一時停止中：デバッグカメラで自由に周囲を見回せるように優先度を切り替える
+		if (sceneContext_ && sceneContext_->activeGameObjects) {
+			for (auto& obj : *sceneContext_->activeGameObjects) {
+				if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
+					followCam->SetPriority(10);
+				}
+				if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
+					debugCam->SetPriority(20);
+				}
+			}
+		}
+	} else if (playState_ == EditorPlayState::Pause) {
+		playState_ = EditorPlayState::Play; // トグルで再開
+		// ゲーム再開：追従カメラを高優先度に戻す
+		if (sceneContext_ && sceneContext_->activeGameObjects) {
+			for (auto& obj : *sceneContext_->activeGameObjects) {
+				if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
+					followCam->SetPriority(20);
+				}
+				if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
+					debugCam->SetPriority(10);
+				}
+			}
+		}
+	}
+}
+
+void EditorManager::Stop() {
+	if (playState_ == EditorPlayState::Edit) return;
+	playState_ = EditorPlayState::Edit;
+
+	// 保存してあるスナップショットからシーンを再生前の状態に復元
+	if (sceneContext_ && sceneContext_->activeGameObjects && !sceneSnapshot_.empty()) {
+		auto& gameObjects = *sceneContext_->activeGameObjects;
+		gameObjects.clear();
+		ClearSelectedObject();
+		if (sceneSnapshot_.contains("objects")) {
+			for (const auto& objJ : sceneSnapshot_["objects"]) {
+				auto newObj = std::make_unique<GameObject>(sceneContext_, objJ["name"]);
+				newObj->Deserialize(objJ);
+				newObj->Initialize();
+				gameObjects.push_back(std::move(newObj));
+			}
+		}
+		sceneSnapshot_.clear();
+
+		// カメラの参照が外れないように再度紐づけ
+		for (auto& obj : gameObjects) {
+			if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
+				followCam->ResolveTarget(gameObjects);
+				followCam->SetPriority(10); // 追従カメラは低優先度
+			}
+			if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
+				debugCam->SetPriority(20);  // エディタ用デバッグカメラを高優先度
+			}
+			if (auto* player = obj->GetComponent<PlayerComponent>()) {
+				player->ResolveReticle(gameObjects);
+			}
+		}
+
+		// カメラマネージャーを更新してから、各オブジェクトの描画バッファを初回更新する
+		CameraOrganizer::GetInstance()->Update();
+		for (auto& obj : gameObjects) {
+			obj->UpdateTransformBuffer();
 		}
 	}
 }

@@ -12,7 +12,13 @@ public:
 	~PlayScene() override;
 
 	void Initialize() override;
-	void Update(CameraData* cameraData) override;
+
+	// 更新(ゲーム中)
+	void UpdateGame(CameraData* cameraData) override;
+
+	// 更新(編集中)
+	void UpdateEdit(CameraData* cameraData) override;
+
 	void Draw(MyEngine::Rendering::Renderer* renderer) override;
 
 	PostEffectManager* GetPostEffectManager() override { return postEffectManager_.get(); }

@@ -135,6 +135,7 @@
     <ClCompile Include="Engine\Editor\Window\HierarchyWindow.cpp" />
     <ClCompile Include="Engine\Editor\Window\InspectorWindow.cpp" />
     <ClCompile Include="Engine\Editor\Window\GizmoWindow.cpp" />
+    <ClCompile Include="Application\Scene\BaseScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />

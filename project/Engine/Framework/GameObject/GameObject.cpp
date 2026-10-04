@@ -44,6 +44,35 @@ void GameObject::Update() {
 	transformBuffer_.Update(transformData);
 }
 
+void GameObject::UpdateTransformBuffer() {
+	// アフィン行列作成
+	Matrix4x4 world = Math::MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
+
+	// カメラデータを取得
+	CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+	TransformMatrixData transformData{};
+	transformData.World = world;
+	transformData.WVP = Math::Multiply(world, cameraData.vp);
+	transformData.WorldInverseTranspose = Math::MakeIdentity4x4();
+
+	// バッファ更新
+	transformBuffer_.Update(transformData);
+
+	// --- 描画用コンポーネントのバッファも最新のカメラ行列で更新 ---
+	if (auto* meshRenderer = GetComponent<MeshRendererComponent>()) {
+		meshRenderer->Update();
+	}
+	if (auto* skybox = GetComponent<SkyboxComponent>()) {
+		skybox->Update();
+	}
+	if (auto* sprite = GetComponent<SpriteComponent>()) {
+		sprite->Update();
+	}
+	if (auto* water = GetComponent<WaterSurfaceComponent>()) {
+		water->Update();
+	}
+}
+
 void GameObject::ImGui() {
 	// オブジェクト名の編集
 	char nameBuf[128];

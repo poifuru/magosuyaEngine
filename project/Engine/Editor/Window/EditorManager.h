@@ -14,6 +14,13 @@ struct SceneContext;
 
 class TextureManager;
 
+// エディタ稼働中の状態
+enum class EditorPlayState {
+	Edit,	// 停止
+	Play,	// 再生
+	Pause	// 一時停止
+};
+
 class EditorManager {
 public:
 	static EditorManager* GetInstance() {
@@ -80,6 +87,17 @@ public:
 	void SetSceneContext(SceneContext* context) { sceneContext_ = context; }
 	SceneContext* GetSceneContext() const { return sceneContext_; }
 
+	// 再生ステートの取得
+	EditorPlayState GetPlayState() const { return playState_; }
+	bool IsPlaying() const { return playState_ == EditorPlayState::Play; }
+	bool IsPaused()  const { return playState_ == EditorPlayState::Pause; }
+	bool IsEditing() const { return playState_ == EditorPlayState::Edit; }
+
+	// 再生・一時停止・停止コマンド
+	void Play();
+	void Pause();
+	void Stop();
+
 private:
 	EditorManager() = default;
 	EditorManager(const EditorManager&) = delete;
@@ -100,4 +118,10 @@ private:
 
 	// SceneContext
 	SceneContext* sceneContext_ = nullptr;
+
+	// 稼働状態
+	EditorPlayState playState_ = EditorPlayState::Edit;
+
+	// シーン再生直前の状態を保存するメモリ
+	json sceneSnapshot_;
 };

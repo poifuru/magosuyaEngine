@@ -183,6 +183,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\entity\player\PlayerMovement.cpp" />
     <ClCompile Include="application\entity\player\PlayerTurret.cpp" />
     <ClCompile Include="application\entity\player\PlayerWeapon.cpp" />
+    <ClCompile Include="Application\Scene\BaseScene.cpp" />
     <ClCompile Include="application\scene\ClearScene.cpp" />
     <ClCompile Include="application\scene\GameoverScene.cpp" />
     <ClCompile Include="application\entity\Entity.cpp" />

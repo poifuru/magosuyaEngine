@@ -91,7 +91,42 @@ void PlayScene::Initialize() {
 	EditorManager::GetInstance()->SetSceneContext(context_);
 }
 
-void PlayScene::Update(CameraData* cameraData) {
+void PlayScene::UpdateGame(CameraData* cameraData) {
+	for (auto& obj : gameObjects_) {
+		obj->Update();
+	}
+	CollisionManager::GetInstance()->UpdateAllCollisions();
+
+	// 追加待ちオブジェクトの合流や死亡削除など
+	if (!createQueue_.empty()) {
+		for (auto& newObj : createQueue_) {
+			gameObjects_.push_back(std::move(newObj));
+		}
+		createQueue_.clear();
+	}
+
+	// 死亡オブジェクトの削除
+	CleanupObject();
+
+	// カメラ・レティクル・ライト
+	CameraOrganizer::GetInstance()->Update();
+	for (auto& obj : gameObjects_) {
+		if (auto* reticle = obj->GetComponent<ReticleComponent>()) {
+			reticle->Update();
+		}
+	}
+	if (lightManager_) {
+		lightManager_->ClearLights();
+		for (auto& obj : gameObjects_) {
+			if (auto* light = obj->GetComponent<LightComponent>()) {
+				lightManager_->Register(light);
+			}
+		}
+		lightManager_->Update();
+	}
+}
+
+/*void PlayScene::Update(CameraData* cameraData) {
 	InputManager* input = InputManager::GetInstance();
 #ifdef USEIMGUI
 	// Tabキーでプレイモード/デバッグモードを切り替える
@@ -169,6 +204,32 @@ void PlayScene::Update(CameraData* cameraData) {
 
 	selectedObject_ = EditorManager::GetInstance()->GetSelectedObject();
 #endif
+}*/
+
+void PlayScene::UpdateEdit(CameraData* cameraData) {
+	// カメラ（デバッグカメラ）を動かす
+	for (auto& obj : gameObjects_) {
+		if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
+			debugCam->Update(); // 停止中でもマウスでカメラを動かせるようにする
+		}
+	}
+	CameraOrganizer::GetInstance()->Update();
+
+	// ギズモで動かした座標を画面に反映させるため、Transformの行列バッファだけ更新する
+	for (auto& obj : gameObjects_) {
+		obj->UpdateTransformBuffer();
+	}
+
+	// ライトの更新
+	if (lightManager_) {
+		lightManager_->ClearLights();
+		for (auto& obj : gameObjects_) {
+			if (auto* light = obj->GetComponent<LightComponent>()) {
+				lightManager_->Register(light);
+			}
+		}
+		lightManager_->Update();
+	}
 }
 
 void PlayScene::Draw(MyEngine::Rendering::Renderer* renderer) {

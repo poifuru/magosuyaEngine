@@ -27,6 +27,45 @@ void GameViewWindow::UpdateAndDraw(const EditorContext& context) {
 	// &isOpen_ を渡して右上の×ボタンで閉じられるようにする
 	ImGui::Begin(name_.c_str(), &isOpen_, windowFlags);
 
+	// --- 稼働状態変更用のボタン ---
+	EditorManager* editorMgr = EditorManager::GetInstance();
+	EditorPlayState state = editorMgr->GetPlayState();
+
+	// 横並びに配置
+	ImGui::SameLine();
+	ImGui::Spacing();
+	ImGui::SameLine();
+
+	// --- 再生ボタン ---
+	if (state == EditorPlayState::Play) {
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f)); // 再生中は緑に光らせる！
+	}
+	if (ImGui::Button(state == EditorPlayState::Play ? "Playing" : " Play > ")) {
+		if (state != EditorPlayState::Play) editorMgr->Play();
+	}
+	if (state == EditorPlayState::Play) {
+		ImGui::PopStyleColor();
+	}
+	ImGui::SameLine();
+
+	// --- 一時停止ボタン ---
+	if (state == EditorPlayState::Pause) {
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.6f, 0.1f, 1.0f)); // 一時停止中は黄色に！
+	}
+	if (ImGui::Button("Pause ||")) {
+		editorMgr->Pause();
+	}
+	if (state == EditorPlayState::Pause) {
+		ImGui::PopStyleColor();
+	}
+	ImGui::SameLine();
+
+	// --- 停止ボタン ---
+	if (ImGui::Button("Stop []")) {
+		editorMgr->Stop();
+	}
+	// --- *** ---
+
 	// アスペクト比選択コンボボックス
 	const char* aspectNames[] = { "16:9", "4:3", "Free (Fit)" };
 	ImGui::SetNextItemWidth(120.0f);
