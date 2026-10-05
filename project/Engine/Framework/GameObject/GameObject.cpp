@@ -4,6 +4,7 @@
 #include "ComponentType.h"
 #include "GraphicsDevice.h"
 #include "CameraOrganizer.h"
+#include "EditorManager.h"
 
 GameObject::GameObject(SceneContext* context, const std::string& name)
 	: context_(context), name_(name) {
@@ -16,7 +17,14 @@ GameObject::GameObject(SceneContext* context, const std::string& name)
 	transformBuffer_.Initialize(device);
 }
 
-GameObject::~GameObject() = default;
+GameObject::~GameObject() {
+#ifdef USEIMGUI
+	// 破棄される自分がエディタで選択されていたら、選択をクリアする
+	if (EditorManager::GetInstance()->GetSelectedObject() == this) {
+		EditorManager::GetInstance()->ClearSelectedObject();
+	}
+#endif
+}
 
 void GameObject::Initialize() {
 	for (auto& component : components_) {

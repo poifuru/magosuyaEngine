@@ -11,6 +11,14 @@ void WaterSurfaceComponent::Initialize() {
 
 	Component::Initialize();
 
+	// 定数バッファの初期化
+	if (auto* owner = GetGameObject()) {
+		if (auto* ctx = owner->GetContext()) {
+			auto* device = ctx->graphicsDevice->GetDevice();
+			waterSurfaceBuffer_.Initialize(device);
+		}
+	}
+
 	GenerateMesh();
 
 	// 波のパラメータ初期化

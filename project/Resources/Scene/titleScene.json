@@ -1,0 +1,212 @@
+{
+    "name": "scene",
+    "objects": [
+        {
+            "components": [
+                {
+                    "far": 1000.0,
+                    "near": 0.10000000149011612,
+                    "type": "MainCameraComponent"
+                }
+            ],
+            "name": "MainCamera",
+            "transform": {
+                "position": [
+                    -8.897266387939453,
+                    5.981279373168945,
+                    -10.890616416931152
+                ],
+                "rotation": [
+                    0.1480003297328949,
+                    5.72518253326416,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "components": [
+                {
+                    "fov": 0.44999998807907104,
+                    "priority": 10,
+                    "sensitivity": 0.0010000000474974513,
+                    "speed": 0.30000001192092896,
+                    "type": "VirtualDebugCamera"
+                }
+            ],
+            "name": "DebugCamera",
+            "transform": {
+                "position": [
+                    -8.897266387939453,
+                    5.981279373168945,
+                    -10.890616416931152
+                ],
+                "rotation": [
+                    0.1480003297328949,
+                    5.72518253326416,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "components": [
+                {
+                    "texturePath": "Resources/Skybox/test2.dds",
+                    "type": "SkyboxComponent"
+                }
+            ],
+            "name": "Skybox",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "components": [
+                {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "intensity": 3.0,
+                    "lightType": 0,
+                    "type": "LightComponent"
+                }
+            ],
+            "name": "Sun",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "components": [
+                {
+                    "Depth": 500.0,
+                    "SubdivisionX": 1000,
+                    "SubdivisionZ": 1000,
+                    "TexturePath": "Resources/WaterSurface/waterSurface_normal.png",
+                    "Width": 500.0,
+                    "farFadeDistance": 150.0,
+                    "nearFadeDistance": 30.0,
+                    "numActiveWaves": 1,
+                    "type": "WaterSurfaceComponent",
+                    "waves": [
+                        {
+                            "amplitude": 0.30000001192092896,
+                            "direction": [
+                                0.7071067690849304,
+                                0.7071067690849304
+                            ],
+                            "frequency": 0.4000000059604645,
+                            "steepness": 0.5
+                        },
+                        {
+                            "amplitude": 0.10000000149011612,
+                            "direction": [
+                                -0.7071067690849304,
+                                0.7071067690849304
+                            ],
+                            "frequency": 1.2000000476837158,
+                            "steepness": 0.30000001192092896
+                        },
+                        {
+                            "amplitude": 0.0,
+                            "direction": [
+                                1.0,
+                                0.0
+                            ],
+                            "frequency": 1.0,
+                            "steepness": 0.0
+                        },
+                        {
+                            "amplitude": 0.0,
+                            "direction": [
+                                1.0,
+                                0.0
+                            ],
+                            "frequency": 1.0,
+                            "steepness": 0.0
+                        }
+                    ]
+                }
+            ],
+            "name": "WaterSurface",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "components": [],
+            "name": "FixedCamera",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        }
+    ]
+}

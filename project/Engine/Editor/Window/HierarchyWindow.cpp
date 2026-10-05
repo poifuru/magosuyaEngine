@@ -5,6 +5,9 @@
 #include "BaseScene.h"
 #include "VirtualFollowCamera.h"
 #include "PlayerComponent.h"
+#include "TitleScene.h"
+#include "PlayScene.h"
+#include "SceneManager.h"
 
 HierarchyWindow::HierarchyWindow() 
 	: IEditorWindow("ヒエラルキー", true) {
@@ -134,6 +137,27 @@ void HierarchyWindow::UpdateAndDraw(const EditorContext& context) {
 		}
 		ImGui::EndPopup();
 	}
+
+	// --- シーン切り替えデバッグ ---
+	ImGui::Separator();
+	ImGui::Text("シーン切り替え (Debug)");
+	static float transitionDuration = 1.0f;
+	ImGui::DragFloat("遷移秒数", &transitionDuration, 0.1f, 0.0f, 5.0f, "%.1f 秒");
+	if (sceneCtx->sceneManager) {
+		if (ImGui::Button("TitleScene へ")) {
+			sceneCtx->sceneManager->ChangeScene<TitleScene>(transitionDuration);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("PlayScene へ")) {
+			sceneCtx->sceneManager->ChangeScene<PlayScene>(transitionDuration);
+		}
+		// 遷移中ならプログレスバーを出す
+		if (sceneCtx->sceneManager->isTransitioning()) {
+			float progress = sceneCtx->sceneManager->GetTransitionPogress();
+			ImGui::ProgressBar(progress, ImVec2(0.0f, 0.0f));
+		}
+	}
+	ImGui::Separator();
 
 	// --- 新規 GameObject 作成ボタン ---
 	if (ImGui::Button("新規 GameObject 作成")) {
