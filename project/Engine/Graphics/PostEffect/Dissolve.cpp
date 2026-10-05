@@ -31,3 +31,24 @@ void Dissolve::ImGui() {
 D3D12_GPU_VIRTUAL_ADDRESS Dissolve::GetConstantBufferAddress() const {
 	return buffer_->GetGPUVirtualAddress();
 }
+
+void Dissolve::SetThreshold(float threshold) {
+	param_.threshold = threshold;
+	if (buffer_) {
+		buffer_->Update(param_);
+	}
+}
+
+void Dissolve::SetEdgeColor(const Vector4& color) {
+	param_.edgeColor = color;
+	if (buffer_) {
+		buffer_->Update(param_);
+	}
+}
+
+void Dissolve::SetEdgeWidth(float width) {
+	param_.edgeWidth = width;
+	if (buffer_) {
+		buffer_->Update(param_);
+	}
+}

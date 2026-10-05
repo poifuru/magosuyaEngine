@@ -26,10 +26,6 @@ public:
 				   std::vector<std::unique_ptr<GameObject>>& gameObjects,
 				   GameObject*& selectedObject
 	);
-
-private:
-	// フォルダツリー描画などのプライベート関数もここに引っ越す
-	void DrawDirectoryTree(const std::filesystem::path& path);
 	
 private:
 	SceneContext* context_ = nullptr;

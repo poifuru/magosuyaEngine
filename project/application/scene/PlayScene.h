@@ -4,7 +4,6 @@
 
 class LightManager;
 class PostEffectManager;
-class LevelEditor;
 class TutorialManager;
 
 class PlayScene : public BaseScene {
@@ -13,7 +12,13 @@ public:
 	~PlayScene() override;
 
 	void Initialize() override;
-	void Update(CameraData* cameraData) override;
+
+	// 更新(ゲーム中)
+	void UpdateGame(CameraData* cameraData) override;
+
+	// 更新(編集中)
+	void UpdateEdit(CameraData* cameraData) override;
+
 	void Draw(MyEngine::Rendering::Renderer* renderer) override;
 
 	PostEffectManager* GetPostEffectManager() override { return postEffectManager_.get(); }
@@ -34,8 +39,6 @@ private:
 	std::unique_ptr<PostEffectManager> postEffectManager_ = nullptr;
 
 #ifdef USEIMGUI
-	// エディタインスタンス
-	std::unique_ptr<LevelEditor> levelEditor_ = nullptr;
 	bool isDebugMode_ = true;
 #endif
 };

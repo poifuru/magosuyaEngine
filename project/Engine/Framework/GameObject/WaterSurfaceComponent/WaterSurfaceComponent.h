@@ -71,8 +71,8 @@ private:
 	// メッシュ用のパラメータ
 	float width_ = 500.0f;
 	float depth_ = 500.0f;
-	int subdivisionX_ = 10000;
-	int subdivisionZ_ = 10000;
+	int subdivisionX_ = 1000;
+	int subdivisionZ_ = 1000;
 
 	float time_ = 0.0f;
 

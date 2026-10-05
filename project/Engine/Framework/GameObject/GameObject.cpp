@@ -4,6 +4,7 @@
 #include "ComponentType.h"
 #include "GraphicsDevice.h"
 #include "CameraOrganizer.h"
+#include "EditorManager.h"
 
 GameObject::GameObject(SceneContext* context, const std::string& name)
 	: context_(context), name_(name) {
@@ -16,7 +17,14 @@ GameObject::GameObject(SceneContext* context, const std::string& name)
 	transformBuffer_.Initialize(device);
 }
 
-GameObject::~GameObject() = default;
+GameObject::~GameObject() {
+#ifdef USEIMGUI
+	// 破棄される自分がエディタで選択されていたら、選択をクリアする
+	if (EditorManager::GetInstance()->GetSelectedObject() == this) {
+		EditorManager::GetInstance()->ClearSelectedObject();
+	}
+#endif
+}
 
 void GameObject::Initialize() {
 	for (auto& component : components_) {
@@ -42,6 +50,35 @@ void GameObject::Update() {
 
 	// バッファ更新
 	transformBuffer_.Update(transformData);
+}
+
+void GameObject::UpdateTransformBuffer() {
+	// アフィン行列作成
+	Matrix4x4 world = Math::MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
+
+	// カメラデータを取得
+	CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+	TransformMatrixData transformData{};
+	transformData.World = world;
+	transformData.WVP = Math::Multiply(world, cameraData.vp);
+	transformData.WorldInverseTranspose = Math::MakeIdentity4x4();
+
+	// バッファ更新
+	transformBuffer_.Update(transformData);
+
+	// --- 描画用コンポーネントのバッファも最新のカメラ行列で更新 ---
+	if (auto* meshRenderer = GetComponent<MeshRendererComponent>()) {
+		meshRenderer->Update();
+	}
+	if (auto* skybox = GetComponent<SkyboxComponent>()) {
+		skybox->Update();
+	}
+	if (auto* sprite = GetComponent<SpriteComponent>()) {
+		sprite->Update();
+	}
+	if (auto* water = GetComponent<WaterSurfaceComponent>()) {
+		water->Update();
+	}
 }
 
 void GameObject::ImGui() {

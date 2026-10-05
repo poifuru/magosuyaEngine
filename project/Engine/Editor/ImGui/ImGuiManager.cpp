@@ -26,7 +26,8 @@ void ImGuiManager::Finalize() {
 void ImGuiManager::Initialize(
 	ID3D12Device* device,
 	ID3D12CommandQueue* cmdQueue,
-	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager
+	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
+	TextureManager* texManager
 ) {
 #ifdef USEIMGUI
 	IMGUI_CHECKVERSION();
@@ -87,6 +88,7 @@ void ImGuiManager::Initialize(
 	ImGui_ImplDX12_Init(&initInfo);
 
 	EditorManager::GetInstance()->Initialize();
+	EditorManager::GetInstance()->LoadAssetBrowserIcon(texManager);
 #endif
 }
 

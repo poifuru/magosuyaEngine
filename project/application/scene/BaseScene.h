@@ -21,6 +21,7 @@ namespace MyEngine::Rendering {
 }
 
 class PostEffectManager;
+class SceneManager;
 
 // シーンで必要になる高レベルマネージャーや低レイヤー参照のポインタを束ねた薄い構造体
 struct SceneContext {
@@ -40,10 +41,14 @@ struct SceneContext {
 
 	// 現在シーンに存在する生存オブジェクトリストへのポインタ
 	std::vector<std::unique_ptr<GameObject>>* activeGameObjects = nullptr;
+
+	// シーン遷移の進行状況を知るため
+	SceneManager* sceneManager = nullptr;
 };
 
 class BaseScene {
 public:
+	// デストラクタ
 	virtual ~BaseScene() = default;
 
 	// コンテキストの注入
@@ -51,16 +56,31 @@ public:
 		context_ = context;
 	}
 
+	// Rendererをセット
 	void SetRenderer(MyEngine::Rendering::Renderer* renderer) { renderer_ = renderer; }
 
+	// 初期化
 	virtual void Initialize() = 0;
-	virtual void Update(CameraData* cameraData) = 0;
+
+	// 更新
+	void Update(CameraData* cameraData);
+
+	// 描画
 	virtual void Draw(MyEngine::Rendering::Renderer* renderer) = 0;
+
+	// UI描画
 	virtual void DrawUI() {}
 
+	// ポストエフェクトマネージャを取得
 	virtual PostEffectManager* GetPostEffectManager() { return nullptr; }
 
+	// Contextを取得
 	SceneContext* GetContext() const { return context_; }
+
+protected:
+	// 子クラスはこのUpdateを継承
+	virtual void UpdateGame(CameraData* cameraData) = 0;
+	virtual void UpdateEdit(CameraData* cameraData);
 
 protected:
 	// 借りてきたポインタ群

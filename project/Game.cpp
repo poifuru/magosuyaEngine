@@ -2,12 +2,13 @@
 #include "Game.h"
 #include "Engine.h"
 #include "Renderer.h"
-#include "PlayScene.h"
+#include "TitleScene.h"
 #include "CameraOrganizer.h"
 #include "ImGuiManager.h"
 #include "RenderTexture.h"
 #include "InputManager.h"
 #include "WindowsAPI.h"
+#include "SceneManager.h"
 
 Game::Game() {
 	engine_ = std::make_unique<MyEngine::LowLevel::Engine>();
@@ -42,18 +43,19 @@ Game::Game() {
 	);
 
 	// 初期シーンの設定
-	sceneManager_->ChangeScene<PlayScene>();
+	sceneManager_->ChangeScene<TitleScene>();
 	sceneManager_->SetRenderer(renderer_.get());
-
-	// コマンドリストを実行し、GPUのアップロード完了を待つ
-	engine_->ExecuteCommandList();
 
 	// ImGuiの初期化
 	ImGuiManager::GetInstance()->Initialize(
 		engine_->GetDevice(),
 		engine_->GetCommandQueue(),
-		engine_->GetSrvDescriptorHeapPool()
+		engine_->GetSrvDescriptorHeapPool(),
+		sceneManager_->GetTextureManager()
 	);
+
+	// コマンドリストを実行し、GPUのアップロード完了を待つ
+	engine_->ExecuteCommandList();
 }
 
 Game::~Game() {
@@ -76,15 +78,15 @@ void Game::Run() {
  			win->SetFullscreen(!win->IsFullscreen(), true); 
  		}
  
- 		// ImGui 新しいフレーム開始
- 		ImGuiManager::GetInstance()->BeginFrame(
- 			engine_->GetDevice(),
- 			engine_->GetSrvDescriptorHeapPool(),
-			renderer_->GetFinalRenderTexture()
- 		);
- 
  		//フレーム開始
  		engine_->BeginFrame(renderer_->GetRenderTexture()->GetDescriptorHandle());
+
+		// ImGui 新しいフレーム開始
+		ImGuiManager::GetInstance()->BeginFrame(
+			engine_->GetDevice(),
+			engine_->GetSrvDescriptorHeapPool(),
+			renderer_->GetFinalRenderTexture()
+		);
 
 		// --- Update (ゲーム更新・描画コマンド登録) の計測 ---
 		auto startUpdate = std::chrono::high_resolution_clock::now();

@@ -2,18 +2,63 @@
 #include "EditorManager.h"
 #include "RenderTexture.h"
 #include "SrvDescriptorHeapPool.h"
+#include "CommandManager.h"
+#include "BaseScene.h"
+#include "GameObject.h"
+#include "VirtualDebugCamera.h"
+#include "VirtualFollowCamera.h"
+#include "PlayerComponent.h"
+#include "CameraOrganizer.h"
 
 // 各ウィンドウクラス
 #include "PerformanceWindow.h"
+#include "GameViewWindow.h"
+#include "AssetBrowserWindow.h"
+#include "HierarchyWindow.h"
+#include "InspectorWindow.h"
+#include "GizmoWindow.h"
+
+namespace {
+	// 現在の表示状態をチェックして安全に表示/非表示を切り替える関数
+	void SetCursorVisible(bool visible) {
+		CURSORINFO ci = { sizeof(CURSORINFO) };
+		if (GetCursorInfo(&ci)) {
+			bool isCurrentlyVisible = (ci.flags & CURSOR_SHOWING) != 0;
+			if (visible && !isCurrentlyVisible) {
+				ShowCursor(TRUE);
+			} else if (!visible && isCurrentlyVisible) {
+				ShowCursor(FALSE);
+			}
+		}
+	}
+
+	// マウスをゲーム画面の枠内に閉じ込める（または解除する）関数
+	void SetMouseClip(bool enable) {
+		if (enable) {
+			ImVec2 pos = EditorManager::GetInstance()->GetGameScreenPos();
+			ImVec2 size = EditorManager::GetInstance()->GetGameScreenSize();
+			if (size.x > 0.0f && size.y > 0.0f) {
+				RECT rect;
+				rect.left = static_cast<LONG>(pos.x);
+				rect.top = static_cast<LONG>(pos.y);
+				rect.right = static_cast<LONG>(pos.x + size.x);
+				rect.bottom = static_cast<LONG>(pos.y + size.y);
+				ClipCursor(&rect);
+			}
+		} else {
+			ClipCursor(NULL);
+		}
+	}
+}
 
 void EditorManager::Initialize() {
 	// ウィンドウを登録
 	RegisterWindow<PerformanceWindow>();
-
-	// 登録したウィンドウを初期化
-	for(auto& window : windows_) {
-		window->Initialize();
-	}
+	RegisterWindow<GameViewWindow>();
+	RegisterWindow<AssetBrowserWindow>();
+	RegisterWindow<HierarchyWindow>();
+	RegisterWindow<InspectorWindow>();
+	RegisterWindow<GizmoWindow>();
 
 	// 前回の開閉状態を復元
 	LoadLayoutSettings();
@@ -22,38 +67,82 @@ void EditorManager::Initialize() {
 void EditorManager::Finalize() {
 	// 終了時に状態を保存
 	SaveLayoutSettings();
+
+	// マウスロックとカーソルを確実に解除
+	SetMouseClip(false);
+	SetCursorVisible(true);
 }
 
 void EditorManager::UpdateAndDraw(
 	ID3D12Device* device,
-	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
+	MyEngine::LowLevel::SrvDescriptorHeapPool* srvHeap,
 	MyEngine::Rendering::RenderTexture* renderTexture
 ) {
 #ifdef USEIMGUI
+	// Ctrl + Z で Undo (元に戻す)
+	if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z)) {
+		CommandManager::GetInstance()->Undo();
+	}
+	// Ctrl + Y で Redo (やり直す)
+	if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Y)) {
+		CommandManager::GetInstance()->Redo();
+	}
+
 	//*** 各ウィンドウを順番に描画していく ***//
-	
 	// メニューバー
 	DrawMenuBar();
-	
-	// ゲームウィンドウ
-	DrawGameWindow(heapManager, renderTexture);
 
 	// EditorContextを詰めて、登録された各ウィンドウを描画
 	EditorContext context{};
 	context.device = device;
-	context.heapManager = heapManager;
+	context.srvHeap = srvHeap;
 	context.renderTexture = renderTexture;
+	context.sceneContext = sceneContext_;
+	context.selectedObject = &selectedObject_;
 	for (auto& window : windows_) {
 		window->UpdateAndDraw(context);
 	}
 #endif
 }
 
+void EditorManager::LoadAssetBrowserIcon(TextureManager* texManager) {
+	GetWindow<AssetBrowserWindow>()->LoadIconTexture(texManager);
+}
+
+bool EditorManager::IsGameWindowHovered() const {
+	if (auto* w = GetWindow<GameViewWindow>()) return w->IsHovered();
+	return false;
+}
+
+bool EditorManager::IsGameWindowFocused() const {
+	if (auto* w = GetWindow<GameViewWindow>()) return w->IsFocused();
+	return false;
+}
+
+ImVec2 EditorManager::GetGameScreenPos() const {
+	if (auto* w = GetWindow<GameViewWindow>()) return w->GetGameScreenPos();
+	return { 0.0f, 0.0f };
+}
+
+ImVec2 EditorManager::GetGameScreenSize() const {
+	if (auto* w = GetWindow<GameViewWindow>()) return w->GetGameScreenSize();
+	return { 0.0f, 0.0f };
+}
+
+void EditorManager::SetGizmoActive(bool active) {
+	if (auto* w = GetWindow<GameViewWindow>()) w->SetGizmoActive(active);
+}
+
+bool EditorManager::IsGizmoActive() const {
+	if (auto* w = GetWindow<GameViewWindow>()) return w->IsGizmoActive();
+	return false;
+}
+
 void EditorManager::SaveLayoutSettings() {
 	nlohmann::json root;
-	root["windows"] = nlohmann::json::object();
+	root["ウィンドウ"] = nlohmann::json::object();
 	for (auto& window : windows_) {
-		root["windows"][window->GetName()] = window->IsOpen();
+		root["ウィンドウ"][window->GetName()] = window->IsOpen();
 	}
 	std::filesystem::path path(settingsFilePath_);
 	if (path.has_parent_path() && !std::filesystem::exists(path.parent_path())) {
@@ -75,20 +164,136 @@ void EditorManager::LoadLayoutSettings() {
 	}
 	nlohmann::json root;
 	file >> root;
-	if (root.contains("windows") && root["windows"].is_object()) {
+	if (root.contains("ウィンドウ") && root["ウィンドウ"].is_object()) {
 		for (auto& window : windows_) {
 			const std::string& name = window->GetName();
-			if (root["windows"].contains(name)) {
-				window->SetOpen(root["windows"][name].get<bool>());
+			if (root["ウィンドウ"].contains(name)) {
+				window->SetOpen(root["ウィンドウ"][name].get<bool>());
 			}
 		}
 	}
 }
 
+void EditorManager::Play() {
+	if (playState_ == EditorPlayState::Edit) {
+		// 再生前のシーン状態をスナップショットとしてメモリに保存
+		sceneSnapshot_.clear();
+		if (sceneContext_ && sceneContext_->activeGameObjects) {
+			sceneSnapshot_["objects"] = nlohmann::json::array();
+			for (auto& obj : *sceneContext_->activeGameObjects) {
+				if (obj->IsSerializable()) {
+					sceneSnapshot_["objects"].push_back(obj->Serialize());
+				}
+			}
+		}
+	}
+	playState_ = EditorPlayState::Play;
+
+	// ゲームプレイ用カメラ（追従カメラ）を優先にする
+	if (sceneContext_ && sceneContext_->activeGameObjects) {
+		for (auto& obj : *sceneContext_->activeGameObjects) {
+			if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
+				followCam->SetPriority(20); // 追従カメラを高優先度
+			}
+			if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
+				debugCam->SetPriority(10);  // デバッグカメラを低優先度
+			}
+		}
+	}
+
+	// プレイ開始：マウスカーソルを消してゲーム画面にロック
+	SetCursorVisible(false);
+	SetMouseClip(true);
+}
+
+void EditorManager::Pause() {
+	if (playState_ == EditorPlayState::Play) {
+		playState_ = EditorPlayState::Pause;
+		// 一時停止中：デバッグカメラで自由に周囲を見回せるように優先度を切り替える
+		if (sceneContext_ && sceneContext_->activeGameObjects) {
+			for (auto& obj : *sceneContext_->activeGameObjects) {
+				if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
+					followCam->SetPriority(10);
+				}
+				if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
+					debugCam->SetPriority(20);
+				}
+			}
+		}
+
+		// 一時停止中：エディタを操作できるようにマウスカーソルを出してロック解除
+		SetCursorVisible(true);
+		SetMouseClip(false);
+
+	} else if (playState_ == EditorPlayState::Pause) {
+		playState_ = EditorPlayState::Play; // トグルで再開
+		// ゲーム再開：追従カメラを高優先度に戻す
+		if (sceneContext_ && sceneContext_->activeGameObjects) {
+			for (auto& obj : *sceneContext_->activeGameObjects) {
+				if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
+					followCam->SetPriority(20);
+				}
+				if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
+					debugCam->SetPriority(10);
+				}
+			}
+		}
+
+		// 再開：マウスカーソルを消してゲーム画面にロック
+		SetCursorVisible(false);
+		SetMouseClip(true);
+	}
+}
+
+void EditorManager::Stop() {
+	if (playState_ == EditorPlayState::Edit) return;
+	playState_ = EditorPlayState::Edit;
+
+	// 保存してあるスナップショットからシーンを再生前の状態に復元
+	if (sceneContext_ && sceneContext_->activeGameObjects && !sceneSnapshot_.empty()) {
+		auto& gameObjects = *sceneContext_->activeGameObjects;
+		gameObjects.clear();
+		ClearSelectedObject();
+		if (sceneSnapshot_.contains("objects")) {
+			for (const auto& objJ : sceneSnapshot_["objects"]) {
+				auto newObj = std::make_unique<GameObject>(sceneContext_, objJ["name"]);
+				newObj->Deserialize(objJ);
+				newObj->Initialize();
+				gameObjects.push_back(std::move(newObj));
+			}
+		}
+		sceneSnapshot_.clear();
+
+		// カメラの参照が外れないように再度紐づけ
+		for (auto& obj : gameObjects) {
+			if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
+				followCam->ResolveTarget(gameObjects);
+				followCam->SetPriority(10); // 追従カメラは低優先度
+			}
+			if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
+				debugCam->SetPriority(20);  // エディタ用デバッグカメラを高優先度
+			}
+			if (auto* player = obj->GetComponent<PlayerComponent>()) {
+				player->ResolveReticle(gameObjects);
+			}
+		}
+
+		// カメラマネージャーを更新してから、各オブジェクトの描画バッファを初回更新する
+		CameraOrganizer::GetInstance()->Update();
+		for (auto& obj : gameObjects) {
+			obj->UpdateTransformBuffer();
+		}
+	}
+
+	// 停止（Editモード）：マウスカーソルを表示してロック解除
+	SetCursorVisible(true);
+	SetMouseClip(false);
+}
+
 void EditorManager::DrawMenuBar() {
 	if (ImGui::BeginMenuBar()) {
 		// Window メニュー
-		if (ImGui::BeginMenu("Window")) {
+		if (ImGui::BeginMenu("ウィンドウ")) {
 			for (auto& window : windows_) {
 				ImGui::MenuItem(window->GetName().c_str(), nullptr, window->GetIsOpenPtr());
 			}
@@ -96,115 +301,15 @@ void EditorManager::DrawMenuBar() {
 		}
 
 		// Layout メニュー
-		if (ImGui::BeginMenu("Layout")) {
-			if (ImGui::MenuItem("Save Layout")) {
+		if (ImGui::BeginMenu("レイアウト")) {
+			if (ImGui::MenuItem("レイアウトの保存")) {
 				SaveLayoutSettings();
 			}
-			if (ImGui::MenuItem("Load Layout")) {
+			if (ImGui::MenuItem("レイアウトの読み込み")) {
 				LoadLayoutSettings();
 			}
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
 	}
-}
-
-void EditorManager::DrawGameWindow(
-	MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
-	MyEngine::Rendering::RenderTexture* renderTexture
-) {
-	// ギズモ操作中はウィンドウが動かないようにする
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_None;
-	if (isGizmoActive_) {
-		windowFlags |= ImGuiWindowFlags_NoMove;
-	}
-
-	// ゲーム画面をImGuiウィンドウとして描画する
-	ImGui::Begin("Game", nullptr, windowFlags);
-
-	// アスペクト比選択コンボボックスの配置
-	const char* aspectNames[] = { "16:9", "4:3", "Free (Fit)" };
-	ImGui::SetNextItemWidth(120.0f);
-	ImGui::Combo("Aspect", &selectedAspectIndex_, aspectNames, IM_ARRAYSIZE(aspectNames));
-	ImGui::Separator();
-
-	// 純粋にウィンドウ上にマウスがあるか
-	bool isHovered = ImGui::IsWindowHovered();
-	isGameWindowFocused_ = ImGui::IsWindowFocused();
-
-	// ドラッグ開始判定：ウィンドウ上でクリックされたらドラッグ中フラグをON
-	if (isHovered && ImGui::IsAnyMouseDown()) {
-		isGameWindowDragging_ = true;
-	}
-
-	// ドラッグ終了判定：マウスボタンが全て離されたらフラグをOFF
-	if (!ImGui::IsAnyMouseDown()) {
-		isGameWindowDragging_ = false;
-	}
-
-	// 「ウィンドウ上にマウスがある」か「ゲームウィンドウからドラッグ中」なら、ホバー状態とみなす
-	isGameWindowHovered_ = isHovered || isGameWindowDragging_;
-
-	// RenderTextureのSRVからGPUハンドルを取得
-	if(renderTexture) {
-		uint32_t srvIndex = renderTexture->GetSrvIndex();
-		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = heapManager->GetGpuHandle(srvIndex);
-
-		// ウィンドウで現在利用可能な領域を取得
-		ImVec2 availSize = ImGui::GetContentRegionAvail();
-
-		// 現在の描画カーソルのスクリーン座標（絶対座標）を取得
-		ImVec2 screenPos = ImGui::GetCursorScreenPos();
-
-		// 選択されたアスペクト比のターゲットを決定
-		float targetAspect = 16.0f / 9.0f;
-		bool isAspectFixed = true;
-		if(selectedAspectIndex_ == 0) {
-			targetAspect = 16.0f / 9.0f;
-		}
-		else if(selectedAspectIndex_ == 1) {
-			targetAspect = 4.0f / 3.0f;
-		}
-		else {
-			isAspectFixed = false; // 自由変形
-		}
-		ImVec2 imageSize = availSize;
-
-		// アスペクト比を固定する場合のサイズ計算
-		if(isAspectFixed && availSize.y > 0.0f) {
-			float availAspect = availSize.x / availSize.y;
-			if(availAspect > targetAspect) {
-				// ウィンドウが横長すぎる場合 ➔ 高さに合わせる
-				imageSize.y = availSize.y;
-				imageSize.x = availSize.y * targetAspect;
-			}
-			else {
-				// ウィンドウが縦長すぎる場合 ➔ 幅に合わせる
-				imageSize.x = availSize.x;
-				imageSize.y = availSize.x / targetAspect;
-			}
-
-			// 画面をウィンドウ中央に寄せる(センタリング)
-			float offsetX = (availSize.x - imageSize.x) * 0.5f;
-			float offsetY = (availSize.y - imageSize.y) * 0.5f;
-
-			ImVec2 cursorPos = ImGui::GetCursorPos();
-			cursorPos.x += offsetX;
-			cursorPos.y += offsetY;
-			ImGui::SetCursorPos(cursorPos);
-
-			// スクリーン座標も中央寄せ分ずらす
-			screenPos.x += offsetX;
-			screenPos.y += offsetY;
-		}
-
-		// 実際の描画位置とサイズをメンバ変数に保存
-		gameScreenPos_ = screenPos;
-		gameScreenSize_ = imageSize;
-
-		// 計算したサイズで描画
-		ImGui::Image((ImTextureID)gpuHandle.ptr, imageSize);
-	}
-
-	ImGui::End();
 }

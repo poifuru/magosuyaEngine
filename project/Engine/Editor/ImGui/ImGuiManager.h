@@ -8,6 +8,8 @@ namespace MyEngine::Rendering {
 	class RenderTexture;
 }
 
+class TextureManager;
+
 class ImGuiManager {
 public:
 	static ImGuiManager* GetInstance() {
@@ -19,7 +21,8 @@ public:
 	void Initialize(
 		ID3D12Device* device,
 		ID3D12CommandQueue* cmdQueue,
-		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager
+		MyEngine::LowLevel::SrvDescriptorHeapPool* heapManager,
+		TextureManager* texManager
 	);
 
 	void Finalize();

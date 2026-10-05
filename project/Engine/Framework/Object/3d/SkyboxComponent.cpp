@@ -63,6 +63,10 @@ void SkyboxComponent::Initialize() {
 
 	ID3D12Device* device = context->graphicsDevice->GetDevice();
 
+	// デフォルトのスカイボックステクスチャを指定
+	uint32_t textureIndex_ = 0;
+	std::string texturePath_ = "Resources/Skybox/test2.dds";
+
 	// === リソースの作成とマッピング ===
 	// 頂点バッファ
 	vertexBuffer_ = CreateBuffer(device, sizeof(SkyboxVertex) * kVertexNum);
@@ -129,6 +133,12 @@ void SkyboxComponent::Initialize() {
 	if (!texturePath_.empty()) {
 		SetTexture(texturePath_);
 	}
+
+	// テクスチャパスが空ならデフォルトをセット
+	if (texturePath_.empty()) {
+		texturePath_ = "Resources/Skybox/test2.dds";
+	}
+	SetTexture(texturePath_);
 }
 
 void SkyboxComponent::Update() {

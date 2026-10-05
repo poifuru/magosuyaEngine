@@ -17,7 +17,12 @@ public:
 	~GameObject();
 
 	void Initialize();
+
 	void Update();
+
+	// エディタで編集中にギズモの動きを対応させるためにTransformBufferだけを更新する
+	void UpdateTransformBuffer();
+
 	void ImGui();
 
 	// シリアライズ用
