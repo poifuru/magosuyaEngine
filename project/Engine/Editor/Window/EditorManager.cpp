@@ -18,6 +18,39 @@
 #include "InspectorWindow.h"
 #include "GizmoWindow.h"
 
+namespace {
+	// 現在の表示状態をチェックして安全に表示/非表示を切り替える関数
+	void SetCursorVisible(bool visible) {
+		CURSORINFO ci = { sizeof(CURSORINFO) };
+		if (GetCursorInfo(&ci)) {
+			bool isCurrentlyVisible = (ci.flags & CURSOR_SHOWING) != 0;
+			if (visible && !isCurrentlyVisible) {
+				ShowCursor(TRUE);
+			} else if (!visible && isCurrentlyVisible) {
+				ShowCursor(FALSE);
+			}
+		}
+	}
+
+	// マウスをゲーム画面の枠内に閉じ込める（または解除する）関数
+	void SetMouseClip(bool enable) {
+		if (enable) {
+			ImVec2 pos = EditorManager::GetInstance()->GetGameScreenPos();
+			ImVec2 size = EditorManager::GetInstance()->GetGameScreenSize();
+			if (size.x > 0.0f && size.y > 0.0f) {
+				RECT rect;
+				rect.left = static_cast<LONG>(pos.x);
+				rect.top = static_cast<LONG>(pos.y);
+				rect.right = static_cast<LONG>(pos.x + size.x);
+				rect.bottom = static_cast<LONG>(pos.y + size.y);
+				ClipCursor(&rect);
+			}
+		} else {
+			ClipCursor(NULL);
+		}
+	}
+}
+
 void EditorManager::Initialize() {
 	// ウィンドウを登録
 	RegisterWindow<PerformanceWindow>();
@@ -34,6 +67,10 @@ void EditorManager::Initialize() {
 void EditorManager::Finalize() {
 	// 終了時に状態を保存
 	SaveLayoutSettings();
+
+	// マウスロックとカーソルを確実に解除
+	SetMouseClip(false);
+	SetCursorVisible(true);
 }
 
 void EditorManager::UpdateAndDraw(
@@ -163,6 +200,10 @@ void EditorManager::Play() {
 			}
 		}
 	}
+
+	// プレイ開始：マウスカーソルを消してゲーム画面にロック
+	SetCursorVisible(false);
+	SetMouseClip(true);
 }
 
 void EditorManager::Pause() {
@@ -179,6 +220,11 @@ void EditorManager::Pause() {
 				}
 			}
 		}
+
+		// 一時停止中：エディタを操作できるようにマウスカーソルを出してロック解除
+		SetCursorVisible(true);
+		SetMouseClip(false);
+
 	} else if (playState_ == EditorPlayState::Pause) {
 		playState_ = EditorPlayState::Play; // トグルで再開
 		// ゲーム再開：追従カメラを高優先度に戻す
@@ -192,6 +238,10 @@ void EditorManager::Pause() {
 				}
 			}
 		}
+
+		// 再開：マウスカーソルを消してゲーム画面にロック
+		SetCursorVisible(false);
+		SetMouseClip(true);
 	}
 }
 
@@ -234,6 +284,10 @@ void EditorManager::Stop() {
 			obj->UpdateTransformBuffer();
 		}
 	}
+
+	// 停止（Editモード）：マウスカーソルを表示してロック解除
+	SetCursorVisible(true);
+	SetMouseClip(false);
 }
 
 void EditorManager::DrawMenuBar() {

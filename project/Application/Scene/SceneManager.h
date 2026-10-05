@@ -4,6 +4,9 @@
 #include "TextureManager.h"
 #include "ModelFactory.h"
 #include "CommandManager.h"
+#include "PostEffectManager.h"
+#include "Dissolve.h"
+#include "EditorManager.h"
 
 struct ID3D12GraphicsCommandList;
 namespace MyEngine::LowLevel {
@@ -23,8 +26,10 @@ struct CameraData;
 
 // シーンの遷移状態
 enum class SceneTransitionState {
-	None,			// 通常(単一シーンでの稼働)
-	Transitioning	// 遷移中(2つのシーンを平行して稼働)
+	None,	 // 通常(単一シーンでの稼働)
+	FadeOut, // ディゾルブで溶けて真っ黒になっていく
+	Loading, // 暗転状態で次シーンを同期ロード
+	FadeIn,  // 次シーンがディゾルブで開いていく
 };
 
 class SceneManager {
@@ -56,57 +61,69 @@ public:
 	TextureManager* GetTextureManager() { return textureManager_.get(); }
 
 	// 遷移中かどうか(進行度0.0 ~ 1.0)の取得
-	bool isTransitioning() const { return transitionState_ == SceneTransitionState::Transitioning; }
+	bool isTransitioning() const { return transitionState_ != SceneTransitionState::None;  }
 	float GetTransitionPogress() const;
 
 	// シーン遷移用のテンプレート関数
 	template <typename T>
-	void ChangeScene(float duration = 0.0f) {
-		// 初回またはdurationが0以下の場合は即時切り替え
-		if(!currentScene_ || duration <= 0.0f) {
-			CommandManager::GetInstance()->Clear();
+	void ChangeScene() {
+		// 遷移中なら受け付けない
+		if (isTransitioning()) return;
 
-			auto next = std::make_unique<T>();
-			next->SetContext(&context_);
-			next->SetRenderer(renderer_);
-			next->Initialize();
-
-			currentScene_ = std::move(next);
-			nextScene_ = nullptr;
-
-			transitionState_ = SceneTransitionState::None;
-			transitionTimer_ = 0.0f;
-			transitionDuration_ = 0.0f;
-
-			return;
-		}
-
-		// すでに遷移中の場合は多重呼び出しを無視する
-		if(transitionState_ == SceneTransitionState::Transitioning) {
-			return;
-		}
-
-		// 次のシーンを生成して初期化
+		CommandManager::GetInstance()->Clear();
+#ifdef USEIMGUI
+		EditorManager::GetInstance()->ClearSelectedObject();
+#endif
 		auto next = std::make_unique<T>();
 		next->SetContext(&context_);
 		next->SetRenderer(renderer_);
 		next->Initialize();
-		nextScene_ = std::move(next);
+		currentScene_ = std::move(next);
+		transitionState_ = SceneTransitionState::None;
+#ifdef USEIMGUI
+		EditorManager::GetInstance()->SetSceneContext(&context_);
+#endif
+	}
 
-		// 遷移タイマー開始
-		transitionDuration_ = duration;
-		transitionTimer_ = 0.0f;
-		transitionState_ = SceneTransitionState::Transitioning;
+	// ディゾルブを使ったシーン遷移
+	template <typename T>
+	void ChangeSceneWithDissolve(float fadeOutDuration = 0.8f, float fadeInDuration = 0.8f) {
+		if (transitionState_ != SceneTransitionState::None) return;
+
+		fadeOutDuration_ = fadeOutDuration;
+		fadeInDuration_ = fadeInDuration;
+		fadeTimer_ = 0.0f;
+		transitionState_ = SceneTransitionState::FadeOut;
+
+		// 次シーン生成用ヘルパーのポインタを保持
+		pendingSceneCreator_ = &SceneManager::CreateSceneHelper<T>;
+
+		// 現在のシーンのディゾルブをONにして初期化
+		if (auto* pe = GetPostEffectManager()) {
+			pe->SetEffectActive(PostEffectType::Dissolve, true);
+			if (auto* dissolve = pe->GetEffect<Dissolve>(PostEffectType::Dissolve)) {
+				dissolve->SetThreshold(0.0f);
+			}
+		}
+	}
+
+private:
+	template <typename T>
+	static std::unique_ptr<BaseScene> CreateSceneHelper() {
+		return std::make_unique<T>();
 	}
 
 private:
 	std::unique_ptr<BaseScene> currentScene_ = nullptr;		// 現在シーン
-	std::unique_ptr<BaseScene> nextScene_ = nullptr;		// 遷移先のシーン
+
+	typedef std::unique_ptr<BaseScene>(*SceneCreatorFunc)();
+	SceneCreatorFunc pendingSceneCreator_ = nullptr;
 
 	// シーン遷移制御用の変数
 	SceneTransitionState transitionState_ = SceneTransitionState::None;
-	float transitionDuration_ = 0.0f;	// 遷移にかける秒数
-	float transitionTimer_ = 0.0f;		// 経過時間タイマー
+	float fadeOutDuration_ = 0.8f;
+	float fadeInDuration_ = 0.8f;
+	float fadeTimer_ = 0.0f;
 
 	// マネージャーの実体を SceneManager が所有する
 	std::unique_ptr<TextureManager> textureManager_ = nullptr;

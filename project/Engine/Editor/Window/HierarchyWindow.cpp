@@ -145,11 +145,17 @@ void HierarchyWindow::UpdateAndDraw(const EditorContext& context) {
 	ImGui::DragFloat("遷移秒数", &transitionDuration, 0.1f, 0.0f, 5.0f, "%.1f 秒");
 	if (sceneCtx->sceneManager) {
 		if (ImGui::Button("TitleScene へ")) {
-			sceneCtx->sceneManager->ChangeScene<TitleScene>(transitionDuration);
+			// ディゾルブ遷移を呼び出す！（スライダーの秒数を渡す）
+			sceneCtx->sceneManager->ChangeSceneWithDissolve<TitleScene>(transitionDuration, transitionDuration);
+			ImGui::End();
+			return; // ★ シーンが変わったらこのフレームのヒエラルキー描画は即座に終了
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("PlayScene へ")) {
-			sceneCtx->sceneManager->ChangeScene<PlayScene>(transitionDuration);
+			// ディゾルブ遷移を呼び出す！
+			sceneCtx->sceneManager->ChangeSceneWithDissolve<PlayScene>(transitionDuration, transitionDuration);
+			ImGui::End();
+			return; // ★ 安全のため即座に終了！
 		}
 		// 遷移中ならプログレスバーを出す
 		if (sceneCtx->sceneManager->isTransitioning()) {

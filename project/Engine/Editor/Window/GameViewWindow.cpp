@@ -127,6 +127,16 @@ void GameViewWindow::UpdateAndDraw(const EditorContext& context) {
 		gameScreenPos_ = screenPos;
 		gameScreenSize_ = imageSize;
 
+		// ゲームプレイ中なら、ゲーム画面の矩形にマウスを常時ロック追従
+		if (EditorManager::GetInstance()->IsPlaying() && imageSize.x > 0.0f && imageSize.y > 0.0f) {
+			RECT rect;
+			rect.left = static_cast<LONG>(screenPos.x);
+			rect.top = static_cast<LONG>(screenPos.y);
+			rect.right = static_cast<LONG>(screenPos.x + imageSize.x);
+			rect.bottom = static_cast<LONG>(screenPos.y + imageSize.y);
+			ClipCursor(&rect);
+		}
+
 		// 画像描画
 		ImGui::Image((ImTextureID)gpuHandle.ptr, imageSize);
 

@@ -13,32 +13,15 @@
 #include "PostEffectManager.h"
 #include "Dissolve.h"
 #include "TextureManager.h"
+#include "Dissolve.h"
+#include "TitleScene.h"
+#include "SceneManager.h"
 
 PlayScene::PlayScene() = default;
 PlayScene::~PlayScene() = default;
 
 void PlayScene::Initialize() {
 	if (!context_) return;
-
-	// --- カメラの初期優先度設定 ---
-	for (auto& obj : gameObjects_) {
-		// デバッグカメラ
-		if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
-#ifdef USEIMGUI
-			debugCam->SetPriority(20); // 開発用ビルドなら優先度高
-#else
-			debugCam->SetPriority(10); // リリースビルドなら優先度低
-#endif
-		}
-		// 追従カメラ
-		if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
-#ifdef USEIMGUI
-			followCam->SetPriority(10); // 開発用ビルドなら優先度低
-#else
-			followCam->SetPriority(20); // リリースビルドなら優先度高
-#endif
-		}
-	}
 
 	// コンテキストにリストのポインタをセットする
 	context_->gameObjects = &createQueue_;
@@ -72,6 +55,23 @@ void PlayScene::Initialize() {
 		}
 	}
 
+	// --- カメラの初期優先度設定 ---
+	bool isPlayingMode = true;
+#ifdef USEIMGUI
+	// エディタがある場合：Play中ならtrue、停止中ならfalse
+	isPlayingMode = EditorManager::GetInstance()->IsPlaying();
+#endif
+	for (auto& obj : gameObjects_) {
+		// 追従カメラ
+		if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
+			followCam->SetPriority(isPlayingMode ? 20 : 10);
+		}
+		// デバッグカメラ
+		if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
+			debugCam->SetPriority(isPlayingMode ? 10 : 20);
+		}
+	}
+
 	// ライトマネージャーの初期化
 	lightManager_ = std::make_unique<LightManager>();
 	lightManager_->Initialize(context_->graphicsDevice->GetDevice());
@@ -79,11 +79,9 @@ void PlayScene::Initialize() {
 	postEffectManager_ = std::make_unique<PostEffectManager>();
 	postEffectManager_->Initialize(context_->graphicsDevice->GetDevice());
 
-	// ノイズ画像をロードしてセット
-	uint32_t noiseIndex = context_->textureManager->LoadTexture("Resources/Noise/fire_noise.png");
-
-	// PostEffectManager 経由で Dissolve にセット
-	if(auto* dissolve = postEffectManager_->GetEffect<Dissolve>(PostEffectType::Dissolve)) {
+	// ディゾルブ用テクスチャをセット
+	uint32_t noiseIndex = context_->textureManager->LoadTexture("Resources/noise0.png");
+	if (auto* dissolve = postEffectManager_->GetEffect<Dissolve>(PostEffectType::Dissolve)) {
 		dissolve->SetMaskTextureIndex(noiseIndex);
 	}
 
@@ -92,6 +90,14 @@ void PlayScene::Initialize() {
 }
 
 void PlayScene::UpdateGame(CameraData* cameraData) {
+	auto* rawInput = InputManager::GetInstance()->GetRawInput();
+	// ESCキー（またはゲームクリア時）にタイトルへ戻る
+	if (rawInput->Trigger(VK_ESCAPE)) {
+		if (context_->sceneManager && !context_->sceneManager->isTransitioning()) {
+			context_->sceneManager->ChangeSceneWithDissolve<TitleScene>(0.8f, 0.8f);
+		}
+	}
+
 	for (auto& obj : gameObjects_) {
 		obj->Update();
 	}

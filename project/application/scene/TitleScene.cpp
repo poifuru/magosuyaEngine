@@ -13,6 +13,7 @@
 #include "LightManager.h"
 #include "PostEffectManager.h"
 #include "GraphicsDevice.h"
+#include "Dissolve.h"
 
 TitleScene::TitleScene() = default;
 
@@ -53,6 +54,12 @@ void TitleScene::Initialize() {
 	postEffectManager_ = std::make_unique<PostEffectManager>();
 	postEffectManager_->Initialize(context_->graphicsDevice->GetDevice());
 
+	// ディゾルブ用テクスチャをセット
+	uint32_t noiseIndex = context_->textureManager->LoadTexture("Resources/noise0.png");
+	if (auto* dissolve = postEffectManager_->GetEffect<Dissolve>(PostEffectType::Dissolve)) {
+		dissolve->SetMaskTextureIndex(noiseIndex);
+	}
+
 	// titleScene.json があれば読み込む
 	const std::string scenePath = "Resources/Scene/titleScene.json";
 	if (std::filesystem::exists(scenePath)) {
@@ -82,8 +89,12 @@ void TitleScene::UpdateGame(CameraData* cameraData) {
 	auto* rawInput = InputManager::GetInstance()->GetRawInput();
 	if (rawInput->Trigger(VK_SPACE)) {
 		if (context_->sceneManager) {
-			// 1.5秒かけてシームレスにPlaySceneへ
-			context_->sceneManager->ChangeScene<PlayScene>(1.5f);
+#ifdef USEIMGUI
+			// ゲームスタートなので、エディタも再生状態（Playモード）にする
+			EditorManager::GetInstance()->Play();
+#endif
+			// ディゾルブ遷移開始
+			context_->sceneManager->ChangeSceneWithDissolve<PlayScene>(0.8f, 0.8f);
 		}
 	}
 

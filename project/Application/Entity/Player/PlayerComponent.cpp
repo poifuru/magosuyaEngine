@@ -35,10 +35,6 @@ void PlayerComponent::Initialize() {
 }
 
 void PlayerComponent::Update() {
-	if (isDebugMode_) {
-		return;
-	}
-
 	// 体力・無敵・点滅演出更新
 	if (health_) {
 		health_->Update(gameObject_);

@@ -52,13 +52,13 @@
                     "harpoonHomingStrength": 0.019999999552965164,
                     "harpoonMaxDistance": 30.0,
                     "harpoonSpeed": 100.0,
-                    "hp": 0,
+                    "hp": 5,
                     "isUnderwater": false,
                     "maxHp": 5,
                     "maxSpeed": 0.5,
-                    "speed": 0.15000000596046448,
+                    "speed": 0.20999999344348907,
                     "targetDepthY": -30.0,
-                    "turnSpeed": 0.10000000149011612,
+                    "turnSpeed": 0.20000000298023224,
                     "type": "PlayerComponent"
                 },
                 {
@@ -76,13 +76,13 @@
             "name": "Player",
             "transform": {
                 "position": [
-                    143.35244750976563,
-                    0.8199999928474426,
-                    -177.05885314941406
+                    0.0,
+                    0.30000001192092896,
+                    0.0
                 ],
                 "rotation": [
                     0.0,
-                    78.54510498046875,
+                    83.68556213378906,
                     0.0
                 ],
                 "scale": [
@@ -136,13 +136,13 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    -14.037541389465332,
-                    11.655083656311035,
-                    -112.92646789550781
+                    -5.967127799987793,
+                    65.30377197265625,
+                    -25.785781860351563
                 ],
                 "rotation": [
-                    0.08920112997293472,
-                    1.8653538227081299,
+                    1.1491338014602661,
+                    0.22740860283374786,
                     0.0
                 ],
                 "scale": [
@@ -156,7 +156,7 @@
             "components": [
                 {
                     "fov": 0.44999998807907104,
-                    "priority": 20,
+                    "priority": 10,
                     "sensitivity": 0.0010000000474974513,
                     "speed": 0.30000001192092896,
                     "type": "VirtualDebugCamera"
@@ -165,13 +165,13 @@
             "name": "DebugCamera",
             "transform": {
                 "position": [
-                    -14.037541389465332,
-                    11.655083656311035,
-                    -112.92646789550781
+                    241.6341552734375,
+                    -3.685844898223877,
+                    -524.7659301757813
                 ],
                 "rotation": [
-                    0.08920112997293472,
-                    1.8653538227081299,
+                    0.25720107555389404,
+                    2.2753541469573975,
                     0.0
                 ],
                 "scale": [
@@ -184,8 +184,8 @@
         {
             "components": [
                 {
-                    "angleX": 0.43873563408851624,
-                    "angleY": 129.73316955566406,
+                    "angleX": 1.1112631559371948,
+                    "angleY": 132.17257690429688,
                     "delay": 0.5,
                     "firstPersonOffset": [
                         0.0,
@@ -200,7 +200,7 @@
                         5.099999904632568,
                         -70.0
                     ],
-                    "priority": 10,
+                    "priority": 20,
                     "targetName": "Player",
                     "targetOffsetY": 6.0,
                     "type": "VirtualFollowCamera"
@@ -209,13 +209,13 @@
             "name": "FollowCamera",
             "transform": {
                 "position": [
-                    192.3366241455078,
-                    35.17266082763672,
-                    -140.3647918701172
+                    -5.967127799987793,
+                    65.30377197265625,
+                    -25.785781860351563
                 ],
                 "rotation": [
-                    0.43381792306900024,
-                    -2.21372127532959,
+                    1.1491338014602661,
+                    0.22740860283374786,
                     0.0
                 ],
                 "scale": [
@@ -518,7 +518,7 @@
                     "spacing": 0.0,
                     "texPath": "Resources/number_font.png",
                     "type": "NumberDrawerComponent",
-                    "value": 13
+                    "value": 12
                 }
             ],
             "name": "KillCounterUI",
@@ -543,7 +543,7 @@
         {
             "components": [
                 {
-                    "currentKills": 2,
+                    "currentKills": 3,
                     "isBossEventTriggered": false,
                     "targetKills": 15,
                     "type": "GameDirectorComponent",
@@ -738,7 +738,7 @@
                         5.0,
                         -10.0
                     ],
-                    "priority": 10,
+                    "priority": 20,
                     "targetName": "",
                     "targetOffsetY": 3.799999952316284,
                     "type": "VirtualFollowCamera"

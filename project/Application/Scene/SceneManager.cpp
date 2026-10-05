@@ -43,34 +43,102 @@ void SceneManager::Initialize(
 }
 
 void SceneManager::Update(CameraData* cameraData) {
-	// シーンの遷移中なら
-	if(transitionState_ == SceneTransitionState::Transitioning) {
-		// タイマーを進める
-		transitionTimer_ += Time::GetDeltaTime();
+	float dt = Time::GetDeltaTime();
 
-		// 両方のシーンを更新
-		if(currentScene_) {
+	switch (transitionState_) {
+	case SceneTransitionState::None:
+		if (currentScene_) {
 			currentScene_->Update(cameraData);
 		}
-		if(nextScene_) {
-			nextScene_->Update(cameraData);
+
+		break;
+
+	case SceneTransitionState::FadeOut:
+		// 現在のシーンを動かしながら、ディゾルブで溶かしていく
+		if (currentScene_) {
+			currentScene_->Update(cameraData);
 		}
 
-		// 予定の時間が立ったら遷移完了
-		if(transitionTimer_ >= transitionDuration_) {
+		fadeTimer_ += dt;
+
+		{
+			float rate = fadeTimer_ / fadeOutDuration_;
+			if (rate > 1.0f) rate = 1.0f;
+			if (auto* pe = GetPostEffectManager()) {
+				if (auto* dissolve = pe->GetEffect<Dissolve>(PostEffectType::Dissolve)) {
+					dissolve->SetThreshold(rate);
+				}
+			}
+			// 完全に溶け切って真っ黒になった
+			if (rate >= 1.0f) {
+				transitionState_ = SceneTransitionState::Loading;
+			}
+		}
+
+		break;
+
+	case SceneTransitionState::Loading:
+		// 画面が完全に真っ黒の状態で安全に同期ロード
+		if (pendingSceneCreator_) {
 			CommandManager::GetInstance()->Clear();
-			currentScene_ = std::move(nextScene_);
-			nextScene_ = nullptr;
-			transitionState_ = SceneTransitionState::None;
-			transitionTimer_ = 0.0f;
-			transitionDuration_ = 0.0f;
+#ifdef USEIMGUI
+			EditorManager::GetInstance()->ClearSelectedObject();
+#endif
+
+			auto next = pendingSceneCreator_();
+			next->SetContext(&context_);
+			next->SetRenderer(renderer_);
+			next->Initialize();
+			currentScene_ = std::move(next);
+			pendingSceneCreator_ = nullptr;
+#ifdef USEIMGUI
+			EditorManager::GetInstance()->SetSceneContext(&context_);
+#endif
+
+			// 新しいシーンのディゾルブをONにして、真っ黒（threshold = 1.0f）から開始
+			if (auto* pe = GetPostEffectManager()) {
+				pe->SetEffectActive(PostEffectType::Dissolve, true);
+
+				if (auto* dissolve = pe->GetEffect<Dissolve>(PostEffectType::Dissolve)) {
+					dissolve->SetThreshold(1.0f);
+				}
+			}
 		}
-	}
-	else {
-		// 遷移していない時は現在シーンだけを更新
-		if(currentScene_) {
+
+		fadeTimer_ = 0.0f;
+		transitionState_ = SceneTransitionState::FadeIn;
+
+		break;
+
+	case SceneTransitionState::FadeIn:
+		// 新しいシーンを動かしながら、ディゾルブを開いていく
+		if (currentScene_) {
 			currentScene_->Update(cameraData);
 		}
+
+		fadeTimer_ += dt;
+
+		{
+			float rate = 1.0f - (fadeTimer_ / fadeInDuration_);
+			if (rate < 0.0f) rate = 0.0f;
+
+			if (auto* pe = GetPostEffectManager()) {
+				if (auto* dissolve = pe->GetEffect<Dissolve>(PostEffectType::Dissolve)) {
+					dissolve->SetThreshold(rate);
+				}
+			}
+
+			// 完全に開ききったら遷移完了
+			if (rate <= 0.0f) {
+				if (auto* pe = GetPostEffectManager()) {
+					pe->SetEffectActive(PostEffectType::Dissolve, false); // エフェクトOFF
+				}
+
+				transitionState_ = SceneTransitionState::None;
+			}
+		}
+
+		break;
 	}
 }
 
@@ -79,19 +147,11 @@ void SceneManager::Draw(MyEngine::Rendering::Renderer* renderer) {
 	if (currentScene_) {
 		currentScene_->Draw(renderer);
 	}
-
-	// 遷移中なら次のシーンも重ねて描画
-	if(transitionState_ == SceneTransitionState::Transitioning && nextScene_) {
-		nextScene_->Draw(renderer);
-	}
 }
 
 void SceneManager::DrawUI() {
 	if (currentScene_) {
 		currentScene_->DrawUI();
-	}
-	if (transitionState_ == SceneTransitionState::Transitioning && nextScene_) {
-		nextScene_->DrawUI();
 	}
 }
 
@@ -103,14 +163,23 @@ PostEffectManager* SceneManager::GetPostEffectManager() const {
 }
 
 float SceneManager::GetTransitionPogress() const {
-	if(transitionDuration_ <= 0.0f) {
+	switch (transitionState_) {
+	case SceneTransitionState::FadeOut:
+
+		return fadeOutDuration_ > 0.0f ? (fadeTimer_ / fadeOutDuration_) : 1.0f;
+
+	case SceneTransitionState::Loading:
+
 		return 1.0f;
-	}
 
-	float progress = transitionTimer_ / transitionDuration_;
-	if(progress > 1.0f) {
-		progress = 1.0f;
-	}
+	case SceneTransitionState::FadeIn:
 
-	return progress;
+		return fadeInDuration_ > 0.0f ? (1.0f - (fadeTimer_ / fadeInDuration_)) : 0.0f;
+
+	case SceneTransitionState::None:
+
+	default:
+
+		return 0.0f;
+	}
 }

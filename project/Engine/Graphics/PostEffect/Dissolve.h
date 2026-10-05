@@ -8,6 +8,13 @@ public:
 	void ImGui() override;
 	D3D12_GPU_VIRTUAL_ADDRESS GetConstantBufferAddress() const override;
 
+	void SetThreshold(float threshold);
+	float GetThreshold() const { return param_.threshold; }
+
+	void SetEdgeColor(const Vector4& color);
+	
+	void SetEdgeWidth(float width);
+
 	uint32_t GetExtraSrvIndex() const override { return maskTextureSrvIndex_; }
 	void SetMaskTextureIndex(uint32_t textureIndex) { maskTextureSrvIndex_ = textureIndex; }
 

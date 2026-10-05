@@ -3,15 +3,18 @@
 #include "EditorManager.h"
 
 void BaseScene::Update(CameraData* cameraData) {
-	// エディタの再生ステートを判定
+#ifdef USEIMGUI
+	// エディタがある開発ビルド：Play中ならゲーム、停止中ならエディタ更新
 	if (EditorManager::GetInstance()->IsPlaying()) {
-		// 再生中：ゲーム固有の更新を動かす
 		UpdateGame(cameraData);
 	}
 	else {
-		// 停止中・一時停止中：エディタ時の更新（行列計算やカメラ）だけ動かす
 		UpdateEdit(cameraData);
 	}
+#else
+	// リリースビルド：エディタはないので、最初から常にゲーム本編を実行！
+	UpdateGame(cameraData);
+#endif
 }
 
 void BaseScene::UpdateEdit(CameraData* cameraData) {
