@@ -20,9 +20,10 @@
 void PlayerWeapon::Initialize() {
 	cooltime_ = 0.0f;
 	preTriggerR_ = 0.0f;
+	fireInterval_ = 0.15f;
 	harpoonSpeed_ = 120.0f;
 	harpoonHomingStrength_ = 0.02f;
-	harpoonMaxDistance_ = 18.0f;
+	harpoonMaxDistance_ = 80.0f;
 }
 
 void PlayerWeapon::Update(GameObject* gameObject, GameObject* reticleObject) {
@@ -46,10 +47,11 @@ void PlayerWeapon::Shoot(GameObject* gameObject, GameObject* reticleObject) {
 	if (!gameObject) return;
 	InputManager* input = InputManager::GetInstance();
 
-	bool isShootTriggered = input->GetRawInput()->TriggerMouse(0);
+	// マウス左クリック長押しで連射
+	bool isShootTriggered = input->GetRawInput()->PushMouse(0);
 	if (input->GetGamePad()->IsConection()) {
 		float triggerR = input->GetGamePad()->GetTrigger(LR::Right);
-		if (triggerR > 0.5f && preTriggerR_ <= 0.5f) {
+		if (triggerR > 0.5f) {
 			isShootTriggered = true;
 		}
 		preTriggerR_ = triggerR;
@@ -197,7 +199,7 @@ void PlayerWeapon::Shoot(GameObject* gameObject, GameObject* reticleObject) {
 		// シーンのオブジェクトリストに追加
 		context->gameObjects->push_back(std::move(bulletObj));
 		context->gameObjects->push_back(std::move(outlineObj));
-		cooltime_ = 0.25f;
+		cooltime_ = fireInterval_;
 	}
 }
 
@@ -205,7 +207,8 @@ void PlayerWeapon::ImGui() {
 #ifdef USEIMGUI
 	ImGui::Text("--- Harpoon Gun ---");
 	ImGui::DragFloat("Harpoon Speed", &harpoonSpeed_, 1.0f, 10.0f, 300.0f);
-	ImGui::DragFloat("Harpoon Max Distance (Range)", &harpoonMaxDistance_, 0.5f, 5.0f, 100.0f);
+	ImGui::DragFloat("Harpoon Max Distance (Range)", &harpoonMaxDistance_, 0.5f, 5.0f, 300.0f);
+	ImGui::DragFloat("Fire Interval", &fireInterval_, 0.01f, 0.05f, 1.0f);
 	ImGui::SliderFloat("Homing Strength", &harpoonHomingStrength_, 0.0f, 0.5f);
 #endif
 }
@@ -214,11 +217,13 @@ void PlayerWeapon::Serialize(json& j) const {
 	j["harpoonSpeed"] = harpoonSpeed_;
 	j["harpoonHomingStrength"] = harpoonHomingStrength_;
 	j["harpoonMaxDistance"] = harpoonMaxDistance_;
+	j["fireInterval"] = fireInterval_;
 }
 
 void PlayerWeapon::Deserialize(const json& j) {
 	if (j.contains("harpoonMaxDistance")) harpoonMaxDistance_ = j["harpoonMaxDistance"];
 	if (j.contains("harpoonSpeed")) harpoonSpeed_ = j["harpoonSpeed"];
+	if (j.contains("fireInterval")) fireInterval_ = j["fireInterval"];
 	if (j.contains("homingStrength")) {
 		harpoonHomingStrength_ = j["homingStrength"];
 	} else if (j.contains("harpoonHomingStrength")) {

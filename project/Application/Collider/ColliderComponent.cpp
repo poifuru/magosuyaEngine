@@ -111,15 +111,15 @@ void ColliderComponent::OnCollision(CollisionObject* other) {
 		}
 		else if (auto* bird = myObj->GetComponent<BirdEnemyComponent>()) {
 			alreadyDead = bird->IsDead();
-			bird->OnDead();
-			if (!alreadyDead) {
+			bird->TakeDamage(1);
+			if (bird->IsDead()) {
 				CollisionManager::GetInstance()->UnregisterObject(this);
 			}
 		}
 		else if (auto* fish = myObj->GetComponent<FishEnemyComponent>()) {
 			alreadyDead = fish->IsDead();
-			fish->OnDead();
-			if (!alreadyDead) {
+			fish->TakeDamage(1);
+			if (fish->IsDead()) {
 				CollisionManager::GetInstance()->UnregisterObject(this);
 			}
 		}

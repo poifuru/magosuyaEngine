@@ -2,9 +2,16 @@
 #include "PlayerHealth.h"
 #include "GameObject.h"
 #include "MeshRendererComponent.h"
+#include "SpriteComponent.h"
 #include "CameraOrganizer.h"
 #include "../../../../Engine/Editor/ParticleEditor/ParticleSpawner.h"
 #include <algorithm>
+
+PlayerHealth::~PlayerHealth() {
+	if (hpBorderObj_) hpBorderObj_->Destroy();
+	if (hpBgObj_) hpBgObj_->Destroy();
+	if (hpBarObj_) hpBarObj_->Destroy();
+}
 
 void PlayerHealth::Initialize() {
 	hp_ = 5;
@@ -12,10 +19,24 @@ void PlayerHealth::Initialize() {
 	invincibilityTimer_ = 0.0f;
 	invincibilityDuration_ = 1.5f;
 	isDead_ = false;
+
+	uiCreated_ = false;
+	hpBorderObj_ = nullptr;
+	hpBgObj_ = nullptr;
+	hpBarObj_ = nullptr;
 }
 
 void PlayerHealth::Update(GameObject* gameObject) {
 	if (!gameObject) return;
+
+	// UI生成（未生成または破棄されていた場合に安全に再生成）
+	if (!uiCreated_ || !hpBarObj_ || hpBarObj_->IsDead()) {
+		uiCreated_ = false;
+		CreateUI(gameObject);
+	}
+
+	// UIのサイズ・色を現在HPに合わせて更新
+	UpdateUI();
 
 	// 無敵タイマーと被弾点滅演出
 	if (invincibilityTimer_ > 0.0f) {
@@ -85,4 +106,90 @@ void PlayerHealth::Serialize(json& j) const {
 void PlayerHealth::Deserialize(const json& j) {
 	if (j.contains("hp")) hp_ = j["hp"];
 	if (j.contains("maxHp")) maxHp_ = j["maxHp"];
+}
+
+void PlayerHealth::CreateUI(GameObject* gameObject) {
+	if (!gameObject) return;
+	auto* context = gameObject->GetContext();
+	if (!context || !context->gameObjects) return;
+
+	// 外枠（黒〜ダークグレー）
+	auto borderObj = std::make_unique<GameObject>(context, "PlayerHP_Border");
+	auto* borderSprite = borderObj->AddComponent<SpriteComponent>();
+	borderSprite->SetTexture("Resources/human/white.png");
+	borderSprite->SetAnchorPoint({ 0.0f, 0.0f });
+	borderSprite->SetPosition({ 48.0f, 48.0f });
+	borderSprite->SetSize({ 244.0f, 26.0f });
+	borderSprite->SetColor({ 0.05f, 0.05f, 0.08f, 0.9f });
+	borderSprite->SetLayer(3);
+	borderObj->Initialize();
+	borderObj->SetSerializable(false);
+	hpBorderObj_ = borderObj.get();
+	context->gameObjects->push_back(std::move(borderObj));
+
+	// ゲージ背景（暗い赤系：減少したHPの下地）
+	auto bgObj = std::make_unique<GameObject>(context, "PlayerHP_BG");
+	auto* bgSprite = bgObj->AddComponent<SpriteComponent>();
+	bgSprite->SetTexture("Resources/human/white.png");
+	bgSprite->SetAnchorPoint({ 0.0f, 0.0f });
+	bgSprite->SetPosition({ 50.0f, 50.0f });
+	bgSprite->SetSize({ 240.0f, 22.0f });
+	bgSprite->SetColor({ 0.25f, 0.08f, 0.08f, 0.85f });
+	bgSprite->SetLayer(4);
+	bgObj->Initialize();
+	bgObj->SetSerializable(false);
+	hpBgObj_ = bgObj.get();
+	context->gameObjects->push_back(std::move(bgObj));
+
+	// HPゲージ本体（現在体力）
+	auto barObj = std::make_unique<GameObject>(context, "PlayerHP_Bar");
+	auto* barSprite = barObj->AddComponent<SpriteComponent>();
+	barSprite->SetTexture("Resources/human/white.png");
+	barSprite->SetAnchorPoint({ 0.0f, 0.0f });
+	barSprite->SetPosition({ 50.0f, 50.0f });
+	barSprite->SetSize({ 240.0f, 22.0f });
+	barSprite->SetColor({ 0.2f, 0.85f, 0.35f, 1.0f });
+	barSprite->SetLayer(5);
+	barObj->Initialize();
+	barObj->SetSerializable(false);
+	hpBarObj_ = barObj.get();
+	context->gameObjects->push_back(std::move(barObj));
+
+	uiCreated_ = true;
+}
+
+void PlayerHealth::UpdateUI() {
+	if (!hpBarObj_) return;
+
+	float ratio = 0.0f;
+	if (maxHp_ > 0) {
+		ratio = static_cast<float>(hp_) / static_cast<float>(maxHp_);
+		if (ratio < 0.0f) ratio = 0.0f;
+		if (ratio > 1.0f) ratio = 1.0f;
+	}
+
+	if (auto* barSprite = hpBarObj_->GetComponent<SpriteComponent>()) {
+		// HPゲージの長さを現在HP割合に合わせて伸縮
+		barSprite->SetSize({ 240.0f * ratio, 22.0f });
+
+		// 残りHPに応じて色を変化（緑 -> 黄 -> 赤）
+		Vector4 barColor;
+		if (ratio > 0.5f) {
+			barColor = { 0.2f, 0.85f, 0.35f, 1.0f }; // 安全（グリーン）
+		} else if (ratio > 0.25f) {
+			barColor = { 0.95f, 0.8f, 0.2f, 1.0f };  // 注意（イエロー）
+		} else {
+			barColor = { 0.95f, 0.25f, 0.25f, 1.0f }; // 危険（レッド）
+		}
+
+		// 被弾無敵中の点滅演出（白くピカピカ点滅させて被弾を直感的にアピール）
+		if (invincibilityTimer_ > 0.0f) {
+			bool flashWhite = (static_cast<int>(invincibilityTimer_ * 15.0f) % 2 == 0);
+			if (flashWhite) {
+				barColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+			}
+		}
+
+		barSprite->SetColor(barColor);
+	}
 }
