@@ -40,6 +40,11 @@ void BirdEnemyComponent::Initialize() {
 	speed_ = 1.5f;
 	angle_ = 0.0f;
 
+	hp_ = 2;
+	maxHp_ = 2;
+	invincibilityTimer_ = 0.0f;
+	invincibilityDuration_ = 0.15f;
+
 	formationIndex_ = 0;
 	totalBirds_ = 1;
 
@@ -55,6 +60,21 @@ void BirdEnemyComponent::Initialize() {
 
 void BirdEnemyComponent::Update() {
 	if (!gameObject_) return;
+
+	// 被弾無敵タイマー更新と赤色点滅
+	if (invincibilityTimer_ > 0.0f) {
+		invincibilityTimer_ -= Time::GetDeltaTime();
+		if (invincibilityTimer_ < 0.0f) invincibilityTimer_ = 0.0f;
+
+		bool flash = (static_cast<int>(invincibilityTimer_ * 15.0f) % 2 == 0);
+		if (auto* mesh = gameObject_->GetComponent<MeshRendererComponent>()) {
+			mesh->SetColor({ 1.0f, flash ? 0.2f : 1.0f, flash ? 0.2f : 1.0f, 1.0f });
+		}
+	} else if (!isDead_) {
+		if (auto* mesh = gameObject_->GetComponent<MeshRendererComponent>()) {
+			mesh->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+		}
+	}
 
 	// 死亡演出の更新
 	if (isDead_) {
@@ -293,11 +313,14 @@ void BirdEnemyComponent::ImGui() {
 	ImGui::DragFloat("Radius", &radius_, 0.1f, 0.0f, 100.0f);
 	ImGui::DragFloat("Detection Range (Territory)", &detectionRange_, 0.5f, 0.0f, 200.0f);
 	ImGui::DragFloat("Speed", &speed_, 0.05f, -10.0f, 10.0f);
+	ImGui::DragInt("HP", &hp_, 1, 0, maxHp_);
+	ImGui::DragInt("Max HP", &maxHp_, 1, 1, 50);
 	ImGui::Separator();
 	ImGui::DragFloat("Circle Duration", &circleDuration_, 0.1f, 0.0f, 20.0f);
 	ImGui::DragFloat("Dive Speed", &diveSpeed_, 0.5f, 0.0f, 100.0f);
 	ImGui::DragFloat("Ascent Speed", &ascentSpeed_, 0.5f, 0.0f, 100.0f);
 	ImGui::DragFloat("Base Height", &baseHeight_, 0.1f, 0.0f, 20.0f);
+	ImGui::DragInt("Energy Reward", &energyReward_, 1, 0, 100);
 	ImGui::DragFloat("Rotation Lerp Speed", &rotLerpSpeed_, 0.1f, 0.1f, 50.0f);
 
 	const char* stateStr = "Unknown";
@@ -314,6 +337,9 @@ void BirdEnemyComponent::Serialize(json& j) const {
 	j["radius"] = radius_;
 	j["speed"] = speed_;
 	j["angle"] = angle_;
+	j["hp"] = hp_;
+	j["maxHp"] = maxHp_;
+	j["energyReward"] = energyReward_;
 	j["circleDuration"] = circleDuration_;
 	j["diveSpeed"] = diveSpeed_;
 	j["ascentSpeed"] = ascentSpeed_;
@@ -329,11 +355,31 @@ void BirdEnemyComponent::Deserialize(const json& j) {
 	if (j.contains("radius")) radius_ = j["radius"];
 	if (j.contains("speed")) speed_ = j["speed"];
 	if (j.contains("angle")) angle_ = j["angle"];
+	if (j.contains("hp")) hp_ = j["hp"];
+	if (j.contains("maxHp")) maxHp_ = j["maxHp"];
+	if (j.contains("energyReward")) energyReward_ = j["energyReward"];
 	if (j.contains("circleDuration")) circleDuration_ = j["circleDuration"];
 	if (j.contains("diveSpeed")) diveSpeed_ = j["diveSpeed"];
 	if (j.contains("ascentSpeed")) ascentSpeed_ = j["ascentSpeed"];
 	if (j.contains("baseHeight")) baseHeight_ = j["baseHeight"];
 	if (j.contains("rotLerpSpeed")) rotLerpSpeed_ = j["rotLerpSpeed"];
+}
+
+void BirdEnemyComponent::TakeDamage(int damage) {
+	if (isDead_ || invincibilityTimer_ > 0.0f) return;
+
+	hp_ -= damage;
+	invincibilityTimer_ = invincibilityDuration_;
+
+	// 被弾エフェクト
+	if (gameObject_) {
+		ParticleSpawner::SpawnExplosion(gameObject_->GetContext(), gameObject_->GetTransform().translate, 6);
+	}
+
+	if (hp_ <= 0) {
+		hp_ = 0;
+		OnDead();
+	}
 }
 
 void BirdEnemyComponent::OnDead() {
@@ -347,12 +393,14 @@ void BirdEnemyComponent::OnDead() {
 		// 被弾位置に爆発パーティクルを生成
 		ParticleSpawner::SpawnExplosion(gameObject_->GetContext(), gameObject_->GetTransform().translate, 15);
 
-		// GameDirectorへの撃破通知
+		// プレイヤーへの電力還元とGameDirectorへの撃破通知
 		if (gameObject_->GetContext() && gameObject_->GetContext()->activeGameObjects) {
 			for (auto& obj : *(gameObject_->GetContext()->activeGameObjects)) {
+				if (auto* playerComp = obj->GetComponent<PlayerComponent>()) {
+					playerComp->Heal(energyReward_);
+				}
 				if (auto* director = obj->GetComponent<GameDirectorComponent>()) {
 					director->NotifyEnemyDead();
-					break;
 				}
 			}
 		}

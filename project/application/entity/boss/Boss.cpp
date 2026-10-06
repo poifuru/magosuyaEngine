@@ -161,6 +161,15 @@ void BossComponent::OnDead() {
 	isDead_ = true;
 	deathTimer_ = 0.0f;
 
+	// プレイヤーへの電力還元
+	if (gameObject_ && gameObject_->GetContext() && gameObject_->GetContext()->activeGameObjects) {
+		for (auto& obj : *(gameObject_->GetContext()->activeGameObjects)) {
+			if (auto* playerComp = obj->GetComponent<PlayerComponent>()) {
+				playerComp->Heal(energyReward_);
+			}
+		}
+	}
+
 	// 巨大爆発エフェクトと強シェイク
 	if (gameObject_ && gameObject_->GetContext()) {
 		ParticleSpawner::SpawnExplosion(gameObject_->GetContext(), gameObject_->GetTransform().translate, 30);
@@ -173,6 +182,7 @@ void BossComponent::ImGui() {
 	ImGui::Text("--- Boss Status ---");
 	ImGui::DragInt("HP", &hp_, 1, 0, maxHp_);
 	ImGui::DragInt("Max HP", &maxHp_, 1, 1, 1000);
+	ImGui::DragInt("Energy Reward", &energyReward_, 1, 0, 500);
 
 	float hpRatio = maxHp_ > 0 ? static_cast<float>(hp_) / static_cast<float>(maxHp_) : 0.0f;
 	char hpBuf[32];
@@ -196,6 +206,7 @@ void BossComponent::Serialize(json& j) const {
 	j["type"] = "BossComponent";
 	j["hp"] = hp_;
 	j["maxHp"] = maxHp_;
+	j["energyReward"] = energyReward_;
 	j["moveSpeed"] = moveSpeed_;
 	j["turnSpeed"] = turnSpeed_;
 	j["targetDistance"] = targetDistance_;
@@ -205,6 +216,7 @@ void BossComponent::Deserialize(const json& j) {
 	isInitialized_ = true;
 	if (j.contains("hp")) hp_ = j["hp"];
 	if (j.contains("maxHp")) maxHp_ = j["maxHp"];
+	if (j.contains("energyReward")) energyReward_ = j["energyReward"];
 	if (j.contains("moveSpeed")) moveSpeed_ = j["moveSpeed"];
 	if (j.contains("turnSpeed")) turnSpeed_ = j["turnSpeed"];
 	if (j.contains("targetDistance")) targetDistance_ = j["targetDistance"];

@@ -158,9 +158,9 @@ void NumberDrawerComponent::UpdateModels() {
 		}
 	}
 
-	// 画面サイズの取得
-	float screenWidth = static_cast<float>(WindowsAPI::GetInstance()->GetWindowWidth());
-	float screenHeight = static_cast<float>(WindowsAPI::GetInstance()->GetWindowHeight());
+	// 画面サイズ（レンダーターゲット基準: 1280x720）
+	float screenWidth = 1280.0f;
+	float screenHeight = 720.0f;
 	Matrix4x4 projection = Math::MakeOrthographicMatrix(0.0f, 0.0f, screenWidth, screenHeight, -1.0f, 100.0f);
 
 	// 全体の幅の計算

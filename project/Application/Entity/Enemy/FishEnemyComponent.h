@@ -21,10 +21,26 @@ public:
 	const char* GetName() const override { return "FishEnemyComponent"; }
 
 public:
+	// 被弾処理・ステータス
+	void TakeDamage(int damage);
 	void OnDead();
 	bool IsDead() const { return isDead_; }
 
+	int GetHp() const { return hp_; }
+	int GetMaxHp() const { return maxHp_; }
+	void SetHp(int hp) { hp_ = hp; }
+	void SetMaxHp(int maxHp) { maxHp_ = maxHp; }
+
+	int GetEnergyReward() const { return energyReward_; }
+	void SetEnergyReward(int reward) { energyReward_ = reward; }
+
 private:
+	int hp_ = 3;                  // 体力（弾3発で撃破）
+	int maxHp_ = 3;               // 最大体力
+	int energyReward_ = 15;       // 撃破時にプレイヤーに還元される電力
+	float invincibilityTimer_ = 0.0f;     // 被弾後の無敵・点滅タイマー
+	float invincibilityDuration_ = 0.15f; // 無敵時間
+
 	Vector3 startPos_{};      // 往復の開始地点
 	float moveRange_ = 10.0f; // 往復する範囲
 	float speed_ = 5.0f;      // 移動スピード

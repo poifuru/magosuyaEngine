@@ -23,6 +23,12 @@ public:
 	bool IsUnderwater() const { return isUnderwater_; }
 	void SetUnderwater(bool flag) { isUnderwater_ = flag; }
 
+	float GetMouseSensitivity() const { return mouseSensitivity_; }
+	void SetMouseSensitivity(float s) { mouseSensitivity_ = s; }
+
+	float GetPadSensitivity() const { return padSensitivity_; }
+	void SetPadSensitivity(float s) { padSensitivity_ = s; }
+
 private:
 	void UpdateTargetVisibility();
 
@@ -41,6 +47,10 @@ private:
 	// カメラの回転角
 	float angleX_ = 0.2f; // 上下回転（Pitch: 最初は少し見下ろす角度にする）
 	float angleY_ = 0.0f; // 左右回転（Yaw）
+
+	// カメラの回転感度
+	float mouseSensitivity_ = 0.0010f; // マウス感度（旧0.003fから半減）
+	float padSensitivity_ = 0.010f;    // パッド感度（旧0.03fから半減）
 
 	// 水中フェーズフラグ
 	bool isUnderwater_ = false;

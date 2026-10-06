@@ -35,6 +35,11 @@ void FishEnemyComponent::Initialize() {
 		waterSurfaceY_ = startPos_.y; // 初期配置の高さを水面とする
 	}
 
+	hp_ = 3;
+	maxHp_ = 3;
+	invincibilityTimer_ = 0.0f;
+	invincibilityDuration_ = 0.15f;
+
 	moveRange_ = 10.0f;
 	speed_ = 5.0f;
 	direction_ = 1.0f;
@@ -51,6 +56,21 @@ void FishEnemyComponent::Initialize() {
 
 void FishEnemyComponent::Update() {
 	if (!gameObject_) return;
+
+	// 被弾無敵タイマー更新と赤色点滅
+	if (invincibilityTimer_ > 0.0f) {
+		invincibilityTimer_ -= Time::GetDeltaTime();
+		if (invincibilityTimer_ < 0.0f) invincibilityTimer_ = 0.0f;
+
+		bool flash = (static_cast<int>(invincibilityTimer_ * 15.0f) % 2 == 0);
+		if (auto* mesh = gameObject_->GetComponent<MeshRendererComponent>()) {
+			mesh->SetColor({ 1.0f, flash ? 0.3f : 1.0f, flash ? 0.3f : 1.0f, 1.0f });
+		}
+	} else if (!isDead_) {
+		if (auto* mesh = gameObject_->GetComponent<MeshRendererComponent>()) {
+			mesh->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+		}
+	}
 
 	// 死亡演出の更新
 	if (isDead_) {
@@ -209,12 +229,15 @@ void FishEnemyComponent::ImGui() {
 	ImGui::DragFloat3("Start Pos", &startPos_.x, 0.1f);
 	ImGui::DragFloat("Move Range", &moveRange_, 0.1f, 0.0f, 100.0f);
 	ImGui::DragFloat("Speed", &speed_, 0.1f, 0.0f, 50.0f);
+	ImGui::DragInt("HP", &hp_, 1, 0, maxHp_);
+	ImGui::DragInt("Max HP", &maxHp_, 1, 1, 50);
 	ImGui::Separator();
 	ImGui::DragFloat("Submerge Duration", &submergeDuration_, 0.1f, 0.0f, 20.0f);
 	ImGui::DragFloat("Jump Power Y", &jumpPowerY_, 0.5f, 0.0f, 100.0f);
 	ImGui::DragFloat("Jump Power XZ (Default)", &jumpPowerXZ_, 0.5f, 0.0f, 100.0f);
 	ImGui::DragFloat("Gravity", &gravity_, 0.5f, -100.0f, 0.0f);
 	ImGui::DragFloat("Water Surface Y", &waterSurfaceY_, 0.1f, -50.0f, 50.0f);
+	ImGui::DragInt("Energy Reward", &energyReward_, 1, 0, 100);
 	ImGui::DragFloat("Rotation Lerp Speed", &rotLerpSpeed_, 0.1f, 0.1f, 50.0f);
 
 	const char* stateStr = "Unknown";
@@ -229,6 +252,9 @@ void FishEnemyComponent::Serialize(json& j) const {
 	j["moveRange"] = moveRange_;
 	j["speed"] = speed_;
 	j["direction"] = direction_;
+	j["hp"] = hp_;
+	j["maxHp"] = maxHp_;
+	j["energyReward"] = energyReward_;
 	j["submergeDuration"] = submergeDuration_;
 	j["jumpPowerY"] = jumpPowerY_;
 	j["jumpPowerXZ"] = jumpPowerXZ_;
@@ -245,12 +271,32 @@ void FishEnemyComponent::Deserialize(const json& j) {
 	if (j.contains("moveRange")) moveRange_ = j["moveRange"];
 	if (j.contains("speed")) speed_ = j["speed"];
 	if (j.contains("direction")) direction_ = j["direction"];
+	if (j.contains("hp")) hp_ = j["hp"];
+	if (j.contains("maxHp")) maxHp_ = j["maxHp"];
+	if (j.contains("energyReward")) energyReward_ = j["energyReward"];
 	if (j.contains("submergeDuration")) submergeDuration_ = j["submergeDuration"];
 	if (j.contains("jumpPowerY")) jumpPowerY_ = j["jumpPowerY"];
 	if (j.contains("jumpPowerXZ")) jumpPowerXZ_ = j["jumpPowerXZ"];
 	if (j.contains("gravity")) gravity_ = j["gravity"];
 	if (j.contains("waterSurfaceY")) waterSurfaceY_ = j["waterSurfaceY"];
 	if (j.contains("rotLerpSpeed")) rotLerpSpeed_ = j["rotLerpSpeed"];
+}
+
+void FishEnemyComponent::TakeDamage(int damage) {
+	if (isDead_ || invincibilityTimer_ > 0.0f) return;
+
+	hp_ -= damage;
+	invincibilityTimer_ = invincibilityDuration_;
+
+	// 被弾エフェクト
+	if (gameObject_) {
+		ParticleSpawner::SpawnExplosion(gameObject_->GetContext(), gameObject_->GetTransform().translate, 6);
+	}
+
+	if (hp_ <= 0) {
+		hp_ = 0;
+		OnDead();
+	}
 }
 
 void FishEnemyComponent::OnDead() {
@@ -263,12 +309,14 @@ void FishEnemyComponent::OnDead() {
 		// 被弾位置に爆発パーティクルを生成
 		ParticleSpawner::SpawnExplosion(gameObject_->GetContext(), gameObject_->GetTransform().translate, 15);
 
-		// GameDirectorへの撃破通知
+		// プレイヤーへの電力還元とGameDirectorへの撃破通知
 		if (gameObject_->GetContext() && gameObject_->GetContext()->activeGameObjects) {
 			for (auto& obj : *(gameObject_->GetContext()->activeGameObjects)) {
+				if (auto* playerComp = obj->GetComponent<PlayerComponent>()) {
+					playerComp->Heal(energyReward_);
+				}
 				if (auto* director = obj->GetComponent<GameDirectorComponent>()) {
 					director->NotifyEnemyDead();
-					break;
 				}
 			}
 		}

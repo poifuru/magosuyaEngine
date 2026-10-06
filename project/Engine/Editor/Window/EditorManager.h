@@ -93,6 +93,10 @@ public:
 	bool IsPaused()  const { return playState_ == EditorPlayState::Pause; }
 	bool IsEditing() const { return playState_ == EditorPlayState::Edit; }
 
+	// ゲーム内一時停止状態のアクセサ
+	void SetGamePaused(bool paused) { isGamePaused_ = paused; }
+	bool IsGamePaused() const { return isGamePaused_; }
+
 	// 再生・一時停止・停止コマンド
 	void Play();
 	void Pause();
@@ -121,6 +125,7 @@ private:
 
 	// 稼働状態
 	EditorPlayState playState_ = EditorPlayState::Edit;
+	bool isGamePaused_ = false;
 
 	// シーン再生直前の状態を保存するメモリ
 	json sceneSnapshot_;

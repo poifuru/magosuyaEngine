@@ -50,18 +50,16 @@ void VirtualFollowCamera::Update() {
 		float mouseDeltaX = static_cast<float>(input->GetRawInput()->GetMouseDeltaX());
 		float mouseDeltaY = static_cast<float>(input->GetRawInput()->GetMouseDeltaY());
 		if (mouseDeltaX != 0.0f || mouseDeltaY != 0.0f) {
-			float sensitivity = 0.003f; // マウス感度
-			angleY_ += mouseDeltaX * sensitivity;
-			angleX_ += mouseDeltaY * sensitivity;
+			angleY_ += mouseDeltaX * mouseSensitivity_;
+			angleX_ += mouseDeltaY * mouseSensitivity_;
 		}
 
 		// ゲームパッドの右スティックでカメラの角度を更新する
 		if (input->GetGamePad()->IsConection()) {
 			Vector2 rStick = input->GetGamePad()->GetStick(LR::Right);
 			if (rStick.x != 0.0f || rStick.y != 0.0f) {
-				float padSensitivity = 0.03f; // パッド回転感度
-				angleY_ += rStick.x * padSensitivity;
-				angleX_ -= rStick.y * padSensitivity; // 上下ノーマル操作（引いて上、倒して下）
+				angleY_ += rStick.x * padSensitivity_;
+				angleX_ -= rStick.y * padSensitivity_; // 上下ノーマル操作（引いて上、倒して下）
 			}
 		}
 
@@ -149,6 +147,8 @@ void VirtualFollowCamera::ImGui() {
 	ImGui::DragFloat3("Offset", &offset_.x, 0.1f);
 	ImGui::DragFloat("Target Center Y Offset", &targetOffsetY_, 0.1f, 0.0f, 15.0f);
 	ImGui::SliderFloat("Delay", &delay_, 0.0f, 1.0f);
+	ImGui::DragFloat("Mouse Sensitivity", &mouseSensitivity_, 0.0001f, 0.0001f, 0.05f, "%.4f");
+	ImGui::DragFloat("Pad Sensitivity", &padSensitivity_, 0.001f, 0.001f, 0.2f, "%.3f");
 }
 
 void VirtualFollowCamera::Serialize(json& j) const {
@@ -163,6 +163,8 @@ void VirtualFollowCamera::Serialize(json& j) const {
 	j["isFirstPerson"] = isFirstPerson_;
 	j["firstPersonOffset"] = { firstPersonOffset_.x, firstPersonOffset_.y, firstPersonOffset_.z };
 	j["isUnderwater"] = isUnderwater_;
+	j["mouseSensitivity"] = mouseSensitivity_;
+	j["padSensitivity"] = padSensitivity_;
 }
 
 void VirtualFollowCamera::Deserialize(const json& j) {
@@ -183,6 +185,12 @@ void VirtualFollowCamera::Deserialize(const json& j) {
 	}
 	if (j.contains("isUnderwater")) {
 		isUnderwater_ = j["isUnderwater"];
+	}
+	if (j.contains("mouseSensitivity")) {
+		mouseSensitivity_ = j["mouseSensitivity"];
+	}
+	if (j.contains("padSensitivity")) {
+		padSensitivity_ = j["padSensitivity"];
 	}
 	UpdateTargetVisibility();
 }
