@@ -207,7 +207,7 @@ void PlayerWeapon::Shoot(GameObject* gameObject, GameObject* reticleObject, Play
 			}
 		}
 
-		// 開始位置を設定（Canon ノードの最新ワールド位置）
+		// 開始位置を設定（左右砲身ノード Canon_L / Canon_R の最新ワールド位置から交互に発射）
 		Vector3 bulletSpawnPos = {
 			gameObject->GetTransform().translate.x,
 			gameObject->GetTransform().translate.y + 0.25f,
@@ -216,17 +216,36 @@ void PlayerWeapon::Shoot(GameObject* gameObject, GameObject* reticleObject, Play
 
 		if (auto* meshRendererComp = gameObject->GetComponent<MeshRendererComponent>()) {
 			if (auto* model = meshRendererComp->GetModel()) {
-				if (auto* canonNode = model->FindNode("Canon")) {
-					Matrix4x4 playerWorld = Math::MakeAffineMatrix(
-						gameObject->GetTransform().scale,
-						gameObject->GetTransform().rotate,
-						gameObject->GetTransform().translate
-					);
+				// 左右どちらの砲身を使うか選択
+				const char* targetCanonName = (shootSide_ == 0) ? "Canon_L" : "Canon_R";
+				auto* canonNode = model->FindNode(targetCanonName);
+				if (!canonNode) {
+					canonNode = (shootSide_ == 0) ? model->FindNode("Canon") : model->FindNode("Canon.001");
+				}
+				if (!canonNode) {
+					canonNode = model->FindNode("Canon");
+				}
+
+				Matrix4x4 playerWorld = Math::MakeAffineMatrix(
+					gameObject->GetTransform().scale,
+					gameObject->GetTransform().rotate,
+					gameObject->GetTransform().translate
+				);
+
+				if (canonNode) {
 					Matrix4x4 canonWorld = canonNode->localMatrix * playerWorld;
 					bulletSpawnPos = { canonWorld.m[3][0], canonWorld.m[3][1], canonWorld.m[3][2] };
+				} else {
+					// ノードが見当たらない場合のフォールバック（左右オフセット ±1.05m、前方 +1.8m、高さ -0.2m）
+					float sideOffset = (shootSide_ == 0) ? -1.05f : 1.05f;
+					Vector3 localOffset = { sideOffset, -0.2f, 1.8f };
+					bulletSpawnPos = Math::Transform(localOffset, playerWorld);
 				}
 			}
 		}
+
+		// 次回発射用に左右を交互に切り替え（0: 左 ↔ 1: 右）
+		shootSide_ = 1 - shootSide_;
 
 		bulletObj->GetTransform().translate = bulletSpawnPos;
 

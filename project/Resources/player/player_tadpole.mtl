@@ -1,0 +1,45 @@
+newmtl Mat_Sub_Hull
+Ka 0.25 0.25 0.25
+Kd 0.95 0.95 0.95
+Ks 0.6 0.6 0.6
+Ns 45.0
+d 1.0
+illum 2
+map_Kd player_tadpole.png
+
+newmtl Mat_Sub_Interior
+Ka 0.25 0.25 0.25
+Kd 0.95 0.95 0.95
+Ks 0.6 0.6 0.6
+Ns 45.0
+d 1.0
+illum 2
+map_Kd player_tadpole.png
+
+newmtl Mat_Sub_Canopy
+Ka 0.25 0.25 0.25
+Kd 0.95 0.95 0.95
+Ks 0.6 0.6 0.6
+Ns 45.0
+d 1.0
+illum 2
+map_Kd player_tadpole.png
+
+newmtl Mat_Sub_Cannons
+Ka 0.25 0.25 0.25
+Kd 0.95 0.95 0.95
+Ks 0.6 0.6 0.6
+Ns 45.0
+d 1.0
+illum 2
+map_Kd player_tadpole.png
+
+newmtl Mat_Sub_Thrusters
+Ka 0.25 0.25 0.25
+Kd 0.95 0.95 0.95
+Ks 0.6 0.6 0.6
+Ns 45.0
+d 1.0
+illum 2
+map_Kd player_tadpole.png
+
