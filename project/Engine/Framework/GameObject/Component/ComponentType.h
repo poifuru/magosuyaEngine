@@ -17,3 +17,5 @@
 #include "WaterSurfaceComponent.h"
 #include "BoatWakeComponent.h"
 #include "TextDrawerComponent.h"
+#include "FloatingCrateComponent.h"
+#include "EnergyItemComponent.h"
