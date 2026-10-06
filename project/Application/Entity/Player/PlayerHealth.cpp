@@ -20,6 +20,10 @@ void PlayerHealth::Initialize() {
 	invincibilityDuration_ = 1.5f;
 	isDead_ = false;
 
+	enableDrain_ = true;
+	drainInterval_ = 3.0f;
+	drainTimer_ = 0.0f;
+
 	uiCreated_ = false;
 	hpBorderObj_ = nullptr;
 	hpBgObj_ = nullptr;
@@ -28,6 +32,20 @@ void PlayerHealth::Initialize() {
 
 void PlayerHealth::Update(GameObject* gameObject) {
 	if (!gameObject) return;
+
+	// 潜水艦の維持電力：時間経過による自然消費
+	if (!isDead_ && enableDrain_) {
+		float interval = (drainInterval_ > 0.1f) ? drainInterval_ : 0.1f;
+		drainTimer_ += Time::GetDeltaTime();
+		if (drainTimer_ >= interval) {
+			drainTimer_ -= interval;
+			hp_ -= 1;
+			if (hp_ <= 0) {
+				hp_ = 0;
+				isDead_ = true;
+			}
+		}
+	}
 
 	// UI生成（未生成または破棄されていた場合に安全に再生成）
 	if (!uiCreated_ || !hpBarObj_ || hpBarObj_->IsDead()) {
@@ -108,17 +126,26 @@ void PlayerHealth::ImGui() {
 		}
 	}
 	ImGui::DragFloat("Invincibility Duration", &invincibilityDuration_, 0.1f, 0.0f, 10.0f);
+
+	ImGui::Separator();
+	ImGui::Text("--- Power Drain Settings ---");
+	ImGui::Checkbox("Enable Passive Drain", &enableDrain_);
+	ImGui::DragFloat("Drain Interval (sec)", &drainInterval_, 0.1f, 0.1f, 10.0f);
 #endif
 }
 
 void PlayerHealth::Serialize(json& j) const {
 	j["hp"] = hp_;
 	j["maxHp"] = maxHp_;
+	j["enableDrain"] = enableDrain_;
+	j["drainInterval"] = drainInterval_;
 }
 
 void PlayerHealth::Deserialize(const json& j) {
 	if (j.contains("hp")) hp_ = j["hp"];
 	if (j.contains("maxHp")) maxHp_ = j["maxHp"];
+	if (j.contains("enableDrain")) enableDrain_ = j["enableDrain"];
+	if (j.contains("drainInterval")) drainInterval_ = j["drainInterval"];
 	// 旧セーブデータや未調整値（maxHp < 100）の場合はデフォルトの100に底上げ補正
 	if (maxHp_ < 100) {
 		maxHp_ = 100;

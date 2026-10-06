@@ -31,10 +31,14 @@ public:
 	void SetHp(int hp) { hp_ = hp; }
 	void SetMaxHp(int maxHp) { maxHp_ = maxHp; }
 
+	int GetEnergyReward() const { return energyReward_; }
+	void SetEnergyReward(int reward) { energyReward_ = reward; }
+
 private:
 	// ステータス
 	int hp_ = 50;
 	int maxHp_ = 50;
+	int energyReward_ = 50; // ボス撃破時の電力還元
 	bool isDead_ = false;
 
 	float invincibilityTimer_ = 0.0f;

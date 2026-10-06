@@ -237,6 +237,7 @@ void FishEnemyComponent::ImGui() {
 	ImGui::DragFloat("Jump Power XZ (Default)", &jumpPowerXZ_, 0.5f, 0.0f, 100.0f);
 	ImGui::DragFloat("Gravity", &gravity_, 0.5f, -100.0f, 0.0f);
 	ImGui::DragFloat("Water Surface Y", &waterSurfaceY_, 0.1f, -50.0f, 50.0f);
+	ImGui::DragInt("Energy Reward", &energyReward_, 1, 0, 100);
 	ImGui::DragFloat("Rotation Lerp Speed", &rotLerpSpeed_, 0.1f, 0.1f, 50.0f);
 
 	const char* stateStr = "Unknown";
@@ -253,6 +254,7 @@ void FishEnemyComponent::Serialize(json& j) const {
 	j["direction"] = direction_;
 	j["hp"] = hp_;
 	j["maxHp"] = maxHp_;
+	j["energyReward"] = energyReward_;
 	j["submergeDuration"] = submergeDuration_;
 	j["jumpPowerY"] = jumpPowerY_;
 	j["jumpPowerXZ"] = jumpPowerXZ_;
@@ -271,6 +273,7 @@ void FishEnemyComponent::Deserialize(const json& j) {
 	if (j.contains("direction")) direction_ = j["direction"];
 	if (j.contains("hp")) hp_ = j["hp"];
 	if (j.contains("maxHp")) maxHp_ = j["maxHp"];
+	if (j.contains("energyReward")) energyReward_ = j["energyReward"];
 	if (j.contains("submergeDuration")) submergeDuration_ = j["submergeDuration"];
 	if (j.contains("jumpPowerY")) jumpPowerY_ = j["jumpPowerY"];
 	if (j.contains("jumpPowerXZ")) jumpPowerXZ_ = j["jumpPowerXZ"];
@@ -306,12 +309,14 @@ void FishEnemyComponent::OnDead() {
 		// 被弾位置に爆発パーティクルを生成
 		ParticleSpawner::SpawnExplosion(gameObject_->GetContext(), gameObject_->GetTransform().translate, 15);
 
-		// GameDirectorへの撃破通知
+		// プレイヤーへの電力還元とGameDirectorへの撃破通知
 		if (gameObject_->GetContext() && gameObject_->GetContext()->activeGameObjects) {
 			for (auto& obj : *(gameObject_->GetContext()->activeGameObjects)) {
+				if (auto* playerComp = obj->GetComponent<PlayerComponent>()) {
+					playerComp->Heal(energyReward_);
+				}
 				if (auto* director = obj->GetComponent<GameDirectorComponent>()) {
 					director->NotifyEnemyDead();
-					break;
 				}
 			}
 		}

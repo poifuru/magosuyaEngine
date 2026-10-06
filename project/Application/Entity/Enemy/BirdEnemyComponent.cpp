@@ -320,6 +320,7 @@ void BirdEnemyComponent::ImGui() {
 	ImGui::DragFloat("Dive Speed", &diveSpeed_, 0.5f, 0.0f, 100.0f);
 	ImGui::DragFloat("Ascent Speed", &ascentSpeed_, 0.5f, 0.0f, 100.0f);
 	ImGui::DragFloat("Base Height", &baseHeight_, 0.1f, 0.0f, 20.0f);
+	ImGui::DragInt("Energy Reward", &energyReward_, 1, 0, 100);
 	ImGui::DragFloat("Rotation Lerp Speed", &rotLerpSpeed_, 0.1f, 0.1f, 50.0f);
 
 	const char* stateStr = "Unknown";
@@ -338,6 +339,7 @@ void BirdEnemyComponent::Serialize(json& j) const {
 	j["angle"] = angle_;
 	j["hp"] = hp_;
 	j["maxHp"] = maxHp_;
+	j["energyReward"] = energyReward_;
 	j["circleDuration"] = circleDuration_;
 	j["diveSpeed"] = diveSpeed_;
 	j["ascentSpeed"] = ascentSpeed_;
@@ -355,6 +357,7 @@ void BirdEnemyComponent::Deserialize(const json& j) {
 	if (j.contains("angle")) angle_ = j["angle"];
 	if (j.contains("hp")) hp_ = j["hp"];
 	if (j.contains("maxHp")) maxHp_ = j["maxHp"];
+	if (j.contains("energyReward")) energyReward_ = j["energyReward"];
 	if (j.contains("circleDuration")) circleDuration_ = j["circleDuration"];
 	if (j.contains("diveSpeed")) diveSpeed_ = j["diveSpeed"];
 	if (j.contains("ascentSpeed")) ascentSpeed_ = j["ascentSpeed"];
@@ -390,12 +393,14 @@ void BirdEnemyComponent::OnDead() {
 		// 被弾位置に爆発パーティクルを生成
 		ParticleSpawner::SpawnExplosion(gameObject_->GetContext(), gameObject_->GetTransform().translate, 15);
 
-		// GameDirectorへの撃破通知
+		// プレイヤーへの電力還元とGameDirectorへの撃破通知
 		if (gameObject_->GetContext() && gameObject_->GetContext()->activeGameObjects) {
 			for (auto& obj : *(gameObject_->GetContext()->activeGameObjects)) {
+				if (auto* playerComp = obj->GetComponent<PlayerComponent>()) {
+					playerComp->Heal(energyReward_);
+				}
 				if (auto* director = obj->GetComponent<GameDirectorComponent>()) {
 					director->NotifyEnemyDead();
-					break;
 				}
 			}
 		}

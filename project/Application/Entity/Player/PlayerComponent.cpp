@@ -62,6 +62,12 @@ void PlayerComponent::TakeDamage(int damage) {
 	}
 }
 
+void PlayerComponent::Heal(int amount) {
+	if (health_) {
+		health_->Heal(amount);
+	}
+}
+
 int PlayerComponent::GetHp() const {
 	return health_ ? health_->GetHp() : 0;
 }

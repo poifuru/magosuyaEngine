@@ -23,10 +23,15 @@ public:
 	void Serialize(json& j) const;
 	void Deserialize(const json& j);
 
-	// ゲッター
+	// ゲッター・セッター
 	int GetHp() const { return hp_; }
 	int GetMaxHp() const { return maxHp_; }
 	bool IsDead() const { return isDead_; }
+
+	void SetEnableDrain(bool enable) { enableDrain_ = enable; }
+	bool IsDrainEnabled() const { return enableDrain_; }
+	void SetDrainInterval(float interval) { drainInterval_ = interval; }
+	float GetDrainInterval() const { return drainInterval_; }
 
 private:
 	void CreateUI(GameObject* gameObject);
@@ -38,6 +43,11 @@ private:
 	float invincibilityTimer_ = 0.0f;
 	float invincibilityDuration_ = 1.5f;
 	bool isDead_ = false;
+
+	// 自然消費（潜水艦の維持電力）
+	bool enableDrain_ = true;
+	float drainInterval_ = 3.0f; // 何秒に1電力を消費するか（デフォルト3秒）
+	float drainTimer_ = 0.0f;
 
 	// UI用オブジェクト（外枠・背景・HPバー本体）
 	GameObject* hpBorderObj_ = nullptr;

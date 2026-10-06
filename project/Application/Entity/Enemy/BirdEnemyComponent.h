@@ -43,9 +43,13 @@ public:
 	void SetHp(int hp) { hp_ = hp; }
 	void SetMaxHp(int maxHp) { maxHp_ = maxHp; }
 
+	int GetEnergyReward() const { return energyReward_; }
+	void SetEnergyReward(int reward) { energyReward_ = reward; }
+
 private:
 	int hp_ = 2;                  // 体力（鳥は2発で撃破）
 	int maxHp_ = 2;               // 最大体力
+	int energyReward_ = 15;       // 撃破時にプレイヤーに還元される電力
 	float invincibilityTimer_ = 0.0f;     // 被弾後の無敵・点滅タイマー
 	float invincibilityDuration_ = 0.15f; // 無敵時間
 

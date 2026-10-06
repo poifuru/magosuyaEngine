@@ -31,6 +31,7 @@ public:
 
 	// ダメージ処理・ステータス
 	void TakeDamage(int damage);
+	void Heal(int amount);
 	int GetHp() const;
 	int GetMaxHp() const;
 	bool IsDead() const;

@@ -131,7 +131,7 @@ void EnemyManagerComponent::SpawnEnemy() {
 		mesh->SetModel("Resources/Enemy/smallFish/smallFish.obj");
 		mesh->SetTexture("white1x1");
 		// スケール
-		enemyObj->GetTransform().scale = { 1.0f, 1.0f, 1.0f };
+		enemyObj->GetTransform().scale = { fishScale_, fishScale_, fishScale_ };
 		// 挙動とコライダーを追加
 		enemyObj->AddComponent<FishEnemyComponent>();
 		auto* collider = enemyObj->AddComponent<ColliderComponent>();
@@ -140,7 +140,7 @@ void EnemyManagerComponent::SpawnEnemy() {
 		// コンポーネントをすべて追加した後に初期化を呼ぶ
 		enemyObj->Initialize();
 		// 初期化完了後にコライダーの半径を設定
-		collider->SetRadius(1.0f);
+		collider->SetRadius(fishColliderRadius_);
 	}
 	// 動的生成なのでセーブ対象外に
 	enemyObj->SetSerializable(false);
@@ -157,6 +157,8 @@ void EnemyManagerComponent::ImGui() {
 	ImGui::DragInt("Max Enemies", &maxEnemies_, 1, 1, 100);
 	ImGui::DragFloat("Spawn Interval", &spawnInterval_, 0.1f, 0.5f, 60.0f);
 	ImGui::DragFloat("Spawn Radius", &spawnRadius_, 0.5f, 5.0f, 100.0f);
+	ImGui::DragFloat("Fish Scale", &fishScale_, 0.1f, 0.5f, 10.0f);
+	ImGui::DragFloat("Fish Collider Radius", &fishColliderRadius_, 0.1f, 0.5f, 10.0f);
 
 	// 現在の生存敵数を計算して表示
 	int currentEnemyCount = 0;
@@ -176,6 +178,8 @@ void EnemyManagerComponent::Serialize(json& j) const {
 	j["spawnInterval"] = spawnInterval_;
 	j["spawnRadius"] = spawnRadius_;
 	j["isSpawningEnabled"] = isSpawningEnabled_;
+	j["fishScale"] = fishScale_;
+	j["fishColliderRadius"] = fishColliderRadius_;
 }
 
 void EnemyManagerComponent::Deserialize(const json& j) {
@@ -184,4 +188,6 @@ void EnemyManagerComponent::Deserialize(const json& j) {
 	if (j.contains("spawnInterval")) spawnInterval_ = j["spawnInterval"];
 	if (j.contains("spawnRadius")) spawnRadius_ = j["spawnRadius"];
 	if (j.contains("isSpawningEnabled")) isSpawningEnabled_ = j["isSpawningEnabled"];
+	if (j.contains("fishScale")) fishScale_ = j["fishScale"];
+	if (j.contains("fishColliderRadius")) fishColliderRadius_ = j["fishColliderRadius"];
 }
