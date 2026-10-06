@@ -154,14 +154,14 @@ void GameDirectorComponent::OnTargetKillsAchieved() {
 				spawnPos.y = -35.0f;
 
 				bossObj->GetTransform().translate = spawnPos;
-				bossObj->GetTransform().scale = { 8.0f, 8.0f, 8.0f };
+				bossObj->GetTransform().scale = { 1.0f, 1.0f, 1.0f };
 				bossObj->GetTransform().rotate.y = playerYaw + 3.14159265f; // プレイヤーの方を向く
 
-				// レンダラー設定（巨大深海魚モデル）
+				// レンダラー設定（リヴァイアサン級ボスモデル）
 				auto* mesh = bossObj->AddComponent<MeshRendererComponent>();
-				mesh->SetModel("Resources/Enemy/smallFish/smallFish.obj");
-				mesh->SetTexture("white1x1");
-				mesh->SetColor({ 0.6f, 0.7f, 0.95f, 1.0f });
+				mesh->SetModel("Resources/Enemy/Boss/boss.obj");
+				mesh->SetTexture("Resources/Enemy/Boss/boss.png");
+				mesh->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 				// ボス挙動・当たり判定
 				bossObj->AddComponent<BossComponent>();

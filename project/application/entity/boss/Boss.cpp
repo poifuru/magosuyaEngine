@@ -66,11 +66,11 @@ void BossComponent::Update() {
 
 		bool flash = (static_cast<int>(invincibilityTimer_ * 15.0f) % 2 == 0);
 		if (auto* mesh = gameObject_->GetComponent<MeshRendererComponent>()) {
-			mesh->SetColor({ 1.0f, flash ? 0.2f : 0.6f, flash ? 0.2f : 0.8f, 1.0f });
+			mesh->SetColor({ 1.0f, flash ? 0.3f : 0.8f, flash ? 0.3f : 0.8f, 1.0f });
 		}
 	} else {
 		if (auto* mesh = gameObject_->GetComponent<MeshRendererComponent>()) {
-			mesh->SetColor({ 0.6f, 0.7f, 0.95f, 1.0f });
+			mesh->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 		}
 	}
 

@@ -1,0 +1,45 @@
+newmtl Mat_Boss_Head
+Ka 0.25 0.25 0.3
+Kd 0.95 0.95 1.0
+Ks 0.6 0.7 0.8
+Ns 32.0
+d 1.0
+illum 2
+map_Kd boss.png
+
+newmtl Mat_Boss_Body
+Ka 0.25 0.25 0.3
+Kd 0.95 0.95 1.0
+Ks 0.6 0.7 0.8
+Ns 32.0
+d 1.0
+illum 2
+map_Kd boss.png
+
+newmtl Mat_Boss_Fins
+Ka 0.25 0.25 0.3
+Kd 0.95 0.95 1.0
+Ks 0.6 0.7 0.8
+Ns 32.0
+d 1.0
+illum 2
+map_Kd boss.png
+
+newmtl Mat_Boss_Spine
+Ka 0.25 0.25 0.3
+Kd 0.95 0.95 1.0
+Ks 0.6 0.7 0.8
+Ns 32.0
+d 1.0
+illum 2
+map_Kd boss.png
+
+newmtl Mat_Boss_Tail
+Ka 0.25 0.25 0.3
+Kd 0.95 0.95 1.0
+Ks 0.6 0.7 0.8
+Ns 32.0
+d 1.0
+illum 2
+map_Kd boss.png
+
