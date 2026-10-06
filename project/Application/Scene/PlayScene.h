@@ -23,8 +23,13 @@ public:
 
 	PostEffectManager* GetPostEffectManager() override { return postEffectManager_.get(); }
 
+	// ポーズ（一時停止）機能
+	void TogglePause();
+	bool IsPaused() const { return isPaused_; }
+
 private:
 	void CleanupObject();
+	void DrawPauseMenu();
 
 private:
 	// 全てのGameObject
@@ -37,6 +42,8 @@ private:
 
 	std::unique_ptr<LightManager> lightManager_ = nullptr;
 	std::unique_ptr<PostEffectManager> postEffectManager_ = nullptr;
+
+	bool isPaused_ = false; // 一時停止フラグ
 
 #ifdef USEIMGUI
 	bool isDebugMode_ = true;

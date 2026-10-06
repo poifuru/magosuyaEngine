@@ -134,7 +134,13 @@ void ColliderComponent::OnCollision(CollisionObject* other) {
 	// 2. 自分が「プレイヤー」で、相手が「敵」の場合の被弾ダメージ処理
 	if (isMyPlayer && isOtherEnemy) {
 		if (auto* playerComp = myObj->GetComponent<PlayerComponent>()) {
-			playerComp->TakeDamage(1);
+			int damage = 15; // デフォルト（魚など）
+			if (otherObj->GetComponent<BossComponent>() || otherObj->GetName() == "Boss") {
+				damage = 30; // ボスからの強撃
+			} else if (otherObj->GetComponent<BirdEnemyComponent>()) {
+				damage = 20; // 鳥の急降下攻撃
+			}
+			playerComp->TakeDamage(damage);
 		}
 	}
 }

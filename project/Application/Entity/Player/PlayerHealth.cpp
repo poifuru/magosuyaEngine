@@ -14,8 +14,8 @@ PlayerHealth::~PlayerHealth() {
 }
 
 void PlayerHealth::Initialize() {
-	hp_ = 5;
-	maxHp_ = 5;
+	hp_ = 100;
+	maxHp_ = 100;
 	invincibilityTimer_ = 0.0f;
 	invincibilityDuration_ = 1.5f;
 	isDead_ = false;
@@ -76,11 +76,24 @@ void PlayerHealth::TakeDamage(GameObject* gameObject, int damage) {
 	}
 }
 
+bool PlayerHealth::ConsumeHealth(int amount) {
+	// 最低1は電力を残してリロードによる自滅を防ぐ（背水のリロード：電力が足りなくても1残して成立させる）
+	if (isDead_ || hp_ <= 1) return false;
+	int consume = (hp_ > amount) ? amount : (hp_ - 1);
+	hp_ -= consume;
+	return true;
+}
+
+void PlayerHealth::Heal(int amount) {
+	if (isDead_) return;
+	hp_ = std::min(maxHp_, hp_ + amount);
+}
+
 void PlayerHealth::ImGui() {
 #ifdef USEIMGUI
 	ImGui::Text("--- Player HP Status ---");
 	ImGui::DragInt("HP", &hp_, 1, 0, maxHp_);
-	ImGui::DragInt("Max HP", &maxHp_, 1, 1, 100);
+	ImGui::DragInt("Max HP", &maxHp_, 1, 1, 500);
 	float hpRatio = maxHp_ > 0 ? static_cast<float>(hp_) / static_cast<float>(maxHp_) : 0.0f;
 	char hpBuf[32];
 	sprintf_s(hpBuf, "HP: %d / %d", hp_, maxHp_);
@@ -106,6 +119,11 @@ void PlayerHealth::Serialize(json& j) const {
 void PlayerHealth::Deserialize(const json& j) {
 	if (j.contains("hp")) hp_ = j["hp"];
 	if (j.contains("maxHp")) maxHp_ = j["maxHp"];
+	// 旧セーブデータや未調整値（maxHp < 100）の場合はデフォルトの100に底上げ補正
+	if (maxHp_ < 100) {
+		maxHp_ = 100;
+		hp_ = 100;
+	}
 }
 
 void PlayerHealth::CreateUI(GameObject* gameObject) {
@@ -118,7 +136,7 @@ void PlayerHealth::CreateUI(GameObject* gameObject) {
 	auto* borderSprite = borderObj->AddComponent<SpriteComponent>();
 	borderSprite->SetTexture("Resources/human/white.png");
 	borderSprite->SetAnchorPoint({ 0.0f, 0.0f });
-	borderSprite->SetPosition({ 48.0f, 48.0f });
+	borderSprite->SetPosition({ 48.0f, 638.0f });
 	borderSprite->SetSize({ 244.0f, 26.0f });
 	borderSprite->SetColor({ 0.05f, 0.05f, 0.08f, 0.9f });
 	borderSprite->SetLayer(3);
@@ -132,7 +150,7 @@ void PlayerHealth::CreateUI(GameObject* gameObject) {
 	auto* bgSprite = bgObj->AddComponent<SpriteComponent>();
 	bgSprite->SetTexture("Resources/human/white.png");
 	bgSprite->SetAnchorPoint({ 0.0f, 0.0f });
-	bgSprite->SetPosition({ 50.0f, 50.0f });
+	bgSprite->SetPosition({ 50.0f, 640.0f });
 	bgSprite->SetSize({ 240.0f, 22.0f });
 	bgSprite->SetColor({ 0.25f, 0.08f, 0.08f, 0.85f });
 	bgSprite->SetLayer(4);
@@ -146,7 +164,7 @@ void PlayerHealth::CreateUI(GameObject* gameObject) {
 	auto* barSprite = barObj->AddComponent<SpriteComponent>();
 	barSprite->SetTexture("Resources/human/white.png");
 	barSprite->SetAnchorPoint({ 0.0f, 0.0f });
-	barSprite->SetPosition({ 50.0f, 50.0f });
+	barSprite->SetPosition({ 50.0f, 640.0f });
 	barSprite->SetSize({ 240.0f, 22.0f });
 	barSprite->SetColor({ 0.2f, 0.85f, 0.35f, 1.0f });
 	barSprite->SetLayer(5);

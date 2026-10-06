@@ -15,6 +15,10 @@ public:
 	void Update(GameObject* gameObject);
 	void TakeDamage(GameObject* gameObject, int damage);
 
+	// 電力消費・回復
+	bool ConsumeHealth(int amount);
+	void Heal(int amount);
+
 	void ImGui();
 	void Serialize(json& j) const;
 	void Deserialize(const json& j);
@@ -29,8 +33,8 @@ private:
 	void UpdateUI();
 
 private:
-	int hp_ = 5;
-	int maxHp_ = 5;
+	int hp_ = 100;
+	int maxHp_ = 100;
 	float invincibilityTimer_ = 0.0f;
 	float invincibilityDuration_ = 1.5f;
 	bool isDead_ = false;

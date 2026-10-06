@@ -47,7 +47,7 @@ void PlayerComponent::Update() {
 
 	// 射撃処理
 	if (weapon_) {
-		weapon_->Update(gameObject_, reticleObject_);
+		weapon_->Update(gameObject_, reticleObject_, health_.get());
 	}
 
 	// 大砲（Canonノード）の追従回転処理

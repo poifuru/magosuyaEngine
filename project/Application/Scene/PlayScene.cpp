@@ -17,11 +17,40 @@
 #include "TitleScene.h"
 #include "SceneManager.h"
 
+namespace {
+	// 安全にカーソルの表示/非表示を切り替える関数
+	void SetCursorVisibleSafe(bool visible) {
+		CURSORINFO ci = { sizeof(CURSORINFO) };
+		if (GetCursorInfo(&ci)) {
+			bool isCurrentlyVisible = (ci.flags & CURSOR_SHOWING) != 0;
+			if (visible && !isCurrentlyVisible) {
+				ShowCursor(TRUE);
+			} else if (!visible && isCurrentlyVisible) {
+				ShowCursor(FALSE);
+			}
+		}
+	}
+}
+
 PlayScene::PlayScene() = default;
-PlayScene::~PlayScene() = default;
+
+PlayScene::~PlayScene() {
+#ifdef USEIMGUI
+	if (EditorManager::GetInstance()) {
+		EditorManager::GetInstance()->SetGamePaused(false);
+	}
+#endif
+}
 
 void PlayScene::Initialize() {
 	if (!context_) return;
+
+	isPaused_ = false;
+#ifdef USEIMGUI
+	if (EditorManager::GetInstance()) {
+		EditorManager::GetInstance()->SetGamePaused(false);
+	}
+#endif
 
 	// コンテキストにリストのポインタをセットする
 	context_->gameObjects = &createQueue_;
@@ -89,13 +118,92 @@ void PlayScene::Initialize() {
 	EditorManager::GetInstance()->SetSceneContext(context_);
 }
 
+void PlayScene::TogglePause() {
+	isPaused_ = !isPaused_;
+
+#ifdef USEIMGUI
+	if (EditorManager::GetInstance()) {
+		EditorManager::GetInstance()->SetGamePaused(isPaused_);
+	}
+#endif
+
+	if (isPaused_) {
+		// 一時停止：マウスカーソルを表示し、画面クリップを解除
+		SetCursorVisibleSafe(true);
+		ClipCursor(NULL);
+	} else {
+		// ゲーム再開：マウスカーソルを非表示
+		SetCursorVisibleSafe(false);
+#ifdef USEIMGUI
+		// エディタ中ならゲーム画面矩形にマウスを再ロック
+		ImVec2 pos = EditorManager::GetInstance()->GetGameScreenPos();
+		ImVec2 size = EditorManager::GetInstance()->GetGameScreenSize();
+		if (size.x > 0.0f && size.y > 0.0f) {
+			RECT rect;
+			rect.left = static_cast<LONG>(pos.x);
+			rect.top = static_cast<LONG>(pos.y);
+			rect.right = static_cast<LONG>(pos.x + size.x);
+			rect.bottom = static_cast<LONG>(pos.y + size.y);
+			ClipCursor(&rect);
+		}
+#endif
+	}
+}
+
+void PlayScene::DrawPauseMenu() {
+#ifdef USEIMGUI
+	// 画面中央にポーズメニューを表示
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize(ImVec2(300.0f, 0.0f));
+
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | 
+	                         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
+
+	if (ImGui::Begin("一時停止 (PAUSE)", nullptr, flags)) {
+		ImGui::Spacing();
+		ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.2f, 1.0f), "         === PAUSED ===");
+		ImGui::Spacing();
+		ImGui::Separator();
+		ImGui::Spacing();
+
+		if (ImGui::Button("ゲームを再開 (Resume) [ESC]", ImVec2(-1, 35))) {
+			TogglePause();
+		}
+
+		ImGui::Spacing();
+
+		if (ImGui::Button("タイトルに戻る (Title)", ImVec2(-1, 35))) {
+			TogglePause(); // ポーズ解除
+			if (context_->sceneManager && !context_->sceneManager->isTransitioning()) {
+				context_->sceneManager->ChangeSceneWithDissolve<TitleScene>(0.8f, 0.8f);
+			}
+		}
+
+		ImGui::Spacing();
+		ImGui::End();
+	}
+#endif
+}
+
 void PlayScene::UpdateGame(CameraData* cameraData) {
 	auto* rawInput = InputManager::GetInstance()->GetRawInput();
-	// ESCキー（またはゲームクリア時）にタイトルへ戻る
+
+	// ESCキーで一時停止（ポーズ）/ 再開を切り替え
 	if (rawInput->Trigger(VK_ESCAPE)) {
-		if (context_->sceneManager && !context_->sceneManager->isTransitioning()) {
-			context_->sceneManager->ChangeSceneWithDissolve<TitleScene>(0.8f, 0.8f);
-		}
+		TogglePause();
+	}
+
+	// 一時停止中の場合
+	if (isPaused_) {
+		// カーソル表示と画面ロック解除を維持
+		SetCursorVisibleSafe(true);
+		ClipCursor(NULL);
+
+		// ポーズメニューを描画
+		DrawPauseMenu();
+
+		return; // ゲーム内の更新（移動、弾、当たり判定等）を完全に停止
 	}
 
 	for (auto& obj : gameObjects_) {
