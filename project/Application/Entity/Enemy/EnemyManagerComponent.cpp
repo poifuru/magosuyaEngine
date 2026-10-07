@@ -124,9 +124,9 @@ void EnemyManagerComponent::SpawnEnemy() {
 		// --- 鳥エネミーの生成 ---
 		auto* mesh = enemyObj->AddComponent<MeshRendererComponent>();
 		mesh->SetModel("Resources/Enemy/Bird/bird.obj");
-		mesh->SetTexture("white1x1");
-		// スケール
-		enemyObj->GetTransform().scale = { 0.2f, 0.2f, 0.2f };
+		mesh->SetTexture("Resources/Enemy/Bird/bird.png");
+		// スケール（翼幅約2.7mの迫力ある飛行サイズ）
+		enemyObj->GetTransform().scale = { 0.75f, 0.75f, 0.75f };
 		// 挙動とコライダーを追加
 		enemyObj->AddComponent<BirdEnemyComponent>();
 		auto* collider = enemyObj->AddComponent<ColliderComponent>();
@@ -136,13 +136,13 @@ void EnemyManagerComponent::SpawnEnemy() {
 		// コンポーネントをすべて追加した後に初期化を呼ぶ
 		enemyObj->Initialize();
 		// 初期化完了後にコライダーの半径を設定（デフォルト値を上書き）
-		collider->SetRadius(1.0f);
+		collider->SetRadius(1.2f);
 	}
 	else {
 		// --- 魚エネミーの生成 ---
 		auto* mesh = enemyObj->AddComponent<MeshRendererComponent>();
 		mesh->SetModel("Resources/Enemy/smallFish/smallFish.obj");
-		mesh->SetTexture("white1x1");
+		mesh->SetTexture("Resources/Enemy/smallFish/smallFish.png");
 		// スケール
 		enemyObj->GetTransform().scale = { fishScale_, fishScale_, fishScale_ };
 		// 挙動とコライダーを追加
