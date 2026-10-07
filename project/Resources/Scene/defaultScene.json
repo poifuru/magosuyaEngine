@@ -36,8 +36,8 @@
                             ]
                         }
                     },
-                    "modelPath": "Resources/player/player.gltf",
-                    "texPath": "white1x1",
+                    "modelPath": "Resources/player/player_tadpole.obj",
+                    "texPath": "Resources/player/player_tadpole.png",
                     "type": "MeshRendererComponent"
                 },
                 {

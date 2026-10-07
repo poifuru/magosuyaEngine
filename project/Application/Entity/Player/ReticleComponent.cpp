@@ -11,6 +11,7 @@
 #include "FishEnemyComponent.h"
 #include "BirdEnemyComponent.h"
 #include "Boss.h"
+#include "FloatingCrateComponent.h"
 
 void ReticleComponent::Initialize() {
 	// すでに初期化済み（ロード済み）なら、デフォルト値での上書きをスキップする
@@ -65,12 +66,14 @@ void ReticleComponent::Update() {
 
 	if(context && context->activeGameObjects) {
 		for(const auto& obj : *(context->activeGameObjects)) {
-			// プレイヤー自身、弾、レティクル、カメラ以外の「コライダー付きオブジェクト」をすべて敵とみなす
+			// プレイヤー自身、弾、レティクル、カメラ以外の「コライダー付きオブジェクト」をすべてターゲットとみなす
 			bool isEnemy = (obj->GetComponent<BirdEnemyComponent>() != nullptr || 
 							obj->GetComponent<FishEnemyComponent>() != nullptr ||
 							obj->GetComponent<BossComponent>() != nullptr ||
+							obj->GetComponent<FloatingCrateComponent>() != nullptr ||
 							obj->GetName() == "Enemy" ||
-							obj->GetName() == "Boss");
+							obj->GetName() == "Boss" ||
+							obj->GetName() == "Crate");
 
 			if(isEnemy && obj->GetComponent<ColliderComponent>() != nullptr) {
 

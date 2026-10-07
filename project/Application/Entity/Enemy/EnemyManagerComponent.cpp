@@ -7,6 +7,8 @@
 #include "BaseScene.h" // SceneContext や gameObjects へのアクセス用
 #include "PlayerComponent.h" // プレイヤー検索用
 #include "MeshRendererComponent.h"
+#include "FloatingCrateComponent.h"
+#include <cmath>
 
 void EnemyManagerComponent::Initialize() {
 	if (isInitialized_) return;
@@ -14,6 +16,7 @@ void EnemyManagerComponent::Initialize() {
 	isInitialized_ = true;
 	// タイマーの初期化
 	spawnTimer_ = spawnInterval_;
+	crateSpawnTimer_ = 5.0f; // 初回は5秒後に出現
 }
 
 void EnemyManagerComponent::Update() {
@@ -37,14 +40,24 @@ void EnemyManagerComponent::Update() {
 		}
 	}
 
-	if (!isSpawningEnabled_) return;
+	float dt = Time::GetDeltaTime();
 
-	// 時間経過でタイマーを減算
-	spawnTimer_ -= Time::GetDeltaTime();
-	if (spawnTimer_ <= 0.0f) {
-		spawnTimer_ = spawnInterval_;
+	// 敵のスポーンタイマー
+	if (isSpawningEnabled_) {
+		spawnTimer_ -= dt;
+		if (spawnTimer_ <= 0.0f) {
+			spawnTimer_ = spawnInterval_;
+			SpawnEnemy();
+		}
+	}
 
-		SpawnEnemy();
+	// 木箱のスポーンタイマー
+	if (isCrateSpawningEnabled_) {
+		crateSpawnTimer_ -= dt;
+		if (crateSpawnTimer_ <= 0.0f) {
+			crateSpawnTimer_ = crateSpawnInterval_;
+			SpawnCrate();
+		}
 	}
 }
 
@@ -111,9 +124,9 @@ void EnemyManagerComponent::SpawnEnemy() {
 		// --- 鳥エネミーの生成 ---
 		auto* mesh = enemyObj->AddComponent<MeshRendererComponent>();
 		mesh->SetModel("Resources/Enemy/Bird/bird.obj");
-		mesh->SetTexture("white1x1");
-		// スケール
-		enemyObj->GetTransform().scale = { 0.2f, 0.2f, 0.2f };
+		mesh->SetTexture("Resources/Enemy/Bird/bird.png");
+		// スケール（翼幅約2.7mの迫力ある飛行サイズ）
+		enemyObj->GetTransform().scale = { 0.75f, 0.75f, 0.75f };
 		// 挙動とコライダーを追加
 		enemyObj->AddComponent<BirdEnemyComponent>();
 		auto* collider = enemyObj->AddComponent<ColliderComponent>();
@@ -123,13 +136,13 @@ void EnemyManagerComponent::SpawnEnemy() {
 		// コンポーネントをすべて追加した後に初期化を呼ぶ
 		enemyObj->Initialize();
 		// 初期化完了後にコライダーの半径を設定（デフォルト値を上書き）
-		collider->SetRadius(1.0f);
+		collider->SetRadius(1.2f);
 	}
 	else {
 		// --- 魚エネミーの生成 ---
 		auto* mesh = enemyObj->AddComponent<MeshRendererComponent>();
 		mesh->SetModel("Resources/Enemy/smallFish/smallFish.obj");
-		mesh->SetTexture("white1x1");
+		mesh->SetTexture("Resources/Enemy/smallFish/smallFish.png");
 		// スケール
 		enemyObj->GetTransform().scale = { fishScale_, fishScale_, fishScale_ };
 		// 挙動とコライダーを追加
@@ -149,7 +162,79 @@ void EnemyManagerComponent::SpawnEnemy() {
 	context->gameObjects->push_back(std::move(enemyObj));
 }
 
+void EnemyManagerComponent::SpawnCrate() {
+	auto* context = gameObject_->GetContext();
+	if (!context || !context->gameObjects || !context->activeGameObjects) return;
+
+	// 現在の生存木箱数をカウント
+	int currentCrates = 0;
+	for (const auto& obj : *(context->activeGameObjects)) {
+		if (obj->GetComponent<FloatingCrateComponent>() != nullptr) {
+			currentCrates++;
+		}
+	}
+	if (currentCrates >= maxCrates_) return;
+
+	// プレイヤーの位置と向きを取得
+	Vector3 playerPos = { 0.0f, 0.0f, 0.0f };
+	Vector3 playerFwd = { 0.0f, 0.0f, 1.0f };
+	bool foundPlayer = false;
+	for (const auto& obj : *(context->activeGameObjects)) {
+		if (auto* playerComp = obj->GetComponent<PlayerComponent>()) {
+			playerPos = obj->GetTransform().translate;
+			playerFwd = playerComp->GetForward();
+			foundPlayer = true;
+			break;
+		}
+	}
+	if (!foundPlayer) return;
+
+	// プレイヤーの前方扇状範囲（-60度〜+60度）にスポーン
+	float randomDeg = static_cast<float>(rand() % 120) - 60.0f;
+	float randomRad = randomDeg * (3.14159265f / 180.0f);
+	float baseAngle = std::atan2(playerFwd.x, playerFwd.z);
+	float spawnAngle = baseAngle + randomRad;
+	float dist = crateSpawnRadius_ + static_cast<float>(rand() % 16) - 8.0f;
+
+	Vector3 spawnPos = {
+		playerPos.x + dist * std::sin(spawnAngle),
+		0.0f, // 水面
+		playerPos.z + dist * std::cos(spawnAngle)
+	};
+
+	auto crateObj = std::make_unique<GameObject>(context, "Crate");
+	auto* mesh = crateObj->AddComponent<MeshRendererComponent>();
+	mesh->SetModel("Resources/Props/Crate/crate.obj");
+	mesh->SetTexture("white1x1");
+	mesh->SetColor({ 0.65f, 0.45f, 0.25f, 1.0f }); // 木の色
+
+	crateObj->GetTransform().scale = { 1.2f, 1.2f, 1.2f }; // 視認しやすいサイズ
+	crateObj->GetTransform().translate = spawnPos;
+
+	crateObj->AddComponent<FloatingCrateComponent>();
+	auto* collider = crateObj->AddComponent<ColliderComponent>();
+
+	crateObj->Initialize();
+	collider->SetRadius(1.8f); // 弾が当たりやすい判定
+	crateObj->SetSerializable(false);
+
+	context->gameObjects->push_back(std::move(crateObj));
+}
+
+void EnemyManagerComponent::ClearAllCrates() {
+	if (!gameObject_) return;
+	auto* context = gameObject_->GetContext();
+	if (!context || !context->activeGameObjects) return;
+
+	for (const auto& obj : *(context->activeGameObjects)) {
+		if (auto* crate = obj->GetComponent<FloatingCrateComponent>()) {
+			crate->OnDestroyed();
+		}
+	}
+}
+
 void EnemyManagerComponent::ImGui() {
+	ImGui::Text("--- Enemy Spawning ---");
 	ImGui::Checkbox("Spawning Enabled", &isSpawningEnabled_);
 	if (ImGui::Button("Clear All Enemies")) {
 		ClearAllEnemies();
@@ -162,14 +247,29 @@ void EnemyManagerComponent::ImGui() {
 
 	// 現在の生存敵数を計算して表示
 	int currentEnemyCount = 0;
+	int currentCrateCount = 0;
 	if (gameObject_ && gameObject_->GetContext() && gameObject_->GetContext()->activeGameObjects) {
 		for (const auto& obj : *(gameObject_->GetContext()->activeGameObjects)) {
 			if (obj->GetComponent<BirdEnemyComponent>() != nullptr || obj->GetComponent<FishEnemyComponent>() != nullptr) {
 				currentEnemyCount++;
 			}
+			if (obj->GetComponent<FloatingCrateComponent>() != nullptr) {
+				currentCrateCount++;
+			}
 		}
 	}
 	ImGui::Text("Current Enemies: %d / %d", currentEnemyCount, maxEnemies_);
+
+	ImGui::Separator();
+	ImGui::Text("--- Floating Crate Spawning ---");
+	ImGui::Checkbox("Crate Spawning Enabled", &isCrateSpawningEnabled_);
+	if (ImGui::Button("Destroy All Crates")) {
+		ClearAllCrates();
+	}
+	ImGui::DragInt("Max Crates", &maxCrates_, 1, 1, 20);
+	ImGui::DragFloat("Crate Spawn Interval", &crateSpawnInterval_, 0.5f, 1.0f, 60.0f);
+	ImGui::DragFloat("Crate Spawn Radius", &crateSpawnRadius_, 1.0f, 5.0f, 150.0f);
+	ImGui::Text("Current Crates: %d / %d", currentCrateCount, maxCrates_);
 }
 
 void EnemyManagerComponent::Serialize(json& j) const {
@@ -180,6 +280,10 @@ void EnemyManagerComponent::Serialize(json& j) const {
 	j["isSpawningEnabled"] = isSpawningEnabled_;
 	j["fishScale"] = fishScale_;
 	j["fishColliderRadius"] = fishColliderRadius_;
+	j["isCrateSpawningEnabled"] = isCrateSpawningEnabled_;
+	j["maxCrates"] = maxCrates_;
+	j["crateSpawnInterval"] = crateSpawnInterval_;
+	j["crateSpawnRadius"] = crateSpawnRadius_;
 }
 
 void EnemyManagerComponent::Deserialize(const json& j) {
@@ -190,4 +294,8 @@ void EnemyManagerComponent::Deserialize(const json& j) {
 	if (j.contains("isSpawningEnabled")) isSpawningEnabled_ = j["isSpawningEnabled"];
 	if (j.contains("fishScale")) fishScale_ = j["fishScale"];
 	if (j.contains("fishColliderRadius")) fishColliderRadius_ = j["fishColliderRadius"];
+	if (j.contains("isCrateSpawningEnabled")) isCrateSpawningEnabled_ = j["isCrateSpawningEnabled"];
+	if (j.contains("maxCrates")) maxCrates_ = j["maxCrates"];
+	if (j.contains("crateSpawnInterval")) crateSpawnInterval_ = j["crateSpawnInterval"];
+	if (j.contains("crateSpawnRadius")) crateSpawnRadius_ = j["crateSpawnRadius"];
 }

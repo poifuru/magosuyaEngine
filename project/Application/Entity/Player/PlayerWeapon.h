@@ -45,6 +45,7 @@ private:
 	float harpoonHomingStrength_ = 0.02f; // 追尾力
 	float harpoonMaxDistance_ = 80.0f;    // 有効射程（メートル）
 	float preTriggerR_ = 0.0f;            // 前フレームのRT（右トリガー）の入力値
+	int shootSide_ = 0;                   // 左右交互発射インデックス（0: 左砲身, 1: 右砲身）
 
 	// マガジン・リロードパラメータ
 	int ammo_ = 15;                       // 現在残弾数

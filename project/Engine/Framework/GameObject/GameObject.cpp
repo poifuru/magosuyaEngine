@@ -266,6 +266,20 @@ void GameObject::ImGui() {
 		else {
 			ImGui::TextDisabled("Enemy Manager Component (Already Added)");
 		}
+		// 漂流木箱コンポーネント
+		if(GetComponent<FloatingCrateComponent>() == nullptr) {
+			if(ImGui::MenuItem("Floating Crate Component")) {
+				auto* newComp = AddComponent<FloatingCrateComponent>();
+				newComp->Initialize();
+			}
+		}
+		// 電力アイテムコンポーネント
+		if(GetComponent<EnergyItemComponent>() == nullptr) {
+			if(ImGui::MenuItem("Energy Item Component")) {
+				auto* newComp = AddComponent<EnergyItemComponent>();
+				newComp->Initialize();
+			}
+		}
 		// スカイボックスコンポーネント
 		if(GetComponent<SkyboxComponent>() == nullptr) {
 			if(ImGui::MenuItem("Skybox Component")) {
@@ -441,6 +455,16 @@ void GameObject::Deserialize(const json& j) {
 			else if(type == "EnemyManagerComponent") {
 				auto* comp = GetComponent<EnemyManagerComponent>();
 				if(!comp) comp = AddComponent<EnemyManagerComponent>();
+				comp->Deserialize(compJ);
+			}
+			else if(type == "FloatingCrateComponent") {
+				auto* comp = GetComponent<FloatingCrateComponent>();
+				if(!comp) comp = AddComponent<FloatingCrateComponent>();
+				comp->Deserialize(compJ);
+			}
+			else if(type == "EnergyItemComponent") {
+				auto* comp = GetComponent<EnergyItemComponent>();
+				if(!comp) comp = AddComponent<EnergyItemComponent>();
 				comp->Deserialize(compJ);
 			}
 			else if(type == "SkyboxComponent") {

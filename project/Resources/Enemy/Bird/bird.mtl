@@ -1,42 +1,36 @@
-# Blender 4.4.1 MTL File: 'None'
-# www.blender.org
+newmtl Mat_Bird_Body
+Ka 0.25 0.25 0.25
+Kd 0.95 0.95 0.95
+Ks 0.5 0.5 0.5
+Ns 30.0
+d 1.0
+illum 2
+map_Kd bird.png
 
-newmtl lambert3SG
-Ns 0.000000
-Ka 1.000000 1.000000 1.000000
-Kd 0.050000 0.040000 0.040000
-Ks 0.000000 0.000000 0.000000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 1
+newmtl Mat_Bird_Wings
+Ka 0.25 0.25 0.25
+Kd 0.95 0.95 0.95
+Ks 0.5 0.5 0.5
+Ns 30.0
+d 1.0
+illum 2
+map_Kd bird.png
 
-newmtl lambert4SG
-Ns 0.000000
-Ka 1.000000 1.000000 1.000000
-Kd 0.170000 0.170000 0.170000
-Ks 0.000000 0.000000 0.000000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 1
+newmtl Mat_Bird_Beak
+Ka 0.25 0.25 0.25
+Kd 0.95 0.95 0.95
+Ks 0.5 0.5 0.5
+Ns 30.0
+d 1.0
+illum 2
+map_Kd bird.png
 
-newmtl lambert5SG
-Ns 0.000000
-Ka 1.000000 1.000000 1.000000
-Kd 0.150000 0.130000 0.000000
-Ks 0.000000 0.000000 0.000000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 1
+newmtl Mat_Bird_Tail
+Ka 0.25 0.25 0.25
+Kd 0.95 0.95 0.95
+Ks 0.5 0.5 0.5
+Ns 30.0
+d 1.0
+illum 2
+map_Kd bird.png
 
-newmtl lambert6SG
-Ns 0.000000
-Ka 1.000000 1.000000 1.000000
-Kd 0.260000 0.000000 0.000000
-Ks 0.000000 0.000000 0.000000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 1

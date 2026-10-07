@@ -24,9 +24,14 @@ public:
 	float GetFishColliderRadius() const { return fishColliderRadius_; }
 	void SetFishColliderRadius(float r) { fishColliderRadius_ = r; }
 
+	void SetCrateSpawningEnabled(bool enable) { isCrateSpawningEnabled_ = enable; }
+	bool IsCrateSpawningEnabled() const { return isCrateSpawningEnabled_; }
+	void ClearAllCrates();
+
 private:
-	// 敵をスポーンさせる処理
+	// スポーン処理
 	void SpawnEnemy();
+	void SpawnCrate();
 
 private:
 	bool isSpawningEnabled_ = true; // スポーン有効フラグ
@@ -38,4 +43,11 @@ private:
 
 	float fishScale_ = 2.5f;             // 魚エネミーのスケール倍率（デフォルト2.5倍）
 	float fishColliderRadius_ = 2.0f;    // 魚エネミーのコライダー半径（デフォルト2.0f）
+
+	// 木箱（漂流物）のスポーン管理
+	bool isCrateSpawningEnabled_ = true;
+	int maxCrates_ = 3;                  // 同時に存在できる木箱の最大数
+	float crateSpawnInterval_ = 15.0f;   // 木箱スポーン間隔（秒）
+	float crateSpawnTimer_ = 5.0f;       // 初回は5秒後に出現
+	float crateSpawnRadius_ = 40.0f;     // プレイヤーからのスポーン距離
 };
