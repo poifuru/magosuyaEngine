@@ -160,6 +160,29 @@ PixelShaderOutput main(VertexShaderOutput input)
     // ベースとなる水の色をブレンドで決める
     float3 baseWaterColor = lerp(shallowColor, deepWaterColor.rgb, fresnel);
     
+    // 波紋テクスチャが有効な場合、隣接テクセルの高さ差分から法線を求める
+    if (gWaterSurface.rippleTextureIndex > 0)
+    {
+        float2 texelSize = 1.0f / 512.0f; // テクスチャ解像度に応じたオフセット
+    
+    // 前後左右の高さをサンプリング
+        float hL = g_Textures[gWaterSurface.rippleTextureIndex].Sample(gSampler, input.rippleUV + float2(-texelSize.x, 0.0f)).r;
+        float hR = g_Textures[gWaterSurface.rippleTextureIndex].Sample(gSampler, input.rippleUV + float2(texelSize.x, 0.0f)).r;
+        float hD = g_Textures[gWaterSurface.rippleTextureIndex].Sample(gSampler, input.rippleUV + float2(0.0f, -texelSize.y)).r;
+        float hU = g_Textures[gWaterSurface.rippleTextureIndex].Sample(gSampler, input.rippleUV + float2(0.0f, texelSize.y)).r;
+    
+    // UV と ワールド座標(X, Z)の向きに合わせて傾き(dh/dx, dh/dz)を計算
+        float dX = hR - hL;
+        float dZ = -(hU - hD); // V増加がワールド -Z なので符号反転
+    
+    // 傾きの強さ（ノーマル強度）を調整
+        float rippleNormalStrength = 3.0f; // 好みで調整可能
+        float3 rippleNormal = float3(-dX * rippleNormalStrength, 0.0f, -dZ * rippleNormalStrength);
+    
+    // 既存の水面法線に波紋の傾きを足して正規化
+        worldNormal = normalize(worldNormal + rippleNormal);
+    }
+    
     // そのベース色に対してライティング（Diffuse + Specular）を適用する
     float3 totalDiffuse = UpdateLights(allLights, material, input, float4(baseWaterColor, 1.0f), toEye, worldNormal);
     

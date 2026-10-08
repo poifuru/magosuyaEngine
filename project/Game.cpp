@@ -3,6 +3,7 @@
 #include "Engine.h"
 #include "Renderer.h"
 #include "TitleScene.h"
+#include "PlayScene.h"
 #include "CameraOrganizer.h"
 #include "ImGuiManager.h"
 #include "RenderTexture.h"
@@ -43,7 +44,7 @@ Game::Game() {
 	);
 
 	// 初期シーンの設定
-	sceneManager_->ChangeScene<TitleScene>();
+	sceneManager_->ChangeScene<PlayScene>();
 	sceneManager_->SetRenderer(renderer_.get());
 
 	// ImGuiの初期化

@@ -92,7 +92,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     
     // の場の泡と周囲のぼかしを少し混ぜて、点々の隙間を繋ぎ合わせる
     float blendedFoam = lerp(prevFoam, foamAvg, 0.4f);
-    float newFoam = prevFoam * 0.996f;
+    float newFoam = blendedFoam * 0.996f;
     
     // ---------------------------
     // オブジェクトの移動による波の注入
