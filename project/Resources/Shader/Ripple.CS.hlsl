@@ -56,7 +56,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     float prevFoam = centerData.b; // 泡の濃度
     
     // 何ピクセル隣を見るかのオフセット
-    int pixelOffset = 3;
+    int pixelOffset = 1;
     
     // 周囲4ピクセルの1フレーム前の高さ(R)を取得
     int w = (int) width;
@@ -72,7 +72,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     float neighborAvg = (left + right + up + down) * 0.25f;
     
     // 波の伝播速度パラメータ（0.5～1.8程度で波の伝わる速さが変わる）
-    float waveSpeed = 0.3f;
+    float waveSpeed = 0.5f;
     // 減衰率（0.95～0.99程度。小さいとすぐ消え、大きいと長く残る）
     float damp = 0.996f;
     
@@ -80,7 +80,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     float newHeight = (2.0f * currentHeight - prevHeight + waveSpeed * (neighborAvg - currentHeight)) * damp;
     
     // -----------------------------------------------
-    // 前フレームの周囲4ピクセルの「泡 (B)」を取得してぼかす！
+    // 前フレームの周囲4ピクセルの「泡 (B)」を取得してぼかす
     // -----------------------------------------------
     float fLeft = gTextures[gSimBuffer.preTextureIndex].Load(int3(max(pos.x - 1, 0), pos.y, 0)).b;
     float fRight = gTextures[gSimBuffer.preTextureIndex].Load(int3(min(pos.x + 1, w - 1), pos.y, 0)).b;
@@ -90,7 +90,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     //　周囲の泡の平均（ぼかし）を取る
     float foamAvg = (fLeft + fRight + fUp + fDown) * 0.25f;
     
-    // の場の泡と周囲のぼかしを少し混ぜて、点々の隙間を繋ぎ合わせる
+    // その場の泡と周囲のぼかしを少し混ぜて、点々の隙間を繋ぎ合わせる
     float blendedFoam = lerp(prevFoam, foamAvg, 0.4f);
     float newFoam = blendedFoam * 0.996f;
     
@@ -109,6 +109,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
         
         // ワールド空間単位の距離で計算（アスペクト比ズレを防ぐため）
         float2 diffWorld = (uv - boatUV) * gSimBuffer.waterSize;
+        diffWorld.y = -diffWorld.y;
         
         float2 fwd = normalize(gSimBuffer.forward);
         float2 rgt = float2(-fwd.y, fwd.x); // 正しい右方向ベクトル（90度回転）
@@ -166,5 +167,5 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     // G: 今回の高さ（次回フレームでの過去の高さ）
     // B: 泡の濃さ
     // -------------------------------------------------------------
-    gOutput[id.xy] = float4(saturate(newHeight), saturate(currentHeight), saturate(newFoam), 1.0f);
+    gOutput[id.xy] = float4(clamp(newHeight, -3, 3), clamp(currentHeight, -3, 3), clamp(newFoam, -3, 3), 1.0f);
 }
