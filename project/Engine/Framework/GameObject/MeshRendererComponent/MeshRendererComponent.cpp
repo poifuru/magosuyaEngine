@@ -27,7 +27,7 @@ void MeshRendererComponent::Update() {
 	model_->SetDepthEnable(isDepthEnable_);
 
 	// カメラのデータを取得してモデルをアップデート
-	CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+	const CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
 	model_->Update(&cameraData);
 }
 

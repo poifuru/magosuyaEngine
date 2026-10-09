@@ -10,9 +10,6 @@ public:
 		return &instance;
 	}
 
-	CollisionManager() = default;
-	~CollisionManager() = default;
-
 	// オブジェクトの登録
 	void RegisterObject(CollisionObject* obj);
 
@@ -23,6 +20,14 @@ public:
 	void UpdateAllCollisions();
 
 private:
+	CollisionManager() = default;
+	~CollisionManager() = default;
+
+	// コピー・移動禁止
+	CollisionManager(const CollisionManager&) = delete;
+	CollisionManager& operator=(const CollisionManager&) = delete;
+	CollisionManager(CollisionManager&&) = delete;
+	CollisionManager& operator=(CollisionManager&&) = delete;
 	// 形状を見て判定を分岐する関数
 	bool CheckActualCollision(CollisionObject* a, CollisionObject* b);
 

@@ -16,7 +16,7 @@ void LevelEditor::Initialize(SceneContext* context) {
 	context_ = context;
 }
 
-void LevelEditor::Update(std::vector<std::unique_ptr<GameObject>>& gameObjects, GameObject*& selectedObject, CameraData* cameraData) {
+void LevelEditor::Update(std::vector<std::unique_ptr<GameObject>>& gameObjects, GameObject*& selectedObject, const CameraData* cameraData) {
 	if(!context_) return;
 
 	// Ctrl + Z で Undo (元に戻す)

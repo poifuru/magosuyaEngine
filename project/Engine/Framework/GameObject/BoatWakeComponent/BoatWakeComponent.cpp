@@ -96,7 +96,7 @@ void BoatWakeComponent::Update() {
 	}
 
 	// 行列バッファの更新 (ワールド行列は単位行列、WVPはViewProjectionをそのまま使う)
-	CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+	const CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
 	TransformMatrixData transformData{};
 	transformData.World = Math::MakeIdentity4x4(); // 単位行列
 	transformData.WVP = Math::Multiply(transformData.World, cameraData.vp); // ViewProjectionそのまま

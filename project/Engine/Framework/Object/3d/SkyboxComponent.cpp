@@ -150,7 +150,7 @@ void SkyboxComponent::Update() {
 	}
 
 	// カメラ座標を取得して追従させる
-	CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+	const CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
 	
 	// スカイボックスは巨大な立方体として表現する
 	Vector3 scale = { 500.0f, 500.0f, 500.0f };

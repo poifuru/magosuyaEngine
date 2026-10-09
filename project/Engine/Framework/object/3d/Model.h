@@ -32,7 +32,7 @@ namespace MyEngine::Rendering {
 
 		// 各メッシュ用 Transform バッファの GPU アドレス取得
 		D3D12_GPU_VIRTUAL_ADDRESS GetMeshTransformGPUAddress(uint32_t meshIndex) const;
-		void Update(CameraData* cameraData) override;
+		void Update(const CameraData* cameraData) override;
 
 	private:
 		MyEngine::Rendering::ModelData* modelData_ = nullptr;

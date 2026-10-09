@@ -250,7 +250,7 @@ void PlayerWeapon::Shoot(GameObject* gameObject, GameObject* reticleObject, Play
 		bulletObj->GetTransform().translate = bulletSpawnPos;
 
 		// 方向の計算
-		CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+		const CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
 		Vector3 camPos = { cameraData.world.m[3][0], cameraData.world.m[3][1], cameraData.world.m[3][2] };
 		Vector3 camForward = { cameraData.world.m[2][0], cameraData.world.m[2][1], cameraData.world.m[2][2] };
 

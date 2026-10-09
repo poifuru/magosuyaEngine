@@ -15,7 +15,7 @@ public:
 	void Update(
 		std::vector<std::unique_ptr<GameObject>>& gameObjects, 
 		GameObject*& selectedObject, 
-		CameraData* cameraData
+		const CameraData* cameraData
 	);
 
 	void SaveScene(const std::string& fileName, 

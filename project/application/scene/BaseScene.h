@@ -63,7 +63,7 @@ public:
 	virtual void Initialize() = 0;
 
 	// 更新
-	void Update(CameraData* cameraData);
+	void Update(const CameraData* cameraData);
 
 	// 描画
 	virtual void Draw(MyEngine::Rendering::Renderer* renderer) = 0;
@@ -79,8 +79,8 @@ public:
 
 protected:
 	// 子クラスはこのUpdateを継承
-	virtual void UpdateGame(CameraData* cameraData) = 0;
-	virtual void UpdateEdit(CameraData* cameraData);
+	virtual void UpdateGame(const CameraData* cameraData) = 0;
+	virtual void UpdateEdit(const CameraData* cameraData);
 
 protected:
 	// 借りてきたポインタ群

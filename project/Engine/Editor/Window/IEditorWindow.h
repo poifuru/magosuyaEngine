@@ -20,7 +20,7 @@ struct EditorContext {
 	MyEngine::Rendering::RenderTexture* renderTexture = nullptr;
 	SceneContext* sceneContext = nullptr;
 	GameObject** selectedObject = nullptr;
-	CameraData* cameraData = nullptr;
+	const CameraData* cameraData = nullptr;
 };
 
 // エディタウィンドウの親クラス

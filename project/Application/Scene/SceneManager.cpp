@@ -42,7 +42,7 @@ void SceneManager::Initialize(
 	context_.sceneManager = this;
 }
 
-void SceneManager::Update(CameraData* cameraData) {
+void SceneManager::Update(const CameraData* cameraData) {
 	float dt = Time::GetDeltaTime();
 
 	switch (transitionState_) {

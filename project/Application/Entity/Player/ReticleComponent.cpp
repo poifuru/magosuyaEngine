@@ -35,7 +35,7 @@ void ReticleComponent::Update() {
 
 	// シングルトンのカメラオーガナイザーから現在のアクティブカメラの情報を取る
 	CameraOrganizer* cameraOrganizer = CameraOrganizer::GetInstance();
-	CameraData& cameraData = cameraOrganizer->GetCameraData();
+	const CameraData& cameraData = cameraOrganizer->GetCameraData();
 
 	// カメラのワールド行列から「位置」と「前方ベクトル」を抽出する
 	Vector3 camPos = { cameraData.world.m[3][0], cameraData.world.m[3][1], cameraData.world.m[3][2] };

@@ -11,10 +11,10 @@ public:
 	// ImGui用関数
 	virtual void ImGui() = 0;
 
-	bool GetIsActive() { return isActive_; }
+	bool GetIsActive() const { return isActive_; }
 	void SetIsActive(bool flag) { isActive_ = flag; }
 
-	MyEngine::Rendering::ShadingModel GetShadingModel() { return shadingModel_; }
+	MyEngine::Rendering::ShadingModel GetShadingModel() const { return shadingModel_; }
 
 	// 描画に必要なデータを渡すための関数
 	virtual D3D12_GPU_VIRTUAL_ADDRESS GetConstantBufferAddress() const = 0;

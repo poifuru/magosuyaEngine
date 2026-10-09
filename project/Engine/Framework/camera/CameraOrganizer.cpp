@@ -116,7 +116,7 @@ void CameraOrganizer::UnregisterMainCamera(MainCameraComponent* mainCamera) {
 	}
 }
 
-CameraData& CameraOrganizer::GetCameraData() {
+const CameraData& CameraOrganizer::GetCameraData() const {
 	// メインカメラの実体から最終行列を取得する
 	if (mainCamera_) {
 		// メインカメラがまだ登録されていない場合は、ダミーデータを返す

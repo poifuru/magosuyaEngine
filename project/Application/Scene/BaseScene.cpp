@@ -2,7 +2,7 @@
 #include "BaseScene.h"
 #include "EditorManager.h"
 
-void BaseScene::Update(CameraData* cameraData) {
+void BaseScene::Update(const CameraData* cameraData) {
 #ifdef USEIMGUI
 	// エディタがある開発ビルド：Play中ならゲーム、停止中ならエディタ更新
 	if (EditorManager::GetInstance()->IsPlaying()) {
@@ -17,5 +17,5 @@ void BaseScene::Update(CameraData* cameraData) {
 #endif
 }
 
-void BaseScene::UpdateEdit(CameraData* cameraData) {
+void BaseScene::UpdateEdit(const CameraData* cameraData) {
 }

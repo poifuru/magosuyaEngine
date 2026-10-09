@@ -19,6 +19,7 @@ struct Particle;
 struct ParticleConfig;
 
 class EmitterComponent : public Component {
+public:
 	EmitterComponent() = default;
 	~EmitterComponent() override = default;
 

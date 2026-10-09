@@ -16,7 +16,7 @@ public:
 
 	void Initialize();
 
-	virtual void Update(CameraData* cameraData);
+	virtual void Update(const CameraData* cameraData);
 
 	virtual void ImGui(const std::string& label);
 

@@ -55,13 +55,13 @@ namespace MyEngine::LowLevel {
 		/// コマンドアロケータを取得
 		/// </summary>
 		/// <returns></returns>
-		ID3D12CommandAllocator* GetCommandAllocator() { return commandAllocator_.Get(); }
+		ID3D12CommandAllocator* GetCommandAllocator() const { return commandAllocator_.Get(); }
 
 		/// <summary>
 		/// コマンドリストを取得
 		/// </summary>
 		/// <returns></returns>
-		ID3D12GraphicsCommandList* GetCommandList() { return commandList_.Get(); }
+		ID3D12GraphicsCommandList* GetCommandList() const { return commandList_.Get(); }
 
 	private:
 		// コマンドアロケータ

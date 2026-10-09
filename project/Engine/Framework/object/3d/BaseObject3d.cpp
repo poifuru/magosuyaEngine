@@ -13,7 +13,7 @@ void BaseObject3d::Initialize() {
 	transform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 }
 
-void BaseObject3d::Update(CameraData* cameraData) {
+void BaseObject3d::Update(const CameraData* cameraData) {
 	Matrix4x4 world = CalculateWorldMatrix();
 	transformMatrixData_.World = world;
 	transformMatrixData_.WVP = world * cameraData->vp;

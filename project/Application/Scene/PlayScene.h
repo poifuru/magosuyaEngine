@@ -14,10 +14,10 @@ public:
 	void Initialize() override;
 
 	// 更新(ゲーム中)
-	void UpdateGame(CameraData* cameraData) override;
+	void UpdateGame(const CameraData* cameraData) override;
 
 	// 更新(編集中)
-	void UpdateEdit(CameraData* cameraData) override;
+	void UpdateEdit(const CameraData* cameraData) override;
 
 	void Draw(MyEngine::Rendering::Renderer* renderer) override;
 

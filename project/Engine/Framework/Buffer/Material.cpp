@@ -44,7 +44,7 @@ void MyEngine::Rendering::Material::Update() {
 	}
 }
 
-MyEngine::Rendering::ShadingModel MyEngine::Rendering::Material::GetShadingModel() {
+MyEngine::Rendering::ShadingModel MyEngine::Rendering::Material::GetShadingModel() const {
 	return shadingModel_;
 }
 
@@ -52,7 +52,7 @@ void MyEngine::Rendering::Material::SetShadingModel(MyEngine::Rendering::Shading
 	shadingModel_ = shadingModel;
 }
 
-MyEngine::Rendering::BlendModeType MyEngine::Rendering::Material::GetBlendMode() {
+MyEngine::Rendering::BlendModeType MyEngine::Rendering::Material::GetBlendMode() const {
 	return blendMode_;
 }
 
@@ -66,7 +66,7 @@ void MyEngine::Rendering::Material::SetBlendMode(MyEngine::Rendering::BlendModeT
 	}
 }
 
-bool MyEngine::Rendering::Material::IsDepthEnable() {
+bool MyEngine::Rendering::Material::IsDepthEnable() const {
 	return isDepthEnable_;
 }
 
@@ -74,7 +74,7 @@ void MyEngine::Rendering::Material::SetDepthEnable(bool enable) {
 	isDepthEnable_ = enable;
 }
 
-bool MyEngine::Rendering::Material::IsDoubleSided() {
+bool MyEngine::Rendering::Material::IsDoubleSided() const {
 	return isDoubleSided_;
 }
 
@@ -82,11 +82,11 @@ void MyEngine::Rendering::Material::SetDoubleSided(bool doubleSided) {
 	isDoubleSided_ = doubleSided;
 }
 
-bool MyEngine::Rendering::Material::IsDepthWrite() {
+bool MyEngine::Rendering::Material::IsDepthWrite() const {
 	return depthWriteEnable_;
 }
 
-uint8_t MyEngine::Rendering::Material::GetLayer() {
+uint8_t MyEngine::Rendering::Material::GetLayer() const {
 	return layer_;
 }
 

@@ -26,7 +26,7 @@ void ParticleComponent::Update() {
 	trans.translate = Math::Add(trans.translate, Math::Multiply(Time::GetDeltaTime(), velocity_));
 
 	// 💡 ビルボード設定（常にカメラの方向を向くように回転をコピーする）
-	CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+	const CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
 	trans.rotate = cameraData.transform.rotate;
 
 	// 3. 徐々にスケールを小さくする

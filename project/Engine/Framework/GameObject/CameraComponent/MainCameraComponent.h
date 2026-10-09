@@ -22,7 +22,7 @@ public:
 	const char* GetName() const override { return "Camera"; }
 
 	// カメラデータを取得
-	CameraData& GetCameraData() { return cameraData_; }
+	const CameraData& GetCameraData() const { return cameraData_; }
 
 	// ニアクリップを取得
 	float GetNear() const { return near_; }

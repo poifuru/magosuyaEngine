@@ -8,7 +8,7 @@ namespace {
 		const MyEngine::Rendering::Node* node,
 		const Matrix4x4& parentMatrix,
 		const Matrix4x4& modelWorld,
-		CameraData* cameraData,
+		const CameraData* cameraData,
 		std::vector<std::unique_ptr<TransformMatrixResource>>& meshBuffers,
 		std::vector<bool>& updatedFlags
 	) {
@@ -54,7 +54,7 @@ void MyEngine::Rendering::Model::Initialize(MyEngine::Rendering::ModelData* mode
 	}
 }
 
-void MyEngine::Rendering::Model::Update(CameraData* cameraData) {
+void MyEngine::Rendering::Model::Update(const CameraData* cameraData) {
 	BaseObject3d::Update(cameraData);
 
 	if (!modelData_ || meshTransformBuffers_.empty()) return;

@@ -11,9 +11,9 @@ public:
 	~TitleScene() override;
 	void Initialize() override;
 	// ゲーム中の更新（スペースキーでPlaySceneへ遷移など）
-	void UpdateGame(CameraData* cameraData) override;
+	void UpdateGame(const CameraData* cameraData) override;
 	// エディタ編集中の更新
-	void UpdateEdit(CameraData* cameraData) override;
+	void UpdateEdit(const CameraData* cameraData) override;
 	void Draw(MyEngine::Rendering::Renderer* renderer) override;
 	PostEffectManager* GetPostEffectManager() override { return postEffectManager_.get(); }
 private:

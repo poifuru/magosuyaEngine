@@ -45,7 +45,7 @@ public:
 	void UnregisterMainCamera(MainCameraComponent* mainCamera);
 
 	// 外部から描画情報をもらうためのインターフェース
-	CameraData& GetCameraData();
+	const CameraData& GetCameraData() const;
 	float GetActiveFov() const { return currentFov_; }
 
 	// カメラシェイクのリクエスト

@@ -8,9 +8,6 @@ namespace MyEngine::LowLevel {
 			static FrameRateController instance;
 			return &instance;
 		}
-		FrameRateController();
-		~FrameRateController() = default;
-
 		/// <summary>
 		/// フレームの開始時に呼び出して、経過時間を計算する
 		/// </summary>
@@ -24,7 +21,10 @@ namespace MyEngine::LowLevel {
 		float GetTimeScale() const { return timeScale_; }					// タイムスケール
 		void SetTimeScale(float scale) { timeScale_ = scale; }
 
-	public:
+	private:
+		FrameRateController();
+		~FrameRateController() = default;
+
 		// コピー・移動禁止
 		FrameRateController(const FrameRateController&) = delete;
 		FrameRateController& operator=(const FrameRateController&) = delete;

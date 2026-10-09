@@ -41,7 +41,7 @@ public:
 	// 全てのコンポーネントにデバッグモードを伝える
 	void SetIsDebugMode(bool flag);
 
-	bool IsDead() { return isDead_; }
+	bool IsDead() const { return isDead_; }
 	void Destroy() { isDead_ = true; } // 死ぬときに呼ぶ
 
 	void SetSerializable(bool flag) { isSerializable_ = flag; }

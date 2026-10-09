@@ -186,7 +186,7 @@ void PlayScene::DrawPauseMenu() {
 #endif
 }
 
-void PlayScene::UpdateGame(CameraData* cameraData) {
+void PlayScene::UpdateGame(const CameraData* cameraData) {
 	auto* rawInput = InputManager::GetInstance()->GetRawInput();
 
 	// ESCキーで一時停止（ポーズ）/ 再開を切り替え
@@ -240,7 +240,7 @@ void PlayScene::UpdateGame(CameraData* cameraData) {
 	}
 }
 
-void PlayScene::UpdateEdit(CameraData* cameraData) {
+void PlayScene::UpdateEdit(const CameraData* cameraData) {
 	// カメラ（デバッグカメラ）を動かす
 	for (auto& obj : gameObjects_) {
 		if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {

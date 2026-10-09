@@ -57,7 +57,4 @@ private:
 	std::string texturePath_;
 
 	std::shared_ptr<MyEngine::Rendering::Material> material_ = nullptr;
-
-	// リセット防止
-	bool isInitialized_ = false;
 };

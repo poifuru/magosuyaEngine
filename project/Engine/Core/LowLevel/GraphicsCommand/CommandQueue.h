@@ -31,7 +31,7 @@ namespace MyEngine::LowLevel {
 		/// コマンドキューを取得
 		/// </summary>
 		/// <returns></returns>
-		ID3D12CommandQueue* GetCommandQueue() { return commandQueue_.Get(); }
+		ID3D12CommandQueue* GetCommandQueue() const { return commandQueue_.Get(); }
 
 	private:
 		// コマンドキュー

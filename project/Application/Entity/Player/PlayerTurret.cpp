@@ -37,7 +37,7 @@ void PlayerTurret::Update(GameObject* gameObject, GameObject* reticleObject) {
 	}
 
 	// 狙っているターゲット位置（カメラ正面のレティクル位置固定）を取得
-	CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+	const CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
 	Vector3 camPos = { cameraData.world.m[3][0], cameraData.world.m[3][1], cameraData.world.m[3][2] };
 	Vector3 camForward = { cameraData.world.m[2][0], cameraData.world.m[2][1], cameraData.world.m[2][2] };
 

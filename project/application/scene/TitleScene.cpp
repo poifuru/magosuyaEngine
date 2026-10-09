@@ -84,7 +84,7 @@ void TitleScene::Initialize() {
 #endif
 }
 
-void TitleScene::UpdateGame(CameraData* cameraData) {
+void TitleScene::UpdateGame(const CameraData* cameraData) {
 	// スペースキーまたはゲームパッドのボタンでインゲームへ遷移
 	auto* rawInput = InputManager::GetInstance()->GetRawInput();
 	if (rawInput->Trigger(VK_SPACE)) {
@@ -120,7 +120,7 @@ void TitleScene::UpdateGame(CameraData* cameraData) {
 	}
 }
 
-void TitleScene::UpdateEdit(CameraData* cameraData) {
+void TitleScene::UpdateEdit(const CameraData* cameraData) {
 	// エディタ編集中の更新処理
 	if (!createQueue_.empty()) {
 		for (auto& newObj : createQueue_) {

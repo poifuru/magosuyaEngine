@@ -27,9 +27,9 @@ public:
 	// Engineの登録用（リサイズ連携のため）
 	void RegisterEngine(MyEngine::LowLevel::Engine* engine) { engine_ = engine; }
 
-	HWND GetHwnd() { return hwnd_; }
-	int32_t& GetWindowWidth() { return windowWidth_; }
-	int32_t& GetWindowHeight() { return windowHeight_; }
+	HWND GetHwnd() const { return hwnd_; }
+	int32_t GetWindowWidth() const { return windowWidth_; }
+	int32_t GetWindowHeight() const { return windowHeight_; }
 	float GetAspectRatio() const { return static_cast<float>(windowWidth_) / static_cast<float>(windowHeight_); }
 
 private:

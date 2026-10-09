@@ -41,7 +41,7 @@ void GameObject::Update() {
 	Matrix4x4 world = Math::MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
 	
 	// カメラデータを取得
-	CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+	const CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
 
 	TransformMatrixData transformData{};
 	transformData.World = world;
@@ -57,7 +57,7 @@ void GameObject::UpdateTransformBuffer() {
 	Matrix4x4 world = Math::MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
 
 	// カメラデータを取得
-	CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
+	const CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
 	TransformMatrixData transformData{};
 	transformData.World = world;
 	transformData.WVP = Math::Multiply(world, cameraData.vp);

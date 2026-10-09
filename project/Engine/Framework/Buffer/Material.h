@@ -29,22 +29,22 @@ namespace MyEngine::Rendering {
 		void Update();
 
 		// シェーダーやテクスチャの設定
-		MyEngine::Rendering::ShadingModel GetShadingModel();
+		MyEngine::Rendering::ShadingModel GetShadingModel() const;
 		void SetShadingModel(MyEngine::Rendering::ShadingModel shadingModel);
 
-		MyEngine::Rendering::BlendModeType GetBlendMode();
+		MyEngine::Rendering::BlendModeType GetBlendMode() const;
 		void SetBlendMode(MyEngine::Rendering::BlendModeType blenMode);
 
-		bool IsDepthEnable();
+		bool IsDepthEnable() const;
 		void SetDepthEnable(bool enable);
 
-		bool IsDoubleSided();
+		bool IsDoubleSided() const;
 		void SetDoubleSided(bool doubleSided);
 
-		bool IsDepthWrite();
+		bool IsDepthWrite() const;
 		void SetDepthWrite(bool writeEnable) { depthWriteEnable_ = writeEnable; }
 
-		uint8_t GetLayer();
+		uint8_t GetLayer() const;
 		void SetLayer(uint8_t layer);
 
 		uint32_t GetTextureIndex() const { return textureIndex_; }
