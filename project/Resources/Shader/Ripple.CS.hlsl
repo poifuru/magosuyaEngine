@@ -61,23 +61,32 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     // 周囲4ピクセルの1フレーム前の高さ(R)を取得
     int w = (int) width;
     int h = (int) height;
-    float left = gTextures[gSimBuffer.preTextureIndex].Load(int3(max(pos.x - pixelOffset, 0), pos.y, 0)).r;
-    float right = gTextures[gSimBuffer.preTextureIndex].Load(int3(min(pos.x + pixelOffset, w - 1), pos.y, 0)).r;
-    float up = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, min(pos.y + pixelOffset, h - 1), 0)).r;
-    float down = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, max(pos.y - pixelOffset, 0), 0)).r;
+    float4 left = gTextures[gSimBuffer.preTextureIndex].Load(int3(max(pos.x - pixelOffset, 0), pos.y, 0));
+    float4 right = gTextures[gSimBuffer.preTextureIndex].Load(int3(min(pos.x + pixelOffset, w - 1), pos.y, 0));
+    float4 up = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, min(pos.y + pixelOffset, h - 1), 0));
+    float4 down = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, max(pos.y - pixelOffset, 0), 0));
     
     // ------------------------
     // 波動方程式で波の広がりを計算
     // ------------------------
-    float neighborAvg = (left + right + up + down) * 0.25f;
+    float neighborAvg = (left.r + right.r + up.r + down.r) * 0.25f;
     
-    // 波の伝播速度パラメータ（0.5～1.8程度で波の伝わる速さが変わる）
-    float waveSpeed = 0.5f;
-    // 減衰率（0.95～0.99程度。小さいとすぐ消え、大きいと長く残る）
+    // 波の伝わる速度
+    float waveSpeed = 1.0f;
+    
+    // 速度 = 今の高さ - 前の高さ
+    float velocity = currentHeight - prevHeight;
+    float neighborVelocity = ((left.r - left.g) + (right.r - right.g) + (up.r - up.g) + (down.r - down.g)) * 0.25f;
+    
+    // 波の粘性
+    float viscosity = 0.15f;
+    velocity = lerp(velocity, neighborVelocity, viscosity);
+    
+    // 波の減衰率（0.95～0.99程度。小さいとすぐ消え、大きいと長く残る）
     float damp = 0.996f;
     
     // 波動方程式: newHeight = (2 * current - prev + waveSpeed * (avg - current)) * damp
-    float newHeight = (2.0f * currentHeight - prevHeight + waveSpeed * (neighborAvg - currentHeight)) * damp;
+    float newHeight = (currentHeight + velocity + waveSpeed * (neighborAvg - currentHeight)) * damp;
     
     // -----------------------------------------------
     // 前フレームの周囲4ピクセルの「泡 (B)」を取得してぼかす
@@ -92,7 +101,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     
     // その場の泡と周囲のぼかしを少し混ぜて、点々の隙間を繋ぎ合わせる
     float blendedFoam = lerp(prevFoam, foamAvg, 0.4f);
-    float newFoam = blendedFoam * 0.996f;
+    float newFoam = blendedFoam * 0.997f;
     
     // ---------------------------
     // オブジェクトの移動による波の注入
@@ -118,29 +127,25 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
         float bowOffset = 0.4f; // 船首の前方距離
         float widthOffset = 0.2f; // 船の横幅の半分
         
-        float2 leftPoint = (fwd * bowOffset) - (rgt * widthOffset);
-        float2 rightPoint = (fwd * bowOffset) + (rgt * widthOffset);
-        
-        float distLeft = length(diffWorld - leftPoint);
-        float distRight = length(diffWorld - rightPoint);
-        float distToImpact = min(distLeft, distRight);
-        
         // 衝撃半径
-        float impactRadius = 1.8f;
-        if (distToImpact < impactRadius)
+        float impactRadius = 1.5f;
+       
+        float r2 = dot(diffWorld, diffWorld) / (impactRadius * impactRadius);
+        if (r2 < 6.0f)
         {
-            // 0.0 〜 1.0 の正規化距離
-            float normDist = distToImpact / impactRadius;
+            float falloff = exp(-r2 * 1.5f); // 釣り鐘カーブ
             
-            // ガウシアン風の滑らかな鐘型カーブ
-            float shapeCurve = exp(-normDist * normDist * 3.0f);
+            float2 velocity = gSimBuffer.forward; // m/sの速度ベクトル
+            float push = dot(velocity, diffWorld) / impactRadius; // 前+ / 後ろ- / 横0
             
-            // 速度補間を掛けて、動き出しと停止を滑らかにする
-            float impact = shapeCurve * 0.4f * speedFactor;
+            float speed = length(velocity);
+            float speedMask = smoothstep(1.0f, 4.0f, speed);
+            float accel = push * 100.0f * falloff * speedMask; // 加速度[m/s^2]
+            float dt = gSimBuffer.deltaTime;
             
-            newHeight += impact;
+            newHeight += accel * dt * dt;
         }
-        
+            
         // -------------------------------------------------------------
         // 泡の注入（発生半径を少し広げて前後を重ね合わせる）
         // -------------------------------------------------------------

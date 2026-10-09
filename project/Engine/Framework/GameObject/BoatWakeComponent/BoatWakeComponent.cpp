@@ -8,6 +8,7 @@
 #include "CameraOrganizer.h"
 #include "ComponentType.h"
 #include "MathFunction.h"
+#include "Time.h"
 
 void BoatWakeComponent::Initialize() {
 	if(isInitialized_) return;
@@ -111,6 +112,10 @@ void BoatWakeComponent::ImGui() {
 	ImGui::DragFloat("Max Lifetime", &maxLifetime_, 0.1f, 0.5f, 10.0f);
 	ImGui::DragFloat("Trail Width", &trailWidth_, 0.1f, 0.1f, 10.0f);
 	ImGui::DragFloat("Width Expand Rate", &widthExpandRate_, 0.1f, 0.0f, 5.0f);
+	ImGui::Text("speed %.2f m/s", Math::Length(velocity));
+	auto* heap = GetGameObject()->GetContext()->heapManager;
+	D3D12_GPU_DESCRIPTOR_HANDLE handle = heap->GetGpuHandle(rippleSim_.GetTextureSrvIndex());
+	ImGui::Image((ImTextureID)handle.ptr, ImVec2(256, 256));
 }
 
 void BoatWakeComponent::Serialize(json& j) const {
@@ -153,8 +158,12 @@ void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 	const Vector3& boatPos = gameObject_->GetTransform().translate;
 
 	// 前フレームからの移動距離（スピード）を計算
+	float dt = Time::GetDeltaTime();
+	Vector3 v = (dt > 0.0f) ? (boatPos - lastPos_) / dt : Vector3{};
 	float speed = Math::Length((boatPos - lastPos_));
 	lastPos_ = boatPos; // 次回用に保存
+
+	/*Vector2*/ velocity = { v.x, v.z };   // m/s
 
 	// プレイヤーの前方ベクトルを取得
 	Vector2 forward = {};
@@ -167,7 +176,7 @@ void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 	}
 
 	// CSを実行してテクスチャを更新
-	rippleSim_.Dispatch(cmdList, boatPos, speed, Time::GetDeltaTime(), waterMin, waterSize, forward);
+	rippleSim_.Dispatch(cmdList, boatPos, speed, dt, waterMin, waterSize, velocity);
 
 	// CSが作ったテクスチャのインデックスをマテリアルへ指定
 	if (material_) {

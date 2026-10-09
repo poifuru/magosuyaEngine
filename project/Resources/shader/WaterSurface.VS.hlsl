@@ -112,7 +112,7 @@ VertexShaderOutput main(VertexShaderInput input)
             float4 rippleData = gTextures[gWaterSurface.rippleTextureIndex].SampleLevel(gSampler, rippleUV, 0);
     
             // CSが書いた波の高さをY座標に加算
-            float rippleHeight = rippleData.r * 2.3f;
+            float rippleHeight = rippleData.r * 1.0f;
             position.y += rippleHeight;
         //}
     }

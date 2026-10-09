@@ -71,6 +71,8 @@ private:
 	float trailWidth_ = 1.5f;    // 船直後の航跡の基本幅
 	float widthExpandRate_ = 1.5f; // 後方へのV字拡散率
 	Vector3 lastSpawnPosition_{ 0.0f, 0.0f, 0.0f };
+	Vector2 smoothedVelocity_{};
+	Vector2 velocity;
 
 	static constexpr size_t kMaxVertices = 1000; // 確保しておく最大頂点数
 };
