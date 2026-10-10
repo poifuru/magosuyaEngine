@@ -49,6 +49,9 @@ private:
 	// メッシュ構築処理
 	void GenerateMesh();
 
+	// iWave用のカーネルを構築する
+	void BuildIWaveKernel();
+
 private:
 	RippleSimulator rippleSim_;		// 波紋シミュレーター
 	Vector3 lastPos_;
@@ -75,4 +78,7 @@ private:
 	Vector2 velocity;
 
 	static constexpr size_t kMaxVertices = 1000; // 確保しておく最大頂点数
+
+	// iWave用のカーネル
+	Vector4 kernel_[43]{};
 };

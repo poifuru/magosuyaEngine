@@ -39,7 +39,8 @@ void RippleSimulator::Dispatch(
 	float deltaTime,
 	const Vector2& waterMin, 
 	const Vector2& waterSize,
-	const Vector2& forward
+	const Vector2& forward,
+	Vector4 kernel[43]
 ) {
 	// 今回使うパイプライン (current) と 前回のパイプライン (prev)
 	auto* currentPipeline = (currentIndex_ == 0) ? &prePipeline_ : &currentPipeline_;
@@ -58,6 +59,9 @@ void RippleSimulator::Dispatch(
 	params.preTextureIndex = prevPipeline->GetTextureSrvIndex();
 	params.speed = speed;
 	params.forward = forward;
+	for(int i = 0; i <= 42; ++i) {
+		params.iWaveKernel[i] = kernel[i];
+	}
 
 	// 現在のパイプラインのDispatchを呼ぶ
 	currentPipeline->Dispatch(cmdList, params);

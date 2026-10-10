@@ -21,6 +21,8 @@ struct RippleSimulationParams {
 	uint32_t preTextureIndex;
 	float speed;
 	Vector2 forward;
+
+	Vector4 iWaveKernel[43];
 };
 
 class RippleSimulator {
@@ -45,7 +47,8 @@ public:
 		float deltaTime,
 		const Vector2& waterMin, 
 		const Vector2& waterSize,
-		const Vector2& forward
+		const Vector2& forward,
+		Vector4 kernel[43]
 	);
 
 	// 作成されたテクスチャのバインドレス SRV インデックスを取得

@@ -1,4 +1,7 @@
-    struct SimulationBuffer
+// 1: iWave / 0: 波動方程式
+#define USE_IWAVE 0    
+    
+struct SimulationBuffer
 {
     float3 position; // 物体のワールド座標
     float time; // 経過時間
@@ -13,6 +16,8 @@
     uint preTextureIndex; // 前フレームのテクスチャインデックス
     float speed;
     float2 forward; // 前方ベクトル
+    
+    float4 iWaveKernel[43]; // iWave用のカーネル
 };
 
 ConstantBuffer<SimulationBuffer> gSimBuffer : register(b0);
@@ -61,32 +66,51 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     // 周囲4ピクセルの1フレーム前の高さ(R)を取得
     int w = (int) width;
     int h = (int) height;
-    float4 left = gTextures[gSimBuffer.preTextureIndex].Load(int3(max(pos.x - pixelOffset, 0), pos.y, 0));
-    float4 right = gTextures[gSimBuffer.preTextureIndex].Load(int3(min(pos.x + pixelOffset, w - 1), pos.y, 0));
-    float4 up = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, min(pos.y + pixelOffset, h - 1), 0));
-    float4 down = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, max(pos.y - pixelOffset, 0), 0));
     
-    // ------------------------
-    // 波動方程式で波の広がりを計算
-    // ------------------------
+    // --------------
+    // 波の広がりを計算
+    // --------------
+    float dt = gSimBuffer.deltaTime;
+    float newHeight;
+    
+#if USE_IWAVE   // iWaveによる計算
+    // iWave用カーネルの畳み込み
+    float vd = 0.0f;
+    for (int y = -6; y <= 6; ++y)
+    {
+        for (int x = -6; x <= 6; ++x)
+        {
+            // 読む場所(端ではみ出さないようにclamp)
+            int2 p = clamp(pos + int2(x, y), int2(0, 0), int2(w - 1, h - 1));
+            float neighborHeight = gTextures[gSimBuffer.preTextureIndex].Load(int3(p, 0)).r;
+            
+            // C++で送ったカーネルから重みを取り出す
+            int i = (y + 6) * 13 + (x + 6);
+            float weight = gSimBuffer.iWaveKernel[i >> 2][i & 3];
+            
+            vd += weight * neighborHeight;
+        }
+    }
+    
+    float gravity = 12.0f;  // 波の速さ(大きいほど早く伝わる)
+    float alpha = 0.75f;     // 減衰(大きいほど早く消える)
+    
+    float newHeight = (currentHeight * (2.0f - alpha * dt) - prevHeight - gravity * dt * dt * vd) / (1.0f + alpha * dt);
+    
+#else   // 波動方程式での計算
+    float4 left = gTextures[gSimBuffer.preTextureIndex].Load(int3(max(pos.x - 1, 0), pos.y, 0));
+    float4 right = gTextures[gSimBuffer.preTextureIndex].Load(int3(min(pos.x + 1, w - 1), pos.y, 0));
+    float4 up = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, min(pos.y + 1, h - 1), 0));
+    float4 down = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, max(pos.y - 1, 0), 0));
+
     float neighborAvg = (left.r + right.r + up.r + down.r) * 0.25f;
-    
-    // 波の伝わる速度
-    float waveSpeed = 1.0f;
-    
-    // 速度 = 今の高さ - 前の高さ
+
+    float waveSpeed = 0.26f; // 約3 m/s
+    float damp = 0.993f;
+
     float velocity = currentHeight - prevHeight;
-    float neighborVelocity = ((left.r - left.g) + (right.r - right.g) + (up.r - up.g) + (down.r - down.g)) * 0.25f;
-    
-    // 波の粘性
-    float viscosity = 0.15f;
-    velocity = lerp(velocity, neighborVelocity, viscosity);
-    
-    // 波の減衰率（0.95～0.99程度。小さいとすぐ消え、大きいと長く残る）
-    float damp = 0.996f;
-    
-    // 波動方程式: newHeight = (2 * current - prev + waveSpeed * (avg - current)) * damp
-    float newHeight = (currentHeight + velocity + waveSpeed * (neighborAvg - currentHeight)) * damp;
+    newHeight = (currentHeight + velocity + waveSpeed * (neighborAvg - currentHeight)) * damp;
+#endif
     
     // -----------------------------------------------
     // 前フレームの周囲4ピクセルの「泡 (B)」を取得してぼかす
@@ -140,7 +164,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
             
             float speed = length(velocity);
             float speedMask = smoothstep(1.0f, 4.0f, speed);
-            float accel = push * 100.0f * falloff * speedMask; // 加速度[m/s^2]
+            float accel = push * 50.0f * falloff * speedMask; // 加速度[m/s^2]
             float dt = gSimBuffer.deltaTime;
             
             newHeight += accel * dt * dt;

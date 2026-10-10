@@ -212,37 +212,37 @@ PixelShaderOutput main(VertexShaderOutput input)
     finalAlpha = lerp(finalAlpha, 1.0f, distFactor);
     
     // 泡の描画部分
-    if (gWaterSurface.rippleTextureIndex > 0)
-    {
-        //if (gWaterSurface.rippleTextureIndex > 0 &&
-        //input.rippleUV.x >= 0.0f && input.rippleUV.x <= 1.0f &&
-        //input.rippleUV.y >= 0.0f && input.rippleUV.y <= 1.0f)
-        //{
-            float4 rippleData = g_Textures[gWaterSurface.rippleTextureIndex].Sample(gSampler, input.rippleUV);
-            float foamAmount = rippleData.b; // CSの泡の濃さ
+    //if (gWaterSurface.rippleTextureIndex > 0)
+    //{
+    //    //if (gWaterSurface.rippleTextureIndex > 0 &&
+    //    //input.rippleUV.x >= 0.0f && input.rippleUV.x <= 1.0f &&
+    //    //input.rippleUV.y >= 0.0f && input.rippleUV.y <= 1.0f)
+    //    //{
+    //        float4 rippleData = g_Textures[gWaterSurface.rippleTextureIndex].Sample(gSampler, input.rippleUV);
+    //        float foamAmount = rippleData.b; // CSの泡の濃さ
         
-        // 感度を持ち上げてノイズをブレンドする
-            float foamFactor = saturate(foamAmount * 3.0f);
+    //    // 感度を持ち上げてノイズをブレンドする
+    //        float foamFactor = saturate(foamAmount * 3.0f);
         
-            if (foamFactor > 0.01f)
-            {
-            // ワールド座標から泡の模様を生成
-                float noise = foamNoise(input.worldPosition.xz * 8.0f) * 0.5f + 0.5f;
+    //        if (foamFactor > 0.01f)
+    //        {
+    //        // ワールド座標から泡の模様を生成
+    //            float noise = foamNoise(input.worldPosition.xz * 8.0f) * 0.5f + 0.5f;
             
-            // 泡の濃さとノイズを合成して、粒状の泡模様を作る
-                float foamPattern = saturate(foamFactor * (noise * 0.5f + 0.5f));
+    //        // 泡の濃さとノイズを合成して、粒状の泡模様を作る
+    //            float foamPattern = saturate(foamFactor * (noise * 0.5f + 0.5f));
             
-            // くっきり真っ白な泡カラー（少し青みのある白）
-                float3 foamColor = float3(0.96f, 0.98f, 1.0f);
+    //        // くっきり真っ白な泡カラー（少し青みのある白）
+    //            float3 foamColor = float3(0.96f, 0.98f, 1.0f);
             
-            // 水面の色に泡を合成
-                waterColor = lerp(waterColor, foamColor, foamPattern);
+    //        // 水面の色に泡を合成
+    //            waterColor = lerp(waterColor, foamColor, foamPattern);
             
-            // 泡の部分はスケスケにならないようアルファ値も1.0へ引き上げる
-                finalAlpha = lerp(finalAlpha, 1.0f, foamPattern);
-            }
-        //}
-    }
+    //        // 泡の部分はスケスケにならないようアルファ値も1.0へ引き上げる
+    //            finalAlpha = lerp(finalAlpha, 1.0f, foamPattern);
+    //        }
+    //    //}
+    //}
     
     // 最終的なカラーを出力
     output.color.rgb = waterColor;
