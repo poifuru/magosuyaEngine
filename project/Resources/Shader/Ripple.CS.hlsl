@@ -123,9 +123,8 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     //　周囲の泡の平均（ぼかし）を取る
     float foamAvg = (fLeft + fRight + fUp + fDown) * 0.25f;
     
-    // その場の泡と周囲のぼかしを少し混ぜて、点々の隙間を繋ぎ合わせる
-    float blendedFoam = lerp(prevFoam, foamAvg, 0.4f);
-    float newFoam = blendedFoam * 0.997f;
+    float blendedFoam = lerp(prevFoam, foamAvg, 0.1f); // 0.4 → 0.1（にじみを弱く）
+    float newFoam = blendedFoam * 0.985f; // 0.996 → 0.985（1秒で約6割消える）
     
     // ---------------------------
     // オブジェクトの移動による波の注入
