@@ -29,9 +29,10 @@ struct WaterSurfaceInfo
     float2 padding1;
 };
 
+static const int kMaxWaves = 6;
 struct WaterSurface
 {
-    WaterSurfaceInfo waves[4];
+    WaterSurfaceInfo waves[kMaxWaves];
     float time;
     int numActiveWaves;
     float nearFadeDistance;
@@ -125,10 +126,10 @@ PixelShaderOutput main(VertexShaderOutput input)
 
     // 遠くはモアレになるので弱める
     float cameraDistance = length(gCamera.worldPosition - input.worldPosition);
-    float detailFade = saturate(1.0f - cameraDistance / 250.0f);
+    float detailFade = saturate(1.0f - cameraDistance / 60.0f);
 
     // 法線マップの傾き（xy）を、水平な面の傾き（xz）として足す
-    float detailStrength = 0.15f;
+    float detailStrength = 0.06f;
     float2 slope = (nA.xy + nB.xy) * detailStrength * detailFade;
     float3 worldNormal = normalize(baseNormal + float3(slope.x, 0.0f, slope.y));
     
@@ -191,7 +192,7 @@ PixelShaderOutput main(VertexShaderOutput input)
         float dhdz = -(hU - hD) / (2.0f * texelZ); // VSでUVのyを反転しているので符号も反転
 
         // 見た目の強さ。0.3 で VS の高さと物理的に一致、上げるほど航跡が目立つ
-        float rippleNormalStrength = 3.0f;
+        float rippleNormalStrength = 1.0f;
 
         // 高さ場の法線は (-dh/dx, 1, -dh/dz)。傾きを足し込む
         finalN = normalize(worldNormal + float3(-dhdx, 0.0f, -dhdz) * rippleNormalStrength);
@@ -211,24 +212,22 @@ PixelShaderOutput main(VertexShaderOutput input)
     const float3 deepColor = float3(0.01f, 0.10f, 0.18f); // 深い青
     const float3 shallowTint = float3(0.05f, 0.45f, 0.45f); // 見下ろしたときの青緑
     float3 bodyColor = lerp(deepColor, shallowTint, pow(saturate(V.y), 1.5f) * 0.75f);
-    
-    // 太陽の方へ傾いた面は明るく、反対へ傾いた面は暗く（平らな面では変化なし）
-    float tilt = dot(finalN.xz, normalize(L.xz + 0.0001f));
-    bodyColor *= saturate(1.0f + tilt * 2.0f) * 0.5f + 0.5f;
 
     // ---------- フレネルで混ぜる ----------
     float waterF = 0.02f + 0.98f * pow(1.0f - saturate(dot(finalN, V)), 5.0f);
     float3 waterColor = lerp(bodyColor, skyColor, waterF);
 
     // ---------- 太陽のハイライト ----------
+    float roughness = 0.08f;
     float3 H = normalize(V + L);
-    float spec = pow(saturate(dot(finalN, H)), 512.0f); // 512 が大きいほど小さく鋭い光
-    waterColor += sunColor * spec * 0.15f;
+    float D = DistributionGGX(finalN, H, roughness);
+    float G = GeometrySmith(finalN, V, L, roughness);
+    float Fh = 0.02f + 0.98f * pow(1.0f - saturate(dot(H, V)), 5.0f);
+    float NdotV = max(dot(finalN, V), 1e-3f);
+    float specularTerm = min(D * G * Fh / max(4.0f * NdotV, 1e-3f), 20.0f);
+    waterColor += sunColor * specularTerm * step(0.0f, L.y);
     
     float3 minAmbient = float3(0.0f, 0.25f, 0.2f); // 最低限の明るさ（暗いエメラルド）
-    
-    // 現在の計算結果（waterColor）がこれより暗い部分を、minAmbient で底上げする
-    waterColor = max(waterColor, minAmbient);
     
     // カメラからの距離を計算
     float cameraDist = length(gCamera.worldPosition - input.worldPosition);

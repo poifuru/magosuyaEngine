@@ -48,7 +48,7 @@ void WaterSurfaceComponent::Initialize() {
 		}
 	}
 	// 残りの波は初期値0（フラット）にしておく
-	for(int i = 2; i < 4; ++i) {
+	for(int i = 2; i < kMaxWaves; ++i) {
 		waves_[i].amplitude = 0.0f;
 		waves_[i].frequency = 1.0f;
 		waves_[i].steepness = 0.0f;
@@ -73,7 +73,7 @@ void WaterSurfaceComponent::Update() {
 	WaterSurfaceForGPU params{};
 	params.time = time_;
 	params.numActiveWaves = numActiveWaves_;
-	for(int i = 0; i < 4; ++i) {
+	for(int i = 0; i < kMaxWaves; ++i) {
 		params.waves[i] = waves_[i];
 	}
 	params.nearFadeDistance = nearFadeDistance_;
@@ -147,7 +147,7 @@ void WaterSurfaceComponent::ImGui() {
 	ImGui::Separator();
 	ImGui::Text("Gerstner Wave System");
 	// 有効にする波の数 (1〜4)
-	ImGui::SliderInt("Active Waves Count", &numActiveWaves_, 1, 4);
+	ImGui::SliderInt("Active Waves Count", &numActiveWaves_, 1, kMaxWaves);
 	// 各波のパラメータを編集
 	for(int i = 0; i < numActiveWaves_; ++i) {
 		ImGui::PushID(i); // IDの衝突を防ぐため、波のインデックスをPush
@@ -191,7 +191,7 @@ void WaterSurfaceComponent::Serialize(json& j) const {
 	j["SubdivisionZ"] = subdivisionZ_;
 
 	json wavesJ = json::array();
-	for(int i = 0; i < 4; ++i) {
+	for(int i = 0; i < kMaxWaves; ++i) {
 		json w;
 		w["amplitude"] = waves_[i].amplitude;
 		w["frequency"] = waves_[i].frequency;
@@ -224,7 +224,7 @@ void WaterSurfaceComponent::Deserialize(const json& j) {
 	}
 	if(j.contains("waves") && j["waves"].is_array()) {
 		const auto& wavesJ = j["waves"];
-		int count = std::min(4, (int)wavesJ.size());
+		int count = std::min(kMaxWaves, (int)wavesJ.size());
 		for(int i = 0; i < count; ++i) {
 			const auto& wJ = wavesJ[i];
 			if(wJ.contains("amplitude")) waves_[i].amplitude = wJ["amplitude"];

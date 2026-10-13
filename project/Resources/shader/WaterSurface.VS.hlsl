@@ -17,9 +17,10 @@ struct WaterSurfaceInfo
     float2 padding1;
 };
 
+static const int kMaxWaves = 6;
 struct WaterSurface
 {
-    WaterSurfaceInfo waves[4];  // 4つの波の情報（32バイト * 4 = 128バイト）
+    WaterSurfaceInfo waves[kMaxWaves]; // 4つの波の情報（32バイト * 4 = 128バイト）
     float time;                 // 時間
     int numActiveWaves;         // 現在有効にする波の数（1〜4）
     float nearFadeDistance;
@@ -63,7 +64,7 @@ VertexShaderOutput main(VertexShaderInput input)
     float t = gWaterSurface.time;
     int count = gWaterSurface.numActiveWaves;
 
-    for (int i = 0; i < count; ++i)
+    for (int i = 0; i < min(count, kMaxWaves); ++i)
     {
         float A = gWaterSurface.waves[i].amplitude;
         float k = gWaterSurface.waves[i].frequency; // 波数 k = 2π/波長

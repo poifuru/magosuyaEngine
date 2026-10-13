@@ -1,5 +1,7 @@
 #pragma once
 
+static const int kMaxWaves = 6;
+
 struct VertexShaderOutput
 {
     float4 position : SV_POSITION;

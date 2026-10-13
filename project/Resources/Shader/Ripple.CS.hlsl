@@ -174,7 +174,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
             
             float speed = length(velocity);
             float speedMask = smoothstep(1.0f, 4.0f, speed);
-            float accel = push * 150.0f * falloff * speedMask; // 加速度[m/s^2]
+            float accel = push * 2.0f * falloff * speedMask; // 加速度[m/s^2]
             float dt = gSimBuffer.deltaTime;
             
             newHeight += accel * dt * dt;
