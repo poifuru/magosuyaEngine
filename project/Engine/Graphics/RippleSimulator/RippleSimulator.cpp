@@ -63,6 +63,13 @@ void RippleSimulator::Dispatch(
 		params.iWaveKernel[i] = kernel[i];
 	}
 
+	// 前フレームの船の位置 (初回は前フレームが無いので今の位置を使う)
+	if (!hasPrevBoatPos_) {
+		prevBoatPos_ = Vector2(boatPos.x, boatPos.z);
+		hasPrevBoatPos_ = true;
+	}
+	params.prevBoatPosition = prevBoatPos_;
+
 	// 現在のパイプラインのDispatchを呼ぶ
 	currentPipeline->Dispatch(cmdList, params);
 
@@ -71,4 +78,7 @@ void RippleSimulator::Dispatch(
 
 	// 次回のために 0 と 1 を反転（ピンポン！）
 	currentIndex_ = 1 - currentIndex_;
+
+	// 次回のために今の船の位置を覚えておく
+	prevBoatPos_ = Vector2(boatPos.x, boatPos.z);
 }

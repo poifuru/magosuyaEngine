@@ -69,7 +69,7 @@ void ImGuiManager::Initialize(
 
 	ImGuiIO& io = ImGui::GetIO();
 	ImFont* fontJP = io.Fonts->AddFontFromFileTTF(
-		"Resources/AppliMincho/PottaOne-Regular.ttf", 17.0f, nullptr,
+		"Resources/AppliMincho/HigureGothic-Regular.ttf", 17.0f, nullptr,
 		io.Fonts->GetGlyphRangesJapanese());
 	io.FontDefault = fontJP;
 	ImGui_ImplWin32_Init(WindowsAPI::GetInstance()->GetHwnd());

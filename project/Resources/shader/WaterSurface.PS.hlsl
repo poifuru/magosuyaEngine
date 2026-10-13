@@ -255,32 +255,22 @@ PixelShaderOutput main(VertexShaderOutput input)
         float foamAmount = rippleData.b; // CSの泡の濃さ
         
         // 大小二つのノイズを混ぜる(大きい模様 + 細かい模様)
-        float n1 = foamNoise(input.worldPosition.xz * 2.0f); // 大きなまだら
-        float n2 = foamNoise(input.worldPosition.xz * 6.0f); // 細かいちぎれ
-        float noise = (n1 * 0.6f + n2 * 0.4f) * 0.5f + 0.5f; // 0〜1 に
+        float2 fp = input.worldPosition.xz;
+        float n1 = foamNoise(fp * 0.8f + time * 0.15f) * 0.5f + 0.5f; // 大きなムラ
+        float n2 = foamNoise(fp * 2.5f - time * 0.3f) * 0.5f + 0.5f; // 細かいムラ
+        float noise = n1 * 0.6f + n2 * 0.4f;
         
-        // 0.15 以下の薄い泡は 0、0.5 以上ではっきり白にする
-        //float foamMask = smoothstep(0.05f, 0.3f, foamAmount);
-        
-        // 感度を持ち上げてノイズをブレンドする
-        float foamFactor = saturate(foamAmount * 3.0f);
-        
-        if (foamFactor > 0.01f)
-        {
-            // 泡の濃さとノイズを合成して、粒状の泡模様を作る
-            float foamPattern = saturate((foamAmount - (1.0f - noise) * 0.8f) * 3.0f);
+        float foamMask = smoothstep(0.1f, 0.6f, foamAmount * (0.6f + 0.8f * noise)) * 0.85f;
+             
+        // くっきり真っ白な泡カラー（少し青みのある白）
+        float3 foamColor = float3(0.96f, 0.98f, 1.0f);
             
-            // くっきり真っ白な泡カラー（少し青みのある白）
-            float3 foamColor = float3(0.96f, 0.98f, 1.0f);
+        // 水面の色に泡を合成
+        waterColor = lerp(waterColor, foamColor, foamMask);
             
-            // 水面の色に泡を合成
-            waterColor = lerp(waterColor, foamColor, foamPattern);
-            
-            // 泡の部分はスケスケにならないようアルファ値も1.0へ引き上げる
-            finalAlpha = lerp(finalAlpha, 1.0f, foamPattern);
-        }
-        //}
-    }
+        // 泡の部分はスケスケにならないようアルファ値も1.0へ引き上げる
+        finalAlpha = lerp(finalAlpha, 1.0f, foamMask);
+    }   
     
     // 最終的なカラーを出力
     output.color.rgb = waterColor;

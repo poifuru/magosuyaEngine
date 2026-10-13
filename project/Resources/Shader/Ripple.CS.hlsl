@@ -18,6 +18,9 @@ struct SimulationBuffer
     float2 forward; // 前方ベクトル
     
     float4 iWaveKernel[43]; // iWave用のカーネル
+    
+    float2 prevBoatPosition; // 前フレームの船の位置 (x, z)
+    float2 padding2;
 };
 
 ConstantBuffer<SimulationBuffer> gSimBuffer : register(b0);
@@ -180,20 +183,27 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
         // -------------------------------------------------------------
         // 泡の注入（発生半径を少し広げて前後を重ね合わせる）
         // -------------------------------------------------------------
-        
         // 泡は船の後ろから発生させる
-        float sternOffset = 0.5f; // 船の後方へのオフセット
+        float sternOffset = 0.3f; // 船の後方へのオフセット
+        float blendedFoam = lerp(prevFoam, foamAvg, 0.02f); // 0.1 → 0.02(扇形に広がる原因)
         float2 sternPoint = -(fwd * sternOffset); // 船の後ろ側の位置
-        float distToStern = length(diffWorld - sternPoint);
+        
+        // 前フレームの船尾の位置（今の船の位置からの相対座標）
+        float2 prevSternPoint = (gSimBuffer.prevBoatPosition - gSimBuffer.position.xz) + sternPoint;
+        
+        // 前フレームの船尾 → 今の船尾を結ぶ線分までの距離（フレーム間のすき間を埋める）
+        float2 segment = sternPoint - prevSternPoint;
+        float t = saturate(dot(diffWorld - prevSternPoint, segment) / max(dot(segment, segment), 1e-6f));
+        float distToStern = length(diffWorld - (prevSternPoint + segment * t));
     
-        float sternRadius = 2.0f;
+        float sternRadius = 0.7f;
         if (distToStern < sternRadius)
         {
             float normStern = distToStern / sternRadius;
             float sternCurve = exp(-normStern * normStern * 3.0f);
         
-            float foamImpact = sternCurve * 5.0f * speedFactor;
-            newFoam = max(newFoam, foamImpact);
+            float foamImpact = sternCurve * 2.0f * speedFactor;
+            newFoam = saturate(blendedFoam * 0.993f) + foamImpact; // にじまない分、長めに残す
         }
     }
 

@@ -23,6 +23,9 @@ struct RippleSimulationParams {
 	Vector2 forward;
 
 	Vector4 iWaveKernel[43];
+
+	Vector2 prevBoatPosition; // 前フレームの船の位置 (x, z)
+	Vector2 padding2;         // 16バイト境界に揃えるため
 };
 
 class RippleSimulator {
@@ -62,4 +65,8 @@ private:
 
 	// 実際に渡すためのテクスチャインデックス
 	uint32_t textureIndex_;
+
+	// 前フレームの船の位置 (x, z)
+	Vector2 prevBoatPos_{};
+	bool hasPrevBoatPos_ = false; // 初回フレームかどうか
 };
