@@ -38,8 +38,8 @@ struct WaterSurface
     float farFadeDistance;
     uint rippleTextureIndex; // 波紋のテクスチャ
     float3 padding;
-    float2 waterMin;         // 水面位置
-    float2 waterSize;        // 水面サイズ
+    float2 waterMin; // 水面位置
+    float2 waterSize; // 水面サイズ
 };
 
 // 【Slot 1 (space0)】: インデックス定数
@@ -105,7 +105,7 @@ PixelShaderOutput main(VertexShaderOutput input)
     float3 normal2 = normalMap2 * 2.0f - 1.0f;
     
     // 法線の強さ（傾き）をマイルドに補正する（XとYを小さくし、上向きZをキープ）
-    float normalStrength = 0.2f; // ここを 0.1 〜 0.4 で調整！小さいほど滑らかになる
+    float normalStrength = 0.0f; // ここを 0.1 〜 0.4 で調整！小さいほど滑らかになる
     normal1.xy *= normalStrength;
     normal2.xy *= normalStrength;
     normal1.z = sqrt(saturate(1.0f - dot(normal1.xy, normal1.xy)));
@@ -114,23 +114,23 @@ PixelShaderOutput main(VertexShaderOutput input)
     // 2つの法線を合成して normalize (z成分を掛け合わせて、上向きをキープしながらブレンド)
     float3 blendedNormal = normalize(float3(normal1.xy + normal2.xy, normal1.z * normal2.z));
     
-    // 簡易TBN（スクリーン座標の微分を利用して、法線マップをワールド座標系に合わせる）
-    float3 N = normalize(input.normal); // 頂点シェーダーからきたワールド法線
-    float3 dp1 = ddx(input.worldPosition);
-    float3 dp2 = ddy(input.worldPosition);
-    float2 duv1 = ddx(input.texcoord);
-    float2 duv2 = ddy(input.texcoord);
+    float time = material.time;
+    float3 baseNormal = normalize(input.normal); // 頂点から来た元の法線
 
-    float3 dp2perp = cross(dp2, N);
-    float3 dp1perp = cross(N, dp1);
-    float3 T = dp2perp * duv1.x + dp1perp * duv2.x;
-    float3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+    // ワールド座標で貼る（タイルの継ぎ目が出ない）。大小2枚をずらして流す
+    float2 uvA = input.worldPosition.xz * 0.08f + float2(0.60f, 0.80f) * time * 0.03f;
+    float2 uvB = input.worldPosition.xz * 0.15f + float2(-0.70f, 0.45f) * time * 0.04f;
+    float3 nA = g_Textures[texIndex].Sample(gSampler, uvA).xyz * 2.0f - 1.0f;
+    float3 nB = g_Textures[texIndex].Sample(gSampler, uvB).xyz * 2.0f - 1.0f;
 
-    float invmax = rsqrt(max(dot(T, T), dot(B, B)));
-    float3x3 TBN = float3x3(T * invmax, B * invmax, N);
+    // 遠くはモアレになるので弱める
+    float cameraDistance = length(gCamera.worldPosition - input.worldPosition);
+    float detailFade = saturate(1.0f - cameraDistance / 250.0f);
 
-    // 最終的なワールド空間の法線を計算
-    float3 worldNormal = normalize(mul(blendedNormal, TBN));
+    // 法線マップの傾き（xy）を、水平な面の傾き（xz）として足す
+    float detailStrength = 0.15f;
+    float2 slope = (nA.xy + nB.xy) * detailStrength * detailFade;
+    float3 worldNormal = normalize(baseNormal + float3(slope.x, 0.0f, slope.y));
     
     // 最終的に出力する色
     float3 finalColor = float3(0.0f, 0.0f, 0.0f);
@@ -150,47 +150,80 @@ PixelShaderOutput main(VertexShaderOutput input)
     
     // フレネル反射
     float dotNV = saturate(dot(worldNormal, toEye));
-    float R0 = 0.02f;   // 水の正面反射率(2%)
+    float R0 = 0.02f; // 水の正面反射率(2%)
     float fresnel = R0 + (1.0f - R0) * pow(1.0f - dotNV, 5.0f);
     
     // 手前と奥の色をブレンド
     // 手前の透き通った色
     float3 shallowColor = float3(0.0f, 0.65f, 0.55f);
     
-    // ベースとなる水の色をブレンドで決める
-    float3 baseWaterColor = lerp(shallowColor, deepWaterColor.rgb, fresnel);
-    
-    // 波紋テクスチャが有効な場合、隣接テクセルの高さ差分から法線を求める
+    // ---------- 太陽 ----------
+    float3 L = normalize(float3(-0.35f, 0.6f, 0.45f)); // ライトが無いとき用
+    float3 sunColor = float3(1.0f, 1.0f, 1.0f) * 3.0f;
+    if (gLightData.count.dirLight > 0)
+    {
+        L = normalize(-gLightData.dirLights[0].direction);
+        sunColor = gLightData.dirLights[0].color.rgb * gLightData.dirLights[0].intensity;
+    }
+
+    float3 finalN = worldNormal;
+
     if (gWaterSurface.rippleTextureIndex > 0)
     {
-        float2 texelSize = 1.0f / 512.0f; // テクスチャ解像度に応じたオフセット
-    
-    // 前後左右の高さをサンプリング
-        float hL = g_Textures[gWaterSurface.rippleTextureIndex].Sample(gSampler, input.rippleUV + float2(-texelSize.x, 0.0f)).r;
-        float hR = g_Textures[gWaterSurface.rippleTextureIndex].Sample(gSampler, input.rippleUV + float2(texelSize.x, 0.0f)).r;
-        float hD = g_Textures[gWaterSurface.rippleTextureIndex].Sample(gSampler, input.rippleUV + float2(0.0f, -texelSize.y)).r;
-        float hU = g_Textures[gWaterSurface.rippleTextureIndex].Sample(gSampler, input.rippleUV + float2(0.0f, texelSize.y)).r;
-    
-    // UV と ワールド座標(X, Z)の向きに合わせて傾き(dh/dx, dh/dz)を計算
-        float dX = hR - hL;
-        float dZ = -(hU - hD); // V増加がワールド -Z なので符号反転
-    
-    // 傾きの強さ（ノーマル強度）を調整
-        float rippleNormalStrength = 3.0f; // 好みで調整可能
-        float3 rippleNormal = float3(-dX * rippleNormalStrength, 0.0f, -dZ * rippleNormalStrength);
-    
-    // 既存の水面法線に波紋の傾きを足して正規化
-        worldNormal = normalize(worldNormal + rippleNormal);
+        uint rippleIdx = gWaterSurface.rippleTextureIndex;
+
+        // 1テクセル分のUVと、1テクセルが何mか
+        float texW, texH;
+        g_Textures[rippleIdx].GetDimensions(texW, texH);
+        float2 du = float2(1.0f / texW, 0.0f);
+        float2 dv = float2(0.0f, 1.0f / texH);
+        float texelX = gWaterSurface.waterSize.x / texW;
+        float texelZ = gWaterSurface.waterSize.y / texH;
+
+        // 上下左右の高さ
+        float hL = g_Textures[rippleIdx].Sample(gSampler, input.rippleUV - du).r;
+        float hR = g_Textures[rippleIdx].Sample(gSampler, input.rippleUV + du).r;
+        float hD = g_Textures[rippleIdx].Sample(gSampler, input.rippleUV - dv).r;
+        float hU = g_Textures[rippleIdx].Sample(gSampler, input.rippleUV + dv).r;
+
+        // 傾き（高さの変化量 / 距離）
+        float dhdx = (hR - hL) / (2.0f * texelX);
+        float dhdz = -(hU - hD) / (2.0f * texelZ); // VSでUVのyを反転しているので符号も反転
+
+        // 見た目の強さ。0.3 で VS の高さと物理的に一致、上げるほど航跡が目立つ
+        float rippleNormalStrength = 3.0f;
+
+        // 高さ場の法線は (-dh/dx, 1, -dh/dz)。傾きを足し込む
+        finalN = normalize(worldNormal + float3(-dhdx, 0.0f, -dhdz) * rippleNormalStrength);
     }
     
-    // そのベース色に対してライティング（Diffuse + Specular）を適用する
-    float3 totalDiffuse = UpdateLights(allLights, material, input, float4(baseWaterColor, 1.0f), toEye, worldNormal);
+    float3 V = toEye;
+
+    // ---------- 反射：空の色 ----------
+    const float3 zenithColor = float3(0.20f, 0.45f, 0.85f); // 真上の空
+    const float3 horizonColor = float3(0.65f, 0.82f, 0.92f); // 水平線の空
+
+    float3 R = reflect(-V, finalN); // 視線が水面で跳ね返る向き
+    R.y = abs(R.y); // 下向きに跳ねたら、空を見るように折り返す
+    float3 skyColor = lerp(horizonColor, zenithColor, pow(saturate(R.y), 0.45f));
+
+    // ---------- 屈折：水の中の色 ----------
+    const float3 deepColor = float3(0.01f, 0.10f, 0.18f); // 深い青
+    const float3 shallowTint = float3(0.05f, 0.45f, 0.45f); // 見下ろしたときの青緑
+    float3 bodyColor = lerp(deepColor, shallowTint, pow(saturate(V.y), 1.5f) * 0.75f);
     
-    // 環境マップは未バインドなので、0.0fでフォールバック
-    float3 environmentColor = float3(0.0f, 0.0f, 0.0f);
-    
-    // ライティング結果
-    float3 waterColor = totalDiffuse + environmentColor;
+    // 太陽の方へ傾いた面は明るく、反対へ傾いた面は暗く（平らな面では変化なし）
+    float tilt = dot(finalN.xz, normalize(L.xz + 0.0001f));
+    bodyColor *= saturate(1.0f + tilt * 2.0f) * 0.5f + 0.5f;
+
+    // ---------- フレネルで混ぜる ----------
+    float waterF = 0.02f + 0.98f * pow(1.0f - saturate(dot(finalN, V)), 5.0f);
+    float3 waterColor = lerp(bodyColor, skyColor, waterF);
+
+    // ---------- 太陽のハイライト ----------
+    float3 H = normalize(V + L);
+    float spec = pow(saturate(dot(finalN, H)), 512.0f); // 512 が大きいほど小さく鋭い光
+    waterColor += sunColor * spec * 0.15f;
     
     float3 minAmbient = float3(0.0f, 0.25f, 0.2f); // 最低限の明るさ（暗いエメラルド）
     
@@ -221,19 +254,21 @@ PixelShaderOutput main(VertexShaderOutput input)
         float4 rippleData = g_Textures[gWaterSurface.rippleTextureIndex].Sample(gSampler, input.rippleUV);
         float foamAmount = rippleData.b; // CSの泡の濃さ
         
+        // 大小二つのノイズを混ぜる(大きい模様 + 細かい模様)
+        float n1 = foamNoise(input.worldPosition.xz * 2.0f); // 大きなまだら
+        float n2 = foamNoise(input.worldPosition.xz * 6.0f); // 細かいちぎれ
+        float noise = (n1 * 0.6f + n2 * 0.4f) * 0.5f + 0.5f; // 0〜1 に
+        
         // 0.15 以下の薄い泡は 0、0.5 以上ではっきり白にする
-        float foamMask = smoothstep(0.15f, 0.5f, foamAmount);
+        //float foamMask = smoothstep(0.05f, 0.3f, foamAmount);
         
         // 感度を持ち上げてノイズをブレンドする
         float foamFactor = saturate(foamAmount * 3.0f);
         
         if (foamFactor > 0.01f)
         {
-            // ワールド座標から泡の模様を生成
-            float noise = foamNoise(input.worldPosition.xz * 8.0f) * 0.5f + 0.5f;
-            
             // 泡の濃さとノイズを合成して、粒状の泡模様を作る
-            float foamPattern = saturate(foamMask * (noise * 0.5f + 0.5f));
+            float foamPattern = saturate((foamAmount - (1.0f - noise) * 0.8f) * 3.0f);
             
             // くっきり真っ白な泡カラー（少し青みのある白）
             float3 foamColor = float3(0.96f, 0.98f, 1.0f);

@@ -102,14 +102,22 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     float4 right = gTextures[gSimBuffer.preTextureIndex].Load(int3(min(pos.x + 1, w - 1), pos.y, 0));
     float4 up = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, min(pos.y + 1, h - 1), 0));
     float4 down = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, max(pos.y - 1, 0), 0));
-
-    float neighborAvg = (left.r + right.r + up.r + down.r) * 0.25f;
+    // 斜め4点も読む
+    float lu = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos + int2(-1, 1), 0)).r; // 左上
+    float ru = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos + int2(1, 1), 0)).r; // 右上
+    float ld = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos + int2(-1, -1), 0)).r; // 左下
+    float rd = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos + int2(1, -1), 0)).r; // 右下
+    
+    // 9点ラプラシアン（上下左右 2/3、斜め 1/6、中心 -10/3）
+    float laplacian = (left.r + right.r + up.r + down.r) * (2.0f / 3.0f)
+                + (lu + ru + ld + rd) * (1.0f / 6.0f)
+                - currentHeight * (10.0f / 3.0f);
 
     float waveSpeed = 0.26f; // 約3 m/s
     float damp = 0.993f;
 
     float velocity = currentHeight - prevHeight;
-    newHeight = (currentHeight + velocity + waveSpeed * (neighborAvg - currentHeight)) * damp;
+    newHeight = (currentHeight + velocity + waveSpeed * laplacian * 0.25f) * damp;
 #endif
     
     // -----------------------------------------------
@@ -130,7 +138,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     // オブジェクトの移動による波の注入
     // ---------------------------
      // 船の速度に応じた補間率
-    float speedFactor = saturate(gSimBuffer.speed * 1.5f); // 速度に応じた強さ
+    float speedFactor = saturate(length(gSimBuffer.forward) / 10.0f); // 速度に応じた強さ
     
     if (speedFactor > 0.001f)
     {
@@ -163,7 +171,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
             
             float speed = length(velocity);
             float speedMask = smoothstep(1.0f, 4.0f, speed);
-            float accel = push * 50.0f * falloff * speedMask; // 加速度[m/s^2]
+            float accel = push * 150.0f * falloff * speedMask; // 加速度[m/s^2]
             float dt = gSimBuffer.deltaTime;
             
             newHeight += accel * dt * dt;
@@ -178,13 +186,13 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
         float2 sternPoint = -(fwd * sternOffset); // 船の後ろ側の位置
         float distToStern = length(diffWorld - sternPoint);
     
-        float sternRadius = 1.2f;
+        float sternRadius = 2.0f;
         if (distToStern < sternRadius)
         {
             float normStern = distToStern / sternRadius;
             float sternCurve = exp(-normStern * normStern * 3.0f);
         
-            float foamImpact = sternCurve * 1.2f * speedFactor;
+            float foamImpact = sternCurve * 5.0f * speedFactor;
             newFoam = max(newFoam, foamImpact);
         }
     }

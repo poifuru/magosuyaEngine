@@ -49,14 +49,19 @@
                     "canonOffsetYaw": 0.0,
                     "dirRatioX": 0.009999990463256836,
                     "dirRatioZ": 0.9900000095367432,
+                    "drainInterval": 3.0,
+                    "enableDrain": true,
                     "fireInterval": 0.15000000596046448,
                     "harpoonHomingStrength": 0.019999999552965164,
                     "harpoonMaxDistance": 100.0,
                     "harpoonSpeed": 100.0,
-                    "hp": 100,
+                    "hp": 79,
                     "isUnderwater": false,
+                    "maxAmmo": 15,
                     "maxHp": 100,
                     "maxSpeed": 0.5,
+                    "reloadCost": 10,
+                    "reloadDuration": 0.800000011920929,
                     "speed": 0.20999999344348907,
                     "targetDepthY": -30.0,
                     "turnSpeed": 0.20000000298023224,
@@ -77,13 +82,13 @@
             "name": "Player",
             "transform": {
                 "position": [
-                    30.87478256225586,
+                    198.6947021484375,
                     0.30000001192092896,
-                    -5.065088272094727
+                    38.28471374511719
                 ],
                 "rotation": [
                     0.0,
-                    83.26319885253906,
+                    81.57576751708984,
                     0.0
                 ],
                 "scale": [
@@ -137,13 +142,13 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    22.86688804626465,
-                    9.470669746398926,
-                    -25.164813995361328
+                    146.1265869140625,
+                    2.783409595489502,
+                    71.86418914794922
                 ],
                 "rotation": [
-                    0.32020097970962524,
-                    0.546350359916687,
+                    0.26020100712776184,
+                    0.49535027146339417,
                     0.0
                 ],
                 "scale": [
@@ -166,13 +171,13 @@
             "name": "DebugCamera",
             "transform": {
                 "position": [
-                    22.86688804626465,
-                    9.470669746398926,
-                    -25.164813995361328
+                    146.1265869140625,
+                    2.783409595489502,
+                    71.86418914794922
                 ],
                 "rotation": [
-                    0.32020097970962524,
-                    0.546350359916687,
+                    0.26020100712776184,
+                    0.49535027146339417,
                     0.0
                 ],
                 "scale": [
@@ -185,8 +190,8 @@
         {
             "components": [
                 {
-                    "angleX": 0.08826328814029694,
-                    "angleY": 133.4803924560547,
+                    "angleX": 0.21826253831386566,
+                    "angleY": 130.10633850097656,
                     "delay": 0.5,
                     "firstPersonOffset": [
                         0.0,
@@ -196,11 +201,13 @@
                     "fov": 0.5,
                     "isFirstPerson": false,
                     "isUnderwater": false,
+                    "mouseSensitivity": 0.0010000000474974513,
                     "offset": [
                         0.0,
                         5.099999904632568,
                         -70.0
                     ],
+                    "padSensitivity": 0.009999999776482582,
                     "priority": 10,
                     "targetName": "Player",
                     "targetOffsetY": 6.0,
@@ -210,13 +217,13 @@
             "name": "FollowCamera",
             "transform": {
                 "position": [
-                    -38.592430114746094,
-                    11.554105758666992,
-                    -7.633186340332031
+                    263.4647216796875,
+                    20.422046661376953,
+                    56.086212158203125
                 ],
                 "rotation": [
-                    0.07543925940990448,
-                    1.5338447093963623,
+                    0.2072199136018753,
+                    -1.8390153646469116,
                     0.0
                 ],
                 "scale": [
@@ -236,44 +243,44 @@
                     "Width": 100.0,
                     "farFadeDistance": 70.0,
                     "nearFadeDistance": 0.0,
-                    "numActiveWaves": 1,
+                    "numActiveWaves": 4,
                     "type": "WaterSurfaceComponent",
                     "waves": [
                         {
-                            "amplitude": 0.0,
+                            "amplitude": 0.25,
                             "direction": [
-                                0.0,
-                                1.0
+                                0.800000011920929,
+                                0.6000000834465027
                             ],
-                            "frequency": 0.4000000059604645,
+                            "frequency": 0.20999999344348907,
+                            "steepness": 0.4000000059604645
+                        },
+                        {
+                            "amplitude": 0.11999999731779099,
+                            "direction": [
+                                0.30000001192092896,
+                                0.9539392590522766
+                            ],
+                            "frequency": 0.41999998688697815,
                             "steepness": 0.5
                         },
                         {
-                            "amplitude": 0.6000000238418579,
+                            "amplitude": 0.05999999865889549,
                             "direction": [
-                                -0.9821276664733887,
-                                0.18821541965007782
+                                0.994987428188324,
+                                0.10000000149011612
                             ],
-                            "frequency": 1.2000000476837158,
-                            "steepness": 0.30000001192092896
+                            "frequency": 0.7900000214576721,
+                            "steepness": 0.5
                         },
                         {
-                            "amplitude": 0.0,
+                            "amplitude": 0.029999999329447746,
                             "direction": [
-                                1.0,
-                                0.0
+                                -0.4385586082935333,
+                                0.8987026214599609
                             ],
-                            "frequency": 1.0,
-                            "steepness": 0.0
-                        },
-                        {
-                            "amplitude": 0.0,
-                            "direction": [
-                                1.0,
-                                0.0
-                            ],
-                            "frequency": 1.0,
-                            "steepness": 0.0
+                            "frequency": 1.5700000524520874,
+                            "steepness": 0.3499999940395355
                         }
                     ]
                 }
@@ -437,7 +444,13 @@
         {
             "components": [
                 {
+                    "crateSpawnInterval": 15.0,
+                    "crateSpawnRadius": 40.0,
+                    "fishColliderRadius": 2.0,
+                    "fishScale": 2.5,
+                    "isCrateSpawningEnabled": true,
                     "isSpawningEnabled": true,
+                    "maxCrates": 3,
                     "maxEnemies": 5,
                     "spawnInterval": 5.0,
                     "spawnRadius": 40.0,
@@ -734,11 +747,13 @@
                     "fov": 0.44999998807907104,
                     "isFirstPerson": false,
                     "isUnderwater": false,
+                    "mouseSensitivity": 0.0010000000474974513,
                     "offset": [
                         0.0,
                         5.0,
                         -10.0
                     ],
+                    "padSensitivity": 0.009999999776482582,
                     "priority": 10,
                     "targetName": "",
                     "targetOffsetY": 3.799999952316284,
@@ -767,7 +782,13 @@
         {
             "components": [
                 {
+                    "crateSpawnInterval": 15.0,
+                    "crateSpawnRadius": 40.0,
+                    "fishColliderRadius": 2.0,
+                    "fishScale": 2.5,
+                    "isCrateSpawningEnabled": true,
                     "isSpawningEnabled": true,
+                    "maxCrates": 3,
                     "maxEnemies": 5,
                     "spawnInterval": 7.0,
                     "spawnRadius": 100.0,

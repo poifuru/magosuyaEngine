@@ -259,7 +259,7 @@ void WaterSurfaceComponent::SetTexture(const std::string& textureName) {
 
 	texPath_ = textureName;
 	// TextureManager からテクスチャをロードしてインデックスを取得
-	texIndex_ = context->textureManager->LoadTexture(texPath_);
+	texIndex_ = context->textureManager->LoadTexture(texPath_, false);
 	// マテリアルにテクスチャインデックスをセット
 	if (material_) {
 		material_->SetTextureIndex(texIndex_);
