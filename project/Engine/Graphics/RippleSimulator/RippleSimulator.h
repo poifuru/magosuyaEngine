@@ -25,7 +25,8 @@ struct RippleSimulationParams {
 	Vector4 iWaveKernel[43];
 
 	Vector2 prevBoatPosition; // 前フレームの船の位置 (x, z)
-	Vector2 padding2;         // 16バイト境界に揃えるため
+	int scrollX;			  // 領域が動いたテクセル
+	int scrollY;
 };
 
 class RippleSimulator {
@@ -51,7 +52,9 @@ public:
 		const Vector2& waterMin, 
 		const Vector2& waterSize,
 		const Vector2& forward,
-		Vector4 kernel[43]
+		Vector4 kernel[43],
+		int scrollX,
+		int scrollY
 	);
 
 	// 作成されたテクスチャのバインドレス SRV インデックスを取得

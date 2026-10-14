@@ -38,6 +38,9 @@ public:
 
 	void SetTexture(const std::string& textureName);
 
+	Vector2 GetSimMin() const { return simMin_; }
+	Vector2 GetSimSize() const { return Vector2(kSimSize, kSimSize); }
+
 	// Renderer用
 	const MyEngine::Rendering::Mesh& GetMesh() const { return mesh_; }
 	MyEngine::Rendering::Material* GetMaterial() const { return material_.get(); }
@@ -81,4 +84,12 @@ private:
 
 	// iWave用のカーネル
 	Vector4 kernel_[43]{};
+
+	// 波紋シミュレーションの領域（船の周り）
+	static constexpr float kSimSize = 80.0f;   // 領域の一辺[m]
+	static constexpr int   kSimRes  = 512;     // テクスチャ解像度
+	int32_t originTexelX_ = 0;
+	int32_t originTexelZ_ = 0;
+	bool hasOrigin_ = false;
+	Vector2 simMin_{};
 };

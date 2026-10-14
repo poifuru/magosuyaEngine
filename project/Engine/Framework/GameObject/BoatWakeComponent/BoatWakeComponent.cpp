@@ -153,16 +153,27 @@ void BoatWakeComponent::Deserialize(const json& j) {
 void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 	if(!gameObject_) return;
 
-	// シーンから水面を探して位置とサイズを取得
-	Vector2 waterMin = Vector2(-999.0f, -999.0f);
-	Vector2 waterSize = Vector2(100.0f, 100.0f);
-
-	if(auto* waterComp = GetGameObject()->FindComponentInScene<WaterSurfaceComponent>()) {
-		waterMin = waterComp->GetWaterMin();
-		waterSize = waterComp->GetWaterSize();
-	}
-
 	const Vector3& boatPos = gameObject_->GetTransform().translate;
+
+	const float texel = kSimSize / kSimRes; // 1テクセル何mか (約0.156m)
+
+	// 船を中心にした領域の原点を、テクセル単位にスナップ
+	int32_t newOriginX = (int32_t)std::floor((boatPos.x - kSimSize * 0.5f) / texel);
+	int32_t newOriginZ = (int32_t)std::floor((boatPos.z - kSimSize * 0.5f) / texel);
+
+	int32_t scrollX = 0;
+	int32_t scrollY = 0;
+	if (hasOrigin_) {
+		scrollX = newOriginX - originTexelX_;
+		// CSのUVは y を反転しているので（z が増えるとテクセル y は減る）符号を逆にする
+		scrollY = -(newOriginZ - originTexelZ_);
+	}
+	originTexelX_ = newOriginX;
+	originTexelZ_ = newOriginZ;
+	hasOrigin_ = true;
+
+	simMin_ = Vector2(newOriginX * texel, newOriginZ * texel);
+	Vector2 simSize = Vector2(kSimSize, kSimSize);
 
 	// 前フレームからの移動距離（スピード）を計算
 	float dt = Time::GetDeltaTime();
@@ -183,7 +194,7 @@ void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 	}
 
 	// CSを実行してテクスチャを更新
-	rippleSim_.Dispatch(cmdList, boatPos, speed, dt, waterMin, waterSize, velocity, kernel_);
+	rippleSim_.Dispatch(cmdList, boatPos, speed, dt, simMin_, simSize, velocity, kernel_, scrollX, scrollY);
 
 	// CSが作ったテクスチャのインデックスをマテリアルへ指定
 	if (material_) {

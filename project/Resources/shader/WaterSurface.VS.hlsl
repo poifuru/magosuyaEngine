@@ -1,4 +1,4 @@
-#include "Object3d.hlsli"
+#include "WaterSurface.hlsli"
 
 struct TransformationMatrix
 {
@@ -17,7 +17,6 @@ struct WaterSurfaceInfo
     float2 padding1;
 };
 
-static const int kMaxWaves = 6;
 struct WaterSurface
 {
     WaterSurfaceInfo waves[kMaxWaves]; // 4つの波の情報（32バイト * 4 = 128バイト）
@@ -90,11 +89,17 @@ VertexShaderOutput main(VertexShaderInput input)
         binormal.z -= Q * D.y * D.y * WA * s;
     }
     
-     // 累積した変位を適用
-    position += waveOffset;
+    float jacobian = tangent.x * binormal.z - binormal.x * tangent.z;
+    output.crestFoam = saturate((0.8f - jacobian) * 3.0f);
     
     // 頂点のワールド座標(X, Z)を計算！
-    float3 worldPos = mul(float4(position, 1.0f), gTransformationMatrix.World).xyz;
+    float3 worldPos = worldBase + waveOffset; // ワールドで足す
+    
+    // WVPはローカル座標用なので、ずれをスケールで割ってローカルに戻す
+    float3 axisScale = float3(length(gTransformationMatrix.World[0].xyz),
+                          length(gTransformationMatrix.World[1].xyz),
+                          length(gTransformationMatrix.World[2].xyz));
+    position += waveOffset / axisScale;
     
     // CSと全く同じ式でワールド座標 ➔ UV 座標に変換
     float2 rippleUV;
@@ -105,6 +110,7 @@ VertexShaderOutput main(VertexShaderInput input)
     
     // CSで作った波紋を組み込む
      // インデックスが 0 以外（有効なテクスチャ）の時だけサンプリング
+    float rippleHeight = 0.0f;
     if (gWaterSurface.rippleTextureIndex > 0)
     {
         //if (gWaterSurface.rippleTextureIndex > 0 &&
@@ -115,7 +121,8 @@ VertexShaderOutput main(VertexShaderInput input)
             float4 rippleData = gTextures[gWaterSurface.rippleTextureIndex].SampleLevel(gSampler, rippleUV, 0);
     
             // CSが書いた波の高さをY座標に加算
-            float rippleHeight = rippleData.r * 0.3f;
+            float rippleMask = RippleEdgeMask(rippleUV);
+            rippleHeight = rippleData.r * 1.0f * rippleMask;
             position.y += rippleHeight;
         //}
     }
@@ -136,6 +143,8 @@ VertexShaderOutput main(VertexShaderInput input)
     output.normal = normalize(worldNormal);
     
     output.worldPosition = mul(finalPosition, gTransformationMatrix.World).xyz;
+    
+    output.waveHeight = waveOffset.y + rippleHeight;
     
     return output;
 }

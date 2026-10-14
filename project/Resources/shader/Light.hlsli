@@ -1,5 +1,4 @@
 #pragma once
-#include "Object3d.hlsli"
 #include "MaterialData.hlsli"
 
 static const float PI = 3.14159265359f;
@@ -102,7 +101,8 @@ float3 FresnelSchlick(float cosTheta, float3 F0)
 float3 UpdateLights(
 AllLightData allLights,
 MaterialData material,
-VertexShaderOutput input,
+float3 normal,
+float3 worldPosition,
 float4 color,
 float3 toEye
 )
@@ -113,7 +113,7 @@ float3 toEye
     for (int i = 0; i < allLights.count.dirLight; ++i)
     {
         float3 L = normalize(-allLights.dirLights[i].direction);
-        float3 N = normalize(input.normal);
+        float3 N = normalize(normal);
         float3 V = toEye;
         float3 H = normalize(V + L);
 
@@ -139,10 +139,10 @@ float3 toEye
     // PointLight
     for (int j = 0; j < allLights.count.pointLight; ++j)
     {
-        float3 direction = input.worldPosition - allLights.pointLights[j].position;
+        float3 direction = worldPosition - allLights.pointLights[j].position;
         float distance = length(direction);
         float3 L = normalize(-direction);
-        float3 N = normalize(input.normal);
+        float3 N = normalize(normal);
         float3 V = toEye;
         float3 H = normalize(V + L);
 
@@ -176,10 +176,10 @@ float3 toEye
     // SpotLight
     for (int k = 0; k < allLights.count.spotLight; ++k)
     {
-        float3 direction = input.worldPosition - allLights.spotLights[k].position;
+        float3 direction = worldPosition - allLights.spotLights[k].position;
         float distance = length(direction);
         float3 L = normalize(-direction);
-        float3 N = normalize(input.normal);
+        float3 N = normalize(normal);
         float3 V = toEye;
         float3 H = normalize(V + L);
 
@@ -221,7 +221,7 @@ float3 toEye
         float3 v[4];
         for (int idx = 0; idx < 4; idx++)
         {
-            v[idx] = normalize(p[idx] - input.worldPosition);
+            v[idx] = normalize(p[idx] - worldPosition);
         }
 
         float illuminance = 0.0f;
@@ -232,11 +232,11 @@ float3 toEye
         
         illuminance /= (2.0f * PI);
 
-        float3 distVec = input.worldPosition - allLights.rectLights[l].position;
+        float3 distVec = worldPosition - allLights.rectLights[l].position;
         float distance = length(distVec);
         float attenuation = pow(saturate(1.0f - (distance / 20.0f)), allLights.rectLights[l].decay);
 
-        float3 N = normalize(input.normal);
+        float3 N = normalize(normal);
         float3 L = normalize(-allLights.rectLights[l].direction);
         float nDotL = saturate(dot(N, L));
 
@@ -259,7 +259,7 @@ float3 toEye
 float3 UpdateLights(
 AllLightData allLights,
 MaterialData material,
-VertexShaderOutput input, 
+float3 worldPosition,
 float4 color,
 float3 toEye,
 float3 worldNormal
@@ -297,7 +297,7 @@ float3 worldNormal
     // PointLight
     for (int j = 0; j < allLights.count.pointLight; ++j)
     {
-        float3 direction = input.worldPosition - allLights.pointLights[j].position;
+        float3 direction = worldPosition - allLights.pointLights[j].position;
         float distance = length(direction);
         float3 L = normalize(-direction);
         float3 N = normalize(worldNormal);
@@ -334,7 +334,7 @@ float3 worldNormal
     // SpotLight
     for (int k = 0; k < allLights.count.spotLight; ++k)
     {
-        float3 direction = input.worldPosition - allLights.spotLights[k].position;
+        float3 direction = worldPosition - allLights.spotLights[k].position;
         float distance = length(direction);
         float3 L = normalize(-direction);
         float3 N = normalize(worldNormal);
@@ -379,7 +379,7 @@ float3 worldNormal
         float3 v[4];
         for (int idx = 0; idx < 4; idx++)
         {
-            v[idx] = normalize(p[idx] - input.worldPosition);
+            v[idx] = normalize(p[idx] - worldPosition);
         }
 
         float illuminance = 0.0f;
@@ -390,7 +390,7 @@ float3 worldNormal
         
         illuminance /= (2.0f * PI);
 
-        float3 distVec = input.worldPosition - allLights.rectLights[l].position;
+        float3 distVec = worldPosition - allLights.rectLights[l].position;
         float distance = length(distVec);
         float attenuation = pow(saturate(1.0f - (distance / 20.0f)), allLights.rectLights[l].decay);
 

@@ -1,6 +1,6 @@
-#include "Object3d.hlsli"
-#include "Light.hlsli"
+#include "WaterSurface.hlsli"
 #include "MaterialData.hlsli"
+#include "Light.hlsli"
 
 struct PixelShaderOutput
 {
@@ -29,7 +29,6 @@ struct WaterSurfaceInfo
     float2 padding1;
 };
 
-static const int kMaxWaves = 6;
 struct WaterSurface
 {
     WaterSurfaceInfo waves[kMaxWaves];
@@ -64,16 +63,21 @@ ConstantBuffer<WaterSurface> gWaterSurface : register(b4, space0);
 // サンプラー (s0, space0)
 SamplerState gSampler : register(s0, space0);
 
-// 泡の模様を作るためのノイズ関数
-float foamNoise(float2 p)
+float Hash12(float2 p)
+{
+    float3 p3 = frac(float3(p.xyx) * 0.1031f);
+    p3 += dot(p3, p3.yzx + 33.33f);
+    return frac((p3.x + p3.y) * p3.z);
+}
+
+// 0〜1 を返すバリューノイズ
+float ValueNoise(float2 p)
 {
     float2 i = floor(p);
     float2 f = frac(p);
     float2 u = f * f * (3.0f - 2.0f * f);
-    return lerp(lerp(sin(dot(i + float2(0, 0), float2(12.9898, 78.233))),
-                     sin(dot(i + float2(1, 0), float2(12.9898, 78.233))), u.x),
-                lerp(sin(dot(i + float2(0, 1), float2(12.9898, 78.233))),
-                     sin(dot(i + float2(1, 1), float2(12.9898, 78.233))), u.x), u.y);
+    return lerp(lerp(Hash12(i), Hash12(i + float2(1, 0)), u.x),
+                lerp(Hash12(i + float2(0, 1)), Hash12(i + float2(1, 1)), u.x), u.y);
 }
 
 PixelShaderOutput main(VertexShaderOutput input)
@@ -168,6 +172,8 @@ PixelShaderOutput main(VertexShaderOutput input)
     }
 
     float3 finalN = worldNormal;
+    
+    float rippleMask = RippleEdgeMask(input.rippleUV);
 
     if (gWaterSurface.rippleTextureIndex > 0)
     {
@@ -195,7 +201,7 @@ PixelShaderOutput main(VertexShaderOutput input)
         float rippleNormalStrength = 1.0f;
 
         // 高さ場の法線は (-dh/dx, 1, -dh/dz)。傾きを足し込む
-        finalN = normalize(worldNormal + float3(-dhdx, 0.0f, -dhdz) * rippleNormalStrength);
+        finalN = normalize(worldNormal + float3(-dhdx, 0.0f, -dhdz) * rippleNormalStrength * rippleMask);
     }
     
     float3 V = toEye;
@@ -212,6 +218,22 @@ PixelShaderOutput main(VertexShaderOutput input)
     const float3 deepColor = float3(0.01f, 0.10f, 0.18f); // 深い青
     const float3 shallowTint = float3(0.05f, 0.45f, 0.45f); // 見下ろしたときの青緑
     float3 bodyColor = lerp(deepColor, shallowTint, pow(saturate(V.y), 1.5f) * 0.75f);
+    
+    // ---------- 波の山が透けて光る（疑似SSS） ----------
+    const float3 scatterColor = float3(0.10f, 0.85f, 0.70f); // 透けた光の色（青緑）
+    float3 sunLight = sunColor / 3.0f; // ライト強度3を基準にした明るさ
+    float NdotL = saturate(dot(finalN, L));
+
+    // 太陽 → 波 → 目 の向きに光が抜けてくるほど明るい
+    float3 sssHalf = normalize(L + finalN * 0.6f);
+    float sssView = pow(saturate(dot(V, -sssHalf)), 4.0f);
+
+    // 山ほど明るい（谷は0付近、山で1付近）
+    const float crestRange = 0.4f;
+    float crestMask = smoothstep(0.0f, crestRange, input.waveHeight);
+    crestMask *= crestMask;
+
+    bodyColor += scatterColor * sunLight * (sssView * crestMask * 2.5f + NdotL * 0.03f);
 
     // ---------- フレネルで混ぜる ----------
     float waterF = 0.02f + 0.98f * pow(1.0f - saturate(dot(finalN, V)), 5.0f);
@@ -231,44 +253,41 @@ PixelShaderOutput main(VertexShaderOutput input)
     
     // カメラからの距離を計算
     float cameraDist = length(gCamera.worldPosition - input.worldPosition);
-    //float cameraDist = 0.0f;
-    
-    // 距離に応じたフェードファクターを計算 (near以下なら0.0、far以上なら1.0)
+
+    // 見下ろすほど透ける。斜めに見るほど反射が強くなって不透明に
+    const float minAlpha = 0.6f;
+    float finalAlpha = lerp(minAlpha, 1.0f, waterF);
+
+    // 遠くは不透明にする（これまでどおり）
     float distFactor = saturate((cameraDist - gWaterSurface.nearFadeDistance) /
-                       max(0.001f, gWaterSurface.farFadeDistance - gWaterSurface.nearFadeDistance));
-    
-    // アルファ値を変化させる
-    float finalAlpha = lerp(0.5f, 0.95f, fresnel);
-    
-    // 遠くに行くほど不透明(1.0)になるように補間
+                   max(0.001f, gWaterSurface.farFadeDistance - gWaterSurface.nearFadeDistance));
     finalAlpha = lerp(finalAlpha, 1.0f, distFactor);
+    
+    // ---------- 水平線フェード ----------
+    const float horizonDistance = 450.0f;
+    float horizonFade = saturate(cameraDist / horizonDistance);
+    horizonFade = horizonFade * horizonFade; // 手前はほぼ効かず、遠くで一気に効く
+    waterColor = lerp(waterColor, horizonColor, horizonFade * 0.85f);
     
     // 泡の描画部分
     if (gWaterSurface.rippleTextureIndex > 0)
     {
-        //if (gWaterSurface.rippleTextureIndex > 0 &&
-        //input.rippleUV.x >= 0.0f && input.rippleUV.x <= 1.0f &&
-        //input.rippleUV.y >= 0.0f && input.rippleUV.y <= 1.0f)
-        //{
         float4 rippleData = g_Textures[gWaterSurface.rippleTextureIndex].Sample(gSampler, input.rippleUV);
-        float foamAmount = rippleData.b; // CSの泡の濃さ
         
-        // 大小二つのノイズを混ぜる(大きい模様 + 細かい模様)
         float2 fp = input.worldPosition.xz;
-        float n1 = foamNoise(fp * 0.8f + time * 0.15f) * 0.5f + 0.5f; // 大きなムラ
-        float n2 = foamNoise(fp * 2.5f - time * 0.3f) * 0.5f + 0.5f; // 細かいムラ
-        float noise = n1 * 0.6f + n2 * 0.4f;
+        float fn = ValueNoise(fp * 2.2f + time * 0.15f) * 0.6f
+         + ValueNoise(fp * 6.0f - time * 0.25f) * 0.4f;
+        float foamAmount = saturate(rippleData.b * rippleMask * 2.0f + input.crestFoam);
+
+        // 薄い泡はノイズの山だけ残る / 濃い泡は全面が白くなる
+        float foamMask = saturate((foamAmount - (1.0f - fn) * 0.8f) * 3.0f);
+
+        // 泡にも太陽の陰影を付ける（真っ白に光らせない）
+        float3 foamLit = float3(0.92f, 0.96f, 1.0f) * (0.45f + 0.55f * NdotL) * max(sunLight, 0.3f);
+        waterColor = lerp(waterColor, foamLit, foamMask);
+        finalAlpha = max(finalAlpha, foamMask);
         
-        float foamMask = smoothstep(0.1f, 0.6f, foamAmount * (0.6f + 0.8f * noise)) * 0.85f;
-             
-        // くっきり真っ白な泡カラー（少し青みのある白）
-        float3 foamColor = float3(0.96f, 0.98f, 1.0f);
-            
-        // 水面の色に泡を合成
-        waterColor = lerp(waterColor, foamColor, foamMask);
-            
-        // 泡の部分はスケスケにならないようアルファ値も1.0へ引き上げる
-        finalAlpha = lerp(finalAlpha, 1.0f, foamMask);
+        //waterColor = input.crestFoam.xxx;
     }   
     
     // 最終的なカラーを出力

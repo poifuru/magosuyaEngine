@@ -82,13 +82,14 @@ void WaterSurfaceComponent::Update() {
 	// シーン内のオブジェクトから BoatWakeComponent を探す
 	auto* wakeComp = GetGameObject()->FindComponentInScene<BoatWakeComponent>();
 
-	if(wakeComp) {
-		// 見つかった BoatWakeComponent から CS 波紋テクスチャのインデックスを取得！
-		params.rippleTextureIndex = wakeComp->GetRippleTextureIndex();
+	if (wakeComp) {
+		params.rippleTextureIndex = wakeComp->GetRippleTextureIndex();	// CSから書き込んだテクスチャ
+		params.waterMin  = wakeComp->GetSimMin();
+		params.waterSize = wakeComp->GetSimSize();
+	} else {
+		params.waterMin  = GetWaterMin();
+		params.waterSize = GetWaterSize();
 	}
-
-	params.waterMin = GetWaterMin();
-	params.waterSize = GetWaterSize();
 
 	// 定数バッファを更新
 	waterSurfaceBuffer_.Update(params);
