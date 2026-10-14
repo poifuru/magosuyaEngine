@@ -49,7 +49,7 @@ public:
 		MyEngine::Rendering::BlendModeManager* blendModeManager
 	);
 
-	void Update(CameraData* cameraData);
+	void Update(const CameraData* cameraData);
 	void Draw(MyEngine::Rendering::Renderer* renderSystem);
 	void DrawUI();
 
