@@ -1,4 +1,7 @@
-    struct SimulationBuffer
+// 1: iWave / 0: 波動方程式
+#define USE_IWAVE 0    
+    
+struct SimulationBuffer
 {
     float3 position; // 物体のワールド座標
     float time; // 経過時間
@@ -13,6 +16,11 @@
     uint preTextureIndex; // 前フレームのテクスチャインデックス
     float speed;
     float2 forward; // 前方ベクトル
+    
+    float4 iWaveKernel[43]; // iWave用のカーネル
+    
+    float2 prevBoatPosition; // 前フレームの船の位置 (x, z)
+    int2 scroll;
 };
 
 ConstantBuffer<SimulationBuffer> gSimBuffer : register(b0);
@@ -29,6 +37,14 @@ float hash(float2 p)
     return frac(sin(dot(p, float2(127.1, 311.7))) * 43758.5453);
 }
 
+// 範囲外は「静かな水面(0)」として扱う。スクロールで新しく入ってきたマスも自然に0になる
+float4 LoadPrev(int2 p, int w, int h)
+{
+    if (p.x < 0 || p.y < 0 || p.x >= w || p.y >= h)
+        return float4(0.0f, 0.0f, 0.0f, 0.0f);
+    return gTextures[gSimBuffer.preTextureIndex].Load(int3(p, 0));
+}
+
 [numthreads(8, 8, 1)]
 void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座標になる
 {
@@ -36,11 +52,15 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     uint width = (uint) gSimBuffer.textureSize.x;
     uint height = (uint) gSimBuffer.textureSize.y;
     
+    // 周囲4ピクセルの1フレーム前の高さ(R)を取得
+    int w = (int) width;
+    int h = (int) height;
+    
     // テクスチャの範囲外なら何もしないガード
     if (id.x >= width || id.y >= height)
         return;
     
-    int2 pos = int2(id.xy);
+    int2 pos = int2(id.xy) + gSimBuffer.scroll; // ← 前フレームでの同じ場所
     
     // ピクセル座標から0.0 ~ 1.0のUV座標を計算
     float2 uv = float2((float) id.x / width, (float) id.y / height);
@@ -50,55 +70,85 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     // R: 1フレーム前の高さ (currentHeight)
     // G: 2フレーム前の高さ (prevHeight)
     // ----------------------------------
-    float4 centerData = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos, 0));
+    float4 centerData = LoadPrev(pos, w, h);
     float currentHeight = centerData.r;
     float prevHeight = centerData.g;
     float prevFoam = centerData.b; // 泡の濃度
     
     // 何ピクセル隣を見るかのオフセット
-    int pixelOffset = 3;
+    int pixelOffset = 1;
     
-    // 周囲4ピクセルの1フレーム前の高さ(R)を取得
-    int w = (int) width;
-    int h = (int) height;
-    float left = gTextures[gSimBuffer.preTextureIndex].Load(int3(max(pos.x - pixelOffset, 0), pos.y, 0)).r;
-    float right = gTextures[gSimBuffer.preTextureIndex].Load(int3(min(pos.x + pixelOffset, w - 1), pos.y, 0)).r;
-    float up = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, min(pos.y + pixelOffset, h - 1), 0)).r;
-    float down = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, max(pos.y - pixelOffset, 0), 0)).r;
+    // --------------
+    // 波の広がりを計算
+    // --------------
+    float dt = gSimBuffer.deltaTime;
+    float newHeight;
     
-    // ------------------------
-    // 波動方程式で波の広がりを計算
-    // ------------------------
-    float neighborAvg = (left + right + up + down) * 0.25f;
+#if USE_IWAVE   // iWaveによる計算
+    // iWave用カーネルの畳み込み
+    float vd = 0.0f;
+    for (int y = -6; y <= 6; ++y)
+    {
+        for (int x = -6; x <= 6; ++x)
+        {
+            // 読む場所(端ではみ出さないようにclamp)
+            int2 p = clamp(pos + int2(x, y), int2(0, 0), int2(w - 1, h - 1));
+            float neighborHeight = gTextures[gSimBuffer.preTextureIndex].Load(int3(p, 0)).r;
+            
+            // C++で送ったカーネルから重みを取り出す
+            int i = (y + 6) * 13 + (x + 6);
+            float weight = gSimBuffer.iWaveKernel[i >> 2][i & 3];
+            
+            vd += weight * neighborHeight;
+        }
+    }
     
-    // 波の伝播速度パラメータ（0.5～1.8程度で波の伝わる速さが変わる）
-    float waveSpeed = 0.3f;
-    // 減衰率（0.95～0.99程度。小さいとすぐ消え、大きいと長く残る）
-    float damp = 0.996f;
+    float gravity = 12.0f;  // 波の速さ(大きいほど早く伝わる)
+    float alpha = 0.75f;     // 減衰(大きいほど早く消える)
     
-    // 波動方程式: newHeight = (2 * current - prev + waveSpeed * (avg - current)) * damp
-    float newHeight = (2.0f * currentHeight - prevHeight + waveSpeed * (neighborAvg - currentHeight)) * damp;
+    float newHeight = (currentHeight * (2.0f - alpha * dt) - prevHeight - gravity * dt * dt * vd) / (1.0f + alpha * dt);
+    
+#else   // 波動方程式での計算
+    float4 left = LoadPrev(pos + int2(-1, 0), w, h);
+    float4 right = LoadPrev(pos + int2(1, 0), w, h);
+    float4 up = LoadPrev(pos + int2(0, 1), w, h);
+    float4 down = LoadPrev(pos + int2(0, -1), w, h);
+    // 斜め4点も読む
+    float lu = LoadPrev(pos + int2(-1, 1), w, h).r; // 左上
+    float ru = LoadPrev(pos + int2(1, 1), w, h).r; // 右上
+    float ld = LoadPrev(pos + int2(-1, -1), w, h).r; // 左下
+    float rd = LoadPrev(pos + int2(1, -1), w, h).r; // 右下
+    
+    // 9点ラプラシアン（上下左右 2/3、斜め 1/6、中心 -10/3）
+    float laplacian = (left.r + right.r + up.r + down.r) * (2.0f / 3.0f)
+                + (lu + ru + ld + rd) * (1.0f / 6.0f)
+                - currentHeight * (10.0f / 3.0f);
+
+    float waveSpeed = 0.7f; // 約3 m/s
+    float damp = 0.993f;
+
+    const float damping = 0.35f; // 1秒あたり
+    float velocity = (currentHeight - prevHeight) * saturate(1.0f - damping * dt);
+    newHeight = currentHeight + velocity + waveSpeed * laplacian * 0.25f;
+#endif
     
     // -----------------------------------------------
-    // 前フレームの周囲4ピクセルの「泡 (B)」を取得してぼかす！
+    // 前フレームの周囲4ピクセルの「泡 (B)」を取得してぼかす
     // -----------------------------------------------
-    float fLeft = gTextures[gSimBuffer.preTextureIndex].Load(int3(max(pos.x - 1, 0), pos.y, 0)).b;
-    float fRight = gTextures[gSimBuffer.preTextureIndex].Load(int3(min(pos.x + 1, w - 1), pos.y, 0)).b;
-    float fUp = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, min(pos.y + 1, h - 1), 0)).b;
-    float fDown = gTextures[gSimBuffer.preTextureIndex].Load(int3(pos.x, max(pos.y - 1, 0), 0)).b;
-    
-    //　周囲の泡の平均（ぼかし）を取る
-    float foamAvg = (fLeft + fRight + fUp + fDown) * 0.25f;
-    
-    // の場の泡と周囲のぼかしを少し混ぜて、点々の隙間を繋ぎ合わせる
-    float blendedFoam = lerp(prevFoam, foamAvg, 0.4f);
-    float newFoam = prevFoam * 0.996f;
+    float foamAvg = (left.b + right.b + up.b + down.b) * 0.25f;
+    const float foamDecay = 0.5f; // 1秒あたりの消え方
+    float newFoam = lerp(prevFoam, foamAvg, 0.2f) * exp(-foamDecay * dt);
+
+    // 波紋の傾きが急な所に泡（航跡のV字の縁が白くなる）
+    float texelSize = gSimBuffer.waterSize.x / gSimBuffer.textureSize.x;
+    float2 slope = float2(right.r - left.r, up.r - down.r) / (2.0f * texelSize);
+    newFoam += saturate(length(slope) - 0.35f) * dt * 1.5f;
     
     // ---------------------------
     // オブジェクトの移動による波の注入
     // ---------------------------
      // 船の速度に応じた補間率
-    float speedFactor = saturate(gSimBuffer.speed * 1.5f); // 速度に応じた強さ
+    float speedFactor = saturate(length(gSimBuffer.forward) / 10.0f); // 速度に応じた強さ
     
     if (speedFactor > 0.001f)
     {
@@ -109,6 +159,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
         
         // ワールド空間単位の距離で計算（アスペクト比ズレを防ぐため）
         float2 diffWorld = (uv - boatUV) * gSimBuffer.waterSize;
+        diffWorld.y = -diffWorld.y;
         
         float2 fwd = normalize(gSimBuffer.forward);
         float2 rgt = float2(-fwd.y, fwd.x); // 正しい右方向ベクトル（90度回転）
@@ -117,48 +168,49 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
         float bowOffset = 0.4f; // 船首の前方距離
         float widthOffset = 0.2f; // 船の横幅の半分
         
-        float2 leftPoint = (fwd * bowOffset) - (rgt * widthOffset);
-        float2 rightPoint = (fwd * bowOffset) + (rgt * widthOffset);
-        
-        float distLeft = length(diffWorld - leftPoint);
-        float distRight = length(diffWorld - rightPoint);
-        float distToImpact = min(distLeft, distRight);
-        
         // 衝撃半径
-        float impactRadius = 1.8f;
-        if (distToImpact < impactRadius)
+        float impactRadius = 1.5f;
+       
+        float r2 = dot(diffWorld, diffWorld) / (impactRadius * impactRadius);
+        if (r2 < 6.0f)
         {
-            // 0.0 〜 1.0 の正規化距離
-            float normDist = distToImpact / impactRadius;
-            
-            // ガウシアン風の滑らかな鐘型カーブ
-            float shapeCurve = exp(-normDist * normDist * 3.0f);
-            
-            // 速度補間を掛けて、動き出しと停止を滑らかにする
-            float impact = shapeCurve * 0.4f * speedFactor;
-            
-            newHeight += impact;
+            float falloff = exp(-r2 * 1.5f);
+            float2 velocity = gSimBuffer.forward;
+            float speed = length(velocity);
+            float speedMask = smoothstep(1.0f, 4.0f, speed);
+
+            float push = dot(velocity, diffWorld) / impactRadius; // 前を持ち上げ、後ろを下げる
+            float mexicanHat = 1.0f - 1.5f * r2; // 中心がへこみ、周りが盛り上がる（合計0）
+            float displacement = -speed * 0.35f; // 船体の排水
+
+            const float injectScale = 8.0f; // ← 航跡の強さ。ここで調整
+            float force = (push * 0.5f + displacement * mexicanHat) * falloff * speedMask;
+            newHeight += force * injectScale * dt * dt;
         }
-        
+            
         // -------------------------------------------------------------
-        // 泡の注入（発生半径を少し広げて前後を重ね合わせる）
+        // 泡の注入
         // -------------------------------------------------------------
-        
-        // 泡は船の後ろから発生させる
-        float sternOffset = 0.5f; // 船の後方へのオフセット
-        float2 sternPoint = -(fwd * sternOffset); // 船の後ろ側の位置
-        float distToStern = length(diffWorld - sternPoint);
-    
-        float sternRadius = 1.2f;
-        if (distToStern < sternRadius)
+        float2 prevCenter = gSimBuffer.prevBoatPosition - gSimBuffer.position.xz;
+        float2 seg = -prevCenter; // 前フレーム → 今
+        float t = saturate(dot(diffWorld - prevCenter, seg) / max(dot(seg, seg), 1e-6f));
+        float2 nearest = diffWorld - (prevCenter + seg * t);
+
+        const float hullRadius = 1.6f;
+        float hr2 = dot(nearest, nearest) / (hullRadius * hullRadius);
+        if (hr2 < 6.0f)
         {
-            float normStern = distToStern / sternRadius;
-            float sternCurve = exp(-normStern * normStern * 3.0f);
-        
-            float foamImpact = sternCurve * 1.2f * speedFactor;
-            newFoam = max(newFoam, foamImpact);
+            float hullSpeed = length(gSimBuffer.forward);
+            newFoam += saturate(hullSpeed * 0.08f) * exp(-hr2 * 1.5f) * dt * 4.0f;
         }
     }
+    
+    // 領域の端で波を吸収（跳ね返り防止）
+    float edgeDist = (float) min(min(id.x, id.y), min(width - 1 - id.x, height - 1 - id.y));
+    float sponge = smoothstep(0.0f, 1.0f, saturate(edgeDist / 16.0f));
+    newHeight *= lerp(0.9f, 1.0f, sponge);
+    currentHeight *= lerp(0.9f, 1.0f, sponge);
+    newFoam *= lerp(0.95f, 1.0f, sponge);
 
     // -------------------------------------------------------------
     // 結果の書き込み
@@ -166,5 +218,5 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     // G: 今回の高さ（次回フレームでの過去の高さ）
     // B: 泡の濃さ
     // -------------------------------------------------------------
-    gOutput[id.xy] = float4(saturate(newHeight), saturate(currentHeight), saturate(newFoam), 1.0f);
+    gOutput[id.xy] = float4(clamp(newHeight, -3, 3), clamp(currentHeight, -3, 3), saturate(newFoam), 1.0f);
 }

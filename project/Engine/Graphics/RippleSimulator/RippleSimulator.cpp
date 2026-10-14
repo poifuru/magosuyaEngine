@@ -39,7 +39,10 @@ void RippleSimulator::Dispatch(
 	float deltaTime,
 	const Vector2& waterMin, 
 	const Vector2& waterSize,
-	const Vector2& forward
+	const Vector2& forward,
+	Vector4 kernel[43],
+	int scrollX,
+	int scrollY
 ) {
 	// 今回使うパイプライン (current) と 前回のパイプライン (prev)
 	auto* currentPipeline = (currentIndex_ == 0) ? &prePipeline_ : &currentPipeline_;
@@ -58,6 +61,18 @@ void RippleSimulator::Dispatch(
 	params.preTextureIndex = prevPipeline->GetTextureSrvIndex();
 	params.speed = speed;
 	params.forward = forward;
+	for(int i = 0; i <= 42; ++i) {
+		params.iWaveKernel[i] = kernel[i];
+	}
+	params.scrollX = scrollX;
+	params.scrollY = scrollY;
+
+	// 前フレームの船の位置 (初回は前フレームが無いので今の位置を使う)
+	if (!hasPrevBoatPos_) {
+		prevBoatPos_ = Vector2(boatPos.x, boatPos.z);
+		hasPrevBoatPos_ = true;
+	}
+	params.prevBoatPosition = prevBoatPos_;
 
 	// 現在のパイプラインのDispatchを呼ぶ
 	currentPipeline->Dispatch(cmdList, params);
@@ -67,4 +82,7 @@ void RippleSimulator::Dispatch(
 
 	// 次回のために 0 と 1 を反転（ピンポン！）
 	currentIndex_ = 1 - currentIndex_;
+
+	// 次回のために今の船の位置を覚えておく
+	prevBoatPos_ = Vector2(boatPos.x, boatPos.z);
 }

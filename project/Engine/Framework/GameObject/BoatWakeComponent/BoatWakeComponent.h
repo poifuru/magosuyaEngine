@@ -38,6 +38,9 @@ public:
 
 	void SetTexture(const std::string& textureName);
 
+	Vector2 GetSimMin() const { return simMin_; }
+	Vector2 GetSimSize() const { return Vector2(kSimSize, kSimSize); }
+
 	// Renderer用
 	const MyEngine::Rendering::Mesh& GetMesh() const { return mesh_; }
 	MyEngine::Rendering::Material* GetMaterial() const { return material_.get(); }
@@ -48,6 +51,9 @@ public:
 private:
 	// メッシュ構築処理
 	void GenerateMesh();
+
+	// iWave用のカーネルを構築する
+	void BuildIWaveKernel();
 
 private:
 	RippleSimulator rippleSim_;		// 波紋シミュレーター
@@ -71,6 +77,19 @@ private:
 	float trailWidth_ = 1.5f;    // 船直後の航跡の基本幅
 	float widthExpandRate_ = 1.5f; // 後方へのV字拡散率
 	Vector3 lastSpawnPosition_{ 0.0f, 0.0f, 0.0f };
+	Vector2 smoothedVelocity_{};
+	Vector2 velocity;
 
 	static constexpr size_t kMaxVertices = 1000; // 確保しておく最大頂点数
+
+	// iWave用のカーネル
+	Vector4 kernel_[43]{};
+
+	// 波紋シミュレーションの領域（船の周り）
+	static constexpr float kSimSize = 80.0f;   // 領域の一辺[m]
+	static constexpr int   kSimRes  = 512;     // テクスチャ解像度
+	int32_t originTexelX_ = 0;
+	int32_t originTexelZ_ = 0;
+	bool hasOrigin_ = false;
+	Vector2 simMin_{};
 };

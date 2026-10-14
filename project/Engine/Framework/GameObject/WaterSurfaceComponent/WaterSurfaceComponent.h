@@ -6,6 +6,8 @@
 
 class WaterSurfaceComponent : public Component {
 public:
+	static constexpr int kMaxWaves = 6; // ゲルストナー波の最大本数（HLSLの kMaxWaves と必ず揃える）
+
 	void Initialize() override;
 
 	void Update() override;
@@ -50,7 +52,7 @@ private:
 
 	// シェーダーに送るパラメータ
 	struct WaterSurfaceForGPU {
-		WaterSurfaceInfo waves[4];
+		WaterSurfaceInfo waves[kMaxWaves];
 		float time;
 		int numActiveWaves;
 		float nearFadeDistance;
@@ -60,6 +62,7 @@ private:
 		Vector2 waterMin; 
 		Vector2 waterSize;
 	};
+	static_assert(sizeof(WaterSurfaceForGPU) == 32 * kMaxWaves + 48, "WaterSurfaceForGPU と HLSL の WaterSurface がずれている");
 
 private:
 	// メッシュとマテリアルを直接持たせる
@@ -77,7 +80,7 @@ private:
 	float time_ = 0.0f;
 
 	// ゲルストナー波のパラメータ
-	WaterSurfaceInfo waves_[4];
+	WaterSurfaceInfo waves_[kMaxWaves];
 	int numActiveWaves_ = 2; // デフォルトで有効にする波の数（1〜4）
 	float nearFadeDistance_ = 30.0f; // デフォルト値（近距離で透け始める距離）
 	float farFadeDistance_ = 150.0f; // デフォルト値（これより遠いと完全に不透明）

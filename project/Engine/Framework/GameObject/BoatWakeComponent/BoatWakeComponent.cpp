@@ -8,6 +8,7 @@
 #include "CameraOrganizer.h"
 #include "ComponentType.h"
 #include "MathFunction.h"
+#include "Time.h"
 
 void BoatWakeComponent::Initialize() {
 	if(isInitialized_) return;
@@ -41,6 +42,9 @@ void BoatWakeComponent::Initialize() {
 	material_->SetShadingModel(MyEngine::Rendering::ShadingModel::BoatWake); // 航跡用シェーダー
 	material_->SetBlendMode(MyEngine::Rendering::BlendModeType::Alpha);   // 半透明
 	SetTexture(texPath_);
+
+	// カーネルの構築
+	BuildIWaveKernel();
 
 	if(gameObject_) {
 		lastSpawnPosition_ = gameObject_->GetTransform().translate;
@@ -111,6 +115,14 @@ void BoatWakeComponent::ImGui() {
 	ImGui::DragFloat("Max Lifetime", &maxLifetime_, 0.1f, 0.5f, 10.0f);
 	ImGui::DragFloat("Trail Width", &trailWidth_, 0.1f, 0.1f, 10.0f);
 	ImGui::DragFloat("Width Expand Rate", &widthExpandRate_, 0.1f, 0.0f, 5.0f);
+	ImGui::Text("speed %.2f m/s", Math::Length(velocity));
+
+	auto G = [&](int i) { const Vector4& v = kernel_[i / 4]; float c[4] = { v.x, v.y, v.z, v.w }; return c[i % 4]; };
+	ImGui::Text("G(0,0)=%.4f G(1,0)=%.4f G(1,1)=%.4f G(2,0)=%.4f", G(84), G(85), G(98), G(86));
+
+	auto* heap = GetGameObject()->GetContext()->heapManager;
+	D3D12_GPU_DESCRIPTOR_HANDLE handle = heap->GetGpuHandle(rippleSim_.GetTextureSrvIndex());
+	ImGui::Image((ImTextureID)handle.ptr, ImVec2(256, 256));
 }
 
 void BoatWakeComponent::Serialize(json& j) const {
@@ -141,20 +153,35 @@ void BoatWakeComponent::Deserialize(const json& j) {
 void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 	if(!gameObject_) return;
 
-	// シーンから水面を探して位置とサイズを取得
-	Vector2 waterMin = Vector2(-999.0f, -999.0f);
-	Vector2 waterSize = Vector2(100.0f, 100.0f);
-
-	if(auto* waterComp = GetGameObject()->FindComponentInScene<WaterSurfaceComponent>()) {
-		waterMin = waterComp->GetWaterMin();
-		waterSize = waterComp->GetWaterSize();
-	}
-
 	const Vector3& boatPos = gameObject_->GetTransform().translate;
 
+	const float texel = kSimSize / kSimRes; // 1テクセル何mか (約0.156m)
+
+	// 船を中心にした領域の原点を、テクセル単位にスナップ
+	int32_t newOriginX = (int32_t)std::floor((boatPos.x - kSimSize * 0.5f) / texel);
+	int32_t newOriginZ = (int32_t)std::floor((boatPos.z - kSimSize * 0.5f) / texel);
+
+	int32_t scrollX = 0;
+	int32_t scrollY = 0;
+	if (hasOrigin_) {
+		scrollX = newOriginX - originTexelX_;
+		// CSのUVは y を反転しているので（z が増えるとテクセル y は減る）符号を逆にする
+		scrollY = -(newOriginZ - originTexelZ_);
+	}
+	originTexelX_ = newOriginX;
+	originTexelZ_ = newOriginZ;
+	hasOrigin_ = true;
+
+	simMin_ = Vector2(newOriginX * texel, newOriginZ * texel);
+	Vector2 simSize = Vector2(kSimSize, kSimSize);
+
 	// 前フレームからの移動距離（スピード）を計算
+	float dt = Time::GetDeltaTime();
+	Vector3 v = (dt > 0.0f) ? (boatPos - lastPos_) / dt : Vector3{};
 	float speed = Math::Length((boatPos - lastPos_));
 	lastPos_ = boatPos; // 次回用に保存
+
+	/*Vector2*/ velocity = { v.x, v.z };   // m/s
 
 	// プレイヤーの前方ベクトルを取得
 	Vector2 forward = {};
@@ -167,7 +194,7 @@ void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 	}
 
 	// CSを実行してテクスチャを更新
-	rippleSim_.Dispatch(cmdList, boatPos, speed, Time::GetDeltaTime(), waterMin, waterSize, forward);
+	rippleSim_.Dispatch(cmdList, boatPos, speed, dt, simMin_, simSize, velocity, kernel_, scrollX, scrollY);
 
 	// CSが作ったテクスチャのインデックスをマテリアルへ指定
 	if (material_) {
@@ -187,4 +214,52 @@ void BoatWakeComponent::SetTexture(const std::string& textureName) {
 	texIndex_ = context->textureManager->LoadTexture(texPath_);
 
 	material_->SetTextureIndex(texIndex_);
+}
+
+void BoatWakeComponent::BuildIWaveKernel() {
+	constexpr int kRadius = 6;				// 中心マスからの距離
+	constexpr int kSize = kRadius * 2 + 1;	// サイズ(13)
+	constexpr int kSteps = 10000;			// 波紋の種類の数
+	constexpr double kDq = 0.001;			// qの刻み
+	constexpr double kSigma = 0.5;			// 細かすぎる波を消す強さ(1.0だと不安定になってしまう)
+
+	// 配合比 weight[n] = q^2 * exp(-σq^2) と、その合計 G0
+	std::vector<double> weight(kSteps + 1);
+	double g0 = 0.0;
+	for(int n = 1; n <= kSteps; ++n) {
+		double q = n * kDq;
+		weight[n] = q * q * std::exp(-kSigma * q * q);
+		g0 += weight[n];
+	}
+
+	// 各マスの重み(上下左右対称なので右下の7x7だけ計算して4方向にコピー)
+	float table[kSize][kSize];
+	for(int y = 0; y <= kRadius; ++y) {
+		for(int x = 0; x <= kRadius; ++x) {
+			double r = std::sqrt(double(x * x + y * y));	// 中心からの距離
+
+			double sum = 0.0;
+			for(int n = 1; n <= kSteps; ++n) {
+				sum += weight[n] * std::cyl_bessel_j(0.0, n * kDq * r);	// 丸い波紋を足す
+			}
+			float g = float(sum / g0);	// 中心が1になるように正規化
+
+			table[kRadius + y][kRadius + x] = g;
+			table[kRadius + y][kRadius - x] = g;
+			table[kRadius - y][kRadius + x] = g;
+			table[kRadius - y][kRadius - x] = g;
+		}
+	}
+
+	// 169個を Vector4[43] に4個ずつ詰める(i番目 -> kernel_[i/4] の i%4 成分)
+	for(int i = 0; i < kSize * kSize; ++i) {
+		float value = table[i / kSize][i % kSize];
+		Vector4& v = kernel_[i / 4];
+		switch(i % 4) {
+		case 0: v.x = value; break;
+		case 1: v.y = value; break;
+		case 2: v.z = value; break;
+		case 3: v.w = value; break;
+		}
+	}
 }

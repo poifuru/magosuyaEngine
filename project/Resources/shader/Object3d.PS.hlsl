@@ -58,7 +58,7 @@ PixelShaderOutput main(VertexShaderOutput input)
     float3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
     AllLightData allLights = gLightData;
     
-    totalDiffuse = UpdateLights(allLights, myMaterial, input, textureColor, toEye);
+    totalDiffuse = UpdateLights(allLights, myMaterial, input.normal, input.worldPosition, textureColor, toEye);
     
     // 環境マップは未バインドのため、0.0で安全にフォールバック
     float4 environmentColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -72,6 +72,10 @@ PixelShaderOutput main(VertexShaderOutput input)
         output.color.rgb = totalDiffuse + environmentColor.rgb;
         output.color.a = myMaterial.color.a * textureColor.a;
     }
+    
+    // 距離フェード
+    //float fogT = saturate(length(gCamera.worldPosition - input.worldPosition) / 450.0f);
+    //output.color.rgb = lerp(output.color.rgb, float3(0.65f, 0.82f, 0.92f), fogT * fogT * 0.85f);
     
     return output;
 }

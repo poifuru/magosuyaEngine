@@ -33,6 +33,12 @@ namespace Math {
 		};
 	}
 
+	float Length(const Vector2& v) {
+		return {
+			sqrtf (powf (v.x, 2) + powf (v.y, 2))
+		};
+	}
+
 	float Length (const Vector3& v) {
 		return {
 			sqrtf (powf (v.x, 2) + powf (v.y, 2) + powf (v.z, 2))

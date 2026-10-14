@@ -21,6 +21,12 @@ struct RippleSimulationParams {
 	uint32_t preTextureIndex;
 	float speed;
 	Vector2 forward;
+
+	Vector4 iWaveKernel[43];
+
+	Vector2 prevBoatPosition; // 前フレームの船の位置 (x, z)
+	int scrollX;			  // 領域が動いたテクセル
+	int scrollY;
 };
 
 class RippleSimulator {
@@ -45,7 +51,10 @@ public:
 		float deltaTime,
 		const Vector2& waterMin, 
 		const Vector2& waterSize,
-		const Vector2& forward
+		const Vector2& forward,
+		Vector4 kernel[43],
+		int scrollX,
+		int scrollY
 	);
 
 	// 作成されたテクスチャのバインドレス SRV インデックスを取得
@@ -59,4 +68,8 @@ private:
 
 	// 実際に渡すためのテクスチャインデックス
 	uint32_t textureIndex_;
+
+	// 前フレームの船の位置 (x, z)
+	Vector2 prevBoatPos_{};
+	bool hasPrevBoatPos_ = false; // 初回フレームかどうか
 };
