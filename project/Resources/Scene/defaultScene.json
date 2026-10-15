@@ -36,8 +36,8 @@
                             ]
                         }
                     },
-                    "modelPath": "Resources/player/player_tadpole.obj",
-                    "texPath": "Resources/player/player_tadpole.png",
+                    "modelPath": "Resources/player/minisub.obj",
+                    "texPath": "Resources/player/minisub_palette.png",
                     "type": "MeshRendererComponent"
                 },
                 {
@@ -55,7 +55,7 @@
                     "harpoonHomingStrength": 0.019999999552965164,
                     "harpoonMaxDistance": 100.0,
                     "harpoonSpeed": 100.0,
-                    "hp": 79,
+                    "hp": 0,
                     "isUnderwater": false,
                     "maxAmmo": 15,
                     "maxHp": 100,
@@ -82,13 +82,13 @@
             "name": "Player",
             "transform": {
                 "position": [
-                    198.6947021484375,
+                    361.3512268066406,
                     0.30000001192092896,
-                    38.28471374511719
+                    344.2617492675781
                 ],
                 "rotation": [
                     0.0,
-                    81.57576751708984,
+                    85.38606262207031,
                     0.0
                 ],
                 "scale": [
@@ -142,13 +142,13 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    146.1265869140625,
-                    2.783409357070923,
-                    71.86418914794922
+                    389.176513671875,
+                    8.701488494873047,
+                    408.5008544921875
                 ],
                 "rotation": [
-                    0.021201003342866898,
-                    2.1073505878448486,
+                    0.03429034724831581,
+                    -2.732837677001953,
                     0.0
                 ],
                 "scale": [
@@ -162,7 +162,7 @@
             "components": [
                 {
                     "fov": 0.44999998807907104,
-                    "priority": 20,
+                    "priority": 10,
                     "sensitivity": 0.0010000000474974513,
                     "speed": 0.30000001192092896,
                     "type": "VirtualDebugCamera"
@@ -171,13 +171,13 @@
             "name": "DebugCamera",
             "transform": {
                 "position": [
-                    146.1265869140625,
-                    2.783409357070923,
-                    71.86418914794922
+                    431.55047607421875,
+                    24.55270004272461,
+                    309.6550598144531
                 ],
                 "rotation": [
-                    0.021201003342866898,
-                    2.1073505878448486,
+                    0.05820085108280182,
+                    0.6811626553535461,
                     0.0
                 ],
                 "scale": [
@@ -190,8 +190,8 @@
         {
             "components": [
                 {
-                    "angleX": 0.21826253831386566,
-                    "angleY": 130.10633850097656,
+                    "angleX": 0.04726289212703705,
+                    "angleY": 135.4964599609375,
                     "delay": 0.5,
                     "firstPersonOffset": [
                         0.0,
@@ -208,7 +208,7 @@
                         -70.0
                     ],
                     "padSensitivity": 0.009999999776482582,
-                    "priority": 10,
+                    "priority": 20,
                     "targetName": "Player",
                     "targetOffsetY": 6.0,
                     "type": "VirtualFollowCamera"
@@ -217,13 +217,13 @@
             "name": "FollowCamera",
             "transform": {
                 "position": [
-                    263.4647216796875,
-                    20.422046661376953,
-                    56.086212158203125
+                    389.176513671875,
+                    8.701488494873047,
+                    408.5008544921875
                 ],
                 "rotation": [
-                    0.2072199136018753,
-                    -1.8390153646469116,
+                    0.03429034724831581,
+                    -2.732837677001953,
                     0.0
                 ],
                 "scale": [
@@ -397,65 +397,6 @@
                     0.029999999329447746,
                     0.029999999329447746,
                     0.10000000149011612
-                ]
-            }
-        },
-        {
-            "components": [
-                {
-                    "isDepthEnable": true,
-                    "isVisible": true,
-                    "material": {
-                        "color": [
-                            0.9233871102333069,
-                            0.44680023193359375,
-                            0.0,
-                            1.0
-                        ],
-                        "enableLighting": 1,
-                        "environmentCoefficient": 0.30000001192092896,
-                        "metallic": 0.0,
-                        "roughness": 0.5,
-                        "time": 0.0,
-                        "uvTransform": {
-                            "rotation": [
-                                0.0,
-                                0.0,
-                                0.0
-                            ],
-                            "scale": [
-                                1.0,
-                                1.0,
-                                1.0
-                            ],
-                            "translation": [
-                                0.0,
-                                0.0,
-                                0.0
-                            ]
-                        }
-                    },
-                    "modelPath": "Resources/stage/stage.obj",
-                    "texPath": "white1x1",
-                    "type": "MeshRendererComponent"
-                }
-            ],
-            "name": "stage",
-            "transform": {
-                "position": [
-                    0.0,
-                    -100.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5700000524520874
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
                 ]
             }
         },
@@ -772,7 +713,7 @@
                         -10.0
                     ],
                     "padSensitivity": 0.009999999776482582,
-                    "priority": 10,
+                    "priority": 20,
                     "targetName": "",
                     "targetOffsetY": 3.799999952316284,
                     "type": "VirtualFollowCamera"
