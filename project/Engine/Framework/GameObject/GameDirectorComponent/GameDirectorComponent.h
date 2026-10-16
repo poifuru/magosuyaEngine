@@ -38,7 +38,8 @@ public:
 	void SetUIObjectName(const std::string& name) { uiObjectName_ = name; }
 	const std::string& GetUIObjectName() const { return uiObjectName_; }
 
-	GamePhase IsBossEventTriggered() const { return gamePhase_; }
+	//GamePhase IsBossEventTriggered() const { return gamePhase_; }
+	const bool& IsBossEventTriggered() const { return isBossEventTriggered_; }
 
 private:
 	// UIへの残り撃破数の反映
@@ -47,7 +48,7 @@ private:
 private:
 	int targetKills_ = 10;           // 目標撃破数
 	int currentKills_ = 0;           // 現在の撃破数
-	GamePhase gamePhase_ = GamePhase::Surface;
+	bool isBossEventTriggered_;
 
 	std::string uiObjectName_ = "KillCounterUI"; // UIオブジェクトの名前
 };
