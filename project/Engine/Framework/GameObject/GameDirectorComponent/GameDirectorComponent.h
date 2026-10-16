@@ -2,6 +2,12 @@
 #include "Component.h"
 #include <string>
 
+enum class GamePhase {
+	Surface,
+	DiveChase,
+	BossBattle
+};
+
 class GameDirectorComponent : public Component {
 public:
 	GameDirectorComponent() = default;
@@ -32,7 +38,7 @@ public:
 	void SetUIObjectName(const std::string& name) { uiObjectName_ = name; }
 	const std::string& GetUIObjectName() const { return uiObjectName_; }
 
-	bool IsBossEventTriggered() const { return isBossEventTriggered_; }
+	GamePhase IsBossEventTriggered() const { return gamePhase_; }
 
 private:
 	// UIへの残り撃破数の反映
@@ -41,7 +47,7 @@ private:
 private:
 	int targetKills_ = 10;           // 目標撃破数
 	int currentKills_ = 0;           // 現在の撃破数
-	bool isBossEventTriggered_ = false;
+	GamePhase gamePhase_ = GamePhase::Surface;
 
 	std::string uiObjectName_ = "KillCounterUI"; // UIオブジェクトの名前
 };

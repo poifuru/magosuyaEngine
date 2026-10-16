@@ -1,5 +1,5 @@
 // 1: iWave / 0: 波動方程式
-#define USE_IWAVE 0    
+#define USE_IWAVE 1    
     
 struct SimulationBuffer
 {
@@ -84,6 +84,13 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     float dt = gSimBuffer.deltaTime;
     float newHeight;
     
+    float4 left = LoadPrev(pos + int2(-1, 0), w, h);
+    float4 right = LoadPrev(pos + int2(1, 0), w, h);
+    float4 up = LoadPrev(pos + int2(0, 1), w, h);
+    float4 down = LoadPrev(pos + int2(0, -1), w, h);
+    
+    float texelSize = gSimBuffer.waterSize.x / gSimBuffer.textureSize.x;
+    
 #if USE_IWAVE   // iWaveによる計算
     // iWave用カーネルの畳み込み
     float vd = 0.0f;
@@ -93,7 +100,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
         {
             // 読む場所(端ではみ出さないようにclamp)
             int2 p = clamp(pos + int2(x, y), int2(0, 0), int2(w - 1, h - 1));
-            float neighborHeight = gTextures[gSimBuffer.preTextureIndex].Load(int3(p, 0)).r;
+            float neighborHeight = LoadPrev(pos + int2(x, y), w, h).r;
             
             // C++で送ったカーネルから重みを取り出す
             int i = (y + 6) * 13 + (x + 6);
@@ -103,17 +110,13 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
         }
     }
     
-    float gravity = 12.0f;  // 波の速さ(大きいほど早く伝わる)
+    float gravity = 9.8f / texelSize; // 実際の重力をマス単位に（約63）
     float alpha = 0.75f;     // 減衰(大きいほど早く消える)
     
-    float newHeight = (currentHeight * (2.0f - alpha * dt) - prevHeight - gravity * dt * dt * vd) / (1.0f + alpha * dt);
+    newHeight = (currentHeight * (2.0f - alpha * dt) - prevHeight - gravity * dt * dt * vd) / (1.0f + alpha * dt);
     
 #else   // 波動方程式での計算
-    float4 left = LoadPrev(pos + int2(-1, 0), w, h);
-    float4 right = LoadPrev(pos + int2(1, 0), w, h);
-    float4 up = LoadPrev(pos + int2(0, 1), w, h);
-    float4 down = LoadPrev(pos + int2(0, -1), w, h);
-    // 斜め4点も読む
+    // 斜め4点を読む
     float lu = LoadPrev(pos + int2(-1, 1), w, h).r; // 左上
     float ru = LoadPrev(pos + int2(1, 1), w, h).r; // 右上
     float ld = LoadPrev(pos + int2(-1, -1), w, h).r; // 左下
@@ -140,7 +143,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     float newFoam = lerp(prevFoam, foamAvg, 0.2f) * exp(-foamDecay * dt);
 
     // 波紋の傾きが急な所に泡（航跡のV字の縁が白くなる）
-    float texelSize = gSimBuffer.waterSize.x / gSimBuffer.textureSize.x;
+    texelSize = gSimBuffer.waterSize.x / gSimBuffer.textureSize.x;
     float2 slope = float2(right.r - left.r, up.r - down.r) / (2.0f * texelSize);
     newFoam += saturate(length(slope) - 0.35f) * dt * 1.5f;
     

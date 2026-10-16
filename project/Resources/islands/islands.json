@@ -1,0 +1,42 @@
+[
+  {
+    "name": "island_sandbar",
+    "tris": 1257,
+    "waterline_radius": 6.11,
+    "height": 5.64,
+    "bottom": -4.59,
+    "max_radius": 6.28
+  },
+  {
+    "name": "island_palm",
+    "tris": 1597,
+    "waterline_radius": 9.79,
+    "height": 7.14,
+    "bottom": -7.19,
+    "max_radius": 10.14
+  },
+  {
+    "name": "island_hill",
+    "tris": 1651,
+    "waterline_radius": 13.09,
+    "height": 10.41,
+    "bottom": -13.47,
+    "max_radius": 13.47
+  },
+  {
+    "name": "island_crag",
+    "tris": 1215,
+    "waterline_radius": 7.35,
+    "height": 7.0,
+    "bottom": -6.27,
+    "max_radius": 7.6
+  },
+  {
+    "name": "island_mesa",
+    "tris": 1491,
+    "waterline_radius": 10.82,
+    "height": 8.06,
+    "bottom": -10.35,
+    "max_radius": 11.02
+  }
+]
