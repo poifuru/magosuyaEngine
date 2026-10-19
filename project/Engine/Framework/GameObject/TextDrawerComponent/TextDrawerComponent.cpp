@@ -156,6 +156,7 @@ void TextDrawerComponent::UpdateModels() {
 				model->SetLayer(layer_);
 				if (auto mat = model->GetMaterial()) {
 					mat->SetEnableLighting(false);
+					mat->SetShadingModel(MyEngine::Rendering::ShadingModel::Sprite);
 				}
 			}
 			charModels_.push_back(std::move(model));

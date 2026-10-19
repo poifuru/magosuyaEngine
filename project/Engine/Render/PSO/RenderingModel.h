@@ -5,6 +5,7 @@ namespace MyEngine::Rendering {
 	enum class ShadingModel : uint8_t {
 		Standard,		// 通常のPBRレンダリング
 		UnLighting,		// ライティング無し
+		Sprite,			// 2Dスプライト
 		Skybox,			// スカイボックス
 		Particle,		// パーティクル
 		WaterSurface,	// 水面

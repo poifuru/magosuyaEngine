@@ -155,6 +155,7 @@ void NumberDrawerComponent::UpdateModels() {
 				model->SetLayer(layer_);
 				if (auto mat = model->GetMaterial()) {
 					mat->SetEnableLighting(false);
+					mat->SetShadingModel(MyEngine::Rendering::ShadingModel::Sprite);
 				}
 			}
 			digitModels_.push_back(std::move(model));

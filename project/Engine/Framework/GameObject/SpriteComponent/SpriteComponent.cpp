@@ -45,6 +45,7 @@ void SpriteComponent::Initialize() {
 	material_->SetDepthEnable(false); // 2Dなのでデプス無効
 	material_->SetDepthWrite(false);
 	material_->SetBlendMode(MyEngine::Rendering::BlendModeType::Alpha); // 半透明
+	material_->SetShadingModel(MyEngine::Rendering::ShadingModel::Sprite); // スプライト専用シェーダー
 	material_->SetLayer(layer_);
 	material_->SetDoubleSided(true);
 	material_->SetColor(color_);

@@ -297,6 +297,11 @@ void MyEngine::Rendering::Renderer::InitializeShaderTable() {
 	uint32_t stdPS = sm->CompileAndCacheShader(L"Resources/Shader/Object3d.PS.hlsl", L"ps_6_0");
 	shaderTable_[MakeShaderKey(ShadingModel::Standard, InputLayoutType::Standard3D)] = { stdVS, stdPS };
 
+	// Sprite x Standard3D
+	uint32_t spriteVS = sm->CompileAndCacheShader(L"Resources/Shader/Sprite.VS.hlsl", L"vs_6_0");
+	uint32_t spritePS = sm->CompileAndCacheShader(L"Resources/Shader/Sprite.PS.hlsl", L"ps_6_0");
+	shaderTable_[MakeShaderKey(ShadingModel::Sprite, InputLayoutType::Standard3D)] = { spriteVS, spritePS };
+
 	// Skybox x Skybox
 	uint32_t skyVS = sm->CompileAndCacheShader(L"Resources/Shader/Skybox.VS.hlsl", L"vs_6_0");
 	uint32_t skyPS = sm->CompileAndCacheShader(L"Resources/Shader/Skybox.PS.hlsl", L"ps_6_0");
