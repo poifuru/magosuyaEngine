@@ -67,11 +67,11 @@ void BirdEnemyComponent::Update() {
 		if (invincibilityTimer_ < 0.0f) invincibilityTimer_ = 0.0f;
 
 		bool flash = (static_cast<int>(invincibilityTimer_ * 15.0f) % 2 == 0);
-		if (auto* mesh = gameObject_->GetComponent<MeshRendererComponent>()) {
+		if (auto* mesh = gameObject_->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 			mesh->SetColor({ 1.0f, flash ? 0.2f : 1.0f, flash ? 0.2f : 1.0f, 1.0f });
 		}
 	} else if (!isDead_) {
-		if (auto* mesh = gameObject_->GetComponent<MeshRendererComponent>()) {
+		if (auto* mesh = gameObject_->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 			mesh->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 		}
 	}
@@ -99,7 +99,7 @@ void BirdEnemyComponent::Update() {
 		gameObject_->GetTransform().translate.y = originalPosition_.y - fallDist;
 
 		// フェードアウト
-		if (auto* mesh = gameObject_->GetComponent<MeshRendererComponent>()) {
+		if (auto* mesh = gameObject_->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 			mesh->SetBlendMode(MyEngine::Rendering::BlendModeType::Alpha);
 			mesh->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f - progress });
 		}

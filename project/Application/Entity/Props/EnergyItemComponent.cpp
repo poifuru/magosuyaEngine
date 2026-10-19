@@ -1,4 +1,4 @@
-﻿#include "PCH.h"
+#include "PCH.h"
 #include "EnergyItemComponent.h"
 #include "PlayerComponent.h"
 #include "GameObject.h"
@@ -36,7 +36,7 @@ void EnergyItemComponent::Update() {
 	trans.rotate.x = std::sin(floatTimer_ * 2.0f) * 0.15f;
 
 	// 発光パルス演出（明るいシアン〜エメラルドグリーンに脈動）
-	if (auto* mesh = gameObject_->GetComponent<MeshRendererComponent>()) {
+	if (auto* mesh = gameObject_->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 		float pulse = 0.7f + 0.3f * std::sin(floatTimer_ * 6.0f);
 		mesh->SetColor({ 0.2f * pulse, 1.0f * pulse, 0.85f * pulse, 1.0f });
 	}

@@ -109,12 +109,12 @@ void AssetBrowserWindow::UpdateAndDraw(const EditorContext& context) {
 				}
 				else if (selectedObject != nullptr) {
 					if ((ext == ".obj" || ext == ".gltf")) {
-						if (auto* meshRenderer = selectedObject->GetComponent<MeshRendererComponent>()) {
+						if (auto* meshRenderer = selectedObject->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 							meshRenderer->SetModel(entry.path().generic_string());
 						}
 					}
 					else if (ext == ".png" || ext == ".jpg" || ext == ".dds") {
-						if (auto* meshRenderer = selectedObject->GetComponent<MeshRendererComponent>()) {
+						if (auto* meshRenderer = selectedObject->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 							meshRenderer->SetTexture(entry.path().generic_string());
 						}
 

@@ -158,7 +158,7 @@ void GameDirectorComponent::OnTargetKillsAchieved() {
 				bossObj->GetTransform().rotate.y = playerYaw + 3.14159265f; // プレイヤーの方を向く
 
 				// レンダラー設定（リヴァイアサン級ボスモデル）
-				auto* mesh = bossObj->AddComponent<MeshRendererComponent>();
+				auto* mesh = bossObj->AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 				mesh->SetModel("Resources/Enemy/Boss/boss.obj");
 				mesh->SetTexture("Resources/Enemy/Boss/boss.png");
 				mesh->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });

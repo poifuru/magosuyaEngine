@@ -1,4 +1,4 @@
-﻿#include "PCH.h"
+#include "PCH.h"
 #include "FloatingCrateComponent.h"
 #include "EnergyItemComponent.h"
 #include "GameObject.h"
@@ -14,7 +14,7 @@ void FloatingCrateComponent::Initialize() {
 	if (!gameObject_) return;
 
 	// 木箱の色（茶色）を設定
-	if (auto* mesh = gameObject_->GetComponent<MeshRendererComponent>()) {
+	if (auto* mesh = gameObject_->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 		mesh->SetColor({ 0.65f, 0.45f, 0.25f, 1.0f });
 	}
 
@@ -75,7 +75,7 @@ void FloatingCrateComponent::OnDestroyed() {
 
 	// 中身（電力バッテリーアイテム）の生成
 	auto itemObj = std::make_unique<GameObject>(context, "EnergyItem");
-	auto* mesh = itemObj->AddComponent<MeshRendererComponent>();
+	auto* mesh = itemObj->AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 	mesh->SetModel("Resources/Props/Crate/crate.obj");
 	mesh->SetTexture("white1x1");
 	mesh->SetColor({ 0.2f, 1.0f, 0.85f, 1.0f }); // ピカピカ光るシアン色

@@ -18,6 +18,7 @@ namespace MyEngine::Rendering {
 	class ShaderManager;
 	class InputLayoutManager;
 	class BlendModeManager;
+	class Renderer;
 }
 
 class PostEffectManager;
@@ -35,6 +36,7 @@ struct SceneContext {
 	MyEngine::Rendering::ShaderManager* shaderManager = nullptr;
 	MyEngine::Rendering::InputLayoutManager* inputLayoutManager = nullptr;
 	MyEngine::Rendering::BlendModeManager* blendModeManager = nullptr;
+	MyEngine::Rendering::Renderer* renderer = nullptr;
 
 	// 動的追加のためにオブジェクトリストのポインタを載せる
 	std::vector<std::unique_ptr<GameObject>>* gameObjects = nullptr;
@@ -57,7 +59,7 @@ public:
 	}
 
 	// Rendererをセット
-	void SetRenderer(MyEngine::Rendering::Renderer* renderer) { renderer_ = renderer; }
+	void SetRenderer(MyEngine::Rendering::Renderer* renderer);
 
 	// 初期化
 	virtual void Initialize() = 0;
@@ -67,7 +69,7 @@ public:
 
 	// 描画
 	virtual void Draw(MyEngine::Rendering::Renderer* renderer) = 0;
-
+	 
 	// UI描画
 	virtual void DrawUI() {}
 
@@ -85,5 +87,4 @@ protected:
 protected:
 	// 借りてきたポインタ群
 	SceneContext* context_ = nullptr;
-	MyEngine::Rendering::Renderer* renderer_ = nullptr;
 };

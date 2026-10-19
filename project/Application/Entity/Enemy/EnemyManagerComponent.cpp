@@ -122,7 +122,7 @@ void EnemyManagerComponent::SpawnEnemy() {
 
 	if (enemyType == 0) {
 		// --- 鳥エネミーの生成 ---
-		auto* mesh = enemyObj->AddComponent<MeshRendererComponent>();
+		auto* mesh = enemyObj->AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 		mesh->SetModel("Resources/Enemy/Bird/bird.obj");
 		mesh->SetTexture("Resources/Enemy/Bird/bird.png");
 		// スケール（翼幅約2.7mの迫力ある飛行サイズ）
@@ -140,7 +140,7 @@ void EnemyManagerComponent::SpawnEnemy() {
 	}
 	else {
 		// --- 魚エネミーの生成 ---
-		auto* mesh = enemyObj->AddComponent<MeshRendererComponent>();
+		auto* mesh = enemyObj->AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 		mesh->SetModel("Resources/Enemy/smallFish/smallFish.obj");
 		mesh->SetTexture("Resources/Enemy/smallFish/smallFish.png");
 		// スケール
@@ -203,7 +203,7 @@ void EnemyManagerComponent::SpawnCrate() {
 	};
 
 	auto crateObj = std::make_unique<GameObject>(context, "Crate");
-	auto* mesh = crateObj->AddComponent<MeshRendererComponent>();
+	auto* mesh = crateObj->AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 	mesh->SetModel("Resources/Props/Crate/crate.obj");
 	mesh->SetTexture("white1x1");
 	mesh->SetColor({ 0.65f, 0.45f, 0.25f, 1.0f }); // 木の色

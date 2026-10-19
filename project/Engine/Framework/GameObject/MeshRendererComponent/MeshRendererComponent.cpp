@@ -1,5 +1,6 @@
 #include "PCH.h"
 #include "MeshRendererComponent.h"
+#include "RenderCollector.h"
 #include "GameObject.h"
 #include "BaseScene.h"       // SceneContextを使うため
 #include "ModelFactory.h"
@@ -7,12 +8,10 @@
 #include "TextureManager.h"
 #include "CameraOrganizer.h" // カメラ情報を取得するため
 #include "Model.h"
+#include "MeshData.h"
+#include "RenderCollector.h"
 
-MeshRendererComponent::MeshRendererComponent() = default;
-
-MeshRendererComponent::~MeshRendererComponent() = default;
-
-void MeshRendererComponent::Initialize() {
+MyEngine::Rendering::MeshRendererComponent::MeshRendererComponent() {
 	if (isInitialized_) return;
 	isInitialized_ = true;
 
@@ -20,7 +19,10 @@ void MeshRendererComponent::Initialize() {
 	SetModel(modelPath_);
 	SetTexture(texPath_);
 }
-void MeshRendererComponent::Update() {
+
+MyEngine::Rendering::MeshRendererComponent::~MeshRendererComponent() = default;
+
+void MyEngine::Rendering::MeshRendererComponent::Update() {
 	if(!model_ || !gameObject_) return;
 
 	// モデルにデプス設定を適用
@@ -31,7 +33,7 @@ void MeshRendererComponent::Update() {
 	model_->Update(&cameraData);
 }
 
-void MeshRendererComponent::ImGui() {
+void MyEngine::Rendering::MeshRendererComponent::ImGui() {
 	// モデルパスの表示と変更（簡易的なInputText）
 	char pathBuf[256];
 	strcpy_s(pathBuf, modelPath_.c_str());
@@ -66,8 +68,8 @@ void MeshRendererComponent::ImGui() {
 	}
 }
 
-void MeshRendererComponent::Serialize(json& j) const {
-	j["type"] = "MeshRendererComponent";
+void MyEngine::Rendering::MeshRendererComponent::Serialize(json& j) const {
+	j["type"] = "MyEngine::Rendering::MeshRendererComponent";
 	j["modelPath"] = modelPath_;
 	j["texPath"] = texPath_;
 	j["isDepthEnable"] = isDepthEnable_;
@@ -90,7 +92,7 @@ void MeshRendererComponent::Serialize(json& j) const {
 		}
 	}
 }
-void MeshRendererComponent::Deserialize(const json& j) {
+void MyEngine::Rendering::MeshRendererComponent::Deserialize(const json& j) {
 	isInitialized_ = true;
 	if (j.contains("modelPath")) {
 		SetModel(j["modelPath"]);
@@ -139,7 +141,30 @@ void MeshRendererComponent::Deserialize(const json& j) {
 	}
 }
 
-void MeshRendererComponent::SetModel(const std::string& modelPath) {
+void MyEngine::Rendering::MeshRendererComponent::CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const {
+	// 非表示、またはモデル・コレクターが無ければ何もしない
+	if (!isVisible_ || !model_ || !collector) return;
+
+	auto* modelData = model_->GetModelData();
+	auto* material = model_->GetMaterial();
+
+	if (!modelData || !material) return;
+
+	const char* objectName = gameObject_ ? gameObject_->GetName().c_str() : "MeshRenderer";
+
+	// モデルが持つメッシュをループしてcollectorに入れる
+	for (size_t i = 0; i < modelData->meshes.size(); ++i) {
+		MyEngine::Rendering::RenderItem item{};
+		item.mesh = &modelData->meshes[i];
+		item.material = material;
+		item.transformAddr = model_->GetMeshTransformGPUAddress(static_cast<uint32_t>(i));
+		item.customAddr = 0;
+		item.debugName = objectName;
+		collector->Submit(item);
+	}
+}
+
+void MyEngine::Rendering::MeshRendererComponent::SetModel(const std::string& modelPath) {
 	GameObject* owner = GetGameObject();
 	if (!owner) return;
 	SceneContext* context = owner->GetContext();
@@ -158,15 +183,15 @@ void MeshRendererComponent::SetModel(const std::string& modelPath) {
 	}
 }
 
-MyEngine::Rendering::Model* MeshRendererComponent::GetModel() const {
+MyEngine::Rendering::Model* MyEngine::Rendering::MeshRendererComponent::GetModel() const {
 	return model_.get();
 }
 
-MyEngine::Rendering::Material* MeshRendererComponent::GetMaterial() const {
+MyEngine::Rendering::Material* MyEngine::Rendering::MeshRendererComponent::GetMaterial() const {
 	return model_->GetMaterial();
 }
 
-void MeshRendererComponent::SetTexture(const std::string& textureName) {
+void MyEngine::Rendering::MeshRendererComponent::SetTexture(const std::string& textureName) {
 	GameObject* owner = GetGameObject();
 	if (!owner) return;
 	SceneContext* context = owner->GetContext();
@@ -183,7 +208,7 @@ void MeshRendererComponent::SetTexture(const std::string& textureName) {
 	}
 }
 
-void MeshRendererComponent::SetColor(const Vector4& color) {
+void MyEngine::Rendering::MeshRendererComponent::SetColor(const Vector4& color) {
 	if (model_) {
 		if (auto material = model_->GetMaterial()) {
 			material->SetColor(color);
@@ -191,7 +216,7 @@ void MeshRendererComponent::SetColor(const Vector4& color) {
 	}
 }
 
-void MeshRendererComponent::SetEnableLighting(bool flag) {
+void MyEngine::Rendering::MeshRendererComponent::SetEnableLighting(bool flag) {
 	if (model_) {
 		if (auto material = model_->GetMaterial()) {
 			material->SetEnableLighting(flag ? TRUE : FALSE);
@@ -199,26 +224,26 @@ void MeshRendererComponent::SetEnableLighting(bool flag) {
 	}
 }
 
-void MeshRendererComponent::SetBlendMode(MyEngine::Rendering::BlendModeType mode) {
+void MyEngine::Rendering::MeshRendererComponent::SetBlendMode(MyEngine::Rendering::BlendModeType mode) {
 	if (model_) {
 		model_->SetBlendMode(mode);
 	}
 }
 
-void MeshRendererComponent::SetDepthEnable(bool flag) {
+void MyEngine::Rendering::MeshRendererComponent::SetDepthEnable(bool flag) {
 	isDepthEnable_ = flag;
 	if (model_) {
 		model_->SetDepthEnable(flag);
 	}
 }
 
-void MeshRendererComponent::SetLayer(uint8_t layer) {
+void MyEngine::Rendering::MeshRendererComponent::SetLayer(uint8_t layer) {
 	if (model_) {
 		model_->SetLayer(layer);
 	}
 }
 
-void MeshRendererComponent::SetDoubleSided(bool flag) {
+void MyEngine::Rendering::MeshRendererComponent::SetDoubleSided(bool flag) {
 	if (model_) {
 		model_->SetDoubleSided(flag);
 	}

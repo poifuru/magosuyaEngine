@@ -67,7 +67,7 @@ void GameObject::UpdateTransformBuffer() {
 	transformBuffer_.Update(transformData);
 
 	// --- 描画用コンポーネントのバッファも最新のカメラ行列で更新 ---
-	if (auto* meshRenderer = GetComponent<MeshRendererComponent>()) {
+	if (auto* meshRenderer = GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 		meshRenderer->Update();
 	}
 	if (auto* skybox = GetComponent<SkyboxComponent>()) {
@@ -153,11 +153,11 @@ void GameObject::ImGui() {
 	if(ImGui::BeginPopup("AddComponentPopup")) {
 
 		// Mesh Renderer の追加メニュー
-		// MeshRendererComponent を持っていない場合だけ選択できるようにする
-		if(GetComponent<MeshRendererComponent>() == nullptr) {
+		// MyEngine::Rendering::MeshRendererComponent を持っていない場合だけ選択できるようにする
+		if(GetComponent<MyEngine::Rendering::MeshRendererComponent>() == nullptr) {
 			if(ImGui::MenuItem("Mesh Renderer")) {
 				// コンポーネントを追加して、すぐに初期化を呼ぶ
-				auto* newComp = AddComponent<MeshRendererComponent>();
+				auto* newComp = AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 				newComp->Initialize();
 			}
 		}
@@ -403,8 +403,8 @@ void GameObject::Deserialize(const json& j) {
 
 			if(type == "MeshRendererComponent") {
 				// 二重追加を防ぐチェックをしてから追加
-				auto* comp = GetComponent<MeshRendererComponent>();
-				if(!comp) comp = AddComponent<MeshRendererComponent>();
+				auto* comp = GetComponent<MyEngine::Rendering::MeshRendererComponent>();
+				if(!comp) comp = AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 				comp->Deserialize(compJ);
 			}
 			else if(type == "LightComponent") {

@@ -20,7 +20,7 @@ void PlayerTurret::Initialize() {
 void PlayerTurret::Update(GameObject* gameObject, GameObject* reticleObject) {
 	if (!gameObject) return;
 
-	auto* meshRenderer = gameObject->GetComponent<MeshRendererComponent>();
+	auto* meshRenderer = gameObject->GetComponent<MyEngine::Rendering::MeshRendererComponent>();
 	if (!meshRenderer) return;
 
 	auto* model = meshRenderer->GetModel();

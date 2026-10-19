@@ -1,12 +1,16 @@
 #pragma once
-#include "GameObject.h"
+#include "RenderCollector.h"
+
+class PostEffectManager;
+class GameObject;
 
 namespace MyEngine::LowLevel {
 	class DescriptorHeapPoolContext;;
 	class SwapChain;
+	class DescriptorHeapPoolContext;
+	class SwapChain;
+	class SrvDescriptorHeapPool;
 }
-
-class PostEffectManager;
 
 namespace MyEngine::Rendering {
 	class RenderTexture;
@@ -20,6 +24,8 @@ namespace MyEngine::Rendering {
 
 	struct Mesh;
 	class Material;
+
+	class RenderComponent;
 
 	enum class ShadingModel : uint8_t;
 	enum class BlendModeType : uint8_t;
@@ -57,6 +63,12 @@ namespace MyEngine::Rendering {
 		void Draw(std::vector<std::unique_ptr<GameObject>>& objects);
 
 		void ExecutePostProcess(PostEffectManager* postEffectManager);
+
+		// 描画コンポーネントリストに登録する
+		void RegisterRenderComponent(RenderComponent* renderComponent);
+
+		// 描画コンポーネントリストから抜ける
+		void UnregisterRenderComponent(MyEngine::Rendering::RenderComponent* renderComponent);
 
 		MyEngine::Rendering::RenderSystem* GetRenderSystem() { return renderSystem_.get(); }
 		MyEngine::Rendering::RenderTexture* GetRenderTexture() { return renderTexture_.get(); }
@@ -134,5 +146,11 @@ namespace MyEngine::Rendering {
 		// ポストエフェクト適用後の最終テクスチャを指すポインタ
 		RenderTexture* finalRenderTexture_ = nullptr;
 		bool lastEffect_ = false;
+
+		// 描画コンポーネントのリスト
+		std::vector<RenderComponent*> renderComponents_;
+
+		// 描画素材を詰めるかご
+		RenderCollector collector_;
 	};
 }

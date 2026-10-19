@@ -21,6 +21,7 @@
 #include "ComponentType.h"
 #include "PostEffectManager.h"
 #include "Outline.h"
+#include "GameObject.h"
 
 MyEngine::Rendering::Renderer::Renderer(
 	ID3D12Device* device,
@@ -183,27 +184,28 @@ void MyEngine::Rendering::Renderer::DispatchCS(
 void MyEngine::Rendering::Renderer::Draw(std::vector<std::unique_ptr<GameObject>>& objects) {
 	currentObjects_ = &objects; // 参照を保存
 
+	// かごを空にする
+	collector_.Clear();
+
+	// 登録されている描画コンポーネントから素材を集める
+	for (auto* comp : renderComponents_) {
+		if (comp) {
+			comp->CollectRenderData(&collector_);
+		}
+	}
+
+	// 集まった素材をSubmitする
+	for (const auto& item : collector_.GetItems()) {
+		if (item.mesh && item.material) {
+			Submit(*item.mesh, item.material, item.transformAddr, item.debugName, item.customAddr);
+		}
+	}
+
 	for(auto& obj : objects) {
 
 		// GameObjectの名前をあらかじめ取得しておく
 		const char* objectName = obj->GetName().c_str();
 
-		// 3Dモデルの描画
-		if(auto* meshRenderer = obj->GetComponent<MeshRendererComponent>()) {
-			// 非表示設定なら描画をスキップ
-			if(meshRenderer->IsVisible() && !obj->GetComponent<WaterSurfaceComponent>()) {
-				if(auto* model = meshRenderer->GetModel()) {
-					auto* modelData = model->GetModelData();
-					auto* material = model->GetMaterial();
-					if(modelData && material) {
-						for(size_t i = 0; i < modelData->meshes.size(); ++i) {
-							auto transformAddr = model->GetMeshTransformGPUAddress(static_cast<uint32_t>(i));
-							Submit(modelData->meshes[i], material, transformAddr, objectName);
-						}
-					}
-				}
-			}
-		}
 		// 2Dスプライトの描画
 		if(auto* spriteComp = obj->GetComponent<SpriteComponent>()) {
 			if(auto* model = spriteComp->GetModel()) {
@@ -353,6 +355,29 @@ void MyEngine::Rendering::Renderer::ExecutePostProcess(
 		0
 	);
 	lastEffect_ = false;
+}
+
+void MyEngine::Rendering::Renderer::RegisterRenderComponent(RenderComponent* renderComponent) {
+	if(!renderComponent) return;
+
+	// 二重登録を防ぐ
+	for(auto* c : renderComponents_) {
+		if(c == renderComponent) return;
+	}
+
+	renderComponents_.push_back(renderComponent);
+}
+
+void MyEngine::Rendering::Renderer::UnregisterRenderComponent(MyEngine::Rendering::RenderComponent* renderComponent) {
+	if(!renderComponent) return;
+
+	// リストからrenderComponentと一致するイテレータを探す
+	auto it = std::find(renderComponents_.begin(), renderComponents_.end(), renderComponent);
+
+	// 見つかればそれを削除
+	if(it != renderComponents_.end()) {
+		renderComponents_.erase(it);
+	}
 }
 
 uint64_t MyEngine::Rendering::Renderer::MakeShaderKey(

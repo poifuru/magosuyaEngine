@@ -1,6 +1,11 @@
 #include "PCH.h"
 #include "BaseScene.h"
 #include "EditorManager.h"
+#include "Renderer.h"
+
+void BaseScene::SetRenderer(MyEngine::Rendering::Renderer* renderer) {
+	context_->renderer = renderer;
+}
 
 void BaseScene::Update(const CameraData* cameraData) {
 #ifdef USEIMGUI

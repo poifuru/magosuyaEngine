@@ -153,7 +153,7 @@ void PlayerWeapon::Shoot(GameObject* gameObject, GameObject* reticleObject, Play
 		auto bulletObj = std::make_unique<GameObject>(context, "PlayerBullet");
 
 		// 弾本体のメッシュ
-		auto* meshRenderer = bulletObj->AddComponent<MeshRendererComponent>();
+		auto* meshRenderer = bulletObj->AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 		meshRenderer->SetModel("Resources/bullet/bullet.obj");
 		meshRenderer->SetTexture("Resources/bullet/bullet.png");
 
@@ -167,7 +167,7 @@ void PlayerWeapon::Shoot(GameObject* gameObject, GameObject* reticleObject, Play
 
 		// 弾専用のアウトライン（黒色外枠ライン）用オブジェクトを生成
 		auto outlineObj = std::make_unique<GameObject>(context, "BulletOutline");
-		auto* outlineRenderer = outlineObj->AddComponent<MeshRendererComponent>();
+		auto* outlineRenderer = outlineObj->AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 		outlineRenderer->SetModel("Resources/bullet/bullet.obj");
 		outlineRenderer->SetTexture("Resources/bullet/bullet.png");
 		outlineRenderer->SetDepthEnable(false);
@@ -214,7 +214,7 @@ void PlayerWeapon::Shoot(GameObject* gameObject, GameObject* reticleObject, Play
 			gameObject->GetTransform().translate.z
 		};
 
-		if (auto* meshRendererComp = gameObject->GetComponent<MeshRendererComponent>()) {
+		if (auto* meshRendererComp = gameObject->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 			if (auto* model = meshRendererComp->GetModel()) {
 				// 左右どちらの砲身を使うか選択
 				const char* targetCanonName = (shootSide_ == 0) ? "Canon_L" : "Canon_R";

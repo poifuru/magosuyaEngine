@@ -15,7 +15,7 @@ void ParticleSpawner::SpawnExplosion(SceneContext* context, const Vector3& posit
 		auto partObj = std::make_unique<GameObject>(context, "Particle");
 		partObj->SetSerializable(false); // セーブ対象から除外
 
-		auto* mesh = partObj->AddComponent<MeshRendererComponent>();
+		auto* mesh = partObj->AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 		auto* partComp = partObj->AddComponent<ParticleComponent>();
 
 		partObj->GetTransform().translate = position;
@@ -62,7 +62,7 @@ void ParticleSpawner::SpawnTrail(SceneContext* context, const Vector3& position,
 	auto partObj = std::make_unique<GameObject>(context, "Particle");
 	partObj->SetSerializable(false);
 
-	auto* mesh = partObj->AddComponent<MeshRendererComponent>();
+	auto* mesh = partObj->AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 	auto* partComp = partObj->AddComponent<ParticleComponent>();
 
 	// 水面に沈んで隠れないよう、最小高度 y=0.25f に浮上補正
@@ -114,7 +114,7 @@ void ParticleSpawner::SpawnWaterSplash(SceneContext* context, const Vector3& pos
 		auto partObj = std::make_unique<GameObject>(context, "Particle");
 		partObj->SetSerializable(false);
 
-		auto* mesh = partObj->AddComponent<MeshRendererComponent>();
+		auto* mesh = partObj->AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 		auto* partComp = partObj->AddComponent<ParticleComponent>();
 
 		partObj->GetTransform().translate = position;
@@ -157,7 +157,7 @@ void ParticleSpawner::SpawnBulletGlowTrail(SceneContext* context, const Vector3&
 	auto partObj = std::make_unique<GameObject>(context, "Particle");
 	partObj->SetSerializable(false);
 
-	auto* mesh = partObj->AddComponent<MeshRendererComponent>();
+	auto* mesh = partObj->AddComponent<MyEngine::Rendering::MeshRendererComponent>();
 	auto* partComp = partObj->AddComponent<ParticleComponent>();
 
 	partObj->GetTransform().translate = position;

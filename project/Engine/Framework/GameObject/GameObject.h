@@ -2,6 +2,8 @@
 #include "BaseScene.h"
 #include "TransformMatrixData.h"
 #include "ConstantBuffer.h"
+#include "Renderer.h"
+#include "RenderComponent.h"
 
 using json = nlohmann::json;
 
@@ -60,15 +62,23 @@ public:
 		component->SetGameObject(this);
 		T* ptr = component.get();
 		components_.push_back(std::move(component));
+
+		// もし追加された型がRenderComponentを継承していたら
+		if constexpr(std::is_base_of_v <MyEngine::Rendering::RenderComponent, T>) {
+			// 描画リストに自動登録
+			if(context_ && context_->renderer) {
+				context_->renderer->RegisterRenderComponent(ptr);
+			}
+		}
 		return ptr;
 	}
 
 	// コンポーネントの取得
 	template <typename T>
 	T* GetComponent() {
-		for (auto& component : components_) {
+		for(auto& component : components_) {
 			T* ptr = dynamic_cast<T*>(component.get());
-			if (ptr != nullptr) {
+			if(ptr != nullptr) {
 				return ptr;
 			}
 		}
@@ -78,8 +88,8 @@ public:
 	// コンポーネントの削除
 	template <typename T>
 	bool RemoveComponent() {
-		for (auto it = components_.begin(); it != components_.end(); ++it) {
-			if (dynamic_cast<T*>(it->get()) != nullptr) {
+		for(auto it = components_.begin(); it != components_.end(); ++it) {
+			if(dynamic_cast<T*>(it->get()) != nullptr) {
 				components_.erase(it);
 				return true;
 			}
@@ -90,9 +100,9 @@ public:
 	// 指定したコンポーネントを探す
 	template <typename T>
 	T* FindComponentInScene() const {
-		if (!context_ || !context_->activeGameObjects) return nullptr;
-		for (auto& obj : *context_->activeGameObjects) {
-			if (auto* comp = obj->GetComponent<T>()) {
+		if(!context_ || !context_->activeGameObjects) return nullptr;
+		for(auto& obj : *context_->activeGameObjects) {
+			if(auto* comp = obj->GetComponent<T>()) {
 				return comp;
 			}
 		}

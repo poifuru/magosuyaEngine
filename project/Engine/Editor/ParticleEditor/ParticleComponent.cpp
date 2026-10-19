@@ -2,7 +2,7 @@
 #include "ParticleComponent.h"
 #include "GameObject.h"
 #include "MeshRendererComponent.h"
-#include "CameraOrganizer.h" // 💡 カメラデータ取得用
+#include "CameraOrganizer.h" // カメラデータ取得用
 #include "BaseCamera.h"
 
 void ParticleComponent::Initialize() {
@@ -35,7 +35,7 @@ void ParticleComponent::Update() {
 
 	// 4. 色のフェード
 	if (hasColorFade_) {
-		if (auto* mesh = gameObject_->GetComponent<MeshRendererComponent>()) {
+		if (auto* mesh = gameObject_->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 			Vector4 currentColor;
 			currentColor.x = endColor_.x + (startColor_.x - endColor_.x) * ratio;
 			currentColor.y = endColor_.y + (startColor_.y - endColor_.y) * ratio;

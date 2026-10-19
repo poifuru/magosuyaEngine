@@ -63,12 +63,12 @@ void PlayerHealth::Update(GameObject* gameObject) {
 
 		// 赤く点滅
 		bool flashRed = (static_cast<int>(invincibilityTimer_ * 10.0f) % 2 == 0);
-		if (auto* mesh = gameObject->GetComponent<MeshRendererComponent>()) {
+		if (auto* mesh = gameObject->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 			mesh->SetColor({ 1.0f, flashRed ? 0.3f : 1.0f, flashRed ? 0.3f : 1.0f, 1.0f });
 		}
 	}
 	else {
-		if (auto* mesh = gameObject->GetComponent<MeshRendererComponent>()) {
+		if (auto* mesh = gameObject->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 			mesh->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 		}
 	}

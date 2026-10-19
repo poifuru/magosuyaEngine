@@ -13,7 +13,7 @@
 
 VirtualFollowCamera::~VirtualFollowCamera() {
 	if (target_) {
-		if (auto* mesh = target_->GetComponent<MeshRendererComponent>()) {
+		if (auto* mesh = target_->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 			mesh->SetVisible(true);
 		}
 	}
@@ -26,7 +26,7 @@ void VirtualFollowCamera::SetFirstPerson(bool flag) {
 
 void VirtualFollowCamera::UpdateTargetVisibility() {
 	if (target_) {
-		if (auto* mesh = target_->GetComponent<MeshRendererComponent>()) {
+		if (auto* mesh = target_->GetComponent<MyEngine::Rendering::MeshRendererComponent>()) {
 			mesh->SetVisible(!isFirstPerson_);
 		}
 	}
