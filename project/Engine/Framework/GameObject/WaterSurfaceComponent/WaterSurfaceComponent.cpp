@@ -5,6 +5,7 @@
 #include "GraphicsDevice.h"
 #include "ComponentType.h"
 #include "TextureManager.h"
+#include "RenderCollector.h"
 
 void WaterSurfaceComponent::Initialize() {
 	if(isInitialized_) return;
@@ -348,4 +349,12 @@ void WaterSurfaceComponent::GenerateMesh() {
 	material_->SetShadingModel(MyEngine::Rendering::ShadingModel::WaterSurface);
 	material_->SetBlendMode(MyEngine::Rendering::BlendModeType::Alpha);
 	SetTexture(texPath_);
+}
+
+void WaterSurfaceComponent::CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const {
+	if (!collector || !isVisible_) return;
+
+	if (mesh_ && material_) {
+		collector->Submit(*mesh_, material_.get(), GetTransformAddress(), "WaterSurface", GetCustomBufferAddress());
+	}
 }

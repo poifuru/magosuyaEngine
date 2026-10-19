@@ -44,8 +44,8 @@ Game::Game() {
 	);
 
 	// 初期シーンの設定
-	sceneManager_->ChangeScene<PlayScene>();
 	sceneManager_->SetRenderer(renderer_.get());
+	sceneManager_->ChangeScene<PlayScene>();
 
 	// ImGuiの初期化
 	ImGuiManager::GetInstance()->Initialize(

@@ -22,6 +22,13 @@ namespace MyEngine::Rendering {
 		~RenderCollector() = default;
 
 		void Submit(const RenderItem& item);
+		void Submit(
+			const MyEngine::Rendering::Mesh& mesh,
+			MyEngine::Rendering::Material* material,
+			D3D12_GPU_VIRTUAL_ADDRESS transformAddr,
+			const char* debugName = "Unknown",
+			D3D12_GPU_VIRTUAL_ADDRESS customAddr = 0
+		);
 
 		const std::vector<RenderItem>& GetItems() const;
 

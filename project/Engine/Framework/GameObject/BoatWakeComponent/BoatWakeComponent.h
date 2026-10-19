@@ -1,9 +1,13 @@
 #pragma once
-#include "Component.h"
+#include "RenderComponent.h"
 #include "MeshData.h"
 #include "Material.h"
 #include "TransformMatrixData.h"
 #include "RippleSimulator.h"
+
+namespace MyEngine::Rendering {
+	class RenderCollector;
+}
 
 // 航跡の制御点のデータ
 struct WakePoint {
@@ -19,7 +23,7 @@ struct WakeVertex {
 	Vector2 uv;
 };
 
-class BoatWakeComponent : public Component {
+class BoatWakeComponent : public MyEngine::Rendering::RenderComponent {
 public:
 	BoatWakeComponent() = default;
 	~BoatWakeComponent() override = default;
@@ -27,6 +31,9 @@ public:
 	void Initialize() override;
 	void Update() override;
 	void ImGui() override;
+
+	// 描画素材収集関数のオーバーライド
+	void CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const override;
 
 	void Serialize(json& j) const override;
 	void Deserialize(const json& j) override;

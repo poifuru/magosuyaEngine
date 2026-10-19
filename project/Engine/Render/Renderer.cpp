@@ -18,10 +18,10 @@
 #include "Model.h"
 #include "Material.h"
 #include "MeshData.h"
-#include "ComponentType.h"
 #include "PostEffectManager.h"
 #include "Outline.h"
 #include "GameObject.h"
+#include "BoatWakeComponent.h"
 
 MyEngine::Rendering::Renderer::Renderer(
 	ID3D12Device* device,
@@ -198,106 +198,6 @@ void MyEngine::Rendering::Renderer::Draw(std::vector<std::unique_ptr<GameObject>
 	for (const auto& item : collector_.GetItems()) {
 		if (item.mesh && item.material) {
 			Submit(*item.mesh, item.material, item.transformAddr, item.debugName, item.customAddr);
-		}
-	}
-
-	for(auto& obj : objects) {
-
-		// GameObjectの名前をあらかじめ取得しておく
-		const char* objectName = obj->GetName().c_str();
-
-		// 2Dスプライトの描画
-		if(auto* spriteComp = obj->GetComponent<SpriteComponent>()) {
-			if(auto* model = spriteComp->GetModel()) {
-				auto* modelData = model->GetModelData();
-				auto* material = model->GetMaterial();
-				auto transformAddr = model->GetTransformGPUAddress();
-				if(modelData && material) {
-					for(const auto& mesh : modelData->meshes) {
-						Submit(mesh, material, transformAddr, objectName);
-					}
-				}
-			}
-		}
-		// スカイボックスの描画
-		if(auto* skybox = obj->GetComponent<SkyboxComponent>()) {
-			Submit(
-				skybox->GetMesh(),
-				skybox->GetMaterial(),
-				skybox->GetTransformAddress(),
-				objectName
-			);
-		}
-		// ナンバードローワーの描画 
-		if(auto* numDrawer = obj->GetComponent<NumberDrawerComponent>()) {
-			for(const auto& model : numDrawer->GetDigitModels()) {
-				if(model) {
-					auto* modelData = model->GetModelData();
-					auto* material = model->GetMaterial();
-					auto transformAddr = model->GetTransformGPUAddress();
-					if(modelData && material) {
-						for(const auto& mesh : modelData->meshes) {
-							Submit(mesh, material, transformAddr, objectName);
-						}
-					}
-				}
-			}
-		}
-		// テキストドローワーの描画 
-		if(auto* textDrawer = obj->GetComponent<TextDrawerComponent>()) {
-			for(const auto& model : textDrawer->GetCharacterModels()) {
-				if(model) {
-					auto* modelData = model->GetModelData();
-					auto* material = model->GetMaterial();
-					auto transformAddr = model->GetTransformGPUAddress();
-					if(modelData && material) {
-						for(const auto& mesh : modelData->meshes) {
-							Submit(mesh, material, transformAddr, objectName);
-						}
-					}
-				}
-			}
-		}
-		// 水面コンポーネントの描画
-		if(auto* waterComp = obj->GetComponent<WaterSurfaceComponent>()) {
-			if(auto* mesh  = waterComp->GetMesh()) {
-				if(auto* material = waterComp->GetMaterial()) {
-					Submit(
-						*mesh, 
-						material, 
-						waterComp->GetTransformAddress(), 
-						objectName, 
-						waterComp->GetCustomBufferAddress()
-					);
-				}
-			}
-		}
-		// BoatWakeComponent の描画
-		if(auto* wakeComp = obj->GetComponent<BoatWakeComponent>()) {
-			/*if (auto* material = wakeComp->GetMaterial()) {
-				const auto& mesh = wakeComp->GetMesh();
-				if (mesh.vertexCount > 0) {
-					auto transformAddr = wakeComp->GetTransformAddress();
-					Submit(mesh, material, transformAddr, objectName);
-				}
-			}*/
-
-			OutputDebugStringA(">>> [1] Found BoatWakeComponent!\n");
-			if(auto* material = wakeComp->GetMaterial()) {
-				OutputDebugStringA(">>> [2] Material is OK!\n");
-				const auto& mesh = wakeComp->GetMesh();
-				char buf[256];
-				sprintf_s(buf, ">>> [3] VertexCount = %u\n", mesh.vertexCount);
-				OutputDebugStringA(buf);
-				if(mesh.vertexCount > 0) {
-					OutputDebugStringA(">>> [4] Submitting BoatWake to RenderSystem!\n");
-					auto transformAddr = wakeComp->GetTransformAddress();
-					Submit(mesh, material, transformAddr, objectName);
-				}
-			}
-			else {
-				OutputDebugStringA(">>> [ERR] Material is NULL!\n");
-			}
 		}
 	}
 }

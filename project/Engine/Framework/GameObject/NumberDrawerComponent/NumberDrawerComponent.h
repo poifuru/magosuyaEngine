@@ -1,13 +1,14 @@
 #pragma once
-#include "Component.h"
+#include "RenderComponent.h"
 
 namespace MyEngine::Rendering {
 	class Renderer;
 	class Model;
 	class Material;
+	class RenderCollector;
 }
 
-class NumberDrawerComponent : public Component {
+class NumberDrawerComponent : public MyEngine::Rendering::RenderComponent {
 public:
 	enum class Alignment {
 		Left,
@@ -21,6 +22,9 @@ public:
 	void Initialize() override;
 	void Update() override;
 	void ImGui() override;
+
+	// 描画素材収集関数のオーバーライド
+	void CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const override;
 
 	void Serialize(json& j) const override;
 	void Deserialize(const json& j) override;

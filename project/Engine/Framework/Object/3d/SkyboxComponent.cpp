@@ -10,6 +10,7 @@
 #include "CameraOrganizer.h"
 #include "BaseCamera.h"
 #include "GraphicsDevice.h"
+#include "RenderCollector.h"
 
 namespace {
 	const uint32_t kVertexNum = 8;
@@ -163,6 +164,19 @@ void SkyboxComponent::Update() {
 	transformMatrixData.WorldInverseTranspose = Math::MakeIdentity4x4();
 
 	matrixBuffer_->Update(transformMatrixData);
+}
+
+void SkyboxComponent::CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const {
+	if (!isVisible_ || !material_ || !collector || !matrixBuffer_) return;
+
+	MyEngine::Rendering::RenderItem item{};
+	item.mesh = &mesh_;
+	item.material = material_.get();
+	item.transformAddr = matrixBuffer_->GetGPUVirtualAddress();
+	item.customAddr = 0;
+	item.debugName = gameObject_ ? gameObject_->GetName().c_str() : "Skybox";
+
+	collector->Submit(item);
 }
 
 const MyEngine::Rendering::Mesh& SkyboxComponent::GetMesh() {

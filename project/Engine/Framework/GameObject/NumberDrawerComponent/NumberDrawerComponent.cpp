@@ -9,6 +9,9 @@
 #include "MathFunction.h"
 #include "BaseCamera.h"
 #include "Model.h"
+#include "Material.h"
+#include "MeshData.h"
+#include "RenderCollector.h"
 
 NumberDrawerComponent::NumberDrawerComponent() = default;
 
@@ -228,5 +231,22 @@ void NumberDrawerComponent::UpdateModels() {
 		CameraData dummyCamera{};
 		dummyCamera.vp = projection;
 		model->Update(&dummyCamera);
+	}
+}
+
+void NumberDrawerComponent::CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const {
+	if (!collector || !isVisible_) return;
+
+	for (const auto& model : digitModels_) {
+		if (model) {
+			auto* modelData = model->GetModelData();
+			auto* material = model->GetMaterial();
+			auto transformAddr = model->GetTransformGPUAddress();
+			if (modelData && material) {
+				for (const auto& mesh : modelData->meshes) {
+					collector->Submit(mesh, material, transformAddr, "NumberDrawer");
+				}
+			}
+		}
 	}
 }

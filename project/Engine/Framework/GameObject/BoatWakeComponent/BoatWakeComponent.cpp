@@ -9,6 +9,7 @@
 #include "ComponentType.h"
 #include "MathFunction.h"
 #include "Time.h"
+#include "RenderCollector.h"
 
 void BoatWakeComponent::Initialize() {
 	if(isInitialized_) return;
@@ -261,5 +262,13 @@ void BoatWakeComponent::BuildIWaveKernel() {
 		case 2: v.z = value; break;
 		case 3: v.w = value; break;
 		}
+	}
+}
+
+void BoatWakeComponent::CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const {
+	if (!collector || !isVisible_) return;
+
+	if (mesh_.vertexCount > 0 && material_) {
+		collector->Submit(mesh_, material_.get(), transformBuffer_.GetGPUVirtualAddress(), "BoatWake");
 	}
 }

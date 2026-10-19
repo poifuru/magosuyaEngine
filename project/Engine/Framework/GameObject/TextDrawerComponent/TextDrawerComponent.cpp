@@ -9,6 +9,9 @@
 #include "MathFunction.h"
 #include "BaseCamera.h"
 #include "Model.h"
+#include "Material.h"
+#include "MeshData.h"
+#include "RenderCollector.h"
 
 TextDrawerComponent::TextDrawerComponent() = default;
 
@@ -229,5 +232,22 @@ void TextDrawerComponent::UpdateModels() {
 		CameraData dummyCamera{};
 		dummyCamera.vp = projection;
 		model->Update(&dummyCamera);
+	}
+}
+
+void TextDrawerComponent::CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const {
+	if (!collector || !isVisible_) return;
+
+	for (const auto& model : charModels_) {
+		if (model) {
+			auto* modelData = model->GetModelData();
+			auto* material = model->GetMaterial();
+			auto transformAddr = model->GetTransformGPUAddress();
+			if (modelData && material) {
+				for (const auto& mesh : modelData->meshes) {
+					collector->Submit(mesh, material, transformAddr, "TextDrawer");
+				}
+			}
+		}
 	}
 }

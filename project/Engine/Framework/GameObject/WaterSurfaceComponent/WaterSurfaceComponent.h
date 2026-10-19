@@ -1,10 +1,14 @@
 #pragma once
-#include "Component.h"
+#include "RenderComponent.h"
 #include "ConstantBuffer.h"
 #include "MeshData.h"
 #include "Material.h"
 
-class WaterSurfaceComponent : public Component {
+namespace MyEngine::Rendering {
+	class RenderCollector;
+}
+
+class WaterSurfaceComponent : public MyEngine::Rendering::RenderComponent {
 public:
 	static constexpr int kMaxWaves = 6; // ゲルストナー波の最大本数（HLSLの kMaxWaves と必ず揃える）
 
@@ -13,6 +17,9 @@ public:
 	void Update() override;
 
 	void ImGui() override;
+
+	// 描画素材収集関数のオーバーライド
+	void CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const override;
 
 	void Serialize(json& j) const override;
 	void Deserialize(const json& j) override;

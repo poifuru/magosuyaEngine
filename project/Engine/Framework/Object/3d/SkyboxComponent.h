@@ -1,5 +1,5 @@
 #pragma once
-#include "Component.h"
+#include "RenderComponent.h"
 #include "ConstantBuffer.h"
 #include "TransformMatrixData.h"
 #include "MeshData.h"
@@ -7,6 +7,7 @@
 // 前方宣言
 namespace MyEngine::Rendering {
 	class Material;
+	class RenderCollector;
 	enum class InputLayoutType : uint32_t;
 }
 
@@ -14,13 +15,16 @@ struct SkyboxVertex {
 	Vector4 position;
 };
 
-class SkyboxComponent : public Component {
+class SkyboxComponent : public MyEngine::Rendering::RenderComponent {
 public:
 	SkyboxComponent() = default;
 	~SkyboxComponent() override;
 
 	void Initialize() override;
 	void Update() override;
+
+	// 描画素材収集関数のオーバーライド
+	void CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const override;
 
 	const MyEngine::Rendering::Mesh& GetMesh();
 	MyEngine::Rendering::Material* GetMaterial();

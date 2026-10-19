@@ -1,16 +1,18 @@
 #pragma once
-#include "Component.h"
+#include "RenderComponent.h"
+#include "MeshData.h"
+#include "ConstantBuffer.h"
+#include "TransformMatrixData.h"
 
 namespace MyEngine::Rendering {
-	class Renderer;
-	class Model;
 	class Material;
+	class RenderCollector;
 }
 
-class SpriteComponent : public Component {
+class SpriteComponent : public MyEngine::Rendering::RenderComponent {
 public:
 	SpriteComponent();
-	~SpriteComponent() override;
+	~SpriteComponent() override = default;
 
 	void Initialize() override;
 	void Update() override;
@@ -21,9 +23,10 @@ public:
 
 	const char* GetName() const override { return "Sprite Component"; }
 
-	MyEngine::Rendering::Model* GetModel() const;
+	// 描画素材収集関数のオーバーライド
+	void CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const override;
 
-	MyEngine::Rendering::Material* GetMaterial() const;
+	MyEngine::Rendering::Material* GetMaterial() const { return material_.get(); }
 
 	// テクスチャ設定
 	void SetTexture(const std::string& textureName);
@@ -51,18 +54,19 @@ public:
 	uint8_t GetLayer() const { return layer_; }
 
 private:
-	std::unique_ptr<MyEngine::Rendering::Model> model_ = nullptr;
+	// 3D Model の代わりに自前で Quad メッシュ、マテリアル、バッファを保持
+	MyEngine::Rendering::StaticMesh mesh_;
+	std::shared_ptr<MyEngine::Rendering::Material> material_ = nullptr;
+	ConstantBuffer<TransformMatrixData> transformBuffer_;
+
 	std::string texPath_ = "Resources/uvChecker.png"; // デフォルトテクスチャ
-	std::string modelPath_ = "Resources/plane/plane.obj"; // デフォルトモデル
-
-	Vector2 position_ = { 100.0f, 100.0f }; // デフォルト位置
-	Vector2 size_ = { 100.0f, 100.0f };     // デフォルトサイズ
-	float rotation_ = 0.0f;                  // デフォルト角度（ラジアン）
-	Vector2 scale_ = { 1.0f, 1.0f };         // デフォルトスケール
-	Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // デフォルト色
-	Vector2 anchorPoint_ = { 0.5f, 0.5f };   // デフォルトアンカーポイント(中央)
-	uint8_t layer_ = 4;                      // UI用のレイヤー
-
-	uint32_t modelIndex_ = 0;
 	uint32_t texIndex_ = 0;
+
+	Vector2 position_ = { 100.0f, 100.0f }; // 画面座標 (px)
+	Vector2 size_ = { 100.0f, 100.0f };     // サイズ (px)
+	float rotation_ = 0.0f;                 // 角度 (ラジアン)
+	Vector2 scale_ = { 1.0f, 1.0f };        // スケール倍率
+	Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f };
+	Vector2 anchorPoint_ = { 0.5f, 0.5f };  // アンカーポイント (0.5, 0.5 で中心)
+	uint8_t layer_ = 4;                     // UIレイヤー
 };
