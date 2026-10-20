@@ -80,7 +80,7 @@ void RippleSimulator::Dispatch(
 	// 水面へ渡す最新テクスチャのインデックスを更新
 	textureIndex_ = currentPipeline->GetTextureSrvIndex();
 
-	// 次回のために 0 と 1 を反転（ピンポン！）
+	// 次回のために 0 と 1 を反転
 	currentIndex_ = 1 - currentIndex_;
 
 	// 次回のために今の船の位置を覚えておく

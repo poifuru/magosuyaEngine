@@ -18,6 +18,10 @@ public:
 
 	void ImGui() override;
 
+	float SampleGerstnerHeight(float x, float z) const;
+
+	void SampleGerstnerSlope(float x, float z, float& dhdx, float& dhdz) const;
+
 	// 描画素材収集関数のオーバーライド
 	void CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const override;
 

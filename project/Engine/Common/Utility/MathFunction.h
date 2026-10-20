@@ -17,12 +17,12 @@ namespace Math {
 	//内積
 	float Dot(const Vector3& v1, const Vector3& v2);
 
-	float Length(const Vector2& v);
-
 	//長さ(ノルム)
+	float Length(const Vector2& v);
 	float Length(const Vector3& v);
 
 	//正規化
+	Vector2 Normalize(const Vector2& v);
 	Vector3 Normalize(const Vector3& v);
 
 	//クロス積

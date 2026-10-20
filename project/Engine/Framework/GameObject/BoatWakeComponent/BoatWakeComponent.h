@@ -4,7 +4,9 @@
 #include "Material.h"
 #include "TransformMatrixData.h"
 #include "RippleSimulator.h"
+#include "WaterQuery.h"
 
+// 前方宣言
 namespace MyEngine::Rendering {
 	class RenderCollector;
 }
@@ -48,6 +50,9 @@ public:
 	Vector2 GetSimMin() const { return simMin_; }
 	Vector2 GetSimSize() const { return Vector2(kSimSize, kSimSize); }
 
+	// WaterQuery取得
+	WaterQuery& GetWaterQuery() { return waterQuery_; }
+
 	// Renderer用
 	const MyEngine::Rendering::Mesh& GetMesh() const { return mesh_; }
 	MyEngine::Rendering::Material* GetMaterial() const { return material_.get(); }
@@ -85,7 +90,8 @@ private:
 	float widthExpandRate_ = 1.5f; // 後方へのV字拡散率
 	Vector3 lastSpawnPosition_{ 0.0f, 0.0f, 0.0f };
 	Vector2 smoothedVelocity_{};
-	Vector2 velocity;
+	Vector2 velocity{};
+	Vector2 centerDir_{};
 
 	static constexpr size_t kMaxVertices = 1000; // 確保しておく最大頂点数
 
@@ -93,10 +99,13 @@ private:
 	Vector4 kernel_[43]{};
 
 	// 波紋シミュレーションの領域（船の周り）
-	static constexpr float kSimSize = 80.0f;   // 領域の一辺[m]
+	static constexpr float kSimSize = 120.0f;   // 領域の一辺[m]
 	static constexpr int   kSimRes  = 512;     // テクスチャ解像度
 	int32_t originTexelX_ = 0;
 	int32_t originTexelZ_ = 0;
 	bool hasOrigin_ = false;
 	Vector2 simMin_{};
+
+	// 波紋の情報を扱う
+	WaterQuery waterQuery_;
 };

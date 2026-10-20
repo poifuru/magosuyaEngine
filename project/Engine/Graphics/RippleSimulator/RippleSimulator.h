@@ -44,6 +44,7 @@ public:
 		uint32_t height = 512
 	);
 
+	// CS起動
 	void Dispatch(
 		ID3D12GraphicsCommandList* cmdList,
 		const Vector3& boatPos,

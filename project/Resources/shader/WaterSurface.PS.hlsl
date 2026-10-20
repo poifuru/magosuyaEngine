@@ -173,7 +173,7 @@ PixelShaderOutput main(VertexShaderOutput input)
 
     float3 finalN = worldNormal;
     
-    float rippleMask = RippleEdgeMask(input.rippleUV);
+    float rippleMask = EdgeMask(input.rippleUV);
 
     if (gWaterSurface.rippleTextureIndex > 0)
     {

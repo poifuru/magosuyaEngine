@@ -45,6 +45,16 @@ namespace Math {
 		};
 	}
 
+	Vector2 Normalize (const Vector2& v) {
+		float length = Length(v);
+
+		if (length <= std::numeric_limits<float>::epsilon()) {
+			return {};
+		}
+
+		return v / length;
+	}
+
 	Vector3 Normalize (const Vector3& v) {
 		float length = Length(v);
 

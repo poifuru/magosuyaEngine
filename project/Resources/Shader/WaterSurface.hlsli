@@ -14,7 +14,7 @@ struct VertexShaderOutput
 };
 
 // 0〜1 の内側で 1、端の 5% でなめらかに 0 へ
-float RippleEdgeMask(float2 uv)
+float EdgeMask(float2 uv)
 {
     float2 d = min(uv, 1.0f - uv);
     return smoothstep(0.0f, 0.05f, min(d.x, d.y));

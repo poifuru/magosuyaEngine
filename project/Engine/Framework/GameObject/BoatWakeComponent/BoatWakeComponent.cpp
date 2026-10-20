@@ -10,6 +10,7 @@
 #include "MathFunction.h"
 #include "Time.h"
 #include "RenderCollector.h"
+#include "RootSignatureManager.h"
 
 void BoatWakeComponent::Initialize() {
 	if(isInitialized_) return;
@@ -27,6 +28,14 @@ void BoatWakeComponent::Initialize() {
 		*rootSigManager,
 		512, 512
 	);
+
+	// WaterQueryの初期化
+	waterQuery_.Initialize(
+		graphicsDevice->GetDevice(),
+		*heapManager,
+		*shaderManager,
+		rootSigManager->GetComputeRootSignature()
+		);
 
 	// GenericMeshのバッファ領域をあらかじめ最大数で確保しておく
 	std::vector<WakeVertex> dummyVerts(kMaxVertices);
@@ -100,6 +109,16 @@ void BoatWakeComponent::Update() {
 		lastSpawnPosition_ = currentPos;
 	}
 
+	// WaterQueryに点をセットする
+	Vector3 forwardDir = { matRotate.m[2][0], matRotate.m[2][1], matRotate.m[2][2] };
+
+	const float kBehind = 5.0f;
+	waterQuery_.SetQueryPoint(
+		0,
+		currentPos.x - forwardDir.x * kBehind,
+		currentPos.z - forwardDir.z * kBehind
+	);
+
 	// 行列バッファの更新 (ワールド行列は単位行列、WVPはViewProjectionをそのまま使う)
 	const CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
 	TransformMatrixData transformData{};
@@ -118,8 +137,11 @@ void BoatWakeComponent::ImGui() {
 	ImGui::DragFloat("Width Expand Rate", &widthExpandRate_, 0.1f, 0.0f, 5.0f);
 	ImGui::Text("speed %.2f m/s", Math::Length(velocity));
 
+	const auto& r = waterQuery_.GetResult(0);
+	ImGui::Text("ripple h=%.3f\n  slope=(%.3f, %.3f)\n  in=%.1f\n", r.height, r.dhdx, r.dhdz, r.inRange);
+
 	auto G = [&](int i) { const Vector4& v = kernel_[i / 4]; float c[4] = { v.x, v.y, v.z, v.w }; return c[i % 4]; };
-	ImGui::Text("G(0,0)=%.4f G(1,0)=%.4f G(1,1)=%.4f G(2,0)=%.4f", G(84), G(85), G(98), G(86));
+	ImGui::Text("G(0,0)=%.4f\n G(1,0)=%.4f\n G(1,1)=%.4f\n G(2,0)=%.4f\n", G(84), G(85), G(98), G(86));
 
 	auto* heap = GetGameObject()->GetContext()->heapManager;
 	D3D12_GPU_DESCRIPTOR_HANDLE handle = heap->GetGpuHandle(rippleSim_.GetTextureSrvIndex());
@@ -158,9 +180,23 @@ void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 
 	const float texel = kSimSize / kSimRes; // 1テクセル何mか (約0.156m)
 
-	// 船を中心にした領域の原点を、テクセル単位にスナップ
-	int32_t newOriginX = (int32_t)std::floor((boatPos.x - kSimSize * 0.5f) / texel);
-	int32_t newOriginZ = (int32_t)std::floor((boatPos.z - kSimSize * 0.5f) / texel);
+	// --- 範囲の中心を決める（波を起こす位置とは別） ---
+	float dt = Time::GetDeltaTime();
+	Vector3 moveDelta = boatPos - lastPos_;
+	Vector2 moveXZ = { moveDelta.x, moveDelta.z };
+
+	// 進んでいる方向（止まっているときは前回の向きを使う）
+	if (Math::Length(moveXZ) > 0.001f) {
+		centerDir_ = Math::Normalize(moveXZ); // メンバに Vector2 centerDir_{0,1}; を追加
+	}
+
+	const float kAheadOffset = -50.0f; // 船より何m前を範囲の中心にするか
+	Vector2 center = { boatPos.x + centerDir_.x * kAheadOffset,
+		boatPos.z + centerDir_.y * kAheadOffset };
+
+	// 原点の計算だけ center を使う
+	int32_t newOriginX = (int32_t)std::floor((center.x - kSimSize * 0.5f) / texel);
+	int32_t newOriginZ = (int32_t)std::floor((center.y - kSimSize * 0.5f) / texel);
 
 	int32_t scrollX = 0;
 	int32_t scrollY = 0;
@@ -177,12 +213,11 @@ void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 	Vector2 simSize = Vector2(kSimSize, kSimSize);
 
 	// 前フレームからの移動距離（スピード）を計算
-	float dt = Time::GetDeltaTime();
 	Vector3 v = (dt > 0.0f) ? (boatPos - lastPos_) / dt : Vector3{};
 	float speed = Math::Length((boatPos - lastPos_));
 	lastPos_ = boatPos; // 次回用に保存
 
-	/*Vector2*/ velocity = { v.x, v.z };   // m/s
+	velocity = { v.x, v.z };   // m/s
 
 	// プレイヤーの前方ベクトルを取得
 	Vector2 forward = {};
@@ -196,6 +231,7 @@ void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 
 	// CSを実行してテクスチャを更新
 	rippleSim_.Dispatch(cmdList, boatPos, speed, dt, simMin_, simSize, velocity, kernel_, scrollX, scrollY);
+	waterQuery_.Dispatch(cmdList, rippleSim_.GetTextureSrvIndex(), simMin_, simSize);
 
 	// CSが作ったテクスチャのインデックスをマテリアルへ指定
 	if (material_) {

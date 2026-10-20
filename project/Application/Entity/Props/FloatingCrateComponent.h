@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Component.h"
 #include "MathTypes.h"
 #include <nlohmann/json.hpp>
@@ -35,8 +35,10 @@ private:
 	float bobbingSpeed_ = 2.0f;      // 上下揺れの速さ
 	float bobbingAmount_ = 0.25f;    // 上下揺れの振幅
 	float bobbingTimer_ = 0.0f;      // 揺れタイマー
-	Vector3 driftVelocity_ = { 0.3f, 0.0f, 0.15f }; // ゆっくり漂流する速度
+	Vector3 driftVelocity_ = { 0.0f, 0.0f, 0.0f }; // ゆっくり漂流する速度
 
 	float lifetime_ = 120.0f;        // 生存時間（秒）
 	float lifeTimer_ = 0.0f;
+
+	int32_t querySlot_ = -1;	// WaterQuery の枠番号（-1 = 枠なし）
 };

@@ -82,13 +82,13 @@
             "name": "Player",
             "transform": {
                 "position": [
-                    361.3512268066406,
+                    314.4181823730469,
                     0.30000001192092896,
-                    344.2617492675781
+                    267.3093566894531
                 ],
                 "rotation": [
                     0.0,
-                    85.38606262207031,
+                    85.40337371826172,
                     0.0
                 ],
                 "scale": [
@@ -142,13 +142,13 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    389.176513671875,
-                    8.701488494873047,
-                    408.5008544921875
+                    484.8236083984375,
+                    20.088104248046875,
+                    369.8216552734375
                 ],
                 "rotation": [
-                    0.03429034724831581,
-                    -2.732837677001953,
+                    0.11520082503557205,
+                    4.3413472175598145,
                     0.0
                 ],
                 "scale": [
@@ -162,7 +162,7 @@
             "components": [
                 {
                     "fov": 0.44999998807907104,
-                    "priority": 10,
+                    "priority": 20,
                     "sensitivity": 0.0010000000474974513,
                     "speed": 0.30000001192092896,
                     "type": "VirtualDebugCamera"
@@ -171,13 +171,13 @@
             "name": "DebugCamera",
             "transform": {
                 "position": [
-                    431.55047607421875,
-                    24.55270004272461,
-                    309.6550598144531
+                    484.8236083984375,
+                    20.088104248046875,
+                    369.8216552734375
                 ],
                 "rotation": [
-                    0.05820085108280182,
-                    0.6811626553535461,
+                    0.11520082503557205,
+                    4.3413472175598145,
                     0.0
                 ],
                 "scale": [
@@ -190,8 +190,8 @@
         {
             "components": [
                 {
-                    "angleX": 0.04726289212703705,
-                    "angleY": 135.4964599609375,
+                    "angleX": 0.19626280665397644,
+                    "angleY": 138.27325439453125,
                     "delay": 0.5,
                     "firstPersonOffset": [
                         0.0,
@@ -208,7 +208,7 @@
                         -70.0
                     ],
                     "padSensitivity": 0.009999999776482582,
-                    "priority": 20,
+                    "priority": 10,
                     "targetName": "Player",
                     "targetOffsetY": 6.0,
                     "type": "VirtualFollowCamera"
@@ -217,13 +217,13 @@
             "name": "FollowCamera",
             "transform": {
                 "position": [
-                    389.176513671875,
-                    8.701488494873047,
-                    408.5008544921875
+                    311.96209716796875,
+                    19.05849266052246,
+                    199.81683349609375
                 ],
                 "rotation": [
-                    0.03429034724831581,
-                    -2.732837677001953,
+                    0.18671029806137085,
+                    0.03637442737817764,
                     0.0
                 ],
                 "scale": [
@@ -363,6 +363,7 @@
                         1.0,
                         1.0
                     ],
+                    "isVisible": true,
                     "layer": 4,
                     "position": [
                         640.0,
@@ -464,58 +465,6 @@
         {
             "components": [
                 {
-                    "alignment": 1,
-                    "anchorPoint": [
-                        0.5,
-                        0.5
-                    ],
-                    "color": [
-                        0.15178126096725464,
-                        0.15725809335708618,
-                        0.11730946600437164,
-                        1.0
-                    ],
-                    "layer": 5,
-                    "position": [
-                        235.0,
-                        62.0
-                    ],
-                    "scale": [
-                        1.0,
-                        0.30000001192092896
-                    ],
-                    "size": [
-                        32.0,
-                        180.0
-                    ],
-                    "spacing": 0.0,
-                    "texPath": "Resources/number_font.png",
-                    "type": "NumberDrawerComponent",
-                    "value": 12
-                }
-            ],
-            "name": "KillCounterUI",
-            "transform": {
-                "position": [
-                    13.5,
-                    -3.799999952316284,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    -6.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "components": [
-                {
                     "currentKills": 3,
                     "isBossEventTriggered": false,
                     "targetKills": 15,
@@ -528,156 +477,6 @@
                 "position": [
                     0.0,
                     0.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "components": [
-                {
-                    "anchorPoint": [
-                        0.5,
-                        0.5
-                    ],
-                    "color": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "layer": 4,
-                    "position": [
-                        116.0,
-                        85.0
-                    ],
-                    "rotation": 0.0,
-                    "scale": [
-                        1.0,
-                        1.0
-                    ],
-                    "size": [
-                        100.0,
-                        100.0
-                    ],
-                    "texPath": "Resources/fish_icon.png",
-                    "type": "SpriteComponent"
-                }
-            ],
-            "name": "fish_icon",
-            "transform": {
-                "position": [
-                    1.600000023841858,
-                    -1.5,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "components": [
-                {
-                    "anchorPoint": [
-                        0.5,
-                        0.5
-                    ],
-                    "color": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "layer": 4,
-                    "position": [
-                        83.0,
-                        50.0
-                    ],
-                    "rotation": 0.0,
-                    "scale": [
-                        1.0,
-                        1.0
-                    ],
-                    "size": [
-                        100.0,
-                        100.0
-                    ],
-                    "texPath": "Resources/bird_icon.png",
-                    "type": "SpriteComponent"
-                }
-            ],
-            "name": "bird_icon",
-            "transform": {
-                "position": [
-                    -1.7000000476837158,
-                    -5.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "components": [
-                {
-                    "anchorPoint": [
-                        0.5,
-                        0.5
-                    ],
-                    "color": [
-                        0.15294118225574493,
-                        0.1568627506494522,
-                        0.11764705926179886,
-                        1.0
-                    ],
-                    "layer": 4,
-                    "position": [
-                        177.0,
-                        67.0
-                    ],
-                    "rotation": 0.0,
-                    "scale": [
-                        1.0,
-                        1.0
-                    ],
-                    "size": [
-                        30.0,
-                        30.0
-                    ],
-                    "texPath": "Resources/batu.png",
-                    "type": "SpriteComponent"
-                }
-            ],
-            "name": "batu",
-            "transform": {
-                "position": [
-                    7.699999809265137,
-                    -3.299999952316284,
                     0.0
                 ],
                 "rotation": [
@@ -713,7 +512,7 @@
                         -10.0
                     ],
                     "padSensitivity": 0.009999999776482582,
-                    "priority": 20,
+                    "priority": 10,
                     "targetName": "",
                     "targetOffsetY": 3.799999952316284,
                     "type": "VirtualFollowCamera"

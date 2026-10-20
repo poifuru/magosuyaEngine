@@ -1,5 +1,5 @@
 // 1: iWave / 0: 波動方程式
-#define USE_IWAVE 1    
+#define USE_IWAVE 0    
     
 struct SimulationBuffer
 {
@@ -111,7 +111,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     }
     
     float gravity = 9.8f / texelSize; // 実際の重力をマス単位に（約63）
-    float alpha = 0.75f;     // 減衰(大きいほど早く消える)
+    float alpha = 0.15f;     // 減衰(大きいほど早く消える)
     
     newHeight = (currentHeight * (2.0f - alpha * dt) - prevHeight - gravity * dt * dt * vd) / (1.0f + alpha * dt);
     
@@ -172,7 +172,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
         float widthOffset = 0.2f; // 船の横幅の半分
         
         // 衝撃半径
-        float impactRadius = 1.5f;
+        float impactRadius = 5.0f;
        
         float r2 = dot(diffWorld, diffWorld) / (impactRadius * impactRadius);
         if (r2 < 6.0f)
@@ -186,7 +186,7 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
             float mexicanHat = 1.0f - 1.5f * r2; // 中心がへこみ、周りが盛り上がる（合計0）
             float displacement = -speed * 0.35f; // 船体の排水
 
-            const float injectScale = 8.0f; // ← 航跡の強さ。ここで調整
+            const float injectScale = 10.0f; // ← 航跡の強さ。ここで調整
             float force = (push * 0.5f + displacement * mexicanHat) * falloff * speedMask;
             newHeight += force * injectScale * dt * dt;
         }
@@ -221,5 +221,5 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
     // G: 今回の高さ（次回フレームでの過去の高さ）
     // B: 泡の濃さ
     // -------------------------------------------------------------
-    gOutput[id.xy] = float4(clamp(newHeight, -3, 3), clamp(currentHeight, -3, 3), saturate(newFoam), 1.0f);
+    gOutput[id.xy] = float4(clamp(newHeight, -5, 5), clamp(currentHeight, -5, 5), saturate(newFoam), 1.0f);
 }

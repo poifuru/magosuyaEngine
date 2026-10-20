@@ -69,7 +69,7 @@ void MyEngine::Rendering::MeshRendererComponent::ImGui() {
 }
 
 void MyEngine::Rendering::MeshRendererComponent::Serialize(json& j) const {
-	j["type"] = "MyEngine::Rendering::MeshRendererComponent";
+	j["type"] = "MeshRendererComponent";
 	j["modelPath"] = modelPath_;
 	j["texPath"] = texPath_;
 	j["isDepthEnable"] = isDepthEnable_;

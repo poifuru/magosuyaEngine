@@ -13,8 +13,8 @@ void WaterSurfaceComponent::Initialize() {
 	Component::Initialize();
 
 	// 定数バッファの初期化
-	if (auto* owner = GetGameObject()) {
-		if (auto* ctx = owner->GetContext()) {
+	if(auto* owner = GetGameObject()) {
+		if(auto* ctx = owner->GetContext()) {
 			auto* device = ctx->graphicsDevice->GetDevice();
 			waterSurfaceBuffer_.Initialize(device);
 		}
@@ -83,12 +83,13 @@ void WaterSurfaceComponent::Update() {
 	// シーン内のオブジェクトから BoatWakeComponent を探す
 	auto* wakeComp = GetGameObject()->FindComponentInScene<BoatWakeComponent>();
 
-	if (wakeComp) {
+	if(wakeComp) {
 		params.rippleTextureIndex = wakeComp->GetRippleTextureIndex();	// CSから書き込んだテクスチャ
-		params.waterMin  = wakeComp->GetSimMin();
+		params.waterMin = wakeComp->GetSimMin();
 		params.waterSize = wakeComp->GetSimSize();
-	} else {
-		params.waterMin  = GetWaterMin();
+	}
+	else {
+		params.waterMin = GetWaterMin();
 		params.waterSize = GetWaterSize();
 	}
 
@@ -100,26 +101,26 @@ void WaterSurfaceComponent::ImGui() {
 	Component::ImGui();
 
 	// マテリアルの編集
-	if (material_ && ImGui::CollapsingHeader("Material Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if(material_ && ImGui::CollapsingHeader("Material Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
 		auto matData = material_->GetMaterialData();
 		auto uvTrans = material_->GetUvTransform();
 		// ベースカラー
-		if (ImGui::ColorEdit4("Water Color", &matData.color.x)) {
+		if(ImGui::ColorEdit4("Water Color", &matData.color.x)) {
 			material_->SetColor(matData.color);
 		}
 		// Roughness（ツルツル具合）
-		if (ImGui::SliderFloat("Roughness", &matData.roughness, 0.0f, 1.0f)) {
+		if(ImGui::SliderFloat("Roughness", &matData.roughness, 0.0f, 1.0f)) {
 			material_->SetRoughness(matData.roughness);
 		}
 		// Metallic（金属感/反射強度）
-		if (ImGui::SliderFloat("Metallic", &matData.metallic, 0.0f, 1.0f)) {
+		if(ImGui::SliderFloat("Metallic", &matData.metallic, 0.0f, 1.0f)) {
 			material_->SetMetallic(matData.metallic);
 		}
 		// UV タイリング（テクスチャの繰り返し数）
-		if (ImGui::DragFloat3("UV Scale", &uvTrans.scale.x, 0.01f)) {
+		if(ImGui::DragFloat3("UV Scale", &uvTrans.scale.x, 0.01f)) {
 			material_->SetUvScale(uvTrans.scale);
 		}
-		if (ImGui::DragFloat3("UV Offset", &uvTrans.translate.x, 0.01f)) {
+		if(ImGui::DragFloat3("UV Offset", &uvTrans.translate.x, 0.01f)) {
 			material_->SetUvTranslate(uvTrans.translate);
 		}
 	}
@@ -128,7 +129,7 @@ void WaterSurfaceComponent::ImGui() {
 	// テクスチャパスの表示と変更
 	char texBuf[256];
 	strcpy_s(texBuf, texPath_.c_str());
-	if (ImGui::InputText("Texture Path", texBuf, sizeof(texBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+	if(ImGui::InputText("Texture Path", texBuf, sizeof(texBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
 		SetTexture(texBuf);
 	}
 	ImGui::Spacing();
@@ -138,13 +139,13 @@ void WaterSurfaceComponent::ImGui() {
 
 	// メッシュの情報を編集
 	ImGui::DragFloat("Width", &width_, 1.0f, 0.0f, 1000.0f);
-	if (ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
+	if(ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
 	ImGui::DragFloat("Depth", &depth_, 1.0f, 0.0f, 1000.0f);
-	if (ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
+	if(ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
 	ImGui::DragInt("SubdivisionX", &subdivisionX_, 1, 1, 1000);
-	if (ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
+	if(ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
 	ImGui::DragInt("SubdivisionZ", &subdivisionZ_, 1, 1, 1000);
-	if (ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
+	if(ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
 
 	ImGui::Separator();
 	ImGui::Text("Gerstner Wave System");
@@ -178,6 +179,47 @@ void WaterSurfaceComponent::ImGui() {
 	ImGui::Text("Water Transparency Fade");
 	ImGui::DragFloat("Near Fade Distance", &nearFadeDistance_, 1.0f, 0.0f, 1000.0f);
 	ImGui::DragFloat("Far Fade Distance", &farFadeDistance_, 1.0f, 0.0f, 1000.0f);
+}
+
+float WaterSurfaceComponent::SampleGerstnerHeight(float x, float z) const {
+	auto evaluate = [&](float bx, float bz, float& offX, float& offZ) {
+		offX = offZ = 0.0f;
+		float y = 0.0f;
+		int count = (std::min)(numActiveWaves_, kMaxWaves);
+		for(int i = 0; i < count; ++i) {
+			const auto& w = waves_[i];
+			float A = w.amplitude;
+			float k = w.frequency;
+			float len = std::sqrt(w.direction.x * w.direction.x + w.direction.y * w.direction.y);
+			float Dx = w.direction.x / len, Dz = w.direction.y / len;
+			float omega = std::sqrt(9.8f * k);
+			float Q = w.steepness / (k * A * count + 1e-4f);
+			float theta = k * (Dx * bx + Dz * bz) - omega * time_ + i * 2.4f; // VS と同じ位相ずらし
+			float s = std::sin(theta), c = std::cos(theta);
+			offX += Q * A * Dx * c;
+			offZ += Q * A * Dz * c;
+			y += A * s;
+		}
+		return y;
+		};
+
+	// 横ずれを2回の反復で打ち消して、元の点を探す
+	float bx = x, bz = z, offX, offZ;
+	for(int iter = 0; iter < 2; ++iter) {
+		evaluate(bx, bz, offX, offZ);
+		bx = x - offX;
+		bz = z - offZ;
+	}
+	float y = evaluate(bx, bz, offX, offZ);
+
+	// 水面オブジェクト自体の高さを足す（VS は World 行列でワールドに出しているため）
+	return y + GetGameObject()->GetTransform().translate.y;
+}
+
+void WaterSurfaceComponent::SampleGerstnerSlope(float x, float z, float& dhdx, float& dhdz) const {
+	const float e = 0.1f; // 10cm
+	dhdx = (SampleGerstnerHeight(x + e, z) - SampleGerstnerHeight(x - e, z)) / (2.0f * e);
+	dhdz = (SampleGerstnerHeight(x, z + e) - SampleGerstnerHeight(x, z - e)) / (2.0f * e);
 }
 
 void WaterSurfaceComponent::Serialize(json& j) const {
@@ -253,17 +295,17 @@ void WaterSurfaceComponent::Deserialize(const json& j) {
 void WaterSurfaceComponent::SetTexture(const std::string& textureName) {
 	GameObject* owner = GetGameObject();
 
-	if (!owner) return;
+	if(!owner) return;
 
 	SceneContext* context = owner->GetContext();
 
-	if (!context || !context->textureManager) return;
+	if(!context || !context->textureManager) return;
 
 	texPath_ = textureName;
 	// TextureManager からテクスチャをロードしてインデックスを取得
 	texIndex_ = context->textureManager->LoadTexture(texPath_, false);
 	// マテリアルにテクスチャインデックスをセット
-	if (material_) {
+	if(material_) {
 		material_->SetTextureIndex(texIndex_);
 	}
 }
@@ -352,9 +394,9 @@ void WaterSurfaceComponent::GenerateMesh() {
 }
 
 void WaterSurfaceComponent::CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const {
-	if (!collector || !isVisible_) return;
+	if(!collector || !isVisible_) return;
 
-	if (mesh_ && material_) {
+	if(mesh_ && material_) {
 		collector->Submit(*mesh_, material_.get(), GetTransformAddress(), "WaterSurface", GetCustomBufferAddress());
 	}
 }

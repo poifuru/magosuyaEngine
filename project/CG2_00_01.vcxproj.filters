@@ -140,6 +140,7 @@
     <ClCompile Include="Application\Scene\BaseScene.cpp" />
     <ClCompile Include="Engine\Render\RenderCollector\RenderCollector.cpp" />
     <ClCompile Include="Engine\Render\RenderComponent\RenderComponent.cpp" />
+    <ClCompile Include="Engine\Graphics\RippleSimulator\WaterQuery.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -308,6 +309,7 @@
     <ClInclude Include="Engine\Editor\Window\GizmoWindow.h" />
     <ClInclude Include="Engine\Render\RenderCollector\RenderCollector.h" />
     <ClInclude Include="Engine\Render\RenderComponent\RenderComponent.h" />
+    <ClInclude Include="Engine\Graphics\RippleSimulator\WaterQuery.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />
@@ -365,5 +367,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Resources\Shader\WaterQuery.CS.hlsl" />
   </ItemGroup>
 </Project>

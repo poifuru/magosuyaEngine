@@ -8,7 +8,8 @@
 #include "Time.h"
 #include "MathFunction.h"
 #include "../../../../Engine/Editor/ParticleEditor/ParticleSpawner.h"
-#include <cmath>
+#include "WaterSurfaceComponent.h"
+#include "BoatWakeComponent.h"
 
 void FloatingCrateComponent::Initialize() {
 	if (!gameObject_) return;
@@ -20,6 +21,12 @@ void FloatingCrateComponent::Initialize() {
 
 	waterSurfaceY_ = gameObject_->GetTransform().translate.y;
 	bobbingTimer_ = static_cast<float>(rand() % 100) * 0.1f; // ランダム位相
+
+	// 0 は船の後ろで使っているので 1 から
+	static uint32_t s_nextSlot = 1;
+	if (s_nextSlot < WaterQuery::kMaxQueries) {
+		querySlot_ = static_cast<int32_t>(s_nextSlot++);
+	}
 }
 
 void FloatingCrateComponent::Update() {
@@ -42,7 +49,19 @@ void FloatingCrateComponent::Update() {
 
 	// 水面での上下揺れ（ボビング）
 	bobbingTimer_ += bobbingSpeed_ * dt;
-	trans.translate.y = waterSurfaceY_ + std::sin(bobbingTimer_) * bobbingAmount_;
+	auto* water = gameObject_->FindComponentInScene<WaterSurfaceComponent>();
+	auto* wake  = gameObject_->FindComponentInScene<BoatWakeComponent>();
+	if (querySlot_ >= 0 && water && wake) {
+		auto& query = wake->GetWaterQuery();
+		uint32_t slot = static_cast<uint32_t>(querySlot_);
+		query.SetQueryPoint(slot, trans.translate.x, trans.translate.z);
+		const auto& r = query.GetResult(slot);
+		trans.translate.y = water->SampleGerstnerHeight(trans.translate.x, trans.translate.z) + r.height;
+	}
+	else {
+		// 枠がない箱は今まで通りの偽物の揺れ
+		trans.translate.y = waterSurfaceY_ + std::sin(bobbingTimer_) * bobbingAmount_;
+	}
 
 	// わずかな自転と傾き揺れ
 	trans.rotate.y += 0.2f * dt;
@@ -101,6 +120,7 @@ void FloatingCrateComponent::OnDestroyed() {
 void FloatingCrateComponent::ImGui() {
 #ifdef USEIMGUI
 	ImGui::Text("--- Floating Crate ---");
+	ImGui::Text("query slot: %d", querySlot_);
 	ImGui::DragInt("HP", &hp_, 1, 1, 10);
 	ImGui::DragFloat("Water Surface Y", &waterSurfaceY_, 0.1f, -10.0f, 10.0f);
 	ImGui::DragFloat("Bobbing Speed", &bobbingSpeed_, 0.1f, 0.1f, 10.0f);
