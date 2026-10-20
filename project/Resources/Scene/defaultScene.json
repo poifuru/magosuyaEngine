@@ -142,13 +142,13 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    -112.26861572265625,
-                    20.996349334716797,
-                    -133.00668334960938
+                    -139.2797088623047,
+                    8.166219711303711,
+                    171.39215087890625
                 ],
                 "rotation": [
-                    0.22032548487186432,
-                    -2.601560115814209,
+                    0.005200798157602549,
+                    4.506349563598633,
                     0.0
                 ],
                 "scale": [
@@ -162,7 +162,7 @@
             "components": [
                 {
                     "fov": 0.44999998807907104,
-                    "priority": 10,
+                    "priority": 20,
                     "sensitivity": 0.0010000000474974513,
                     "speed": 0.30000001192092896,
                     "type": "VirtualDebugCamera"
@@ -208,7 +208,7 @@
                         -70.0
                     ],
                     "padSensitivity": 0.009999999776482582,
-                    "priority": 20,
+                    "priority": 10,
                     "targetName": "Player",
                     "targetOffsetY": 6.0,
                     "type": "VirtualFollowCamera"
@@ -388,16 +388,21 @@
                     "type": "MeshRendererComponent"
                 },
                 {
-                    "angleStiffness": 6.0,
+                    "airControl": 0.10000000149011612,
                     "baseJump": 1.0,
+                    "edgeAccel": 3.0,
                     "gravity": 25.0,
                     "launchScale": 4.0,
-                    "maxAngle": 0.699999988079071,
+                    "maxAngle": 0.8399999737739563,
+                    "maxJumpHeight": 10.0,
+                    "maxRiseMemory": 8.0,
                     "riseMemoryDecay": 5.0,
                     "ropeLength": 15.0,
+                    "ropePull": 4.0,
                     "sternOffset": 2.0,
                     "type": "BoarderComponent",
-                    "useRightStick": true
+                    "useRightStick": true,
+                    "waterDrag": 1.5
                 }
             ],
             "name": "Player",
