@@ -19,3 +19,4 @@
 #include "TextDrawerComponent.h"
 #include "FloatingCrateComponent.h"
 #include "EnergyItemComponent.h"
+#include "BoarderComponent.h"

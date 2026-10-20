@@ -1,5 +1,5 @@
 // 1: iWave / 0: 波動方程式
-#define USE_IWAVE 0    
+#define USE_IWAVE 0
     
 struct SimulationBuffer
 {

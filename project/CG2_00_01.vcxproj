@@ -178,6 +178,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Application\Entity\Player\BoarderComponent.cpp" />
     <ClCompile Include="application\entity\player\PlayerComponent.cpp" />
     <ClCompile Include="application\entity\player\PlayerHealth.cpp" />
     <ClCompile Include="application\entity\player\PlayerMovement.cpp" />
@@ -360,6 +361,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application\Collider\Collision.h" />
+    <ClInclude Include="Application\Entity\Player\BoarderComponent.h" />
     <ClInclude Include="application\scene\BaseScene.h" />
     <ClInclude Include="application\scene\ClearScene.h" />
     <ClInclude Include="application\entity\Entity.h" />

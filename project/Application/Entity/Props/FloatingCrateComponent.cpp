@@ -24,7 +24,7 @@ void FloatingCrateComponent::Initialize() {
 
 	// 0 は船の後ろで使っているので 1 から
 	static uint32_t s_nextSlot = 1;
-	if (s_nextSlot < WaterQuery::kMaxQueries) {
+	if (s_nextSlot < WaterQuery::kMaxQueries - 1) {
 		querySlot_ = static_cast<int32_t>(s_nextSlot++);
 	}
 }

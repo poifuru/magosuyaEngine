@@ -273,6 +273,13 @@ void GameObject::ImGui() {
 				newComp->Initialize();
 			}
 		}
+		// ボーダーコンポーネント
+		if(GetComponent<BoarderComponent>() == nullptr) {
+			if(ImGui::MenuItem("Boarder Component")) {
+				auto* newComp = AddComponent<BoarderComponent>();
+				newComp->Initialize();
+			}
+		}
 		// 電力アイテムコンポーネント
 		if(GetComponent<EnergyItemComponent>() == nullptr) {
 			if(ImGui::MenuItem("Energy Item Component")) {
@@ -460,6 +467,11 @@ void GameObject::Deserialize(const json& j) {
 			else if(type == "FloatingCrateComponent") {
 				auto* comp = GetComponent<FloatingCrateComponent>();
 				if(!comp) comp = AddComponent<FloatingCrateComponent>();
+				comp->Deserialize(compJ);
+			}
+			else if(type == "BoarderComponent") {
+				auto* comp = GetComponent<BoarderComponent>();
+				if(!comp) comp = AddComponent<BoarderComponent>();
 				comp->Deserialize(compJ);
 			}
 			else if(type == "EnergyItemComponent") {
