@@ -36,8 +36,8 @@
                             ]
                         }
                     },
-                    "modelPath": "Resources/player/minisub.obj",
-                    "texPath": "Resources/player/minisub_palette.png",
+                    "modelPath": "Resources/Boat/wakeboat.obj",
+                    "texPath": "Resources/Boat/wakeboat_palette.png",
                     "type": "MeshRendererComponent"
                 },
                 {
@@ -48,9 +48,9 @@
                     "widthExpandRate": 1.0
                 },
                 {
-                    "acceleration": 3.0,
-                    "boatHeight": 0.30000001192092896,
-                    "cruiseSpeed": 10.0,
+                    "acceleration": 10.0,
+                    "boatHeight": 1.5,
+                    "cruiseSpeed": 60.0,
                     "isRunning": true,
                     "type": "BoatDriverComponent"
                 }
@@ -58,9 +58,9 @@
             "name": "Boat",
             "transform": {
                 "position": [
-                    -161.73365783691406,
-                    0.30000001192092896,
-                    -214.1438446044922
+                    -9772.140625,
+                    1.5,
+                    -15360.375
                 ],
                 "rotation": [
                     0.0,
@@ -118,13 +118,13 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    -106.44255065917969,
-                    21.192285537719727,
-                    -152.00209045410156
+                    335.7898254394531,
+                    12.444069862365723,
+                    3.3986964225769043
                 ],
                 "rotation": [
-                    0.2535010278224945,
-                    -2.3689980506896973,
+                    0.032200802117586136,
+                    3.4753527641296387,
                     0.0
                 ],
                 "scale": [
@@ -138,7 +138,7 @@
             "components": [
                 {
                     "fov": 0.44999998807907104,
-                    "priority": 10,
+                    "priority": 20,
                     "sensitivity": 0.0010000000474974513,
                     "speed": 0.30000001192092896,
                     "type": "VirtualDebugCamera"
@@ -147,13 +147,13 @@
             "name": "DebugCamera",
             "transform": {
                 "position": [
-                    -128.78707885742188,
-                    8.166219711303711,
-                    171.7830810546875
+                    335.7898254394531,
+                    12.444069862365723,
+                    3.3986964225769043
                 ],
                 "rotation": [
-                    0.05820079892873764,
-                    3.104351282119751,
+                    0.032200802117586136,
+                    3.4753527641296387,
                     0.0
                 ],
                 "scale": [
@@ -166,8 +166,8 @@
         {
             "components": [
                 {
-                    "angleX": 0.262262225151062,
-                    "angleY": 142.14292907714844,
+                    "angleX": 0.05926264077425003,
+                    "angleY": 141.935302734375,
                     "delay": 0.5,
                     "firstPersonOffset": [
                         0.0,
@@ -184,7 +184,7 @@
                         -70.0
                     ],
                     "padSensitivity": 0.009999999776482582,
-                    "priority": 20,
+                    "priority": 10,
                     "targetName": "Player",
                     "targetOffsetY": 6.0,
                     "type": "VirtualFollowCamera"
@@ -193,13 +193,13 @@
             "name": "FollowCamera",
             "transform": {
                 "position": [
-                    -106.44255065917969,
-                    21.192285537719727,
-                    -152.00209045410156
+                    -9707.744140625,
+                    9.454177856445313,
+                    -15254.943359375
                 ],
                 "rotation": [
-                    0.2535010278224945,
-                    -2.3689980506896973,
+                    0.045502327382564545,
+                    -2.578267812728882,
                     0.0
                 ],
                 "scale": [
@@ -218,6 +218,7 @@
                     "TexturePath": "Resources/WaterSurface/waterSurface_normal (2).png",
                     "Width": 100.0,
                     "farFadeDistance": 70.0,
+                    "followCamera": true,
                     "nearFadeDistance": 0.0,
                     "numActiveWaves": 6,
                     "type": "WaterSurfaceComponent",
@@ -282,9 +283,9 @@
             "name": "Watersurface",
             "transform": {
                 "position": [
+                    335.0,
                     0.0,
-                    0.0,
-                    0.0
+                    3.0
                 ],
                 "rotation": [
                     0.0,
@@ -366,15 +367,15 @@
                 {
                     "airControl": 0.10000000149011612,
                     "baseJump": 1.0,
-                    "edgeAccel": 3.0,
+                    "edgeAccel": 1.0,
                     "gravity": 25.0,
                     "launchScale": 4.0,
-                    "maxAngle": 0.8399999737739563,
-                    "maxJumpHeight": 10.0,
+                    "maxAngle": 0.8500000238418579,
+                    "maxJumpHeight": 17.0,
                     "maxRiseMemory": 8.0,
                     "riseMemoryDecay": 5.0,
-                    "ropeLength": 15.0,
-                    "ropePull": 4.0,
+                    "ropeLength": 50.0,
+                    "ropePull": 5.0,
                     "sternOffset": 2.0,
                     "type": "BoarderComponent",
                     "useRightStick": true,
@@ -384,13 +385,13 @@
             "name": "Player",
             "transform": {
                 "position": [
-                    -152.85073852539063,
-                    -1.9715265035629272,
-                    -199.64956665039063
+                    -9745.931640625,
+                    0.23095151782035828,
+                    -15315.46484375
                 ],
                 "rotation": [
                     0.0,
-                    -2.5761592388153076,
+                    -2.5761570930480957,
                     0.0
                 ],
                 "scale": [

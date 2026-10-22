@@ -49,7 +49,7 @@ private:
 	// ===== 調整パラメータ（シリアライズ対象） =====
 
 	// --- ロープ ---
-	float ropeLength_ = 15.0f;   // ロープの長さ[m]
+	float ropeLength_ = 30.0f;   // ロープの長さ[m]
 	float sternOffset_ = 2.0f;   // 船の中心から船尾（ロープの付け根）までの距離[m]
 	float maxAngle_ = 0.84f;     // 振り出し角の限界[rad]（ここでロープがピンと張る）
 

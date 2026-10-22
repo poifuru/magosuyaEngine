@@ -1,0 +1,15 @@
+newmtl Body
+Ka 0 0 0
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+d 1
+illum 2
+map_Kd wakeboat_palette.png
+
+newmtl Glass
+Ka 0 0 0
+Kd 1 1 1
+Ks 0.8 0.8 0.8
+d 0.4
+illum 2
+map_Kd wakeboat_palette.png

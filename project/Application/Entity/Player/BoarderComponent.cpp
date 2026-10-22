@@ -166,8 +166,8 @@ float BoarderComponent::ReadSwingInput() const {
 	InputManager* input = InputManager::GetInstance();
 	float x = 0.0f;
 
-	if (input->GetRawInput()->Push(VK_LEFT))  { x -= 1.0f; }
-	if (input->GetRawInput()->Push(VK_RIGHT)) { x += 1.0f; }
+	if (input->GetRawInput()->Push('A')) { x -= 1.0f; }
+	if (input->GetRawInput()->Push('D')) { x += 1.0f; }
 
 	if (input->GetGamePad()->IsConection()) {
 		Vector2 stick = input->GetGamePad()->GetStick(useRightStick_ ? LR::Right : LR::Left);
