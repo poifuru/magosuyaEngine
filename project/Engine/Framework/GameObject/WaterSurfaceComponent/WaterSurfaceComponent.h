@@ -50,6 +50,9 @@ public:
 private:
 	void GenerateMesh();
 
+	// 水面メッシュをカメラの真下へ動かす（頂点の間隔にスナップ）
+	void FollowCamera();
+
 private:
 	// 波のパラメータ
 	struct WaterSurfaceInfo {
@@ -87,6 +90,10 @@ private:
 	float depth_ = 500.0f;
 	int subdivisionX_ = 1000;
 	int subdivisionZ_ = 1000;
+
+	// カメラ追従
+	// 波はすべてワールド座標で計算しているので、メッシュを動かしても波の形は変わらない
+	bool followCamera_ = true;
 
 	float time_ = 0.0f;
 

@@ -88,15 +88,17 @@ PixelShaderOutput main(VertexShaderOutput input)
     uint matIndex = g_Indices.materialIndex;
     MaterialData material = g_BindlessBuffers[matIndex][0];
     
-    // 水面タイリングの細かさ(グリッドに対してテクスチャを何回繰り返すか)
-    float2 uvScale = float2(4.0f, 4.0f);
+    // 法線マップ1枚の大きさ[m]
+    // メッシュのUVではなくワールド座標で貼るので、水面メッシュがカメラについて動いても模様はその場に止まって見える
+    float tileSize = 250.0f;
+    float2 worldUV = input.worldPosition.xz / tileSize;
     
     // 1枚目と2枚目のスクロール方向・速さ(逆方向や斜めに流すと複雑に見える)
     float2 speed1 = float2(0.02f, 0.01f);
     float2 speed2 = float2(-0.015f, 0.025f);
     
-    float2 uv1 = input.texcoord * uvScale + speed1 * material.time;
-    float2 uv2 = input.texcoord * uvScale + speed2 * material.time;
+    float2 uv1 = worldUV + speed1 * material.time;
+    float2 uv2 = worldUV + speed2 * material.time;
     
     // テクスチャを取得
     uint texIndex = g_Indices.textureIndex; // 法線マップのインデックス

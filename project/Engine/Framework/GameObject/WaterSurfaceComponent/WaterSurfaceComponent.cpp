@@ -6,6 +6,8 @@
 #include "ComponentType.h"
 #include "TextureManager.h"
 #include "RenderCollector.h"
+#include "CameraOrganizer.h"
+#include <cmath>
 
 void WaterSurfaceComponent::Initialize() {
 	if(isInitialized_) return;
@@ -59,6 +61,11 @@ void WaterSurfaceComponent::Initialize() {
 
 void WaterSurfaceComponent::Update() {
 	Component::Update();
+
+	// 水面メッシュをカメラについて行かせる
+	if(followCamera_) {
+		FollowCamera();
+	}
 
 	// 時間を進める
 	time_ += Time::GetDeltaTime();
@@ -146,6 +153,7 @@ void WaterSurfaceComponent::ImGui() {
 	if(ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
 	ImGui::DragInt("SubdivisionZ", &subdivisionZ_, 1, 1, 1000);
 	if(ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
+	ImGui::Checkbox("Follow Camera", &followCamera_);
 
 	ImGui::Separator();
 	ImGui::Text("Gerstner Wave System");
@@ -233,6 +241,7 @@ void WaterSurfaceComponent::Serialize(json& j) const {
 	j["Depth"] = depth_;
 	j["SubdivisionX"] = subdivisionX_;
 	j["SubdivisionZ"] = subdivisionZ_;
+	j["followCamera"] = followCamera_;
 
 	json wavesJ = json::array();
 	for(int i = 0; i < kMaxWaves; ++i) {
@@ -258,6 +267,7 @@ void WaterSurfaceComponent::Deserialize(const json& j) {
 	if(j.contains("Depth")) depth_ = j["Depth"];
 	if(j.contains("SubdivisionX")) subdivisionX_ = j["SubdivisionX"];
 	if(j.contains("SubdivisionZ")) subdivisionZ_ = j["SubdivisionZ"];
+	if(j.contains("followCamera")) followCamera_ = j["followCamera"];
 
 	// 定数バッファを確実に初期化する 
 	auto* device = GetGameObject()->GetContext()->graphicsDevice->GetDevice();
@@ -325,6 +335,26 @@ Vector2 WaterSurfaceComponent::GetWaterSize() const {
 	Vector3 scale = gameObject_->GetTransform().scale;
 
 	return Vector2(width_ * scale.x, depth_ * scale.z);
+}
+
+void WaterSurfaceComponent::FollowCamera() {
+	auto& transform = GetGameObject()->GetTransform();
+
+	// 頂点の間隔（ワールド）
+	float stepX = width_ / static_cast<float>(subdivisionX_) * transform.scale.x;
+	float stepZ = depth_ / static_cast<float>(subdivisionZ_) * transform.scale.z;
+	if(stepX <= 0.0f || stepZ <= 0.0f) return;
+
+	// カメラの位置（ワールド行列の4行目）
+	const Matrix4x4& camWorld = CameraOrganizer::GetInstance()->GetCameraData().world;
+	float camX = camWorld.m[3][0];
+	float camZ = camWorld.m[3][2];
+
+	// 頂点の間隔の倍数に丸めて移動する
+	// 少しずつ動かすと、頂点が波を拾う位置が毎フレームずれて波がちらつく（スイミング）
+	// 格子にそろえておけば、頂点はいつも同じワールドの点に乗るので見た目は変わらない
+	transform.translate.x = std::floor(camX / stepX) * stepX;
+	transform.translate.z = std::floor(camZ / stepZ) * stepZ;
 }
 
 void WaterSurfaceComponent::GenerateMesh() {
