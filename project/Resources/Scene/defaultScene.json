@@ -41,50 +41,26 @@
                     "type": "MeshRendererComponent"
                 },
                 {
-                    "attenuation": 0.9900000095367432,
-                    "brakeAttenuation": 0.9800000190734863,
-                    "brakeMoveSpeedMultiplier": 0.29899999499320984,
-                    "brakeTurnSpeedMultiplier": 4.952000141143799,
-                    "canonOffsetPitch": 0.0,
-                    "canonOffsetYaw": 0.0,
-                    "dirRatioX": 0.009999990463256836,
-                    "dirRatioZ": 0.9900000095367432,
-                    "drainInterval": 3.0,
-                    "enableDrain": true,
-                    "fireInterval": 0.15000000596046448,
-                    "harpoonHomingStrength": 0.019999999552965164,
-                    "harpoonMaxDistance": 100.0,
-                    "harpoonSpeed": 100.0,
-                    "hp": 0,
-                    "isUnderwater": false,
-                    "maxAmmo": 15,
-                    "maxHp": 100,
-                    "maxSpeed": 0.5,
-                    "reloadCost": 10,
-                    "reloadDuration": 0.800000011920929,
-                    "speed": 0.20999999344348907,
-                    "targetDepthY": -30.0,
-                    "turnSpeed": 0.20000000298023224,
-                    "type": "PlayerComponent"
-                },
-                {
-                    "radius": 2.0,
-                    "type": "ColliderComponent"
-                },
-                {
                     "maxLifetime": 6.400000095367432,
                     "spawnInterval": 0.10000000149011612,
                     "trailWidth": 0.699999988079071,
                     "type": "BoatWakeComponent",
                     "widthExpandRate": 1.0
+                },
+                {
+                    "acceleration": 3.0,
+                    "boatHeight": 0.30000001192092896,
+                    "cruiseSpeed": 10.0,
+                    "isRunning": true,
+                    "type": "BoatDriverComponent"
                 }
             ],
             "name": "Boat",
             "transform": {
                 "position": [
-                    -155.82957458496094,
+                    -161.73365783691406,
                     0.30000001192092896,
-                    -204.8387451171875
+                    -214.1438446044922
                 ],
                 "rotation": [
                     0.0,
@@ -142,13 +118,13 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    -139.2797088623047,
-                    8.166219711303711,
-                    171.39215087890625
+                    -106.44255065917969,
+                    21.192285537719727,
+                    -152.00209045410156
                 ],
                 "rotation": [
-                    0.005200798157602549,
-                    4.506349563598633,
+                    0.2535010278224945,
+                    -2.3689980506896973,
                     0.0
                 ],
                 "scale": [
@@ -162,7 +138,7 @@
             "components": [
                 {
                     "fov": 0.44999998807907104,
-                    "priority": 20,
+                    "priority": 10,
                     "sensitivity": 0.0010000000474974513,
                     "speed": 0.30000001192092896,
                     "type": "VirtualDebugCamera"
@@ -171,13 +147,13 @@
             "name": "DebugCamera",
             "transform": {
                 "position": [
-                    -139.2797088623047,
+                    -128.78707885742188,
                     8.166219711303711,
-                    171.39215087890625
+                    171.7830810546875
                 ],
                 "rotation": [
-                    0.005200798157602549,
-                    4.506349563598633,
+                    0.05820079892873764,
+                    3.104351282119751,
                     0.0
                 ],
                 "scale": [
@@ -190,8 +166,8 @@
         {
             "components": [
                 {
-                    "angleX": 0.2302626669406891,
-                    "angleY": 141.90785217285156,
+                    "angleX": 0.262262225151062,
+                    "angleY": 142.14292907714844,
                     "delay": 0.5,
                     "firstPersonOffset": [
                         0.0,
@@ -208,7 +184,7 @@
                         -70.0
                     ],
                     "padSensitivity": 0.009999999776482582,
-                    "priority": 10,
+                    "priority": 20,
                     "targetName": "Player",
                     "targetOffsetY": 6.0,
                     "type": "VirtualFollowCamera"
@@ -217,13 +193,13 @@
             "name": "FollowCamera",
             "transform": {
                 "position": [
-                    -112.26861572265625,
-                    20.996349334716797,
-                    -133.00668334960938
+                    -106.44255065917969,
+                    21.192285537719727,
+                    -152.00209045410156
                 ],
                 "rotation": [
-                    0.22032548487186432,
-                    -2.601560115814209,
+                    0.2535010278224945,
+                    -2.3689980506896973,
                     0.0
                 ],
                 "scale": [
@@ -408,13 +384,13 @@
             "name": "Player",
             "transform": {
                 "position": [
-                    -146.72268676757813,
-                    0.0014833807945251465,
-                    -190.4838104248047
+                    -152.85073852539063,
+                    -1.9715265035629272,
+                    -199.64956665039063
                 ],
                 "rotation": [
                     0.0,
-                    -2.576256275177002,
+                    -2.5761592388153076,
                     0.0
                 ],
                 "scale": [

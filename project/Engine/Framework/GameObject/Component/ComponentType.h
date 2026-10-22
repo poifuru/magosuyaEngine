@@ -20,3 +20,4 @@
 #include "FloatingCrateComponent.h"
 #include "EnergyItemComponent.h"
 #include "BoarderComponent.h"
+#include "BoatDriverComponent.h"

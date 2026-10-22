@@ -280,6 +280,13 @@ void GameObject::ImGui() {
 				newComp->Initialize();
 			}
 		}
+		// ボートコンポーネント
+		if(GetComponent<BoatDriverComponent>() == nullptr) {
+			if(ImGui::MenuItem("Boat Driver Component")) {
+				auto* newComp = AddComponent<BoatDriverComponent>();
+				newComp->Initialize();
+			}
+		}
 		// 電力アイテムコンポーネント
 		if(GetComponent<EnergyItemComponent>() == nullptr) {
 			if(ImGui::MenuItem("Energy Item Component")) {
@@ -472,6 +479,11 @@ void GameObject::Deserialize(const json& j) {
 			else if(type == "BoarderComponent") {
 				auto* comp = GetComponent<BoarderComponent>();
 				if(!comp) comp = AddComponent<BoarderComponent>();
+				comp->Deserialize(compJ);
+			}
+			else if(type == "BoatDriverComponent") {
+				auto* comp = GetComponent<BoatDriverComponent>();
+				if(!comp) comp = AddComponent<BoatDriverComponent>();
 				comp->Deserialize(compJ);
 			}
 			else if(type == "EnergyItemComponent") {
