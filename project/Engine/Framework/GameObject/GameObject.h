@@ -60,6 +60,9 @@ public:
 	T* AddComponent(Args&&... args) {
 		auto component = std::make_unique<T>(std::forward<Args>(args)...);
 		component->SetGameObject(this);
+
+		component->Initialize();
+
 		T* ptr = component.get();
 		components_.push_back(std::move(component));
 

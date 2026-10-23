@@ -143,6 +143,7 @@
     <ClCompile Include="Engine\Graphics\RippleSimulator\WaterQuery.cpp" />
     <ClCompile Include="Application\Entity\Player\BoarderComponent.cpp" />
     <ClCompile Include="Application\Entity\Player\BoatDriverComponent.cpp" />
+    <ClCompile Include="Engine\Framework\GameObject\Component\ComponentRegistry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -314,6 +315,7 @@
     <ClInclude Include="Engine\Graphics\RippleSimulator\WaterQuery.h" />
     <ClInclude Include="Application\Entity\Player\BoarderComponent.h" />
     <ClInclude Include="Application\Entity\Player\BoatDriverComponent.h" />
+    <ClInclude Include="Engine\Framework\GameObject\Component\ComponentRegistry.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />
