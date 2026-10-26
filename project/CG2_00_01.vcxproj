@@ -277,6 +277,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Application\Entity\Enemy\FishEnemyComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\FloatingCrateComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\EnergyItemComponent.cpp" />
+    <ClCompile Include="Application\Entity\Props\CourseBuoyComponent.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Engine\Framework\Object\3d\BaseObject3d.cpp" />
     <ClCompile Include="Engine\Common\Utility\Easing.cpp" />
@@ -355,6 +356,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\PostEffect\RadialBlur.cpp" />
     <ClCompile Include="Engine\Graphics\PostEffect\RandomNoise.cpp" />
     <ClCompile Include="Engine\Editor\Window\PerformanceWindow.cpp" />
+    <ClCompile Include="Engine\Editor\Window\CourseEditorWindow.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\RtvDescriptorHeapPool\RtvDescriptorHeapPool.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\RenderTargetFactory\RenderTargetFactory.cpp" />
     <ClCompile Include="Engine\Render\RenderCollector\RenderCollector.cpp" />
@@ -436,6 +438,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Application\Entity\Enemy\FishEnemyComponent.h" />
     <ClInclude Include="Application\Entity\Props\FloatingCrateComponent.h" />
     <ClInclude Include="Application\Entity\Props\EnergyItemComponent.h" />
+    <ClInclude Include="Application\Entity\Props\CourseBuoyComponent.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Engine\Framework\Object\3d\BaseObject3d.h" />
     <ClInclude Include="Engine\Common\Utility\Easing.h" />
@@ -528,6 +531,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\PostEffect\RadialBlur.h" />
     <ClInclude Include="Engine\Graphics\PostEffect\RandomNoise.h" />
     <ClInclude Include="Engine\Editor\Window\PerformanceWindow.h" />
+    <ClInclude Include="Engine\Editor\Window\CourseEditorWindow.h" />
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\RtvDescriptorHeapPool\RtvDescriptorHeapPool.h" />
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\BaseDescriptorHeapPool\BaseDescriptorHeapPool.h" />
     <ClInclude Include="Engine\Core\LowLevel\RenderTargetFactory\RenderTargetFactory.h" />

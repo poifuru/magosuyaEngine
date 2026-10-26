@@ -86,6 +86,9 @@ void GameObject::UpdateTransformBuffer() {
 	if (auto* water = GetComponent<WaterSurfaceComponent>()) {
 		water->Update();
 	}
+	if (auto* buoys = GetComponent<CourseBuoyComponent>()) {
+		buoys->Update();
+	}
 }
 
 void GameObject::ImGui() {

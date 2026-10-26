@@ -21,3 +21,4 @@
 #include "EnergyItemComponent.h"
 #include "BoarderComponent.h"
 #include "BoatDriverComponent.h"
+#include "CourseBuoyComponent.h"
