@@ -22,6 +22,7 @@
 #include "Outline.h"
 #include "GameObject.h"
 #include "BoatWakeComponent.h"
+#include "LineRenderer.h"
 
 MyEngine::Rendering::Renderer::Renderer(
 	ID3D12Device* device,
@@ -92,9 +93,22 @@ MyEngine::Rendering::Renderer::Renderer(
 	}
 
 	InitializeShaderTable();
+
+	// デバッグ線（共通ルートシグネチャとPSOManagerを使う）
+	LineRenderer::GetInstance()->Initialize(
+		device,
+		psoManager_.get(),
+		shaderManager_.get(),
+		inputLayoutManager_.get(),
+		blendModeManager_.get(),
+		rootSigManager_->GetCommonRootSignature()
+	);
 }
 
-MyEngine::Rendering::Renderer::~Renderer() = default;
+MyEngine::Rendering::Renderer::~Renderer() {
+	// シングルトンなので、デバイスより先に明示的にリソースを解放する
+	LineRenderer::GetInstance()->Finalize();
+}
 
 namespace {
 	void SetupViewport(ID3D12GraphicsCommandList* cmdList) {
@@ -151,6 +165,10 @@ void MyEngine::Rendering::Renderer::RenderScene(
 
 	renderSystem_->WriteCommandList(cmdList_);
 	renderSystem_->ClearCommands();
+
+	// デバッグ線（シーンと同じレンダーターゲット・深度バッファに描く）
+	LineRenderer::GetInstance()->Render(cmdList_, CameraOrganizer::GetInstance()->GetCameraData().vp);
+	LineRenderer::GetInstance()->Clear();
 
 	renderTexture_->ChangeState(cmdList_, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 

@@ -267,6 +267,11 @@ void PlayScene::UpdateEdit(const CameraData* cameraData) {
 }
 
 void PlayScene::Draw(MyEngine::Rendering::Renderer* renderer) {
+	// デバッグ線の描画要求（Draw は Play・Pause・Stop のどれでも毎フレーム呼ばれる）
+	for (auto& obj : gameObjects_) {
+		obj->DrawDebug();
+	}
+
 	// ライトマネージャーを RenderSystem に登録
 	if (lightManager_ && renderer) {
 		renderer->GetRenderSystem()->SetLightManager(lightManager_.get());

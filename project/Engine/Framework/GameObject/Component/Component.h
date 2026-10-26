@@ -17,6 +17,10 @@ public:
 	virtual void Update() {}
 	virtual void ImGui() {}
 
+	// デバッグ描画（LineRenderer などで線を描く）
+	// Update と違い、エディタの Play・Pause・Stop のどの状態でも毎フレーム呼ばれる
+	virtual void DrawDebug() {}
+
 	// Jsonへの書き出し
 	virtual void Serialize(json& j) const {}
 	// Jsonからの読み込み

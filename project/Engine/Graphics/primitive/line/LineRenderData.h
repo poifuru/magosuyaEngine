@@ -1,19 +1,10 @@
 #pragma once
-#include "struct.h"
+#include "MathTypes.h"
 
-struct LineData {
-	Vector3 position;
-	float padding;
-	Vector4 color;
+// 線の頂点（ワールド座標のまま GPU に渡す）
+// InputLayoutType::LineMesh（POSITION float3 + COLOR float4、APPEND_ALIGNED）と同じ並びにするため、パディングは入れない
+struct LineVertex {
+	Vector3 position; // ワールド座標
+	Vector4 color;    // RGBA
 };
-
-struct LineVertexData {
-	//頂点バッファ
-	ComPtr<ID3D12Resource> vertexBuffer;
-	D3D12_VERTEX_BUFFER_VIEW vbView{};
-};
-
-struct LineForGPU {
-	Matrix4x4 World;
-	Matrix4x4 WVP;
-};
+static_assert(sizeof(LineVertex) == 28, "LineVertex と InputLayoutType::LineMesh がずれている");

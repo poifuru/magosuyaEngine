@@ -25,6 +25,9 @@ public:
 	// エディタで編集中にギズモの動きを対応させるためにTransformBufferだけを更新する
 	void UpdateTransformBuffer();
 
+	// 全コンポーネントの DrawDebug を呼ぶ（エディタの状態に関係なく毎フレーム）
+	void DrawDebug();
+
 	void ImGui();
 
 	// シリアライズ用

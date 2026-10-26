@@ -33,6 +33,12 @@ void GameObject::Initialize() {
 	}
 }
 
+void GameObject::DrawDebug() {
+	for (auto& component : components_) {
+		component->DrawDebug();
+	}
+}
+
 void GameObject::Update() {
 	for (auto& component : components_) {
 		component->Update();
