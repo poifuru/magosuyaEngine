@@ -97,9 +97,18 @@
                         [
                             642.0262451171875,
                             -0.6494979858398438,
-                            0
+                            1
                         ]
                     ]
+                },
+                {
+                    "buoyScale": 2.0,
+                    "flipFlag": false,
+                    "floatOnWater": true,
+                    "heightOffset": 0.0,
+                    "isVisible": true,
+                    "swayAmount": 0.05999999865889549,
+                    "type": "CourseBuoyComponent"
                 }
             ],
             "name": "Boat",
