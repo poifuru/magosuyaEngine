@@ -179,8 +179,8 @@
                     -62.94949722290039
                 ],
                 "rotation": [
-                    0.5002015829086304,
-                    5.464367866516113,
+                    0.27920156717300415,
+                    5.462368965148926,
                     0.0
                 ],
                 "scale": [
@@ -208,8 +208,8 @@
                     -62.94949722290039
                 ],
                 "rotation": [
-                    0.5002015829086304,
-                    5.464367866516113,
+                    0.27920156717300415,
+                    5.462368965148926,
                     0.0
                 ],
                 "scale": [
@@ -269,8 +269,8 @@
             "components": [
                 {
                     "Depth": 100.0,
-                    "SubdivisionX": 1000,
-                    "SubdivisionZ": 1000,
+                    "SubdivisionX": 512,
+                    "SubdivisionZ": 512,
                     "TexturePath": "Resources/WaterSurface/waterSurface_normal (2).png",
                     "Width": 100.0,
                     "farFadeDistance": 70.0,
@@ -339,9 +339,9 @@
             "name": "Watersurface",
             "transform": {
                 "position": [
-                    54.0,
+                    52.734375,
                     0.0,
-                    -63.0
+                    -64.453125
                 ],
                 "rotation": [
                     0.0,

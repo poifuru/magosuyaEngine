@@ -1,6 +1,7 @@
 #include "PCH.h"
 #include <Windows.h>
 #include "Logger.h"
+#include "ChangeString.h"
 #include <chrono>
 #include <fstream>
 #include <filesystem>
@@ -12,7 +13,8 @@ void Logger::Log (const std::string& message) {
 		os_ << message << std::endl;
 		os_.flush(); // 毎回フラッシュしておくとクラッシュしてもログが残る
 	}
-	OutputDebugStringA ((message + "\n").c_str());
+	// UTF-8の文字列をそのままOutputDebugStringAに渡すとShift-JISとして解釈されて文字化けするので、ワイド文字に変換して出す
+	OutputDebugStringW (String::ConvertString (message + "\n").c_str ());
 }
 
 Logger::~Logger() {

@@ -11,6 +11,7 @@
 #include "DescriptorHeapPoolContext.h"
 #include "Logger.h"
 #include "RenderTexture.h"
+#include "ScopeTimer.h"
 
 // プロファイラ用の静的変数定義
 float MyEngine::LowLevel::Engine::sUpdateTime_ = 0.0f;
@@ -23,29 +24,49 @@ MyEngine::LowLevel::Engine::~Engine() {
 }
 
 void MyEngine::LowLevel::Engine::Initialize() {
-	WindowsAPI::GetInstance()->Initialize(1280, 720);
-	WindowsAPI::GetInstance()->RegisterEngine(this);
-
+	// 起動時間の計測ログをファイルにも残すため、Loggerを一番最初に初期化する
 	Logger::GetInstance()->Initialize();
 
-	InputManager::GetInstance()->Initialize(WindowsAPI::GetInstance()->GetHwnd());
+	{
+		SCOPE_TIMER("ウィンドウ生成");
+		WindowsAPI::GetInstance()->Initialize(1280, 720);
+		WindowsAPI::GetInstance()->RegisterEngine(this);
+	}
+
+	{
+		SCOPE_TIMER("入力初期化");
+		InputManager::GetInstance()->Initialize(WindowsAPI::GetInstance()->GetHwnd());
+	}
 
 	frameRateController_ = MyEngine::LowLevel::FrameRateController::GetInstance();
 
-	device_ = std::make_unique<MyEngine::LowLevel::GraphicsDevice>();
-	device_->Initialize();
+	{
+		SCOPE_TIMER("GraphicsDevice生成");
+		device_ = std::make_unique<MyEngine::LowLevel::GraphicsDevice>();
+		device_->Initialize();
+	}
 
-	dxcCompiler_ = std::make_unique<MyEngine::LowLevel::DxcCompiler>();
-	dxcCompiler_->Initialize();
+	{
+		SCOPE_TIMER("DXC初期化");
+		dxcCompiler_ = std::make_unique<MyEngine::LowLevel::DxcCompiler>();
+		dxcCompiler_->Initialize();
+	}
 
-	cmdQueue_ = std::make_unique<MyEngine::LowLevel::CommandQueue>();
-	cmdQueue_->Initialize(device_->GetDevice());
+	{
+		SCOPE_TIMER("コマンドキュー/リスト生成");
+		cmdQueue_ = std::make_unique<MyEngine::LowLevel::CommandQueue>();
+		cmdQueue_->Initialize(device_->GetDevice());
 
-	cmdList_ = std::make_unique<MyEngine::LowLevel::CommandList>();
-	cmdList_->Initialize(device_->GetDevice());
+		cmdList_ = std::make_unique<MyEngine::LowLevel::CommandList>();
+		cmdList_->Initialize(device_->GetDevice());
+	}
 
-	heapContext_ = std::make_unique<MyEngine::LowLevel::DescriptorHeapPoolContext>(device_->GetDevice());
+	{
+		SCOPE_TIMER("ディスクリプタヒープ生成");
+		heapContext_ = std::make_unique<MyEngine::LowLevel::DescriptorHeapPoolContext>(device_->GetDevice());
+	}
 
+	SCOPE_TIMER("SwapChain生成");
 	swapChain_ = std::make_unique<MyEngine::LowLevel::SwapChain>(
 		device_->GetDevice(),
 		device_->GetDxgiFactory(),

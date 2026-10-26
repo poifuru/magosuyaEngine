@@ -2,6 +2,7 @@
 #include "ShaderManager.h"
 #include "Logger.h"
 #include "ChangeString.h"
+#include "ScopeTimer.h"
 
 void MyEngine::Rendering::ShaderManager::Initialize (
 	IDxcUtils* utils, 
@@ -59,6 +60,9 @@ D3D12_SHADER_BYTECODE MyEngine::Rendering::ShaderManager::GetShaderBytecode (uin
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> MyEngine::Rendering::ShaderManager::CompilerShader (const std::wstring& filePath, const wchar_t* profile) {
+	// 1本ごとのコンパイル時間を計測
+	SCOPE_TIMER("シェーダーコンパイル " + String::ConvertString(filePath));
+
 	// hlslファイルを読み込む
 	// これからシェーダーをコンパイルする旨をログに出力する
 	Logger::GetInstance()->Logger::Log (String::ConvertString (std::format (L"シェーダーコンパイル開始, path:{}, profile:{}\n", filePath, profile)));

@@ -10,19 +10,29 @@
 #include "InputManager.h"
 #include "WindowsAPI.h"
 #include "SceneManager.h"
+#include "ScopeTimer.h"
 
 Game::Game() {
-	engine_ = std::make_unique<MyEngine::LowLevel::Engine>();
-	engine_->Initialize();
+	// 起動時間の計測（Loggerの初期化はEngine::Initialize内なので、それより後に終わるスコープだけ計測する）
+	SCOPE_TIMER("Game::Game 全体");
 
-	renderer_ = std::make_unique<MyEngine::Rendering::Renderer>(
-		engine_->GetDevice(),
-		engine_->GetDxcUtils(),
-		engine_->GetDxcCompiler(),
-		engine_->GetIncludeHandler(),
-		engine_->GetHeapPoolContext(),
-		engine_->GetSwapChain()
-	);
+	{
+		SCOPE_TIMER("Engine初期化");
+		engine_ = std::make_unique<MyEngine::LowLevel::Engine>();
+		engine_->Initialize();
+	}
+
+	{
+		SCOPE_TIMER("Renderer生成");
+		renderer_ = std::make_unique<MyEngine::Rendering::Renderer>(
+			engine_->GetDevice(),
+			engine_->GetDxcUtils(),
+			engine_->GetDxcCompiler(),
+			engine_->GetIncludeHandler(),
+			engine_->GetHeapPoolContext(),
+			engine_->GetSwapChain()
+		);
+	}
 
 	// ロード用コマンドリストをリセットしてロード開始
 	engine_->ResetCommandList();
@@ -31,32 +41,47 @@ Game::Game() {
 	CameraOrganizer::GetInstance()->Initialize();
 
 	// SceneManagerの生成と初期化
-	sceneManager_ = std::make_unique<SceneManager>();
-	sceneManager_->Initialize(
-		engine_->GetGraphicsDevice(),
-		engine_->GetCommandList(),
-		engine_->GetSrvDescriptorHeapPool(),
-		renderer_->GetRootSigManager(),
-		renderer_->GetPSOManager(),
-		renderer_->GetShaderManager(),
-		renderer_->GetInputLayoutManager(),
-		renderer_->GetBlendModeManager()
-	);
+	{
+		SCOPE_TIMER("シーン初期化");
+		{
+			SCOPE_TIMER("SceneManager初期化");
+			sceneManager_ = std::make_unique<SceneManager>();
+			sceneManager_->Initialize(
+				engine_->GetGraphicsDevice(),
+				engine_->GetCommandList(),
+				engine_->GetSrvDescriptorHeapPool(),
+				renderer_->GetRootSigManager(),
+				renderer_->GetPSOManager(),
+				renderer_->GetShaderManager(),
+				renderer_->GetInputLayoutManager(),
+				renderer_->GetBlendModeManager()
+			);
+		}
 
-	// 初期シーンの設定
-	sceneManager_->SetRenderer(renderer_.get());
-	sceneManager_->ChangeScene<PlayScene>();
+		// 初期シーンの設定
+		sceneManager_->SetRenderer(renderer_.get());
+		{
+			SCOPE_TIMER("PlayScene初期化");
+			sceneManager_->ChangeScene<PlayScene>();
+		}
+	}
 
 	// ImGuiの初期化
-	ImGuiManager::GetInstance()->Initialize(
-		engine_->GetDevice(),
-		engine_->GetCommandQueue(),
-		engine_->GetSrvDescriptorHeapPool(),
-		sceneManager_->GetTextureManager()
-	);
+	{
+		SCOPE_TIMER("ImGui初期化");
+		ImGuiManager::GetInstance()->Initialize(
+			engine_->GetDevice(),
+			engine_->GetCommandQueue(),
+			engine_->GetSrvDescriptorHeapPool(),
+			sceneManager_->GetTextureManager()
+		);
+	}
 
 	// コマンドリストを実行し、GPUのアップロード完了を待つ
-	engine_->ExecuteCommandList();
+	{
+		SCOPE_TIMER("GPUアップロード待ち");
+		engine_->ExecuteCommandList();
+	}
 }
 
 Game::~Game() {

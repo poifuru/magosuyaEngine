@@ -4,6 +4,7 @@
 #include "BlendModeManager.h"
 #include "InputLayoutManager.h"
 #include <cassert>
+#include "ScopeTimer.h"
 
 ID3D12PipelineState* MyEngine::Rendering::PSOManager::GetOrCreatePSO (
 	ID3D12Device* device,
@@ -72,7 +73,12 @@ ID3D12PipelineState* MyEngine::Rendering::PSOManager::GetOrCreatePSO (
 
 	// *** 実際にPSOを生成 *** //
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
-	HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(pso.GetAddressOf()));
+	HRESULT hr = S_OK;
+	{
+		// キャッシュに無かった時（新規生成時）だけ計測される
+		SCOPE_TIMER(std::format("PSO生成 hash:{:016x}", hash));
+		hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(pso.GetAddressOf()));
+	}
 	assert(SUCCEEDED(hr));
 
 	psoCache_[hash] = pso;

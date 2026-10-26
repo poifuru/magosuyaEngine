@@ -2,6 +2,7 @@
 #include "TextureManager.h"
 #include "SrvDescriptorHeapPool.h"
 #include "ChangeString.h"
+#include "ScopeTimer.h"
 
 TextureManager::~TextureManager() {
 	// 念のためテクスチャマップを空にする
@@ -56,6 +57,9 @@ uint32_t TextureManager::LoadTexture (const std::string& filePath, bool isSRGB) 
 		return textureMap_.at(key).textureIndex;
 	}
 
+	// テクスチャ1枚の読み込み全体を計測
+	SCOPE_TIMER("テクスチャ読み込み " + filePath);
+
 	HRESULT hr = S_OK;
 	DirectX::ScratchImage image;
 
@@ -65,12 +69,15 @@ uint32_t TextureManager::LoadTexture (const std::string& filePath, bool isSRGB) 
 	OutputDebugStringW ((L"探してるファイル: " + filePathW + L"\n").c_str ());
 
 	// 拡張子を見てDDSかそれ以外（WIC）か自動で切り替える
-	if (filePathW.ends_with(L".dds")) {
-		hr = DirectX::LoadFromDDSFile(filePathW.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, image);
-	} else {
-		// isSRGB フラグに応じて WIC フラグを切替
-		DirectX::WIC_FLAGS wicFlags = isSRGB ? DirectX::WIC_FLAGS_FORCE_SRGB : DirectX::WIC_FLAGS_FORCE_LINEAR;
-		hr = DirectX::LoadFromWICFile(filePathW.c_str(), wicFlags, nullptr, image);
+	{
+		SCOPE_TIMER("ファイル読み込み");
+		if (filePathW.ends_with(L".dds")) {
+			hr = DirectX::LoadFromDDSFile(filePathW.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, image);
+		} else {
+			// isSRGB フラグに応じて WIC フラグを切替
+			DirectX::WIC_FLAGS wicFlags = isSRGB ? DirectX::WIC_FLAGS_FORCE_SRGB : DirectX::WIC_FLAGS_FORCE_LINEAR;
+			hr = DirectX::LoadFromWICFile(filePathW.c_str(), wicFlags, nullptr, image);
+		}
 	}
 
 	// 読み込みに失敗したらログを出して、安全のためにダミーテクスチャの番号を返す
@@ -86,10 +93,13 @@ uint32_t TextureManager::LoadTexture (const std::string& filePath, bool isSRGB) 
 	}
 
 	// ミップマップの自動生成
+	// DDSはtexconv等で事前に加工済みのアセットとして扱い、ファイルに入っているミップをそのまま使う
+	// （非圧縮のキューブマップだと実行時のミップ生成だけで1秒以上かかっていたため）
 	DirectX::ScratchImage mipImage;
-	if (DirectX::IsCompressed(image.GetMetadata().format)) {
+	if (DirectX::IsCompressed(image.GetMetadata().format) || filePathW.ends_with(L".dds")) {
 		mipImage = std::move(image);
 	} else {
+		SCOPE_TIMER("ミップマップ生成");
 		DirectX::TEX_FILTER_FLAGS filterFlags = isSRGB ? DirectX::TEX_FILTER_SRGB : DirectX::TEX_FILTER_DEFAULT;
 		hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), filterFlags, 4, mipImage);
 		if (FAILED(hr)) {
@@ -103,7 +113,10 @@ uint32_t TextureManager::LoadTexture (const std::string& filePath, bool isSRGB) 
 	newData.textureResource = CreateTextureResource(device_, newData.metadata);
 
 	// VRAMに転送するコマンドを記録（中間リソースをゴミ箱に積む）
-	intermediateResources_.push_back(UploadTextureData(device_, cmdList_, newData.textureResource, mipImage));
+	{
+		SCOPE_TIMER("アップロード準備");
+		intermediateResources_.push_back(UploadTextureData(device_, cmdList_, newData.textureResource, mipImage));
+	}
 
 	// バインドレスヒープのインデックスを1つ切り出す
 	newData.textureIndex = heapManager_->AllocateIndex();

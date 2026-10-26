@@ -5,6 +5,7 @@
 #include "MeshData.h"
 #include "Material.h"
 #include "RenderingModel.h"
+#include "ScopeTimer.h"
 
 namespace fs = std::filesystem;
 
@@ -114,16 +115,23 @@ MyEngine::Rendering::ModelData ModelManager::LoadModelFile(const std::string& fi
 	// ★【調査用に追加】今どのファイルをロードしようとしているか出力する！
 	OutputDebugStringA(("Loading Model: " + filePath + "\n").c_str());
 
+	// モデル1つの読み込み全体を計測
+	SCOPE_TIMER("モデル読み込み " + filePath);
+
 	MyEngine::Rendering::ModelData modelData;
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(
-		filePath.c_str(),
-		aiProcess_FlipWindingOrder |
-		aiProcess_FlipUVs |
-		aiProcess_JoinIdenticalVertices |
-		aiProcess_Triangulate |
-		aiProcess_GenSmoothNormals
-	);
+	const aiScene* scene = nullptr;
+	{
+		SCOPE_TIMER("Assimp ReadFile");
+		scene = importer.ReadFile(
+			filePath.c_str(),
+			aiProcess_FlipWindingOrder |
+			aiProcess_FlipUVs |
+			aiProcess_JoinIdenticalVertices |
+			aiProcess_Triangulate |
+			aiProcess_GenSmoothNormals
+		);
+	}
 	assert(scene && scene->HasMeshes());
 
 	// ファイルパスからディレクトリパスを抽出

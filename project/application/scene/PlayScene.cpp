@@ -16,6 +16,7 @@
 #include "Dissolve.h"
 #include "TitleScene.h"
 #include "SceneManager.h"
+#include "ScopeTimer.h"
 
 namespace {
 	// 安全にカーソルの表示/非表示を切り替える関数
@@ -64,9 +65,14 @@ void PlayScene::Initialize() {
 		std::ifstream file(defaultScenePath);
 		if (file.is_open()) {
 			nlohmann::json sceneJ;
-			file >> sceneJ;
+			{
+				SCOPE_TIMER("シーンJSON読み込み");
+				file >> sceneJ;
+			}
 			if (sceneJ.contains("objects")) {
 				for (const auto& objJ : sceneJ["objects"]) {
+					// オブジェクト1つごとの生成時間を計測
+					SCOPE_TIMER("オブジェクト生成 " + objJ["name"].get<std::string>());
 					auto newObj = std::make_unique<GameObject>(context_, objJ["name"]);
 					newObj->Deserialize(objJ);
 					newObj->Initialize();
@@ -102,11 +108,17 @@ void PlayScene::Initialize() {
 	}
 
 	// ライトマネージャーの初期化
-	lightManager_ = std::make_unique<LightManager>();
-	lightManager_->Initialize(context_->graphicsDevice->GetDevice());
+	{
+		SCOPE_TIMER("LightManager初期化");
+		lightManager_ = std::make_unique<LightManager>();
+		lightManager_->Initialize(context_->graphicsDevice->GetDevice());
+	}
 
-	postEffectManager_ = std::make_unique<PostEffectManager>();
-	postEffectManager_->Initialize(context_->graphicsDevice->GetDevice());
+	{
+		SCOPE_TIMER("PostEffectManager初期化");
+		postEffectManager_ = std::make_unique<PostEffectManager>();
+		postEffectManager_->Initialize(context_->graphicsDevice->GetDevice());
+	}
 
 	// ディゾルブ用テクスチャをセット
 	uint32_t noiseIndex = context_->textureManager->LoadTexture("Resources/noise0.png");

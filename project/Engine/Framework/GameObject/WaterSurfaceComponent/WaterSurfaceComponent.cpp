@@ -8,6 +8,7 @@
 #include "RenderCollector.h"
 #include "CameraOrganizer.h"
 #include <cmath>
+#include "ScopeTimer.h"
 
 void WaterSurfaceComponent::Initialize() {
 	if(isInitialized_) return;
@@ -22,7 +23,8 @@ void WaterSurfaceComponent::Initialize() {
 		}
 	}
 
-	GenerateMesh();
+	// メッシュ生成は次のUpdateで行う（直後にDeserializeでパラメータが変わることが多いため）
+	isMeshDirty_ = true;
 
 	// 波のパラメータ初期化
 	// 波1: 大きくゆっくり進む波
@@ -61,6 +63,12 @@ void WaterSurfaceComponent::Initialize() {
 
 void WaterSurfaceComponent::Update() {
 	Component::Update();
+
+	// パラメータが確定した後に一度だけメッシュを作る
+	if(isMeshDirty_) {
+		GenerateMesh();
+		isMeshDirty_ = false;
+	}
 
 	// 水面メッシュをカメラについて行かせる
 	if(followCamera_) {
@@ -297,7 +305,8 @@ void WaterSurfaceComponent::Deserialize(const json& j) {
 		farFadeDistance_ = j["farFadeDistance"];
 	}
 
-	GenerateMesh();
+	// メッシュ生成は次のUpdateで行う（1000x1000分割だと1回で数百msかかるため、二重生成を避ける）
+	isMeshDirty_ = true;
 
 	isInitialized_ = true;
 }
@@ -370,40 +379,55 @@ void WaterSurfaceComponent::GenerateMesh() {
 	float halfW = width_ * 0.5f;
 	float halfD = depth_ * 0.5f;
 
+	// 最終的な要素数は分割数から決まるので、先にまとめてメモリを確保しておく
+	// （1000x1000分割だと頂点約100万・インデックス約600万）
+	// さらに、push_backではなくポインタで直接書き込む
+	// （Debugビルドではpush_backや[]のたびにSTLのチェックが走って遅いため）
+	vertices.resize(static_cast<size_t>(verCountX) * verCountZ);
+	indices.resize(static_cast<size_t>(subdivisionX_) * subdivisionZ_ * 6);
+
 	// 頂点データの生成
-	for(int z = 0; z < verCountZ; ++z) {
-		float posZ = -halfD + z * dz;
-		float v = static_cast<float>(z) / static_cast<float>(subdivisionZ_);
+	{
+		SCOPE_TIMER("水面 頂点生成");
+		VertexData* dstVertex = vertices.data();
+		for(int z = 0; z < verCountZ; ++z) {
+			float posZ = -halfD + z * dz;
+			float v = static_cast<float>(z) / static_cast<float>(subdivisionZ_);
 
-		for(int x = 0; x < verCountX; ++x) {
-			float posX = -halfW + x * dx;
-			float u = static_cast<float>(x) / static_cast<float>(subdivisionX_);
+			for(int x = 0; x < verCountX; ++x) {
+				float posX = -halfW + x * dx;
+				float u = static_cast<float>(x) / static_cast<float>(subdivisionX_);
 
-			VertexData vert{};
-			vert.position = Vector4(posX, 0.0f, posZ, 1.0f);
-			vert.texcoord = Vector2(u, v);
-			vert.normal = Vector3(0.0f, 1.0f, 0.0f); // 上向き初期値
-			vertices.push_back(vert);
+				VertexData vert{};
+				vert.position = Vector4(posX, 0.0f, posZ, 1.0f);
+				vert.texcoord = Vector2(u, v);
+				vert.normal = Vector3(0.0f, 1.0f, 0.0f); // 上向き初期値
+				*dstVertex++ = vert;
+			}
 		}
 	}
 
 	// インデックスの生成
-	for(int z = 0; z < subdivisionZ_; ++z) {
-		for(int x = 0; x < subdivisionX_; ++x) {
-			uint32_t i0 = z * verCountX + x;             // 左下
-			uint32_t i1 = z * verCountX + (x + 1);       // 右下
-			uint32_t i2 = (z + 1) * verCountX + x;       // 左上
-			uint32_t i3 = (z + 1) * verCountX + (x + 1); // 右上
+	{
+		SCOPE_TIMER("水面 インデックス生成");
+		uint32_t* dstIndex = indices.data();
+		for(int z = 0; z < subdivisionZ_; ++z) {
+			for(int x = 0; x < subdivisionX_; ++x) {
+				uint32_t i0 = z * verCountX + x;             // 左下
+				uint32_t i1 = z * verCountX + (x + 1);       // 右下
+				uint32_t i2 = (z + 1) * verCountX + x;       // 左上
+				uint32_t i3 = (z + 1) * verCountX + (x + 1); // 右上
 
-			// 三角形1 (左下 -> 左上 -> 右下)
-			indices.push_back(i0);
-			indices.push_back(i2);
-			indices.push_back(i1);
+				// 三角形1 (左下 -> 左上 -> 右下)
+				*dstIndex++ = i0;
+				*dstIndex++ = i2;
+				*dstIndex++ = i1;
 
-			// 三角形2 (右下 -> 左上 -> 右上)
-			indices.push_back(i1);
-			indices.push_back(i2);
-			indices.push_back(i3);
+				// 三角形2 (右下 -> 左上 -> 右上)
+				*dstIndex++ = i1;
+				*dstIndex++ = i2;
+				*dstIndex++ = i3;
+			}
 		}
 	}
 
@@ -412,8 +436,11 @@ void WaterSurfaceComponent::GenerateMesh() {
 	auto* heapManager = GetGameObject()->GetContext()->heapManager;
 
 	// Meshの初期化
-	mesh_ = std::make_unique<MyEngine::Rendering::StaticMesh>();
-	mesh_->Initialize(device->GetDevice(), vertices, indices);
+	{
+		SCOPE_TIMER("水面 Mesh初期化(バッファ生成・転送)");
+		mesh_ = std::make_unique<MyEngine::Rendering::StaticMesh>();
+		mesh_->Initialize(device->GetDevice(), vertices, indices);
+	}
 
 	// Materialの初期化
 	material_ = std::make_unique<MyEngine::Rendering::Material>();

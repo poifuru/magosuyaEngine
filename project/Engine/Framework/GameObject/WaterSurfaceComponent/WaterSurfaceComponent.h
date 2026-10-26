@@ -91,6 +91,10 @@ private:
 	int subdivisionX_ = 1000;
 	int subdivisionZ_ = 1000;
 
+	// メッシュの作り直しが必要かどうか
+	// AddComponent時のInitializeと直後のDeserializeで二重にメッシュを作らないよう、実際の生成は次のUpdateまで遅らせる
+	bool isMeshDirty_ = true;
+
 	// カメラ追従
 	// 波はすべてワールド座標で計算しているので、メッシュを動かしても波の形は変わらない
 	bool followCamera_ = true;
