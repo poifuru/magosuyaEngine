@@ -436,7 +436,7 @@
                     "landingRadius": 2.5,
                     "launchScale": 4.0,
                     "maxAngle": 0.8500000238418579,
-                    "maxJumpHeight": 30.0,
+                    "maxJumpHeight": 100.0,
                     "maxLandingDepth": 1.2000000476837158,
                     "maxRiseMemory": 8.0,
                     "rideFoam": 0.019999999552965164,
