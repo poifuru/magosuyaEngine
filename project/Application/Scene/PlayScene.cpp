@@ -144,21 +144,9 @@ void PlayScene::TogglePause() {
 		SetCursorVisibleSafe(true);
 		ClipCursor(NULL);
 	} else {
-		// ゲーム再開：マウスカーソルを非表示
-		SetCursorVisibleSafe(false);
-#ifdef USEIMGUI
-		// エディタ中ならゲーム画面矩形にマウスを再ロック
-		ImVec2 pos = EditorManager::GetInstance()->GetGameScreenPos();
-		ImVec2 size = EditorManager::GetInstance()->GetGameScreenSize();
-		if (size.x > 0.0f && size.y > 0.0f) {
-			RECT rect;
-			rect.left = static_cast<LONG>(pos.x);
-			rect.top = static_cast<LONG>(pos.y);
-			rect.right = static_cast<LONG>(pos.x + size.x);
-			rect.bottom = static_cast<LONG>(pos.y + size.y);
-			ClipCursor(&rect);
-		}
-#endif
+		// ゲーム再開：ゲームはマウスを使わないので、カーソルは表示したまま・ロックもしない
+		SetCursorVisibleSafe(true);
+		ClipCursor(NULL);
 	}
 }
 

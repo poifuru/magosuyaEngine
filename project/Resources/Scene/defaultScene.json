@@ -65,18 +65,18 @@
                             0
                         ],
                         [
-                            -520.9833984375,
-                            -67.98855590820313,
+                            -513.9752197265625,
+                            122.59812927246094,
                             0
                         ],
                         [
-                            -887.868896484375,
-                            284.6400451660156,
+                            -987.292236328125,
+                            310.1388244628906,
                             0
                         ],
                         [
-                            -747.1112060546875,
-                            732.24951171875,
+                            -525.882568359375,
+                            429.2123107910156,
                             0
                         ],
                         [
@@ -85,18 +85,18 @@
                             0
                         ],
                         [
-                            269.1593017578125,
-                            735.064697265625,
+                            414.5820007324219,
+                            725.5638427734375,
                             0
                         ],
                         [
-                            612.3970336914063,
-                            398.135498046875,
+                            268.9179382324219,
+                            379.11956787109375,
                             0
                         ],
                         [
-                            642.0262451171875,
-                            -0.6494979858398438,
+                            257.1073303222656,
+                            -2.7564697265625,
                             1
                         ]
                     ]
@@ -107,8 +107,11 @@
                     "floatOnWater": true,
                     "heightOffset": 0.0,
                     "isVisible": true,
+                    "maxTilt": 0.5,
                     "swayAmount": 0.05999999865889549,
-                    "type": "CourseBuoyComponent"
+                    "tiltScale": 1.0,
+                    "type": "CourseBuoyComponent",
+                    "useRipple": true
                 }
             ],
             "name": "Boat",
@@ -174,13 +177,13 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    54.3004035949707,
+                    86.15400695800781,
                     58.07670211791992,
-                    -62.94949722290039
+                    -14.77112865447998
                 ],
                 "rotation": [
-                    0.27920156717300415,
-                    5.462368965148926,
+                    0.30820155143737793,
+                    0.5041784048080444,
                     0.0
                 ],
                 "scale": [
@@ -203,13 +206,13 @@
             "name": "DebugCamera",
             "transform": {
                 "position": [
-                    54.3004035949707,
+                    86.15400695800781,
                     58.07670211791992,
-                    -62.94949722290039
+                    -14.77112865447998
                 ],
                 "rotation": [
-                    0.27920156717300415,
-                    5.462368965148926,
+                    0.30820155143737793,
+                    0.5041784048080444,
                     0.0
                 ],
                 "scale": [
@@ -222,28 +225,31 @@
         {
             "components": [
                 {
-                    "angleX": 0.17326267063617706,
-                    "angleY": 141.95736694335938,
-                    "delay": 0.5,
+                    "airYSmoothTime": 0.15000000596046448,
+                    "alignToRope": true,
+                    "angleX": 0.0872664675116539,
+                    "angleY": -0.0,
                     "firstPersonOffset": [
                         0.0,
                         1.2000000476837158,
                         0.0
                     ],
+                    "followBoatHeading": true,
                     "fov": 0.5,
+                    "headingHalfLife": 0.3499999940395355,
                     "isFirstPerson": false,
                     "isUnderwater": false,
-                    "mouseSensitivity": 0.0010000000474974513,
                     "offset": [
                         0.0,
                         5.099999904632568,
                         -70.0
                     ],
-                    "padSensitivity": 0.009999999776482582,
                     "priority": 10,
                     "targetName": "Player",
                     "targetOffsetY": 6.0,
-                    "type": "VirtualFollowCamera"
+                    "type": "VirtualFollowCamera",
+                    "xzHalfLife": 0.019999999552965164,
+                    "ySmoothTime": 0.44999998807907104
                 }
             ],
             "name": "FollowCamera",
@@ -339,9 +345,9 @@
             "name": "Watersurface",
             "transform": {
                 "position": [
-                    52.734375,
+                    85.9375,
                     0.0,
-                    -64.453125
+                    -15.625
                 ],
                 "rotation": [
                     0.0,
@@ -425,10 +431,17 @@
                     "baseJump": 1.0,
                     "edgeAccel": 1.0,
                     "gravity": 25.0,
+                    "landingDepthScale": 0.05999999865889549,
+                    "landingFoam": 0.800000011920929,
+                    "landingRadius": 2.5,
                     "launchScale": 4.0,
                     "maxAngle": 0.8500000238418579,
                     "maxJumpHeight": 30.0,
+                    "maxLandingDepth": 1.2000000476837158,
                     "maxRiseMemory": 8.0,
+                    "rideFoam": 0.019999999552965164,
+                    "rideWaveRadius": 1.5,
+                    "rideWaveStrength": 0.30000001192092896,
                     "riseMemoryDecay": 5.0,
                     "ropeLength": 70.0,
                     "ropePull": 5.0,

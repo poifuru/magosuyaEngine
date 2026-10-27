@@ -42,13 +42,15 @@ void RippleSimulator::Dispatch(
 	const Vector2& forward,
 	Vector4 kernel[43],
 	int scrollX,
-	int scrollY
+	int scrollY,
+	const WaveSource* sources,
+	uint32_t sourceCount
 ) {
 	// 今回使うパイプライン (current) と 前回のパイプライン (prev)
 	auto* currentPipeline = (currentIndex_ == 0) ? &prePipeline_ : &currentPipeline_;
 	auto* prevPipeline    = (currentIndex_ == 0) ? &currentPipeline_ : &prePipeline_;
 
-	// 前フレームのテクスチャを安全に読み込み状態 (ALL_SHADER_RESOURCE) に遷移！
+	// 前フレームのテクスチャを安全に読み込み状態 (ALL_SHADER_RESOURCE) に遷移
 	prevPipeline->Transition(cmdList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
 	RippleSimulationParams params{};
@@ -66,6 +68,12 @@ void RippleSimulator::Dispatch(
 	}
 	params.scrollX = scrollX;
 	params.scrollY = scrollY;
+
+	// 船以外の波源（入りきらない分は捨てる）
+	params.sourceCount = (std::min)(sourceCount, RippleSimulationParams::kMaxWaveSources);
+	for (uint32_t i = 0; i < params.sourceCount; ++i) {
+		params.sources[i] = sources[i];
+	}
 
 	// 前フレームの船の位置 (初回は前フレームが無いので今の位置を使う)
 	if (!hasPrevBoatPos_) {

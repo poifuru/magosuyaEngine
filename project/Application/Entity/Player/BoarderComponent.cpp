@@ -133,6 +133,17 @@ void BoarderComponent::UpdateBoard(float dt) {
 	if (state_ == State::Riding) {
 		t.translate.y = waterY_;
 
+		// 滑っている間：ボードが水を押しのけて、細い航跡を立てる
+		if (rideWaveStrength_ > 0.0f || rideFoam_ > 0.0f) {
+			WaveSource src{};
+			src.position = { t.translate.x, t.translate.z };
+			src.velocity = horizVel_;
+			src.radius = rideWaveRadius_;
+			src.strength = rideWaveStrength_;
+			src.foam = rideFoam_;
+			wake->AddWaveSource(src);
+		}
+
 		// 直近の最大値を覚えておく（ボタンが少し遅れても許す）
 		riseMemory_ = std::clamp((std::max)(surfaceRise_, riseMemory_ - riseMemoryDecay_ * dt), 0.0f, maxRiseMemory_);
 
@@ -152,12 +163,22 @@ void BoarderComponent::UpdateBoard(float dt) {
 
 		// 着地
 		if (t.translate.y <= waterY_ && vy_ < 0.0f) {
+			// 着水：落ちる速さに比例して水面を押し込む（1フレームだけ）→ 円い波紋が広がる
+			lastLandingDepth_ = (std::min)(-vy_ * landingDepthScale_, maxLandingDepth_);
+			WaveSource splash{};
+			splash.position = { t.translate.x, t.translate.z };
+			splash.velocity = horizVel_;
+			splash.radius = landingRadius_;
+			splash.strength = 0.0f; // 動きの波は滑っている方で入れるので、ここは押し込みだけ
+			splash.impulse = -lastLandingDepth_;
+			splash.foam = landingFoam_;
+			wake->AddWaveSource(splash);
+
 			t.translate.y = waterY_;
 			state_ = State::Riding;
 			riseMemory_ = 0.0f;
 			lastJumpHeight_ = currentJumpHeight_;
 			bestJumpHeight_ = (std::max)(bestJumpHeight_, lastJumpHeight_);
-			// ステップ3：ここで着水の波紋を注入する
 		}
 	}
 }
@@ -221,6 +242,17 @@ void BoarderComponent::ImGui() {
 	}
 
 	// 入力
+	if (ImGui::CollapsingHeader("Water Waves")) {
+		ImGui::DragFloat("Ride Wave Strength", &rideWaveStrength_, 0.01f, 0.0f, 3.0f);
+		ImGui::DragFloat("Ride Wave Radius", &rideWaveRadius_, 0.05f, 0.3f, 10.0f, "%.2f m");
+		ImGui::DragFloat("Ride Foam", &rideFoam_, 0.001f, 0.0f, 0.5f, "%.3f");
+		ImGui::DragFloat("Landing Depth Scale", &landingDepthScale_, 0.005f, 0.0f, 1.0f, "%.3f");
+		ImGui::DragFloat("Max Landing Depth", &maxLandingDepth_, 0.05f, 0.0f, 5.0f, "%.2f m");
+		ImGui::DragFloat("Landing Radius", &landingRadius_, 0.05f, 0.3f, 15.0f, "%.2f m");
+		ImGui::DragFloat("Landing Foam", &landingFoam_, 0.01f, 0.0f, 1.0f);
+		ImGui::Text("last landing depth: %.2f m", lastLandingDepth_);
+	}
+
 	if (ImGui::CollapsingHeader("Input")) {
 		ImGui::Checkbox("Use Right Stick (test)", &useRightStick_);
 	}
@@ -247,6 +279,14 @@ void BoarderComponent::Serialize(json& j) const {
 	j["riseMemoryDecay"] = riseMemoryDecay_;
 	j["maxRiseMemory"] = maxRiseMemory_;
 
+	j["rideWaveStrength"] = rideWaveStrength_;
+	j["rideWaveRadius"] = rideWaveRadius_;
+	j["rideFoam"] = rideFoam_;
+	j["landingDepthScale"] = landingDepthScale_;
+	j["maxLandingDepth"] = maxLandingDepth_;
+	j["landingRadius"] = landingRadius_;
+	j["landingFoam"] = landingFoam_;
+
 	// 入力
 	j["useRightStick"] = useRightStick_;
 }
@@ -268,6 +308,14 @@ void BoarderComponent::Deserialize(const json& j) {
 	if (j.contains("gravity")) gravity_ = j["gravity"];
 	if (j.contains("riseMemoryDecay")) riseMemoryDecay_ = j["riseMemoryDecay"];
 	if (j.contains("maxRiseMemory")) maxRiseMemory_ = j["maxRiseMemory"];
+
+	if (j.contains("rideWaveStrength")) rideWaveStrength_ = j["rideWaveStrength"];
+	if (j.contains("rideWaveRadius")) rideWaveRadius_ = j["rideWaveRadius"];
+	if (j.contains("rideFoam")) rideFoam_ = j["rideFoam"];
+	if (j.contains("landingDepthScale")) landingDepthScale_ = j["landingDepthScale"];
+	if (j.contains("maxLandingDepth")) maxLandingDepth_ = j["maxLandingDepth"];
+	if (j.contains("landingRadius")) landingRadius_ = j["landingRadius"];
+	if (j.contains("landingFoam")) landingFoam_ = j["landingFoam"];
 
 	// 入力
 	if (j.contains("useRightStick")) useRightStick_ = j["useRightStick"];

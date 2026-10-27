@@ -68,6 +68,15 @@ private:
 	float riseMemoryDecay_ = 5.0f;  // 踏み切りの猶予が減る速さ[(m/s)/s]
 	float maxRiseMemory_ = 8.0f;    // 猶予として覚えておく値の上限[m/s]（安全装置）
 
+	// --- 波を立てる ---
+	float rideWaveStrength_ = 0.3f;  // 滑っている間に立てる波の強さ（船 = 1）
+	float rideWaveRadius_ = 1.5f;    // 滑っている間の波の半径[m]
+	float rideFoam_ = 0.02f;         // 滑っている間の泡（毎フレーム）
+	float landingDepthScale_ = 0.06f; // 着水の押し込み深さ = 落ちる速さ × これ [m/(m/s)]
+	float maxLandingDepth_ = 1.2f;    // 着水の押し込み深さの上限[m]
+	float landingRadius_ = 2.5f;      // 着水の波の半径[m]
+	float landingFoam_ = 0.8f;        // 着水の泡
+
 	// --- 入力 ---
 	bool useRightStick_ = true;     // テスト用：船がまだ左スティックで動いているあいだは右スティック
 
@@ -101,6 +110,7 @@ private:
 	float currentJumpHeight_ = 0.0f;
 	float lastJumpHeight_ = 0.0f;
 	float bestJumpHeight_ = 0.0f;
+	float lastLandingDepth_ = 0.0f; // 直前の着水で押し込んだ深さ（デバッグ表示）
 
 	// --- デバッグ表示 ---
 	static constexpr int kHistorySize = 120;

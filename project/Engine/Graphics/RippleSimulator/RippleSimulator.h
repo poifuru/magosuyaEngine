@@ -6,6 +6,17 @@ namespace MyEngine::Rendering {
 	class RootSignatureManager;
 }
 
+// 船以外で波を立てるもの（ボーダー・着水・障害物など）
+// 32バイト = float4 × 2。Ripple.CS.hlsl の WaveSource と並びを合わせる
+struct WaveSource {
+	Vector2 position;       // ワールドの (x, z)
+	Vector2 velocity;       // 動いている速度 (x, z) [m/s]。船と同じ「押し＋排水」の波を立てる
+	float radius = 1.5f;    // 影響半径 [m]
+	float strength = 0.0f;  // 動きで立てる波の強さ（船 = 1）
+	float impulse = 0.0f;   // その場で一度に押し込む深さ [m]（マイナスでへこませる。着水など1フレームだけ使う）
+	float foam = 0.0f;      // 泡の量（そのフレームに足す濃さ）
+};
+
 // CSに送るパラメータ構造体
 struct RippleSimulationParams {
 	Vector3 boatPosition; // 船の位置
@@ -27,6 +38,12 @@ struct RippleSimulationParams {
 	Vector2 prevBoatPosition; // 前フレームの船の位置 (x, z)
 	int scrollX;			  // 領域が動いたテクセル
 	int scrollY;
+
+	// 船以外の波源
+	static constexpr uint32_t kMaxWaveSources = 16; // Ripple.CS.hlsl の kMaxWaveSources と合わせる
+	uint32_t sourceCount;
+	float padding2[3];
+	WaveSource sources[kMaxWaveSources];
 };
 
 class RippleSimulator {
@@ -55,7 +72,9 @@ public:
 		const Vector2& forward,
 		Vector4 kernel[43],
 		int scrollX,
-		int scrollY
+		int scrollY,
+		const WaveSource* sources = nullptr,
+		uint32_t sourceCount = 0
 	);
 
 	// 作成されたテクスチャのバインドレス SRV インデックスを取得

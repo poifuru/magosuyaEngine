@@ -1,6 +1,19 @@
 // 1: iWave / 0: 波動方程式
 #define USE_IWAVE 0
     
+static const uint kMaxWaveSources = 16; // RippleSimulator.h の kMaxWaveSources と合わせる
+
+// 船以外で波を立てるもの（C++ の WaveSource と同じ並び、32バイト）
+struct WaveSource
+{
+    float2 position; // ワールドの (x, z)
+    float2 velocity; // 速度 (x, z) [m/s]
+    float radius; // 影響半径 [m]
+    float strength; // 動きで立てる波の強さ（船 = 1）
+    float impulse; // その場で押し込む深さ [m]
+    float foam; // 泡の量
+};
+
 struct SimulationBuffer
 {
     float3 position; // 物体のワールド座標
@@ -21,6 +34,10 @@ struct SimulationBuffer
     
     float2 prevBoatPosition; // 前フレームの船の位置 (x, z)
     int2 scroll;
+    
+    uint sourceCount; // 船以外の波源の数
+    float3 padding2;
+    WaveSource sources[kMaxWaveSources];
 };
 
 ConstantBuffer<SimulationBuffer> gSimBuffer : register(b0);
@@ -206,6 +223,43 @@ void main(uint3 id : SV_DispatchThreadID) // id.xy が各ピクセルの(x.y)座
             float hullSpeed = length(gSimBuffer.forward);
             newFoam += saturate(hullSpeed * 0.08f) * exp(-hr2 * 1.5f) * dt * 4.0f;
         }
+    }
+    
+    // ---------------------------------------------
+    // 船以外の波源（ボーダー・着水・障害物など）
+    // 形は船と同じ「押し（前を持ち上げ後ろを下げる）＋ 排水（メキシカンハット）」
+    // ---------------------------------------------
+    for (uint si = 0; si < gSimBuffer.sourceCount; ++si)
+    {
+        WaveSource src = gSimBuffer.sources[si];
+
+        float2 srcUV;
+        srcUV.x = (src.position.x - gSimBuffer.waterMin.x) / gSimBuffer.waterSize.x;
+        srcUV.y = 1.0f - ((src.position.y - gSimBuffer.waterMin.y) / gSimBuffer.waterSize.y);
+        float2 d = (uv - srcUV) * gSimBuffer.waterSize;
+        d.y = -d.y;
+
+        float r2 = dot(d, d) / (src.radius * src.radius);
+        if (r2 >= 6.0f)
+            continue; // 範囲外はすぐ抜ける
+
+        float falloff = exp(-r2 * 1.5f);
+        float mexicanHat = 1.0f - 1.5f * r2; // 中心がへこみ、周りが盛り上がる
+
+        // 動きで立てる波（船と同じ式。強さは strength で調整）
+        float srcSpeed = length(src.velocity);
+        float speedMask = smoothstep(0.5f, 3.0f, srcSpeed);
+        float push = dot(src.velocity, d) / src.radius;
+        float displacement = -srcSpeed * 0.35f;
+        const float sourceInjectScale = 10.0f; // 船の injectScale と同じ
+        float force = (push * 0.5f + displacement * mexicanHat) * falloff * speedMask * src.strength;
+        newHeight += force * sourceInjectScale * dt * dt;
+
+        // その場で押し込む（着水など）。高さを直接ずらすと、次のフレームから波として広がる
+        newHeight += src.impulse * mexicanHat * falloff;
+
+        // 泡
+        newFoam += src.foam * falloff;
     }
     
     // 領域の端で波を吸収（跳ね返り防止）

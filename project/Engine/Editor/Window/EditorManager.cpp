@@ -203,9 +203,9 @@ void EditorManager::Play() {
 		}
 	}
 
-	// プレイ開始：マウスカーソルを消してゲーム画面にロック
-	SetCursorVisible(false);
-	SetMouseClip(true);
+	// プレイ開始：ゲームはマウスを使わないので、カーソルは表示したまま・ロックもしない
+	SetCursorVisible(true);
+	SetMouseClip(false);
 }
 
 void EditorManager::Pause() {
@@ -241,9 +241,9 @@ void EditorManager::Pause() {
 			}
 		}
 
-		// 再開：マウスカーソルを消してゲーム画面にロック
-		SetCursorVisible(false);
-		SetMouseClip(true);
+		// 再開：ゲームはマウスを使わないので、カーソルは表示したまま・ロックもしない
+		SetCursorVisible(true);
+		SetMouseClip(false);
 	}
 }
 

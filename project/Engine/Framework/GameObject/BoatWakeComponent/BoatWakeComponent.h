@@ -53,6 +53,10 @@ public:
 	// WaterQuery取得
 	WaterQuery& GetWaterQuery() { return waterQuery_; }
 
+	// 船以外の波源を追加する（そのフレームだけ有効。Update の中で毎フレーム呼ぶ）
+	// 入りきらない分（RippleSimulationParams::kMaxWaveSources 個より後）は捨てられる
+	void AddWaveSource(const WaveSource& source);
+
 	// Renderer用
 	const MyEngine::Rendering::Mesh& GetMesh() const { return mesh_; }
 	MyEngine::Rendering::Material* GetMaterial() const { return material_.get(); }
@@ -69,6 +73,8 @@ private:
 
 private:
 	RippleSimulator rippleSim_;		// 波紋シミュレーター
+	std::vector<WaveSource> waveSources_; // このフレームの船以外の波源（Dispatch したら空にする）
+	uint32_t lastSourceCount_ = 0;        // デバッグ表示用
 	Vector3 lastPos_;
 
 	std::vector<WakePoint> points_;
@@ -99,7 +105,7 @@ private:
 	Vector4 kernel_[43]{};
 
 	// 波紋シミュレーションの領域（船の周り）
-	static constexpr float kSimSize = 120.0f;   // 領域の一辺[m]
+	static constexpr float kSimSize = 150.0f;   // 領域の一辺[m]
 	static constexpr int   kSimRes  = 512;     // テクスチャ解像度
 	int32_t originTexelX_ = 0;
 	int32_t originTexelZ_ = 0;

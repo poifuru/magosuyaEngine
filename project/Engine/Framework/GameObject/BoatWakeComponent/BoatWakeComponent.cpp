@@ -139,6 +139,7 @@ void BoatWakeComponent::ImGui() {
 
 	const auto& r = waterQuery_.GetResult(0);
 	ImGui::Text("ripple h=%.3f\n  slope=(%.3f, %.3f)\n  in=%.1f\n", r.height, r.dhdx, r.dhdz, r.inRange);
+	ImGui::Text("wave sources: %u / %u", lastSourceCount_, RippleSimulationParams::kMaxWaveSources);
 
 	auto G = [&](int i) { const Vector4& v = kernel_[i / 4]; float c[4] = { v.x, v.y, v.z, v.w }; return c[i % 4]; };
 	ImGui::Text("G(0,0)=%.4f\n G(1,0)=%.4f\n G(1,1)=%.4f\n G(2,0)=%.4f\n", G(84), G(85), G(98), G(86));
@@ -230,13 +231,21 @@ void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 	}
 
 	// CSを実行してテクスチャを更新
-	rippleSim_.Dispatch(cmdList, boatPos, speed, dt, simMin_, simSize, velocity, kernel_, scrollX, scrollY);
+	rippleSim_.Dispatch(cmdList, boatPos, speed, dt, simMin_, simSize, velocity, kernel_, scrollX, scrollY,
+		waveSources_.data(), static_cast<uint32_t>(waveSources_.size()));
+	lastSourceCount_ = static_cast<uint32_t>(waveSources_.size());
+	waveSources_.clear(); // 波源はそのフレームだけ
 	waterQuery_.Dispatch(cmdList, rippleSim_.GetTextureSrvIndex(), simMin_, simSize);
 
 	// CSが作ったテクスチャのインデックスをマテリアルへ指定
 	if (material_) {
 		material_->SetTextureIndex(rippleSim_.GetTextureSrvIndex());
 	}
+}
+
+void BoatWakeComponent::AddWaveSource(const WaveSource& source) {
+	if (waveSources_.size() >= RippleSimulationParams::kMaxWaveSources) return;
+	waveSources_.push_back(source);
 }
 
 void BoatWakeComponent::SetTexture(const std::string& textureName) {
