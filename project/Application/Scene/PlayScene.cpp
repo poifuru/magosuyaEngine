@@ -279,10 +279,13 @@ void PlayScene::UpdateEdit(const CameraData* cameraData) {
 }
 
 void PlayScene::Draw(MyEngine::Rendering::Renderer* renderer) {
+#ifdef USEIMGUI
 	// デバッグ線の描画要求（Draw は Play・Pause・Stop のどれでも毎フレーム呼ばれる）
+	// リリース版では呼ばない（線の計算もまるごと消える）
 	for (auto& obj : gameObjects_) {
 		obj->DrawDebug();
 	}
+#endif
 
 	// ライトマネージャーを RenderSystem に登録
 	if (lightManager_ && renderer) {
