@@ -2,12 +2,8 @@
 #include "ColliderComponent.h"
 #include "GameObject.h"
 #include "CollisionManager.h"
-#include "BirdEnemyComponent.h"
-#include "FishEnemyComponent.h"
-#include "Boss.h"
-#include "FloatingCrateComponent.h"
 #include "EnergyItemComponent.h"
-#include "PlayerComponent.h"
+#include "BoarderComponent.h"
 #include "MathFunction.h"
 
 // デフォルトは半径1の球として CollisionObject を初期化
@@ -87,85 +83,16 @@ void ColliderComponent::OnCollision(CollisionObject* other) {
 			  Math::Length(Math::Subtract(myObj->GetTransform().translate, otherObj->GetTransform().translate))); // 距離も測る
 	OutputDebugStringA(debugMsg);
 
-	bool isMyEnemy = (myObj->GetComponent<BirdEnemyComponent>() != nullptr || 
-					  myObj->GetComponent<FishEnemyComponent>() != nullptr ||
-					  myObj->GetComponent<BossComponent>() != nullptr ||
-					  myObj->GetName() == "Enemy" ||
-					  myObj->GetName() == "Boss");
-	bool isOtherEnemy = (otherObj->GetComponent<BirdEnemyComponent>() != nullptr || 
-						 otherObj->GetComponent<FishEnemyComponent>() != nullptr ||
-						 otherObj->GetComponent<BossComponent>() != nullptr ||
-						 otherObj->GetName() == "Enemy" ||
-						 otherObj->GetName() == "Boss");
-
-	bool isMyPlayer = (myObj->GetName() == "Player" || myObj->GetComponent<PlayerComponent>() != nullptr);
-	bool isOtherPlayer = (otherObj->GetName() == "Player" || otherObj->GetComponent<PlayerComponent>() != nullptr);
-
-	// 1. 自分が「敵」または「木箱」で、相手が「弾」なら被弾処理
-	if (otherObj->GetName() == "PlayerBullet") {
-		if (auto* crate = myObj->GetComponent<FloatingCrateComponent>()) {
-			crate->TakeDamage(1);
-			CollisionManager::GetInstance()->UnregisterObject(this);
-			otherObj->Destroy();
-			return;
-		}
-	}
-
-	if (isMyEnemy && otherObj->GetName() == "PlayerBullet") {
-		bool alreadyDead = false;
-		if (auto* boss = myObj->GetComponent<BossComponent>()) {
-			alreadyDead = boss->IsDead();
-			boss->TakeDamage(1);
-			if (boss->IsDead()) {
-				CollisionManager::GetInstance()->UnregisterObject(this);
-			}
-		}
-		else if (auto* bird = myObj->GetComponent<BirdEnemyComponent>()) {
-			alreadyDead = bird->IsDead();
-			bird->TakeDamage(1);
-			if (bird->IsDead()) {
-				CollisionManager::GetInstance()->UnregisterObject(this);
-			}
-		}
-		else if (auto* fish = myObj->GetComponent<FishEnemyComponent>()) {
-			alreadyDead = fish->IsDead();
-			fish->TakeDamage(1);
-			if (fish->IsDead()) {
-				CollisionManager::GetInstance()->UnregisterObject(this);
-			}
-		}
-		else {
-			myObj->Destroy();
-			CollisionManager::GetInstance()->UnregisterObject(this);
-		}
-
-		otherObj->Destroy();
-	}
-
-	// 2. 自分が「プレイヤー」で、相手が「電力アイテム」ならアイテム回収
+	// ボーダーがアイテムに触れたら回収
+	bool isMyPlayer = myObj->GetComponent<BoarderComponent>() != nullptr;
+	bool isOtherPlayer = otherObj->GetComponent<BoarderComponent>() != nullptr;
 	if (isMyPlayer) {
 		if (auto* item = otherObj->GetComponent<EnergyItemComponent>()) {
-			item->OnCollect(myObj->GetComponent<PlayerComponent>());
-			return;
+			item->OnCollect();
 		}
-	}
-	else if (isOtherPlayer) {
+	} else if (isOtherPlayer) {
 		if (auto* item = myObj->GetComponent<EnergyItemComponent>()) {
-			item->OnCollect(otherObj->GetComponent<PlayerComponent>());
-			return;
-		}
-	}
-
-	// 3. 自分が「プレイヤー」で、相手が「敵」の場合の被弾ダメージ処理
-	if (isMyPlayer && isOtherEnemy) {
-		if (auto* playerComp = myObj->GetComponent<PlayerComponent>()) {
-			int damage = 15; // デフォルト（魚など）
-			if (otherObj->GetComponent<BossComponent>() || otherObj->GetName() == "Boss") {
-				damage = 30; // ボスからの強撃
-			} else if (otherObj->GetComponent<BirdEnemyComponent>()) {
-				damage = 20; // 鳥の急降下攻撃
-			}
-			playerComp->TakeDamage(damage);
+			item->OnCollect();
 		}
 	}
 }

@@ -1,6 +1,6 @@
 #include "PCH.h"
 #include "EnergyItemComponent.h"
-#include "PlayerComponent.h"
+#include "BoarderComponent.h"
 #include "GameObject.h"
 #include "MeshRendererComponent.h"
 #include "BaseScene.h"
@@ -41,14 +41,13 @@ void EnergyItemComponent::Update() {
 		mesh->SetColor({ 0.2f * pulse, 1.0f * pulse, 0.85f * pulse, 1.0f });
 	}
 
-	// プレイヤーとの距離判定（近接自動回収ガード）
+	// ボーダーとの距離判定（近づいたら回収）
 	if (gameObject_->GetContext() && gameObject_->GetContext()->activeGameObjects) {
 		for (auto& obj : *(gameObject_->GetContext()->activeGameObjects)) {
-			if (auto* playerComp = obj->GetComponent<PlayerComponent>()) {
+			if (obj->GetComponent<BoarderComponent>()) {
 				Vector3 diff = Math::Subtract(obj->GetTransform().translate, trans.translate);
-				// プレイヤー潜水艦の半径を考慮して3.5m以内で回収成立
 				if (Math::Length(diff) < 3.5f) {
-					OnCollect(playerComp);
+					OnCollect();
 					return;
 				}
 			}
@@ -56,13 +55,11 @@ void EnergyItemComponent::Update() {
 	}
 }
 
-void EnergyItemComponent::OnCollect(PlayerComponent* player) {
+void EnergyItemComponent::OnCollect() {
 	if (isCollected_) return;
 	isCollected_ = true;
 
-	if (player) {
-		player->Heal(healAmount_);
-	}
+	// TODO: 取ったときの効果（スコアなど）は、水上アイテムを作るときに決める
 
 	if (gameObject_) {
 		// 回収エフェクト（キラキラ爆発パーティクル）

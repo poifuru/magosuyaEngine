@@ -34,17 +34,11 @@ const std::vector<ComponentEntry>& ComponentRegistry::GetEntries() {
 		// --- Light ---
 		REGISTER_COMPONENT(LightComponent, "Light", "Lighting"),
 		// --- Gameplay ---
-		REGISTER_COMPONENT(PlayerComponent, "Player", "Gameplay"),
-		REGISTER_COMPONENT(ReticleComponent, "Reticle", "Gameplay"),
 		REGISTER_COMPONENT(ColliderComponent, "Collider", "Gameplay"),
-		REGISTER_COMPONENT(BirdEnemyComponent, "Bird Enemy", "Gameplay"),
-		REGISTER_COMPONENT(FishEnemyComponent, "Fish Enemy", "Gameplay"),
-		REGISTER_COMPONENT(EnemyManagerComponent, "Enemy Manager", "Gameplay"),
 		REGISTER_COMPONENT(FloatingCrateComponent, "Floating Crate", "Gameplay"),
 		REGISTER_COMPONENT(BoarderComponent, "Boarder", "Gameplay"),
 		REGISTER_COMPONENT(BoatDriverComponent, "Boat Driver", "Gameplay"),
 		REGISTER_COMPONENT(EnergyItemComponent, "Energy Item", "Gameplay"),
-		REGISTER_COMPONENT(GameDirectorComponent, "Game Director", "Gameplay"),
 	};
 	return entries;
 }

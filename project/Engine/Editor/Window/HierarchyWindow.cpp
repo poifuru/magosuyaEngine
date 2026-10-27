@@ -4,7 +4,6 @@
 #include "EditorManager.h"
 #include "BaseScene.h"
 #include "VirtualFollowCamera.h"
-#include "PlayerComponent.h"
 #include "TitleScene.h"
 #include "PlayScene.h"
 #include "SceneManager.h"
@@ -242,9 +241,6 @@ void HierarchyWindow::LoadScene(
 		for (auto& obj : gameObjects) {
 			if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
 				followCam->ResolveTarget(gameObjects);
-			}
-			if (auto* player = obj->GetComponent<PlayerComponent>()) {
-				player->ResolveReticle(gameObjects);
 			}
 		}
 	}

@@ -82,9 +82,6 @@ void PlayScene::Initialize() {
 					if (auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
 						followCam->ResolveTarget(gameObjects_);
 					}
-					if (auto* player = obj->GetComponent<PlayerComponent>()) {
-						player->ResolveReticle(gameObjects_);
-					}
 				}
 			}
 		}
@@ -222,13 +219,8 @@ void PlayScene::UpdateGame(const CameraData* cameraData) {
 	// 死亡オブジェクトの削除
 	CleanupObject();
 
-	// カメラ・レティクル・ライト
+	// カメラ・ライト
 	CameraOrganizer::GetInstance()->Update();
-	for (auto& obj : gameObjects_) {
-		if (auto* reticle = obj->GetComponent<ReticleComponent>()) {
-			reticle->Update();
-		}
-	}
 	if (lightManager_) {
 		lightManager_->ClearLights();
 		for (auto& obj : gameObjects_) {

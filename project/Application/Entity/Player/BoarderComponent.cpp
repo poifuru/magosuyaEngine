@@ -199,7 +199,7 @@ float BoarderComponent::ReadSwingInput() const {
 
 bool BoarderComponent::IsJumpHeld() const {
 	InputManager* input = InputManager::GetInstance();
-	if (input->GetRawInput()->Push(VK_UP)) { return true; }
+	if (input->GetRawInput()->Push(VK_SPACE)) { return true; }
 	if (input->GetGamePad()->IsConection() && input->GetGamePad()->PushButton(Button::A)) { return true; }
 	return false;
 }

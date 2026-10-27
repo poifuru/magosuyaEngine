@@ -5,8 +5,6 @@
 
 using json = nlohmann::json;
 
-class PlayerComponent;
-
 class EnergyItemComponent : public Component {
 public:
 	EnergyItemComponent() = default;
@@ -21,8 +19,8 @@ public:
 
 	const char* GetName() const override { return "EnergyItemComponent"; }
 
-	// 取得処理
-	void OnCollect(PlayerComponent* player);
+	// 取得処理（ボーダーが近づいたら呼ばれる）
+	void OnCollect();
 	bool IsCollected() const { return isCollected_; }
 
 	int GetHealAmount() const { return healAmount_; }

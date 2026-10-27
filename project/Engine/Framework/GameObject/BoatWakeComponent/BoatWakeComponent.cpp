@@ -220,16 +220,6 @@ void BoatWakeComponent::DispatchCS(ID3D12GraphicsCommandList* cmdList) {
 
 	velocity = { v.x, v.z };   // m/s
 
-	// プレイヤーの前方ベクトルを取得
-	Vector2 forward = {};
-	if(auto* playerComp = GetGameObject()->FindComponentInScene<PlayerComponent>()) {
-		Vector3 forward3D = playerComp->GetForward();
-		forward3D = Math::Normalize(forward3D);
-
-		forward.x = forward3D.x;
-		forward.y = forward3D.z;
-	}
-
 	// CSを実行してテクスチャを更新
 	rippleSim_.Dispatch(cmdList, boatPos, speed, dt, simMin_, simSize, velocity, kernel_, scrollX, scrollY,
 		waveSources_.data(), static_cast<uint32_t>(waveSources_.size()));

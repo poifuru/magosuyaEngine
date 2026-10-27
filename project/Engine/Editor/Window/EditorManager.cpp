@@ -7,7 +7,6 @@
 #include "GameObject.h"
 #include "VirtualDebugCamera.h"
 #include "VirtualFollowCamera.h"
-#include "PlayerComponent.h"
 #include "CameraOrganizer.h"
 
 // 各ウィンドウクラス
@@ -274,9 +273,6 @@ void EditorManager::Stop() {
 			}
 			if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
 				debugCam->SetPriority(20);  // エディタ用デバッグカメラを高優先度
-			}
-			if (auto* player = obj->GetComponent<PlayerComponent>()) {
-				player->ResolveReticle(gameObjects);
 			}
 		}
 

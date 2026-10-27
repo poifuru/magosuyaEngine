@@ -7,7 +7,6 @@
 #include "BaseCamera.h"
 #include "EditorManager.h"
 #include "VirtualFollowCamera.h"
-#include "PlayerComponent.h"
 #include "SkyboxComponent.h"
 #include "WaterSurfaceComponent.h"
 #include "SpriteComponent.h"
@@ -177,9 +176,6 @@ void LevelEditor::LoadScene(const std::string& fileName,
 			for(auto& obj : gameObjects) {
 				if(auto* followCam = obj->GetComponent<VirtualFollowCamera>()) {
 					followCam->ResolveTarget(gameObjects);
-				}
-				if(auto* player = obj->GetComponent<PlayerComponent>()) {
-					player->ResolveReticle(gameObjects);
 				}
 			}
 		}

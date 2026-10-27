@@ -7,7 +7,6 @@
 #include "RawInput.h"
 #include "GamePad.h"
 #include "MeshRendererComponent.h"
-#include "PlayerComponent.h"
 #include "BoarderComponent.h"
 #include "BoatDriverComponent.h"
 #include "Time.h"
@@ -99,11 +98,6 @@ void VirtualFollowCamera::Update() {
 		// 上下（Pitch）の回転角度を制限する（床抜けや頭頂部フリップを防ぐ。約-80度〜80度）
 		const float maxPitch = 80.0f * (3.14159265f / 180.0f);
 		angleX_ = std::clamp(angleX_, -maxPitch, maxPitch);
-
-		// プレイヤーが水中に入っているかを自動同期
-		if (auto* playerComp = target_->GetComponent<PlayerComponent>()) {
-			isUnderwater_ = playerComp->IsUnderwater();
-		}
 
 		auto& myTransform = gameObject_->GetTransform();
 

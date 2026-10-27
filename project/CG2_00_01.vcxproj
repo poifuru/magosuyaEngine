@@ -180,21 +180,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClCompile Include="Application\Entity\Player\BoarderComponent.cpp" />
     <ClCompile Include="Application\Entity\Player\BoatDriverComponent.cpp" />
-    <ClCompile Include="application\entity\player\PlayerComponent.cpp" />
-    <ClCompile Include="application\entity\player\PlayerHealth.cpp" />
-    <ClCompile Include="application\entity\player\PlayerMovement.cpp" />
-    <ClCompile Include="application\entity\player\PlayerTurret.cpp" />
-    <ClCompile Include="application\entity\player\PlayerWeapon.cpp" />
     <ClCompile Include="Application\Scene\BaseScene.cpp" />
     <ClCompile Include="application\scene\ClearScene.cpp" />
     <ClCompile Include="application\scene\GameoverScene.cpp" />
     <ClCompile Include="application\entity\Entity.cpp" />
     <ClCompile Include="application\scene\DebugScene.cpp" />
-    <ClCompile Include="application\entity\player\BulletComponent.cpp" />
     <ClCompile Include="Application\Collider\CollisionManager.cpp" />
     <ClCompile Include="Application\Collider\ColliderComponent.cpp" />
-    <ClCompile Include="Application\Entity\Enemy\BirdEnemyComponent.cpp" />
-    <ClCompile Include="Application\Entity\Enemy\EnemyManagerComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\Component\ComponentRegistry.cpp" />
     <ClCompile Include="Engine\Editor\Window\AssetBrowserWindow.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\DescriptorHeapPoolContext\DescriptorHeapPoolContext.cpp" />
@@ -231,7 +223,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\light\DirectionalLight.cpp" />
     <ClCompile Include="Engine\Graphics\light\BaseLight.cpp" />
     <ClCompile Include="Engine\Graphics\light\LightManager.cpp" />
-    <ClCompile Include="application\entity\boss\Boss.cpp" />
     <ClCompile Include="Engine\Render\PSO\RenderingModel.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">NotUsing</PrecompiledHeader>
@@ -274,7 +265,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Engine\Framework\GameObject\CameraComponent\VirtualFollowCamera.cpp" />
-    <ClCompile Include="Application\Entity\Enemy\FishEnemyComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\FloatingCrateComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\EnergyItemComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\CourseBuoyComponent.cpp" />
@@ -332,7 +322,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Framework\Object\3d\SkyboxComponent.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\RenderTexture\RenderTexture.cpp" />
     <ClCompile Include="Engine\Graphics\PostEffect\PostEffectManager.cpp" />
-    <ClCompile Include="application\entity\player\ReticleComponent.cpp" />
     <ClCompile Include="Engine\Graphics\PostEffect\Vignette.cpp" />
     <ClCompile Include="Engine\Graphics\PostEffect\Outline.cpp" />
     <ClCompile Include="Engine\Render\RenderSystem\RenderSystem.cpp" />
@@ -340,7 +329,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Framework\GameObject\MeshRendererComponent\MeshRendererComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\SpriteComponent\SpriteComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\NumberDrawerComponent\NumberDrawerComponent.cpp" />
-    <ClCompile Include="Engine\Framework\GameObject\GameDirectorComponent\GameDirectorComponent.cpp" />
     <ClCompile Include="Engine\Editor\Command\TransformCommand.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\CameraComponent\MainCameraComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\CameraComponent\VirtualDebugCamera.cpp" />
@@ -350,7 +338,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Framework\GameObject\WaterSurfaceComponent\WaterSurfaceComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\BoatWakeComponent\BoatWakeComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\TextDrawerComponent\TextDrawerComponent.cpp" />
-    <ClCompile Include="Application\Tutorial\TutorialManager.cpp" />
     <ClCompile Include="Engine\Core\DirectXResource\RWTexture2D.cpp" />
     <ClCompile Include="Engine\Graphics\RippleSimulator\RippleSimulator.cpp" />
     <ClCompile Include="Engine\Graphics\PostEffect\RadialBlur.cpp" />
@@ -370,13 +357,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\scene\BaseScene.h" />
     <ClInclude Include="application\scene\ClearScene.h" />
     <ClInclude Include="application\entity\Entity.h" />
-    <ClInclude Include="application\entity\boss\Boss.h" />
     <ClInclude Include="application\scene\DebugScene.h" />
-    <ClInclude Include="application\entity\player\BulletComponent.h" />
     <ClInclude Include="Application\Collider\CollisionManager.h" />
     <ClInclude Include="Application\Collider\ColliderComponent.h" />
-    <ClInclude Include="Application\Entity\Enemy\BirdEnemyComponent.h" />
-    <ClInclude Include="Application\Entity\Enemy\EnemyManagerComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\Component\ComponentRegistry.h" />
     <ClInclude Include="Engine\Editor\Window\AssetBrowserWindow.h" />
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\DescriptorHeapPoolContext\DescriptorHeapPoolContext.h" />
@@ -435,7 +418,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Render\PSO\RenderingModel.h" />
     <ClInclude Include="externals\imgui\ImGuizmo.h" />
     <ClInclude Include="Engine\Framework\GameObject\CameraComponent\VirtualFollowCamera.h" />
-    <ClInclude Include="Application\Entity\Enemy\FishEnemyComponent.h" />
     <ClInclude Include="Application\Entity\Props\FloatingCrateComponent.h" />
     <ClInclude Include="Application\Entity\Props\EnergyItemComponent.h" />
     <ClInclude Include="Application\Entity\Props\CourseBuoyComponent.h" />
@@ -491,11 +473,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />
     <ClInclude Include="Engine\Render\PSO\PSOManager.h" />
     <ClInclude Include="Engine\Graphics\primitive\Mesh.h" />
-    <ClInclude Include="application\entity\player\PlayerComponent.h" />
-    <ClInclude Include="application\entity\player\PlayerHealth.h" />
-    <ClInclude Include="application\entity\player\PlayerMovement.h" />
-    <ClInclude Include="application\entity\player\PlayerTurret.h" />
-    <ClInclude Include="application\entity\player\PlayerWeapon.h" />
     <ClInclude Include="Engine\Graphics\light\PointLight.h" />
     <ClInclude Include="Engine\Graphics\light\SpotLight.h" />
     <ClInclude Include="Engine\Graphics\light\RectLight.h" />
@@ -504,7 +481,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Framework\Object\3d\SkyboxComponent.h" />
     <ClInclude Include="Engine\Core\LowLevel\RenderTexture\RenderTexture.h" />
     <ClInclude Include="Engine\Graphics\PostEffect\PostEffectManager.h" />
-    <ClInclude Include="application\entity\player\ReticleComponent.h" />
     <ClInclude Include="Engine\Graphics\PostEffect\Vignette.h" />
     <ClInclude Include="Engine\Graphics\PostEffect\Outline.h" />
     <ClInclude Include="Engine\Render\RenderSystem\RenderSystem.h" />
@@ -513,7 +489,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Framework\GameObject\MeshRendererComponent\MeshRendererComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\SpriteComponent\SpriteComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\NumberDrawerComponent\NumberDrawerComponent.h" />
-    <ClInclude Include="Engine\Framework\GameObject\GameDirectorComponent\GameDirectorComponent.h" />
     <ClInclude Include="Engine\Editor\Command\TransformCommand.h" />
     <ClInclude Include="Engine\Editor\LevelEditor\LevelEditor.h" />
     <ClInclude Include="Engine\Framework\GameObject\LightComponent\LightComponent.h" />
@@ -526,7 +501,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Framework\GameObject\WaterSurfaceComponent\WaterSurfaceComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\BoatWakeComponent\BoatWakeComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\TextDrawerComponent\TextDrawerComponent.h" />
-    <ClInclude Include="Application\Tutorial\TutorialManager.h" />
     <ClInclude Include="Engine\Core\DirectXResource\RWTexture2D.h" />
     <ClInclude Include="Engine\Graphics\RippleSimulator\RippleSimulator.h" />
     <ClInclude Include="Engine\Graphics\PostEffect\RadialBlur.h" />

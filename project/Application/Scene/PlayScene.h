@@ -4,7 +4,6 @@
 
 class LightManager;
 class PostEffectManager;
-class TutorialManager;
 
 class PlayScene : public BaseScene {
 public:
