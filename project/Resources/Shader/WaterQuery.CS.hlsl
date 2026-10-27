@@ -1,6 +1,6 @@
 #include "WaterSurface.hlsli"
 
-static const uint kMaxQueries = 16; // 扱う頂点の最大数
+static const uint kMaxQueries = 64; // 扱う頂点の最大数（WaterQuery.h の kMaxQueries と合わせる）
 
 struct WaterQueryParams
 {

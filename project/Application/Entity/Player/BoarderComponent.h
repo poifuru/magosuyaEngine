@@ -1,6 +1,7 @@
 #pragma once
 #include "Component.h"
 #include "MathTypes.h"
+#include "WaterQuery.h"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -84,7 +85,7 @@ private:
 	float angleVel_ = 0.0f;  // 振り出し角の角速度[rad/s]
 
 	// --- 水面 ---
-	static constexpr uint32_t kQuerySlot = 15; // WaterQuery の枠（最後の枠をボーダー専用にする）
+	static constexpr uint32_t kQuerySlot = WaterQuery::kBoarderSlot; // WaterQuery の枠（最後の枠をボーダー専用にする）
 	Vector2 prevXZ_{};
 	bool hasPrevXZ_ = false;
 	Vector2 horizVel_{};       // 水平速度[m/s]

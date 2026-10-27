@@ -22,11 +22,14 @@ void FloatingCrateComponent::Initialize() {
 	waterSurfaceY_ = gameObject_->GetTransform().translate.y;
 	bobbingTimer_ = static_cast<float>(rand() % 100) * 0.1f; // ランダム位相
 
-	// 0 は船の後ろで使っているので 1 から
-	static uint32_t s_nextSlot = 1;
-	if (s_nextSlot < WaterQuery::kMaxQueries - 1) {
-		querySlot_ = static_cast<int32_t>(s_nextSlot++);
+	// WaterQuery の空き枠を借りる（壊れたときにデストラクタで返す）
+	if (querySlot_ < 0) {
+		querySlot_ = WaterQuery::AllocateSlot();
 	}
+}
+
+FloatingCrateComponent::~FloatingCrateComponent() {
+	WaterQuery::FreeSlot(querySlot_);
 }
 
 void FloatingCrateComponent::Update() {

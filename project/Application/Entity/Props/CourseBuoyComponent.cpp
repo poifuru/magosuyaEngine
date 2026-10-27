@@ -2,6 +2,8 @@
 #include "CourseBuoyComponent.h"
 #include "BoatDriverComponent.h"
 #include "WaterSurfaceComponent.h"
+#include "BoatWakeComponent.h"
+#include "WaterQuery.h"
 #include "GameObject.h"
 #include "BaseScene.h"       // SceneContext を使うため
 #include "ModelFactory.h"
@@ -13,11 +15,20 @@
 #include "MeshData.h"
 #include "Time.h"
 
+#include <algorithm>
 #include <cmath>
 #include <numbers>
 
 CourseBuoyComponent::CourseBuoyComponent() = default;
-CourseBuoyComponent::~CourseBuoyComponent() = default;
+
+CourseBuoyComponent::~CourseBuoyComponent() {
+	// 借りていた WaterQuery の枠を返す
+	for (auto* pool : { &passModels_, &goalModels_ }) {
+		for (auto& b : *pool) {
+			WaterQuery::FreeSlot(b->querySlot);
+		}
+	}
+}
 
 std::unique_ptr<MyEngine::Rendering::Model> CourseBuoyComponent::CreateBuoyModel(const std::string& path) {
 	GameObject* owner = GetGameObject();
@@ -35,34 +46,63 @@ std::unique_ptr<MyEngine::Rendering::Model> CourseBuoyComponent::CreateBuoyModel
 	return context->modelFactory->CreateModel(modelIndex, textureIndex_);
 }
 
-void CourseBuoyComponent::PlaceModels(std::vector<std::unique_ptr<MyEngine::Rendering::Model>>& pool, size_t& activeCount,
+void CourseBuoyComponent::PlaceModels(std::vector<std::unique_ptr<Buoy>>& pool, size_t& activeCount,
 	const std::string& path, const std::vector<Placement>& placements) {
 	// 足りない分だけ作る（減ったときは消さずに残しておき、描かないだけ）
 	while (pool.size() < placements.size()) {
 		auto model = CreateBuoyModel(path);
 		if (!model) break;
-		pool.push_back(std::move(model));
+		auto buoy = std::make_unique<Buoy>();
+		buoy->model = std::move(model);
+		buoy->querySlot = WaterQuery::AllocateSlot(); // 枠が足りなければ -1（ゲルストナーだけで浮く）
+		pool.push_back(std::move(buoy));
 	}
 	activeCount = std::min(pool.size(), placements.size());
 
 	auto* water = gameObject_->FindComponentInScene<WaterSurfaceComponent>();
+	auto* wake = useRipple_ ? gameObject_->FindComponentInScene<BoatWakeComponent>() : nullptr;
 	const CameraData& cameraData = CameraOrganizer::GetInstance()->GetCameraData();
 
 	for (size_t i = 0; i < activeCount; ++i) {
 		const Placement& pl = placements[i];
-		Vector3 pos = pl.pos;
-		pos.y = heightOffset_;
+		Buoy& b = *pool[i];
+
+		// --- 水面の高さと傾き = ゲルストナー（CPU）＋ 波紋（GPU、1フレーム遅れ） ---
+		float height = 0.0f, dhdx = 0.0f, dhdz = 0.0f;
 		if (floatOnWater_ && water) {
-			pos.y += water->SampleGerstnerHeight(pos.x, pos.z);
+			height = water->SampleGerstnerHeight(pl.pos.x, pl.pos.z);
+			water->SampleGerstnerSlope(pl.pos.x, pl.pos.z, dhdx, dhdz);
+		}
+		if (floatOnWater_ && wake && b.querySlot >= 0) {
+			auto& query = wake->GetWaterQuery();
+			uint32_t slot = static_cast<uint32_t>(b.querySlot);
+			query.SetQueryPoint(slot, pl.pos.x, pl.pos.z);
+			const auto& r = query.GetResult(slot);
+			height += r.height;
+			dhdx += r.dhdx;
+			dhdz += r.dhdz;
 		}
 
-		// ウキごとに位相をずらして、ゆらゆら傾ける
-		float phase = time_ * 1.3f + static_cast<float>(i) * 1.7f + pos.x * 0.05f;
-		Vector3 rotate = { std::sin(phase) * swayAmount_, pl.yaw, std::cos(phase * 0.8f) * swayAmount_ };
+		// --- 傾き：ウキの上（+Y）を水面の法線 (-dhdx, 1, -dhdz) に向ける ---
+		// 回転は X → Y → Z の順にかかる。向き（Y）と同じ Transform で X・Z を回すと、向きによって
+		// 傾く方向が変わってしまうので、傾きと位置は「親」に持たせて、モデル自身は向きだけにする
+		// （X 軸まわりの + 回転で上が +Z へ、Z 軸まわりの + 回転で上が -X へ倒れる）
+		float tiltX = -std::atan(dhdz) * tiltScale_;
+		float tiltZ = std::atan(dhdx) * tiltScale_;
 
-		auto& model = pool[i];
-		model->SetTranslate(pos);
-		model->SetRotate(rotate);
+		// ウキごとに位相をずらして、ゆらゆら揺らす
+		float phase = time_ * 1.3f + static_cast<float>(i) * 1.7f + pl.pos.x * 0.05f;
+		tiltX += std::sin(phase) * swayAmount_;
+		tiltZ += std::cos(phase * 0.8f) * swayAmount_;
+
+		b.tilt.scale = { 1.0f, 1.0f, 1.0f };
+		b.tilt.rotate = { std::clamp(tiltX, -maxTilt_, maxTilt_), 0.0f, std::clamp(tiltZ, -maxTilt_, maxTilt_) };
+		b.tilt.translate = { pl.pos.x, height + heightOffset_, pl.pos.z };
+
+		auto& model = b.model;
+		model->SetParentTransform(&b.tilt);
+		model->SetTranslate({ 0.0f, 0.0f, 0.0f });
+		model->SetRotate({ 0.0f, pl.yaw, 0.0f });
 		model->SetScale({ buoyScale_, buoyScale_, buoyScale_ });
 		model->Update(&cameraData);
 	}
@@ -109,9 +149,13 @@ void CourseBuoyComponent::ImGui() {
 	ImGui::DragFloat("Scale", &buoyScale_, 0.05f, 0.1f, 20.0f);
 	ImGui::Checkbox("Float On Water", &floatOnWater_);
 	ImGui::DragFloat("Height Offset", &heightOffset_, 0.01f, -5.0f, 5.0f, "%.2f m");
+	ImGui::Checkbox("Use Ripple (Wake)", &useRipple_);
+	ImGui::DragFloat("Tilt Scale", &tiltScale_, 0.01f, 0.0f, 3.0f);
+	ImGui::DragFloat("Max Tilt", &maxTilt_, 0.01f, 0.0f, 1.5f, "%.2f rad");
 	ImGui::DragFloat("Sway", &swayAmount_, 0.005f, 0.0f, 0.5f, "%.3f rad");
 	ImGui::Checkbox("Flip Flag", &flipFlag_);
 	ImGui::TextDisabled("buoys: pass %d / goal %d", static_cast<int>(passActive_), static_cast<int>(goalActive_));
+	ImGui::TextDisabled("water query slots: %d / %d used", static_cast<int>(WaterQuery::GetAllocatedSlotCount()), static_cast<int>(WaterQuery::kMaxQueries));
 	if (!gameObject_ || !gameObject_->GetComponent<BoatDriverComponent>()) {
 		ImGui::TextColored({ 1.0f, 0.5f, 0.3f, 1.0f }, "Boat Driver が同じオブジェクトにありません");
 	}
@@ -121,9 +165,9 @@ void CourseBuoyComponent::ImGui() {
 void CourseBuoyComponent::CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const {
 	if (!isVisible_ || !collector) return;
 
-	auto submit = [&](const std::vector<std::unique_ptr<MyEngine::Rendering::Model>>& pool, size_t activeCount) {
+	auto submit = [&](const std::vector<std::unique_ptr<Buoy>>& pool, size_t activeCount) {
 		for (size_t m = 0; m < activeCount; ++m) {
-			const auto& model = pool[m];
+			const auto& model = pool[m]->model;
 			auto* modelData = model->GetModelData();
 			auto* material = model->GetMaterial();
 			if (!modelData || !material) continue;
@@ -151,6 +195,9 @@ void CourseBuoyComponent::Serialize(json& j) const {
 	j["heightOffset"] = heightOffset_;
 	j["flipFlag"] = flipFlag_;
 	j["swayAmount"] = swayAmount_;
+	j["useRipple"] = useRipple_;
+	j["tiltScale"] = tiltScale_;
+	j["maxTilt"] = maxTilt_;
 }
 
 void CourseBuoyComponent::Deserialize(const json& j) {
@@ -160,4 +207,7 @@ void CourseBuoyComponent::Deserialize(const json& j) {
 	if (j.contains("heightOffset")) heightOffset_ = j["heightOffset"];
 	if (j.contains("flipFlag")) flipFlag_ = j["flipFlag"];
 	if (j.contains("swayAmount")) swayAmount_ = j["swayAmount"];
+	if (j.contains("useRipple")) useRipple_ = j["useRipple"];
+	if (j.contains("tiltScale")) tiltScale_ = j["tiltScale"];
+	if (j.contains("maxTilt")) maxTilt_ = j["maxTilt"];
 }

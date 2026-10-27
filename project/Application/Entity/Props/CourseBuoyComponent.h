@@ -15,7 +15,8 @@ namespace MyEngine::Rendering {
 // コースのウェイポイントにウキ（ブイ）のモデルを並べるコンポーネント
 // ・同じ GameObject の BoatDriverComponent のウェイポイントを読んで置く
 //   （道中の点：その点に1つ、ゴールの点：ゲートの左右に1つずつ）
-// ・高さは水面（WaterSurfaceComponent）のゲルストナー波に合わせて浮かせる
+// ・高さと傾きは 水面のゲルストナー波（CPU）＋ 航跡などの波紋（WaterQuery、GPU）に合わせる
+//   WaterQuery の枠はモデル1つにつき1枠借りる
 // ・モデルは点の数に合わせて足りない分だけ作り、余った分は描かない（プール）
 class CourseBuoyComponent : public MyEngine::Rendering::RenderComponent {
 public:
@@ -39,11 +40,18 @@ private:
 		float yaw;
 	};
 
+	// プールのウキ1つぶん
+	struct Buoy {
+		std::unique_ptr<MyEngine::Rendering::Model> model;
+		EulerTransform tilt{};  // 親の Transform（位置と波の傾き）。モデル自身は向きと大きさだけ持つ
+		int32_t querySlot = -1; // WaterQuery の枠（-1 = 枠なし、ゲルストナーだけで浮く）
+	};
+
 	// モデルを1つ作る（失敗したら nullptr）
 	std::unique_ptr<MyEngine::Rendering::Model> CreateBuoyModel(const std::string& path);
 
 	// プールの数を count 以上にして、先頭から placements の位置に置く
-	void PlaceModels(std::vector<std::unique_ptr<MyEngine::Rendering::Model>>& pool, size_t& activeCount,
+	void PlaceModels(std::vector<std::unique_ptr<Buoy>>& pool, size_t& activeCount,
 		const std::string& path, const std::vector<Placement>& placements);
 
 	// --- 設定値（シリアライズ対象） ---
@@ -54,11 +62,15 @@ private:
 	bool floatOnWater_ = true;   // 水面の波に合わせて浮かせる
 	float heightOffset_ = 0.0f;  // 浮かせる高さの調整 [m]
 	bool flipFlag_ = false;      // 旗の向きを反対にする（ゲートの旗が外を向いていたら ON）
-	float swayAmount_ = 0.06f;   // ゆらゆら傾く量 [rad]
+	float swayAmount_ = 0.03f;   // ゆらゆら傾く量 [rad]（波の傾きに足す）
+	bool useRipple_ = true;      // 航跡などの波紋でも上下させる
+	float tiltScale_ = 1.0f;     // 波の傾きに合わせて傾ける強さ（0 で傾けない）
+	float maxTilt_ = 0.5f;       // 傾きの上限 [rad]
 
 	// --- 状態 ---
-	std::vector<std::unique_ptr<MyEngine::Rendering::Model>> passModels_;
-	std::vector<std::unique_ptr<MyEngine::Rendering::Model>> goalModels_;
+	// unique_ptr で持つのは、vector が伸びても tilt のアドレス（モデルの親）が変わらないようにするため
+	std::vector<std::unique_ptr<Buoy>> passModels_;
+	std::vector<std::unique_ptr<Buoy>> goalModels_;
 	size_t passActive_ = 0;      // 今描いている数
 	size_t goalActive_ = 0;
 	uint32_t textureIndex_ = 0;

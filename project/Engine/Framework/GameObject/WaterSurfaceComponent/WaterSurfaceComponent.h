@@ -10,7 +10,7 @@ namespace MyEngine::Rendering {
 
 class WaterSurfaceComponent : public MyEngine::Rendering::RenderComponent {
 public:
-	static constexpr int kMaxWaves = 6; // ゲルストナー波の最大本数（HLSLの kMaxWaves と必ず揃える）
+	static constexpr int kMaxWaves = 6; // ゲルストナー波の最大本数（HLSLと揃える）
 
 	void Initialize() override;
 

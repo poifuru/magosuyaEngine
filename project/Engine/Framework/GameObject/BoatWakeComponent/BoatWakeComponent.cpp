@@ -114,7 +114,7 @@ void BoatWakeComponent::Update() {
 
 	const float kBehind = 5.0f;
 	waterQuery_.SetQueryPoint(
-		0,
+		WaterQuery::kBoatSlot,
 		currentPos.x - forwardDir.x * kBehind,
 		currentPos.z - forwardDir.z * kBehind
 	);

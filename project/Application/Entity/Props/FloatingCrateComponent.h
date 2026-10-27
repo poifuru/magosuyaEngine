@@ -8,7 +8,7 @@ using json = nlohmann::json;
 class FloatingCrateComponent : public Component {
 public:
 	FloatingCrateComponent() = default;
-	~FloatingCrateComponent() override = default;
+	~FloatingCrateComponent() override; // WaterQuery の枠を返す
 
 	void Initialize() override;
 	void Update() override;

@@ -65,6 +65,39 @@ void WaterQuery::Initialize(
 	assert(SUCCEEDED(hr));
 }
 
+std::bitset<WaterQuery::kMaxQueries>& WaterQuery::UsedSlots() {
+	// 関数内 static にして、初期化の順番に左右されないようにする
+	static std::bitset<kMaxQueries> used = [] {
+		std::bitset<kMaxQueries> b;
+		b.set(kBoatSlot);    // 決まった枠は最初から使用中にしておく
+		b.set(kBoarderSlot);
+		return b;
+	}();
+	return used;
+}
+
+int32_t WaterQuery::AllocateSlot() {
+	auto& used = UsedSlots();
+	for (uint32_t i = 0; i < kMaxQueries; ++i) {
+		if (!used.test(i)) {
+			used.set(i);
+			return static_cast<int32_t>(i);
+		}
+	}
+	return -1; // 空きなし
+}
+
+void WaterQuery::FreeSlot(int32_t slot) {
+	if (slot < 0 || slot >= static_cast<int32_t>(kMaxQueries)) return;
+	uint32_t s = static_cast<uint32_t>(slot);
+	if (s == kBoatSlot || s == kBoarderSlot) return; // 決まった枠は返さない
+	UsedSlots().reset(s);
+}
+
+uint32_t WaterQuery::GetAllocatedSlotCount() {
+	return static_cast<uint32_t>(UsedSlots().count());
+}
+
 void WaterQuery::SetQueryPoint(uint32_t slot, float x, float z) {
 	if (slot >= kMaxQueries) return;
 	params_.points[slot] = Vector4(x, z, 0.0f, 0.0f);

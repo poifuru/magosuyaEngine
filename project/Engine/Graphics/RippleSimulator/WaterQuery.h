@@ -1,5 +1,6 @@
 #pragma once
 #include "ConstantBuffer.h"
+#include <bitset>
 
 namespace MyEngine::LowLevel {
 	class SrvDescriptorHeapPool;
@@ -10,7 +11,7 @@ namespace MyEngine::Rendering {
 }
 
 struct WaterQueryParams {
-	static constexpr uint32_t kMaxQueries = 16;
+	static constexpr uint32_t kMaxQueries = 64; // WaterQuery.CS.hlsl の kMaxQueries と合わせる
 	Vector4 points[kMaxQueries]; // x, y にワールドの (x, z)
 	Vector2 waterMin;
 	Vector2 waterSize;
@@ -30,6 +31,17 @@ struct WaterQueryResult {
 class WaterQuery {
 public:
 	static constexpr uint32_t kMaxQueries = WaterQueryParams::kMaxQueries;
+
+	// --- 枠の割り当て ---
+	// 船とボーダーは決まった枠を使う。それ以外（木箱・ウキ・アイテムなど）は AllocateSlot で空き枠を借りる
+	static constexpr uint32_t kBoatSlot = 0;                 // 船の後ろ（BoatWakeComponent）
+	static constexpr uint32_t kBoarderSlot = kMaxQueries - 1; // ボーダー
+
+	// 空いている枠を借りる（空きが無ければ -1）。使い終わったら FreeSlot で返す
+	// ※ 枠の管理は static なので、WaterQuery 本体より先に・後に壊れても安全
+	static int32_t AllocateSlot();
+	static void FreeSlot(int32_t slot);
+	static uint32_t GetAllocatedSlotCount();
 
 	void Initialize(
 		ID3D12Device* device,
@@ -64,4 +76,7 @@ private:
 
 	WaterQueryResult results_[kMaxQueries]{};
 	bool hasPendingCopy_ = false; // GPUにコピーを積んだが、まだ読んでいない
+
+	// 使用中の枠（AllocateSlot で借りた枠）
+	static std::bitset<kMaxQueries>& UsedSlots();
 };
