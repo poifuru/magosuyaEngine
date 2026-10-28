@@ -27,6 +27,7 @@ const std::vector<ComponentEntry>& ComponentRegistry::GetEntries() {
 		REGISTER_COMPONENT(CourseBuoyComponent, "Course Buoys", "Rendering"),
 		REGISTER_COMPONENT(NumberDrawerComponent, "Number Drawer", "Rendering"),
 		REGISTER_COMPONENT(TextDrawerComponent, "Text Drawer", "Rendering"),
+		REGISTER_COMPONENT(FontTextComponent, "Font Text", "Rendering"),
 		// --- Camera ---
 		REGISTER_COMPONENT(MainCameraComponent, "Main Camera", "Camera"),
 		REGISTER_COMPONENT(VirtualFollowCamera, "Virtual Follow Camera", "Camera"),

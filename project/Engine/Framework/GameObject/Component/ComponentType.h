@@ -11,6 +11,7 @@
 #include "WaterSurfaceComponent.h"
 #include "BoatWakeComponent.h"
 #include "TextDrawerComponent.h"
+#include "FontTextComponent.h"
 #include "FloatingCrateComponent.h"
 #include "EnergyItemComponent.h"
 #include "BoarderComponent.h"

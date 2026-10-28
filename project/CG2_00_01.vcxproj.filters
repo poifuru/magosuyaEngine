@@ -133,6 +133,9 @@
     <ClCompile Include="Application\Entity\Player\BoarderComponent.cpp" />
     <ClCompile Include="Application\Entity\Player\BoatDriverComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\Component\ComponentRegistry.cpp" />
+    <ClCompile Include="Engine\Render\FontRendering\FontManager.cpp" />
+    <ClCompile Include="Engine\Render\FontRendering\Font.cpp" />
+    <ClCompile Include="Engine\Framework\GameObject\FontTextComponent\FontTextComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -295,6 +298,9 @@
     <ClInclude Include="Application\Entity\Player\BoarderComponent.h" />
     <ClInclude Include="Application\Entity\Player\BoatDriverComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\Component\ComponentRegistry.h" />
+    <ClInclude Include="Engine\Render\FontRendering\FontManager.h" />
+    <ClInclude Include="Engine\Render\FontRendering\Font.h" />
+    <ClInclude Include="Engine\Framework\GameObject\FontTextComponent\FontTextComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />

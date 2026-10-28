@@ -22,6 +22,8 @@ namespace MyEngine::Rendering {
 		PostEffect_Dissolve,		// ディゾルブ
 		PostEffect_RandomNoise,		// ランダムノイズ
 
+		Text,			// フォントのテキスト（アトラスのRを不透明度として使う）
+
 		Count			// 設定の個数
 	};
 

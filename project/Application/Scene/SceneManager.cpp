@@ -18,6 +18,9 @@ void SceneManager::Initialize(
 	textureManager_ = std::make_unique<TextureManager>();
 	textureManager_->Initialize(graphicsDevice->GetDevice(), cmdList, heapManager);
 
+	fontManager_ = std::make_unique<FontManager>();
+	fontManager_->Initialize(textureManager_.get());
+
 	modelManager_ = std::make_unique<ModelManager>();
 	modelManager_->Initialize(graphicsDevice->GetDevice(), textureManager_.get());
 
@@ -32,6 +35,7 @@ void SceneManager::Initialize(
 	context_.graphicsDevice = graphicsDevice;
 	context_.heapManager = heapManager;
 	context_.textureManager = textureManager_.get();
+	context_.fontManager = fontManager_.get();
 	context_.modelFactory = modelFactory_.get();
 	context_.modelManager = modelManager_.get();
 	context_.rootSigManager = rootSigManager;

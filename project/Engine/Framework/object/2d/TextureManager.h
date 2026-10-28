@@ -24,6 +24,19 @@ public:		//外部公開メソッド
 	// テクスチャID（ファイルパス）からバインドレスヒープ内のインデックスを取得する
 	uint32_t GetTextureIndex(const std::string& filePath, bool isSRGB = true) const;
 
+	/// <summary>
+	/// メモリ上の画素からテクスチャを作る（フォントアトラスなど、ファイルが無い画像用）
+	/// sRGBなし(Linear)として登録するので、GetTextureIndex(name, false) で引ける
+	/// </summary>
+	/// <param name="name">登録名（ファイルパスと被らない名前にする）</param>
+	/// <param name="width">幅 px</param>
+	/// <param name="height">高さ px</param>
+	/// <param name="format">画素のフォーマット（フォントなら DXGI_FORMAT_R8_UNORM）</param>
+	/// <param name="pixels">画素データの先頭</param>
+	/// <param name="rowPitch">1行あたりのバイト数</param>
+	/// <returns>バインドレスヒープ内のインデックス</returns>
+	uint32_t CreateTextureFromMemory(const std::string& name, uint32_t width, uint32_t height, DXGI_FORMAT format, const void* pixels, size_t rowPitch);
+
 public:
 	// コピー・移動禁止
 	TextureManager(const TextureManager&) = delete;

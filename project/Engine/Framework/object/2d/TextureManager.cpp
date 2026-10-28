@@ -3,6 +3,7 @@
 #include "SrvDescriptorHeapPool.h"
 #include "ChangeString.h"
 #include "ScopeTimer.h"
+#include <cstring>
 
 TextureManager::~TextureManager() {
 	// 念のためテクスチャマップを空にする
@@ -139,6 +140,52 @@ uint32_t TextureManager::LoadTexture (const std::string& filePath, bool isSRGB) 
 	heapManager_->CreateSRVforTexture2D(newData.textureIndex, newData.textureResource.Get(), srvDesc);
 
 	// マップに登録して、割り当てられたインデックス番号を返す
+	textureMap_[key] = newData;
+	return newData.textureIndex;
+}
+
+uint32_t TextureManager::CreateTextureFromMemory(const std::string& name, uint32_t width, uint32_t height, DXGI_FORMAT format, const void* pixels, size_t rowPitch) {
+	std::string key = MakeKey(name, false);
+
+	// すでに同じ名前で作られていたら、参照カウントだけ増やして返す
+	if (textureMap_.count(key)) {
+		textureMap_.at(key).refCount++;
+		return textureMap_.at(key).textureIndex;
+	}
+
+	// 渡された画素を ScratchImage に1行ずつコピーする
+	// （ScratchImage 側の rowPitch は渡された rowPitch と違うことがあるので、まとめて memcpy しない）
+	DirectX::ScratchImage image;
+	HRESULT hr = image.Initialize2D(format, width, height, 1, 1);
+	assert(SUCCEEDED(hr));
+
+	const DirectX::Image* dst = image.GetImage(0, 0, 0);
+	const uint8_t* src = static_cast<const uint8_t*>(pixels);
+	const size_t copyBytes = (std::min)(rowPitch, dst->rowPitch);
+	for (uint32_t y = 0; y < height; ++y) {
+		std::memcpy(dst->pixels + y * dst->rowPitch, src + y * rowPitch, copyBytes);
+	}
+
+	// ここから先は LoadTexture と同じ流れ（ミップマップは作らない）
+	TextureData newData{};
+	newData.refCount = 1;
+	newData.metadata = image.GetMetadata();
+	newData.textureResource = CreateTextureResource(device_, newData.metadata);
+
+	// VRAMに転送するコマンドを記録（中間リソースをゴミ箱に積む）
+	intermediateResources_.push_back(UploadTextureData(device_, cmdList_, newData.textureResource, image));
+
+	// バインドレスヒープのインデックスを1つ切り出して SRV を作る
+	newData.textureIndex = heapManager_->AllocateIndex();
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = newData.metadata.format;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+
+	heapManager_->CreateSRVforTexture2D(newData.textureIndex, newData.textureResource.Get(), srvDesc);
+
 	textureMap_[key] = newData;
 	return newData.textureIndex;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 class TextureManager;
+class FontManager;
 class ModelFactory;
 class ModelManager;
 struct CameraData;
@@ -27,6 +28,7 @@ class SceneManager;
 // シーンで必要になる高レベルマネージャーや低レイヤー参照のポインタを束ねた薄い構造体
 struct SceneContext {
 	TextureManager* textureManager = nullptr;
+	FontManager* fontManager = nullptr;
 	ModelFactory* modelFactory = nullptr;
 	ModelManager* modelManager = nullptr;
 	MyEngine::LowLevel::GraphicsDevice* graphicsDevice = nullptr;

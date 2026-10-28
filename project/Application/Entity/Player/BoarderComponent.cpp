@@ -206,7 +206,7 @@ bool BoarderComponent::IsJumpHeld() const {
 
 void BoarderComponent::ImGui() {
 #ifdef USEIMGUI
-	ImGui::Text("--- Boarder ---");
+	ImGui::Text("--- プレイヤー ---");
 
 	// 状態の確認
 	if (ImGui::CollapsingHeader("Status", ImGuiTreeNodeFlags_DefaultOpen)) {

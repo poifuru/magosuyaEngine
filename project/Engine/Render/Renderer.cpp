@@ -327,6 +327,10 @@ void MyEngine::Rendering::Renderer::InitializeShaderTable() {
 	uint32_t spritePS = sm->CompileAndCacheShader(L"Resources/Shader/Sprite.PS.hlsl", L"ps_6_0");
 	shaderTable_[MakeShaderKey(ShadingModel::Sprite, InputLayoutType::Standard3D)] = { spriteVS, spritePS };
 
+	// Text x Standard3D (頂点シェーダーは Sprite と共通)
+	uint32_t textPS = sm->CompileAndCacheShader(L"Resources/Shader/Text.PS.hlsl", L"ps_6_0");
+	shaderTable_[MakeShaderKey(ShadingModel::Text, InputLayoutType::Standard3D)] = { spriteVS, textPS };
+
 	// Skybox x Skybox
 	uint32_t skyVS = sm->CompileAndCacheShader(L"Resources/Shader/Skybox.VS.hlsl", L"vs_6_0");
 	uint32_t skyPS = sm->CompileAndCacheShader(L"Resources/Shader/Skybox.PS.hlsl", L"ps_6_0");

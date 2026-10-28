@@ -2,6 +2,7 @@
 #include "BaseScene.h"
 #include "ModelManager.h"
 #include "TextureManager.h"
+#include "FontManager.h"
 #include "ModelFactory.h"
 #include "CommandManager.h"
 #include "PostEffectManager.h"
@@ -127,6 +128,7 @@ private:
 
 	// マネージャーの実体を SceneManager が所有する
 	std::unique_ptr<TextureManager> textureManager_ = nullptr;
+	std::unique_ptr<FontManager> fontManager_ = nullptr;
 	std::unique_ptr<ModelManager> modelManager_ = nullptr;
 	std::unique_ptr<ModelFactory> modelFactory_ = nullptr;
 

@@ -83,6 +83,9 @@ void GameObject::UpdateTransformBuffer() {
 	if (auto* sprite = GetComponent<SpriteComponent>()) {
 		sprite->Update();
 	}
+	if (auto* fontText = GetComponent<FontTextComponent>()) {
+		fontText->Update();
+	}
 	if (auto* water = GetComponent<WaterSurfaceComponent>()) {
 		water->Update();
 	}
