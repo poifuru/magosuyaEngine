@@ -177,13 +177,13 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    278.612548828125,
-                    11.411051750183105,
-                    -15.588314056396484
+                    306.5460205078125,
+                    5.184141635894775,
+                    -50.619815826416016
                 ],
                 "rotation": [
-                    0.07464185357093811,
-                    2.109818458557129,
+                    0.10120174288749695,
+                    1.7811782360076904,
                     0.0
                 ],
                 "scale": [
@@ -197,7 +197,7 @@
             "components": [
                 {
                     "fov": 0.44999998807907104,
-                    "priority": 10,
+                    "priority": 20,
                     "sensitivity": 0.0010000000474974513,
                     "speed": 0.30000001192092896,
                     "type": "VirtualDebugCamera"
@@ -206,13 +206,13 @@
             "name": "DebugCamera",
             "transform": {
                 "position": [
-                    133.27224731445313,
-                    64.6294937133789,
-                    -57.22397994995117
+                    306.5460205078125,
+                    5.184141635894775,
+                    -50.619815826416016
                 ],
                 "rotation": [
-                    0.35320162773132324,
-                    0.6711786985397339,
+                    0.10120174288749695,
+                    1.7811782360076904,
                     0.0
                 ],
                 "scale": [
@@ -244,7 +244,7 @@
                         5.099999904632568,
                         -70.0
                     ],
-                    "priority": 20,
+                    "priority": 10,
                     "targetName": "Player",
                     "targetOffsetY": 6.0,
                     "type": "VirtualFollowCamera",
@@ -345,9 +345,9 @@
             "name": "Watersurface",
             "transform": {
                 "position": [
-                    277.34375,
+                    304.6875,
                     0.0,
-                    -15.625
+                    -50.78125
                 ],
                 "rotation": [
                     0.0,
@@ -422,8 +422,8 @@
                             ]
                         }
                     },
-                    "modelPath": "Resources/Props/Crate/crate.obj",
-                    "texPath": "Resources/uvChecker.png",
+                    "modelPath": "Resources/player/player_upper.obj",
+                    "texPath": "Resources/player/player_palette.png",
                     "type": "MeshRendererComponent"
                 },
                 {
@@ -464,9 +464,9 @@
                     0.0
                 ],
                 "scale": [
-                    1.0,
-                    1.0,
-                    1.0
+                    2.0,
+                    2.0,
+                    2.0
                 ]
             }
         }

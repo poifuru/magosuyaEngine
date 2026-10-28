@@ -85,9 +85,19 @@ uint32_t TextureManager::LoadTexture (const std::string& filePath, bool isSRGB) 
 	if (FAILED(hr)) {
 		OutputDebugStringW((L"[Warning] テクスチャのロードに失敗しました: " + filePathW + L"\n").c_str());
 
-		// 失敗したファイルパス（key）のまま、ダミーのインデックスを持つTextureDataをマップに追加する
-		TextureData dummyData = textureMap_.at("white1x1");
+		// 代わりに uvChecker を表示する (uvChecker 自体が読めないときは white1x1。無限再帰の防止)
+		static const std::string kFallbackTexture = "Resources/uvChecker.png";
+		std::string fallbackKey = "white1x1";
+		if (filePath != kFallbackTexture) {
+			LoadTexture(kFallbackTexture, isSRGB);
+			fallbackKey = MakeKey(kFallbackTexture, isSRGB);
+		}
+
+		// 失敗したファイルパス（key）のまま、代わりのインデックスを持つTextureDataをマップに追加する
+		// 借り物なので isFallback を立てて、Unload でインデックスを解放しないようにする
+		TextureData dummyData = textureMap_.at(fallbackKey);
 		dummyData.refCount = 1; // 1で新規登録
+		dummyData.isFallback = true;
 		textureMap_[key] = dummyData;
 
 		return dummyData.textureIndex;
@@ -200,6 +210,12 @@ void TextureManager::UnloadTexture(const std::string& filePath, bool isSRGB) {
 
 	// 誰も使わなくなったら完全にメモリから削除する
 	if (data.refCount <= 0) {
+		// 借り物 (読み込み失敗時の代わり) はインデックスを返さずにエントリだけ消す
+		if (data.isFallback) {
+			textureMap_.erase(key);
+			return;
+		}
+
 		// 使い終わったインデックスを巨大ヒープの空きリストに返却する
 		heapManager_->FreeIndex(data.textureIndex);
 

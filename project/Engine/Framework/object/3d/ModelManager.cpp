@@ -132,7 +132,23 @@ MyEngine::Rendering::ModelData ModelManager::LoadModelFile(const std::string& fi
 			aiProcess_GenSmoothNormals
 		);
 	}
-	assert(scene && scene->HasMeshes());
+
+	// 読み込みに失敗したら、警告を出して AnimatedCube + uvChecker に差し替える
+	if (!scene || !scene->HasMeshes()) {
+		OutputDebugStringA(("[Warning] モデルのロードに失敗しました: " + filePath +
+			" (" + importer.GetErrorString() + ")\n").c_str());
+
+		static const std::string kFallbackModel = "Resources/AnimatedCube/AnimatedCube.gltf";
+		// 代わりのモデルまで読めないときは本当に壊れているので止める (無限再帰の防止も兼ねる)
+		assert(filePath != kFallbackModel && "代わりのモデルも読み込めません");
+
+		MyEngine::Rendering::ModelData fallback = LoadModelFile(kFallbackModel, inversion);
+		// 差し替えだと一目で分かるように、テクスチャも uvChecker にする
+		for (auto& tex : fallback.defaultTexturePaths) {
+			tex = "Resources/uvChecker.png";
+		}
+		return fallback;
+	}
 
 	// ファイルパスからディレクトリパスを抽出
 	std::string directoryPath = std::filesystem::path(filePath).parent_path().string();
