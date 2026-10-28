@@ -40,6 +40,10 @@ const std::vector<ComponentEntry>& ComponentRegistry::GetEntries() {
 		REGISTER_COMPONENT(BoarderComponent, "Boarder", "Gameplay"),
 		REGISTER_COMPONENT(BoatDriverComponent, "Boat Driver", "Gameplay"),
 		REGISTER_COMPONENT(JumpHeightHudComponent, "Jump Height HUD", "Gameplay"),
+		REGISTER_COMPONENT(GameFlowComponent, "Game Flow", "Gameplay"),
+		REGISTER_COMPONENT(JumpCountHudComponent, "Jump Count HUD", "Gameplay"),
+		REGISTER_COMPONENT(GameMessageHudComponent, "Game Message HUD", "Gameplay"),
+		REGISTER_COMPONENT(DolphinEventComponent, "Dolphin Event", "Gameplay"),
 		REGISTER_COMPONENT(EnergyItemComponent, "Energy Item", "Gameplay"),
 	};
 	return entries;

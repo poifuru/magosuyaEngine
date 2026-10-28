@@ -177,9 +177,9 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    306.9845886230469,
-                    9.98414421081543,
-                    -48.566123962402344
+                    305.6933288574219,
+                    8.996304512023926,
+                    -44.60921096801758
                 ],
                 "rotation": [
                     0.10120174288749695,
@@ -206,9 +206,9 @@
             "name": "DebugCamera",
             "transform": {
                 "position": [
-                    306.9845886230469,
-                    9.98414421081543,
-                    -48.566123962402344
+                    305.6933288574219,
+                    8.996304512023926,
+                    -44.60921096801758
                 ],
                 "rotation": [
                     0.10120174288749695,
@@ -345,9 +345,9 @@
             "name": "Watersurface",
             "transform": {
                 "position": [
-                    306.640625,
+                    304.6875,
                     0.0,
-                    -48.828125
+                    -44.921875
                 ],
                 "rotation": [
                     0.0,
@@ -477,7 +477,7 @@
                     "type": "JumpHeightHudComponent"
                 },
                 {
-                    "alignment": 0,
+                    "alignment": 1,
                     "anchorPoint": [
                         0.5,
                         0.5
@@ -525,6 +525,108 @@
                 }
             ],
             "name": "JumpHeightHUD",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "components": [
+                {
+                    "countdownTime": 3.0,
+                    "endingTime": 2.0,
+                    "maxJumps": 3,
+                    "resultInputDelay": 0.5,
+                    "type": "GameFlowComponent"
+                }
+            ],
+            "name": "GameFlow",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "components": [
+                {
+                    "goTime": 1.0,
+                    "type": "GameMessageHudComponent"
+                },
+                {
+                    "alignment": 0,
+                    "anchorPoint": [
+                        0.5,
+                        0.5
+                    ],
+                    "bakeSize": 32.0,
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "fontPath": "Resources/AppliMincho/HigureGothic-Regular.ttf",
+                    "fontSize": 50.0,
+                    "isVisible": true,
+                    "layer": 4,
+                    "letterSpacing": 0.0,
+                    "lineSpacing": 1.0,
+                    "outlineColor": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "outlineWidth": 3.0,
+                    "position": [
+                        640.0,
+                        360.0
+                    ],
+                    "rotation": 0.0,
+                    "shadowColor": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.6000000238418579
+                    ],
+                    "shadowEnabled": true,
+                    "shadowOffset": [
+                        3.0,
+                        3.0
+                    ],
+                    "shadowSoftness": 2.0,
+                    "text": "Hello, テキスト!",
+                    "type": "FontTextComponent",
+                    "useSDF": true
+                }
+            ],
+            "name": "GameMessageHUD",
             "transform": {
                 "position": [
                     0.0,

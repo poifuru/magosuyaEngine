@@ -92,6 +92,9 @@ void GameObject::UpdateTransformBuffer() {
 	if (auto* buoys = GetComponent<CourseBuoyComponent>()) {
 		buoys->Update();
 	}
+	if (auto* dolphin = GetComponent<DolphinEventComponent>()) {
+		dolphin->UpdateModel();
+	}
 }
 
 void GameObject::ImGui() {

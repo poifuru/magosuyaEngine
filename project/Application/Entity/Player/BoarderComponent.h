@@ -35,6 +35,12 @@ public:
 	float GetCurrentJumpHeight() const { return currentJumpHeight_; } // 今のジャンプでここまでの最高点（水面から）[m]
 	float GetLastJumpHeight() const { return lastJumpHeight_; } // 直前のジャンプの最高到達点（水面から）[m]
 	float GetBestJumpHeight() const { return bestJumpHeight_; } // これまでの最高記録[m]
+	float GetRopeLength() const { return ropeLength_; }   // ロープの長さ[m]（イルカの並走位置の計算に使う）
+	float GetSternOffset() const { return sternOffset_; } // 船の中心からロープの付け根まで[m]
+
+	// 入力の受付を外から切り替える（カウントダウン中・ゲーム終了後に止める）
+	void SetSwingEnabled(bool enabled) { swingEnabled_ = enabled; } // 横移動
+	void SetJumpEnabled(bool enabled) { jumpEnabled_ = enabled; }   // ジャンプ
 
 private:
 	// 船の位置・進行方向・速度を更新
@@ -89,6 +95,7 @@ private:
 	Vector2 boatXZ_{};                 // 船の位置（XZ）
 	Vector3 prevBoatPos_{};
 	bool hasPrevBoatPos_ = false;
+	static constexpr float kTeleportDistance = 5.0f; // 1フレームでこれ以上動いたらワープとみなす[m]
 
 	// --- ロープ ---
 	float angle_ = 0.0f;     // 振り出し角[rad]
@@ -101,6 +108,10 @@ private:
 	Vector2 horizVel_{};       // 水平速度[m/s]
 	float waterY_ = 0.0f;      // 足元の水面の高さ
 	float surfaceRise_ = 0.0f; // 足元の水面が持ち上がる速さ（船に対する相対速度で計算）[m/s]
+
+	// --- 入力の受付（GameFlowComponent が切り替える。シリアライズしない） ---
+	bool swingEnabled_ = true;
+	bool jumpEnabled_ = true;
 
 	// --- ジャンプ ---
 	State state_ = State::Riding;

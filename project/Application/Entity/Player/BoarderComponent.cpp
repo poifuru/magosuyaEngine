@@ -39,19 +39,20 @@ void BoarderComponent::Update() {
 }
 
 void BoarderComponent::UpdateBoat(float dt, const Vector3& boatPos, float boatYaw) {
-	if (hasPrevBoatPos_) {
-		Vector2 move = { boatPos.x - prevBoatPos_.x, boatPos.z - prevBoatPos_.z };
+	// 進行方向は船の向き（yaw）から。BoatDriverComponent は yaw の方向にだけ進むので、移動方向と同じになる
+	// （移動量から求めると、スタート地点に戻すなどのワープで逆向きになり、ロープが船の前に回り込んでしまう）
+	boatDir_ = { std::sin(boatYaw), std::cos(boatYaw) };
 
-		// 進行方向は移動量から求める（航跡は進んでいる方向にできるため）
-		if (Math::Length(move) > 0.001f) {
-			boatDir_ = Math::Normalize(move);
-		}
+	Vector2 move = { boatPos.x - prevBoatPos_.x, boatPos.z - prevBoatPos_.z };
+	bool isTeleport = Math::Length(move) > kTeleportDistance;
+
+	if (hasPrevBoatPos_ && !isTeleport) {
 		boatVel_ = move / dt;
 	}
 	else {
-		// 初回は船の向き（yaw）から。PlayerMovement と同じ (sin, cos)
-		boatDir_ = { std::sin(boatYaw), std::cos(boatYaw) };
+		// 初回・ワープした直後は速度0にする（ワープの距離を速度にすると、水面の判定や波が暴れる）
 		boatVel_ = { 0.0f, 0.0f };
+		hasPrevXZ_ = false; // ボーダー自身の速度も、ワープで跳ねないようにリセット
 	}
 
 	boatXZ_ = { boatPos.x, boatPos.z };
@@ -126,8 +127,11 @@ void BoarderComponent::UpdateBoard(float dt) {
 	riseHistory_[historyIndex_] = surfaceRise_;
 	historyIndex_ = (historyIndex_ + 1) % kHistorySize;
 
-	bool jumpHeld = IsJumpHeld();
-	bool jumpReleased = wasJumpHeld_ && !jumpHeld;
+	// 無効中は押していないことにする
+	// jumpReleased にも jumpEnabled_ を掛けるのは、押しっぱなしのまま無効になった瞬間に
+	// 「前フレーム押してた・今フレーム離した」= リリース判定になってジャンプが出てしまうのを防ぐため
+	bool jumpHeld = jumpEnabled_ && IsJumpHeld();
+	bool jumpReleased = jumpEnabled_ && wasJumpHeld_ && !jumpHeld;
 	wasJumpHeld_ = jumpHeld;
 
 	if (state_ == State::Riding) {
@@ -184,6 +188,8 @@ void BoarderComponent::UpdateBoard(float dt) {
 }
 
 float BoarderComponent::ReadSwingInput() const {
+	if (!swingEnabled_) return 0.0f;
+
 	InputManager* input = InputManager::GetInstance();
 	float x = 0.0f;
 

@@ -17,4 +17,8 @@
 #include "BoarderComponent.h"
 #include "BoatDriverComponent.h"
 #include "JumpHeightHudComponent.h"
+#include "GameFlowComponent.h"
+#include "JumpCountHudComponent.h"
+#include "GameMessageHudComponent.h"
 #include "CourseBuoyComponent.h"
+#include "DolphinEventComponent.h"

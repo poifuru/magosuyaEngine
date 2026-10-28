@@ -58,6 +58,7 @@ namespace {
 	const Vector4 kTargetColor = { 1.0f, 0.2f, 0.2f, 1.0f };    // 今向かっている点
 	const Vector4 kGoalColor = { 1.0f, 1.0f, 1.0f, 1.0f };      // ゴール
 	const Vector4 kGoalSubColor = { 0.1f, 0.1f, 0.1f, 1.0f };   // ゴール（チェッカーの黒）
+	const Vector4 kDolphinColor = { 0.2f, 0.9f, 1.0f, 1.0f };   // イルカイベントの候補
 
 	constexpr float kLineY = 0.3f; // 線を描く高さ（水面に埋もれにくく）
 }
@@ -227,6 +228,12 @@ void BoatDriverComponent::DrawDebug() {
 
 		// 到着判定の範囲
 		line->DrawCircleXZ(p, arriveRadius_, kRadiusColor, 48, false);
+
+		// イルカイベントの候補（水色の二重丸）
+		if (waypoints_[i].dolphin) {
+			line->DrawCircleXZ(p, r + 1.5f, kDolphinColor, 16, false);
+			line->DrawCircleXZ(p, r + 2.5f, kDolphinColor, 16, false);
+		}
 	}
 
 	// 今向かっている点（赤い縦棒）
@@ -441,6 +448,10 @@ void BoatDriverComponent::DrawWaypointList() {
 		}
 		ImGui::SameLine();
 
+		// イルカイベントの候補
+		ImGui::Checkbox("Dolphin", &waypoints_[i].dolphin);
+		ImGui::SameLine();
+
 		// 座標（X, Z）
 		float xz[2] = { waypoints_[i].pos.x, waypoints_[i].pos.z };
 		ImGui::SetNextItemWidth(120.0f);
@@ -529,10 +540,10 @@ void BoatDriverComponent::Serialize(json& j) const {
 	j["boatHeight"] = boatHeight_;
 	j["isRunning"] = isRunning_;
 
-	// コース（点は [x, z, 種類] の配列で保存。種類 0 = 道中、1 = ゴール）
+	// コース（点は [x, z, 種類, イルカ候補] の配列で保存。種類 0 = 道中、1 = ゴール。イルカ候補 0 / 1）
 	json points = json::array();
 	for (const auto& w : waypoints_) {
-		points.push_back({ w.pos.x, w.pos.z, static_cast<int>(w.type) });
+		points.push_back({ w.pos.x, w.pos.z, static_cast<int>(w.type), w.dolphin ? 1 : 0 });
 	}
 	j["waypoints"] = points;
 	j["loop"] = loop_;
@@ -558,6 +569,10 @@ void BoatDriverComponent::Deserialize(const json& j) {
 				// 3つ目（種類）が無い古いデータは道中として読む
 				if (p.size() >= 3 && p[2].get<int>() == static_cast<int>(WaypointType::Goal)) {
 					w.type = WaypointType::Goal;
+				}
+				// 4つ目（イルカ候補）が無い古いデータは候補なし
+				if (p.size() >= 4) {
+					w.dolphin = p[3].get<int>() != 0;
 				}
 				waypoints_.push_back(w);
 			}

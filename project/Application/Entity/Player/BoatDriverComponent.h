@@ -25,6 +25,7 @@ public:
 	struct Waypoint {
 		Vector3 pos;                          // 位置（y は使わない）
 		WaypointType type = WaypointType::Pass;
+		bool dolphin = false;                 // イルカイベントの候補（DolphinEventComponent がこの中から1つ抽選する）
 	};
 
 	BoatDriverComponent() = default;
@@ -46,8 +47,15 @@ public:
 	// スタート地点に戻して、速度0からやり直す
 	void ResetToStart();
 
+	// 走る・止まるの切り替え（false にすると acceleration_ で減速して止まる）
+	void SetRunning(bool running) { isRunning_ = running; }
+	bool IsRunning() const { return isRunning_; }
+
 	// ゴールに着いたか（ゲーム側でリザルトを出すときなどに使う）
 	bool IsFinished() const { return isFinished_; }
+
+	// 今向かっているウェイポイントの番号（size 以上なら走り終えた）。通過したら次の番号に変わる
+	size_t GetTargetIndex() const { return targetIndex_; }
 
 	// コースの情報（ウキの配置などに使う）
 	const std::vector<Waypoint>& GetWaypoints() const { return waypoints_; }

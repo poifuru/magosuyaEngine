@@ -26,6 +26,7 @@ namespace {
 	const ImU32 kTargetColor = IM_COL32(255, 50, 50, 255);    // 今向かっている点
 	const ImU32 kGoalColor = IM_COL32(255, 255, 255, 255);    // ゴール（白）
 	const ImU32 kGoalSubColor = IM_COL32(20, 20, 20, 255);    // ゴール（チェッカーの黒）
+	const ImU32 kDolphinColor = IM_COL32(50, 230, 255, 255);  // イルカイベントの候補（水色）
 	const ImU32 kTextColor = IM_COL32(255, 255, 255, 220);
 
 	constexpr float kPointRadiusPx = 6.0f; // 点の見た目の半径（ピクセル）
@@ -301,6 +302,12 @@ void CourseEditorWindow::DrawMap(BoatDriverComponent* driver) {
 			? BoatDriverComponent::WaypointType::Pass : BoatDriverComponent::WaypointType::Goal;
 		driver->targetIndex_ = 0;
 	}
+	// D キー：選択中の点を イルカイベントの候補 にする / 外す
+	if (isHovered && ImGui::IsKeyPressed(ImGuiKey_D) &&
+		driver->selectedIndex_ >= 0 && driver->selectedIndex_ < static_cast<int>(wps.size())) {
+		auto& dolphin = wps[driver->selectedIndex_].dolphin;
+		dolphin = !dolphin;
+	}
 
 	// ===== 描画 =====
 	ImDrawList* dl = ImGui::GetWindowDrawList();
@@ -384,8 +391,11 @@ void CourseEditorWindow::DrawMap(BoatDriverComponent* driver) {
 		if (isGoal) {
 			dl->AddCircle(s, kPointRadiusPx + 2.0f, kGoalSubColor, 16, 2.0f);
 		}
-		char label[16];
-		sprintf_s(label, isGoal ? "%d GOAL" : "%d", i);
+		if (wps[i].dolphin) {
+			dl->AddCircle(s, kPointRadiusPx + 5.0f, kDolphinColor, 16, 2.0f);
+		}
+		char label[24];
+		sprintf_s(label, isGoal ? "%d GOAL" : (wps[i].dolphin ? "%d DOLPHIN" : "%d"), i);
 		dl->AddText({ s.x + 8.0f, s.y - 16.0f }, kTextColor, label);
 	}
 

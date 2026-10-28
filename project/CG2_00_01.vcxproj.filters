@@ -92,6 +92,7 @@
     <ClCompile Include="Application\Entity\Props\FloatingCrateComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\EnergyItemComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\CourseBuoyComponent.cpp" />
+    <ClCompile Include="Application\Entity\Props\DolphinEventComponent.cpp" />
     <ClCompile Include="Engine\Editor\ParticleEditor\EmitterComponent.cpp" />
     <ClCompile Include="Engine\Editor\ParticleEditor\ParticleComponent.cpp" />
     <ClCompile Include="Engine\Editor\ParticleEditor\ParticleSpawner.cpp" />
@@ -134,6 +135,9 @@
     <ClCompile Include="Application\Entity\Player\BoarderComponent.cpp" />
     <ClCompile Include="Application\Entity\Player\BoatDriverComponent.cpp" />
     <ClCompile Include="Application\Entity\Player\JumpHeightHudComponent.cpp" />
+    <ClCompile Include="Application\Entity\System\GameFlowComponent.cpp" />
+    <ClCompile Include="Application\Entity\System\JumpCountHudComponent.cpp" />
+    <ClCompile Include="Application\Entity\System\GameMessageHudComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\Component\ComponentRegistry.cpp" />
     <ClCompile Include="Engine\Render\FontRendering\FontManager.cpp" />
     <ClCompile Include="Engine\Render\FontRendering\Font.cpp" />
@@ -261,6 +265,7 @@
     <ClInclude Include="Application\Entity\Props\FloatingCrateComponent.h" />
     <ClInclude Include="Application\Entity\Props\EnergyItemComponent.h" />
     <ClInclude Include="Application\Entity\Props\CourseBuoyComponent.h" />
+    <ClInclude Include="Application\Entity\Props\DolphinEventComponent.h" />
     <ClInclude Include="Engine\Editor\ParticleEditor\EmitterComponent.h" />
     <ClInclude Include="Engine\Editor\ParticleEditor\ParticleSpawner.h" />
     <ClInclude Include="Engine\Editor\ParticleEditor\ParticleComponent.h" />
@@ -301,6 +306,9 @@
     <ClInclude Include="Application\Entity\Player\BoarderComponent.h" />
     <ClInclude Include="Application\Entity\Player\BoatDriverComponent.h" />
     <ClInclude Include="Application\Entity\Player\JumpHeightHudComponent.h" />
+    <ClInclude Include="Application\Entity\System\GameFlowComponent.h" />
+    <ClInclude Include="Application\Entity\System\JumpCountHudComponent.h" />
+    <ClInclude Include="Application\Entity\System\GameMessageHudComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\Component\ComponentRegistry.h" />
     <ClInclude Include="Engine\Render\FontRendering\FontManager.h" />
     <ClInclude Include="Engine\Render\FontRendering\Font.h" />
