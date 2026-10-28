@@ -8,6 +8,7 @@
 #include "VirtualDebugCamera.h"
 #include "VirtualFollowCamera.h"
 #include "CameraOrganizer.h"
+#include "StartupSceneSettings.h"
 
 // 各ウィンドウクラス
 #include "PerformanceWindow.h"
@@ -63,6 +64,9 @@ void EditorManager::Initialize() {
 
 	// 前回の開閉状態を復元
 	LoadLayoutSettings();
+
+	// メニューに表示する起動シーンを読み込む
+	startupScenePath_ = StartupSceneSettings::LoadStartupScenePath();
 }
 
 void EditorManager::Finalize() {
@@ -305,6 +309,39 @@ void EditorManager::DrawMenuBar() {
 			}
 			if (ImGui::MenuItem("レイアウトの読み込み")) {
 				LoadLayoutSettings();
+			}
+			ImGui::EndMenu();
+		}
+
+		// Scene メニュー（次回起動時に最初に開くシーンの設定）
+		if (ImGui::BeginMenu("シーン")) {
+			const std::string& currentScenePath = StartupSceneSettings::GetCurrentScenePath();
+			if (ImGui::MenuItem("現在のシーンを起動シーンに設定", nullptr, false, !currentScenePath.empty())) {
+				startupScenePath_ = currentScenePath;
+				StartupSceneSettings::SaveStartupScenePath(startupScenePath_);
+			}
+
+			if (ImGui::BeginMenu("起動シーン")) {
+				std::vector<std::string> sceneFiles;
+				if (std::filesystem::exists(StartupSceneSettings::kSceneFolder)) {
+					for (const auto& entry : std::filesystem::directory_iterator(StartupSceneSettings::kSceneFolder)) {
+						if (entry.is_regular_file() && entry.path().extension() == ".json") {
+							sceneFiles.push_back(entry.path().filename().string());
+						}
+					}
+				}
+
+				if (sceneFiles.empty()) {
+					ImGui::TextDisabled("シーンファイル (*.json) が見つかりません。");
+				}
+				for (const auto& name : sceneFiles) {
+					std::string scenePath = StartupSceneSettings::kSceneFolder + "/" + name;
+					if (ImGui::MenuItem(name.c_str(), nullptr, scenePath == startupScenePath_)) {
+						startupScenePath_ = scenePath;
+						StartupSceneSettings::SaveStartupScenePath(startupScenePath_);
+					}
+				}
+				ImGui::EndMenu();
 			}
 			ImGui::EndMenu();
 		}

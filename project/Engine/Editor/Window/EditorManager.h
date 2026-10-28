@@ -117,6 +117,9 @@ private:
 	// エディタのレイアウト保存用
 	const std::string settingsFilePath_ = "Resources/Editor/editor_settings.json";
 
+	// 次回起動時に最初に開くシーンのパス（メニュー表示用）
+	std::string startupScenePath_;
+
 	// 選択中GameObjectのポインタ
 	GameObject* selectedObject_ = nullptr;
 

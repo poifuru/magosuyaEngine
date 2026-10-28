@@ -39,6 +39,7 @@ const std::vector<ComponentEntry>& ComponentRegistry::GetEntries() {
 		REGISTER_COMPONENT(FloatingCrateComponent, "Floating Crate", "Gameplay"),
 		REGISTER_COMPONENT(BoarderComponent, "Boarder", "Gameplay"),
 		REGISTER_COMPONENT(BoatDriverComponent, "Boat Driver", "Gameplay"),
+		REGISTER_COMPONENT(JumpHeightHudComponent, "Jump Height HUD", "Gameplay"),
 		REGISTER_COMPONENT(EnergyItemComponent, "Energy Item", "Gameplay"),
 	};
 	return entries;

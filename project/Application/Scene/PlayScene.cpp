@@ -17,6 +17,7 @@
 #include "TitleScene.h"
 #include "SceneManager.h"
 #include "ScopeTimer.h"
+#include "StartupSceneSettings.h"
 
 namespace {
 	// 安全にカーソルの表示/非表示を切り替える関数
@@ -59,10 +60,11 @@ void PlayScene::Initialize() {
 	// 本番の生存リストをセット
 	context_->activeGameObjects = &gameObjects_;
 
-	// 起動時に defaultScene.json があれば読み込む
-	const std::string defaultScenePath = "Resources/Scene/defaultScene.json";
-	if (std::filesystem::exists(defaultScenePath)) {
-		std::ifstream file(defaultScenePath);
+	// 起動シーン設定で指定されたシーンを読み込む（無ければ defaultScene.json）
+	const std::string startupScenePath = StartupSceneSettings::LoadStartupScenePath();
+	StartupSceneSettings::SetCurrentScenePath(startupScenePath);
+	if (std::filesystem::exists(startupScenePath)) {
+		std::ifstream file(startupScenePath);
 		if (file.is_open()) {
 			nlohmann::json sceneJ;
 			{

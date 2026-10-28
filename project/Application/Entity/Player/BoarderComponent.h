@@ -32,6 +32,7 @@ public:
 	const char* GetName() const override { return "BoarderComponent"; }
 
 	State GetState() const { return state_; }
+	float GetCurrentJumpHeight() const { return currentJumpHeight_; } // 今のジャンプでここまでの最高点（水面から）[m]
 	float GetLastJumpHeight() const { return lastJumpHeight_; } // 直前のジャンプの最高到達点（水面から）[m]
 	float GetBestJumpHeight() const { return bestJumpHeight_; } // これまでの最高記録[m]
 

@@ -16,4 +16,5 @@
 #include "EnergyItemComponent.h"
 #include "BoarderComponent.h"
 #include "BoatDriverComponent.h"
+#include "JumpHeightHudComponent.h"
 #include "CourseBuoyComponent.h"

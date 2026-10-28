@@ -177,9 +177,9 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    306.5460205078125,
-                    5.184141635894775,
-                    -50.619815826416016
+                    306.7339782714844,
+                    9.98414421081543,
+                    -49.739662170410156
                 ],
                 "rotation": [
                     0.10120174288749695,
@@ -206,9 +206,9 @@
             "name": "DebugCamera",
             "transform": {
                 "position": [
-                    306.5460205078125,
-                    5.184141635894775,
-                    -50.619815826416016
+                    306.7339782714844,
+                    9.98414421081543,
+                    -49.739662170410156
                 ],
                 "rotation": [
                     0.10120174288749695,
@@ -345,7 +345,7 @@
             "name": "Watersurface",
             "transform": {
                 "position": [
-                    304.6875,
+                    306.640625,
                     0.0,
                     -50.78125
                 ],
@@ -467,6 +467,79 @@
                     2.0,
                     2.0,
                     2.0
+                ]
+            }
+        },
+        {
+            "components": [
+                {
+                    "holdTime": 1.5,
+                    "type": "JumpHeightHudComponent"
+                },
+                {
+                    "alignment": 0,
+                    "anchorPoint": [
+                        0.5,
+                        0.5
+                    ],
+                    "bakeSize": 32.0,
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "fontPath": "Resources/AppliMincho/HigureGothic-Regular.ttf",
+                    "fontSize": 48.0,
+                    "isVisible": true,
+                    "layer": 4,
+                    "letterSpacing": 0.0,
+                    "lineSpacing": 1.0,
+                    "outlineColor": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "outlineWidth": 3.0,
+                    "position": [
+                        640.0,
+                        74.0
+                    ],
+                    "rotation": 0.0,
+                    "shadowColor": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.6000000238418579
+                    ],
+                    "shadowEnabled": false,
+                    "shadowOffset": [
+                        3.0,
+                        3.0
+                    ],
+                    "shadowSoftness": 2.0,
+                    "text": "JumpHeight",
+                    "type": "FontTextComponent",
+                    "useSDF": true
+                }
+            ],
+            "name": "JumpHeightHUD",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
                 ]
             }
         }

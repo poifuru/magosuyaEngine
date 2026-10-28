@@ -7,6 +7,7 @@
 #include "TitleScene.h"
 #include "PlayScene.h"
 #include "SceneManager.h"
+#include "StartupSceneSettings.h"
 
 HierarchyWindow::HierarchyWindow() 
 	: IEditorWindow("ヒエラルキー", true) {
@@ -29,6 +30,11 @@ void HierarchyWindow::UpdateAndDraw(const EditorContext& context) {
 	ImGui::Begin(name_.c_str(), &isOpen_);
 	// --- シーン保存 / 読込 / 新規 ボタン ---
 	if (ImGui::Button("シーンを保存")) {
+		// 開いているシーンのファイル名を初期値にする
+		const std::string& currentScenePath = StartupSceneSettings::GetCurrentScenePath();
+		if (!currentScenePath.empty()) {
+			strcpy_s(saveFileName_, std::filesystem::path(currentScenePath).filename().string().c_str());
+		}
 		ImGui::OpenPopup("シーンを保存");
 	}
 	ImGui::SameLine();
@@ -127,6 +133,7 @@ void HierarchyWindow::UpdateAndDraw(const EditorContext& context) {
 			gameObjects.clear();
 			EditorManager::GetInstance()->ClearSelectedObject();
 			strcpy_s(saveFileName_, "defaultScene.json");
+			StartupSceneSettings::SetCurrentScenePath("");
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
@@ -216,6 +223,7 @@ void HierarchyWindow::SaveScene(
 	}
 	std::string nameOnly = std::filesystem::path(fileName).filename().string();
 	strcpy_s(saveFileName_, nameOnly.c_str());
+	StartupSceneSettings::SetCurrentScenePath(fileName);
 }
 
 void HierarchyWindow::LoadScene(
@@ -231,6 +239,7 @@ void HierarchyWindow::LoadScene(
 	file >> sceneJ;
 	std::string nameOnly = std::filesystem::path(fileName).filename().string();
 	strcpy_s(saveFileName_, nameOnly.c_str());
+	StartupSceneSettings::SetCurrentScenePath(fileName);
 	if (sceneJ.contains("objects")) {
 		for (const auto& objJ : sceneJ["objects"]) {
 			auto newObj = std::make_unique<GameObject>(sceneContext, objJ["name"]);

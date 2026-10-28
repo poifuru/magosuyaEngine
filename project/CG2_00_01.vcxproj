@@ -180,6 +180,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClCompile Include="Application\Entity\Player\BoarderComponent.cpp" />
     <ClCompile Include="Application\Entity\Player\BoatDriverComponent.cpp" />
+    <ClCompile Include="Application\Entity\Player\JumpHeightHudComponent.cpp" />
     <ClCompile Include="Application\Scene\BaseScene.cpp" />
     <ClCompile Include="application\scene\ClearScene.cpp" />
     <ClCompile Include="application\scene\GameoverScene.cpp" />
@@ -313,6 +314,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Framework\Object\2d\TextureManager.cpp" />
     <ClCompile Include="Engine\Framework\Object\2d\SpriteRenderer.cpp" />
     <ClCompile Include="application\scene\SceneManager.cpp" />
+    <ClCompile Include="Application\Scene\StartupSceneSettings.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\scene\PlayScene.cpp" />
     <ClCompile Include="Engine\Render\PSO\RootSignatureManager.cpp" />
@@ -357,6 +359,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Application\Collider\Collision.h" />
     <ClInclude Include="Application\Entity\Player\BoarderComponent.h" />
     <ClInclude Include="Application\Entity\Player\BoatDriverComponent.h" />
+    <ClInclude Include="Application\Entity\Player\JumpHeightHudComponent.h" />
     <ClInclude Include="application\scene\BaseScene.h" />
     <ClInclude Include="application\scene\ClearScene.h" />
     <ClInclude Include="application\entity\Entity.h" />
@@ -474,6 +477,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Framework\Object\2d\TextureManager.h" />
     <ClInclude Include="Engine\Framework\Object\2d\SpriteRenderer.h" />
     <ClInclude Include="application\scene\SceneManager.h" />
+    <ClInclude Include="Application\Scene\StartupSceneSettings.h" />
     <ClInclude Include="application\scene\TitleScene.h" />
     <ClInclude Include="application\scene\PlayScene.h" />
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />
