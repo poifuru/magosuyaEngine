@@ -21,8 +21,9 @@ public:
 	/// <param name="fontPath">TTF/OTFのパス(UTF-8)</param>
 	/// <param name="pixelHeight">焼くときの文字の高さ px</param>
 	/// <param name="charsetPath">追加で焼く文字を書いたUTF-8テキスト（無ければ無視）</param>
+	/// <param name="sdf">true なら SDF（輪郭からの距離）で焼く。拡大に強く、縁取り・影が付けられる</param>
 	/// <returns>成功したらtrue</returns>
-	bool Load(const std::string& fontPath, float pixelHeight, const std::string& charsetPath = "");
+	bool Load(const std::string& fontPath, float pixelHeight, const std::string& charsetPath = "", bool sdf = false);
 
 	/// <summary>
 	/// アトラスをPNGに書き出す(確認用)
@@ -47,6 +48,10 @@ public:
 	float GetAscent() const { return ascent_; }
 	float GetLineHeight() const { return lineHeight_; }
 
+	bool IsSDF() const { return isSDF_; }
+	// SDF の余白 px（縁取り・影のぼかしはこの幅までしか広げられない）
+	int GetSdfPadding() const { return kSdfPadding; }
+
 	// UTF-8 の文字列を1文字ずつのコードポイントに分解する
 	static std::u32string DecodeUTF8(const std::string& text);
 
@@ -59,6 +64,10 @@ private:
 	int atlasWidth_ = 0;
 	int atlasHeight_ = 0;
 	std::unordered_map<char32_t, Glyph> glyphs_;
+
+	// SDF の輪郭の外側に取る余白 px
+	static constexpr int kSdfPadding = 8;
+	bool isSDF_ = false;
 
 	uint32_t texIndex_ = 0;
 	float pixelHeight_ = 0.0f;

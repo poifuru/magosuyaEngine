@@ -23,6 +23,7 @@ namespace MyEngine::Rendering {
 		PostEffect_RandomNoise,		// ランダムノイズ
 
 		Text,			// フォントのテキスト（アトラスのRを不透明度として使う）
+		TextSDF,		// フォントのテキスト（SDF。縁取り・影つき）
 
 		Count			// 設定の個数
 	};

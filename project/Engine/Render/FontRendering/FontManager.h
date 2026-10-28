@@ -14,8 +14,9 @@ public:
 	/// </summary>
 	/// <param name="fontPath">TTF/OTFのパス(UTF-8)</param>
 	/// <param name="pixelHeight">焼くときの文字の高さ px</param>
+	/// <param name="sdf">SDF で焼くか</param>
 	/// <returns>失敗したら nullptr</returns>
-	Font* GetFont(const std::string& fontPath, float pixelHeight);
+	Font* GetFont(const std::string& fontPath, float pixelHeight, bool sdf = false);
 
 	// 追加で焼く文字（漢字など）を書いたファイル
 	void SetCharsetPath(const std::string& path) { charsetPath_ = path; }

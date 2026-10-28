@@ -23,12 +23,12 @@ void FontTextComponent::Initialize() {
 	ID3D12Device* device = context->graphicsDevice->GetDevice();
 
 	// 1. 頂点バッファは最大文字数ぶん確保しておき、文字列が変わったら中身だけ書き換える
-	vertexBuffer_.Initialize(device, kMaxChars * 4);
+	vertexBuffer_.Initialize(device, kMaxQuads * 4);
 
 	// インデックスは「四角形1枚 = 三角形2枚」の並びが毎回同じなので、最初に全部作っておく
 	std::vector<uint32_t> indices;
-	indices.reserve(kMaxChars * 6);
-	for (uint32_t i = 0; i < kMaxChars; ++i) {
+	indices.reserve(kMaxQuads * 6);
+	for (uint32_t i = 0; i < kMaxQuads; ++i) {
 		const uint32_t base = i * 4;
 		// 0:左上 1:右上 2:左下 3:右下 (SpriteComponent と同じ並び)
 		indices.insert(indices.end(), { base + 0, base + 1, base + 2, base + 1, base + 3, base + 2 });
@@ -53,6 +53,7 @@ void FontTextComponent::Initialize() {
 	material_->SetEnableLighting(FALSE);
 
 	transformBuffer_.Initialize(device);
+	effectBuffer_.Initialize(device);
 
 	// 3. フォントを用意
 	ApplyFont();
@@ -60,6 +61,15 @@ void FontTextComponent::Initialize() {
 
 void FontTextComponent::Update() {
 	if (!material_ || !gameObject_) return;
+
+	// 頂点は「焼いたサイズ」の px で並んでいるので、表示サイズとの比でスケールする
+	const float scale = (bakeSize_ > 0.0f) ? fontSize_ / bakeSize_ : 1.0f;
+
+	// 影のずれは頂点に焼き込んでいるので、表示サイズや設定が変わったら並べ直す
+	const Vector2 shadowOffsetInBake = { shadowOffset_.x / scale, shadowOffset_.y / scale };
+	if (shadowEnabled_ && (shadowOffsetInBake.x != builtShadowOffset_.x || shadowOffsetInBake.y != builtShadowOffset_.y)) {
+		isDirty_ = true;
+	}
 
 	// 文字列などが変わっていたら、四角形を並べ直す
 	if (isDirty_) {
@@ -71,9 +81,6 @@ void FontTextComponent::Update() {
 	float screenHeight = static_cast<float>(WindowsAPI::GetInstance()->GetWindowHeight());
 	if (screenWidth <= 0.0f) screenWidth = 1280.0f;
 	if (screenHeight <= 0.0f) screenHeight = 720.0f;
-
-	// 頂点は「焼いたサイズ」の px で並んでいるので、表示サイズとの比でスケールする
-	const float scale = (bakeSize_ > 0.0f) ? fontSize_ / bakeSize_ : 1.0f;
 
 	// 1. アンカーポイントのオフセット（箱の大きさ × アンカー）
 	Matrix4x4 matAnchor = Math::MakeTranslateMatrix({ -anchorPoint_.x * boxSize_.x, -anchorPoint_.y * boxSize_.y, 0.0f });
@@ -112,6 +119,23 @@ void FontTextComponent::Update() {
 	material_->SetColor(color_);
 	material_->SetLayer(layer_);
 	material_->Update();
+
+	// 縁取り・影の設定 (px → SDF の値の単位)
+	if (font_ && font_->IsSDF()) {
+		// SDF の値は 0〜1 で、輪郭(0.5)から padding px 離れると 0 になる
+		// → 焼いたサイズで 1px あたり 0.5 / padding 変わる
+		const float padding = static_cast<float>(font_->GetSdfPadding());
+		const float unitPerBakePx = 0.5f / padding;
+		// 縁取り・ぼかしは padding の内側でしか作れないので、少し手前で止める
+		const float maxUnit = 0.5f * (padding - 1.0f) / padding;
+
+		TextEffectData effect{};
+		effect.outlineColor = outlineColor_;
+		effect.shadowColor = shadowColor_;
+		effect.outlineWidth = (std::min)(outlineWidth_ / scale * unitPerBakePx, maxUnit);
+		effect.shadowSoftness = (std::min)(shadowSoftness_ / scale * unitPerBakePx, maxUnit - effect.outlineWidth);
+		effectBuffer_.Update(effect);
+	}
 }
 
 void FontTextComponent::CollectRenderData(MyEngine::Rendering::RenderCollector* collector) const {
@@ -122,7 +146,8 @@ void FontTextComponent::CollectRenderData(MyEngine::Rendering::RenderCollector* 
 	item.mesh = &mesh_;
 	item.material = material_.get();
 	item.transformAddr = transformBuffer_.GetGPUVirtualAddress();
-	item.customAddr = 0;
+	// SDF の時は縁取り・影の設定を b4 に渡す
+	item.customAddr = font_->IsSDF() ? effectBuffer_.GetGPUVirtualAddress() : 0;
 	item.debugName = gameObject_ ? gameObject_->GetName().c_str() : "FontText";
 
 	collector->Submit(item);
@@ -132,6 +157,12 @@ void FontTextComponent::SetText(const std::string& text) {
 	if (text_ == text) return;
 	text_ = text;
 	isDirty_ = true;
+}
+
+void FontTextComponent::SetUseSDF(bool useSDF) {
+	if (useSDF_ == useSDF) return;
+	useSDF_ = useSDF;
+	ApplyFont();
 }
 
 void FontTextComponent::SetFont(const std::string& fontPath, float bakeSize) {
@@ -150,9 +181,13 @@ void FontTextComponent::ApplyFont() {
 	FontManager* fontManager = gameObject_->GetContext()->fontManager;
 	if (!fontManager) return;
 
-	font_ = fontManager->GetFont(fontPath_, bakeSize_);
+	font_ = fontManager->GetFont(fontPath_, bakeSize_, useSDF_);
 	if (font_ && material_) {
 		material_->SetTextureIndex(font_->GetTextureIndex());
+		// 焼き方に合わせてシェーダーを切り替える
+		material_->SetShadingModel(font_->IsSDF()
+			? MyEngine::Rendering::ShadingModel::TextSDF
+			: MyEngine::Rendering::ShadingModel::Text);
 	}
 	isDirty_ = true;
 }
@@ -197,9 +232,12 @@ void FontTextComponent::RebuildMesh() {
 	// 2. 各文字の四角形を並べる
 	//    ペン位置は「ベースライン上の、次の文字を書き始める点」
 	//    四角形の左上 = ペン位置 + bearing、大きさ = glyph.size
-	std::vector<VertexData> vertices;
-	vertices.reserve(chars.size() * 4);
-	uint32_t quadCount = 0;
+	struct Quad {
+		float x0, y0, x1, y1;
+		Vector2 uvMin, uvMax;
+	};
+	std::vector<Quad> quads;
+	quads.reserve(chars.size());
 	bool overflowed = false;
 
 	for (size_t lineIndex = 0; lineIndex < lines.size(); ++lineIndex) {
@@ -221,22 +259,19 @@ void FontTextComponent::RebuildMesh() {
 
 			// スペースなど見た目の無い文字は、ペンを進めるだけ
 			if (glyph->size.x > 0.0f && glyph->size.y > 0.0f) {
-				if (quadCount >= kMaxChars) {
+				if (quads.size() >= kMaxChars) {
 					overflowed = true;
 					break;
 				}
 
-				const float x0 = penX + glyph->bearing.x;
-				const float y0 = baselineY + glyph->bearing.y;
-				const float x1 = x0 + glyph->size.x;
-				const float y1 = y0 + glyph->size.y;
-
-				const Vector3 normal = { 0.0f, 0.0f, -1.0f };
-				vertices.push_back({ { x0, y0, 0.0f, 1.0f }, { glyph->uvMin.x, glyph->uvMin.y }, normal }); // 左上
-				vertices.push_back({ { x1, y0, 0.0f, 1.0f }, { glyph->uvMax.x, glyph->uvMin.y }, normal }); // 右上
-				vertices.push_back({ { x0, y1, 0.0f, 1.0f }, { glyph->uvMin.x, glyph->uvMax.y }, normal }); // 左下
-				vertices.push_back({ { x1, y1, 0.0f, 1.0f }, { glyph->uvMax.x, glyph->uvMax.y }, normal }); // 右下
-				++quadCount;
+				Quad quad{};
+				quad.x0 = penX + glyph->bearing.x;
+				quad.y0 = baselineY + glyph->bearing.y;
+				quad.x1 = quad.x0 + glyph->size.x;
+				quad.y1 = quad.y0 + glyph->size.y;
+				quad.uvMin = glyph->uvMin;
+				quad.uvMax = glyph->uvMax;
+				quads.push_back(quad);
 			}
 
 			penX += glyph->advance + letterSpacing_;
@@ -248,7 +283,30 @@ void FontTextComponent::RebuildMesh() {
 		Logger::GetInstance()->Log("FontTextComponent: 文字数が上限(" + std::to_string(kMaxChars) + ")を超えたので切り捨てました");
 	}
 
-	// 3. 頂点バッファへ書き込み、描画する数を更新
+	// 3. 四角形を頂点にする
+	//    法線の x は「影かどうか」の印として TextSDF シェーダーに渡す
+	std::vector<VertexData> vertices;
+	vertices.reserve(quads.size() * 8);
+	auto pushQuad = [&vertices](const Quad& q, float offsetX, float offsetY, float shadowFlag) {
+		const Vector3 normal = { shadowFlag, 0.0f, -1.0f };
+		const float x0 = q.x0 + offsetX, y0 = q.y0 + offsetY;
+		const float x1 = q.x1 + offsetX, y1 = q.y1 + offsetY;
+		vertices.push_back({ { x0, y0, 0.0f, 1.0f }, { q.uvMin.x, q.uvMin.y }, normal }); // 左上
+		vertices.push_back({ { x1, y0, 0.0f, 1.0f }, { q.uvMax.x, q.uvMin.y }, normal }); // 右上
+		vertices.push_back({ { x0, y1, 0.0f, 1.0f }, { q.uvMin.x, q.uvMax.y }, normal }); // 左下
+		vertices.push_back({ { x1, y1, 0.0f, 1.0f }, { q.uvMax.x, q.uvMax.y }, normal }); // 右下
+	};
+
+	// 影は本体より先に並べる（同じ描画の中では先の三角形から描かれるので、影が下になる）
+	const float scale = (bakeSize_ > 0.0f) ? fontSize_ / bakeSize_ : 1.0f;
+	builtShadowOffset_ = { shadowOffset_.x / scale, shadowOffset_.y / scale };
+	if (shadowEnabled_ && font_->IsSDF()) {
+		for (const Quad& q : quads) pushQuad(q, builtShadowOffset_.x, builtShadowOffset_.y, 1.0f);
+	}
+	for (const Quad& q : quads) pushQuad(q, 0.0f, 0.0f, 0.0f);
+
+	// 4. 頂点バッファへ書き込み、描画する数を更新
+	const uint32_t quadCount = static_cast<uint32_t>(vertices.size() / 4);
 	vertexBuffer_.Update(vertices);
 	mesh_.vertexCount = quadCount * 4;
 	mesh_.indexCount = quadCount * 6;
@@ -272,6 +330,10 @@ void FontTextComponent::ImGui() {
 	ImGui::DragFloat("Bake Size", &bakeSize_, 1.0f, 8.0f, 256.0f);
 	if (ImGui::IsItemDeactivatedAfterEdit()) {
 		ApplyFont();
+	}
+	bool useSDF = useSDF_;
+	if (ImGui::Checkbox("SDF", &useSDF)) {
+		SetUseSDF(useSDF);
 	}
 	if (!font_) {
 		ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "Font not loaded");
@@ -301,6 +363,20 @@ void FontTextComponent::ImGui() {
 	if (ImGui::DragInt("Layer", &layerVal, 1.0f, 0, 255)) {
 		layer_ = static_cast<uint8_t>(layerVal);
 	}
+
+	// 縁取り・影（SDF の時だけ）
+	if (useSDF_ && ImGui::TreeNode("Outline / Shadow")) {
+		ImGui::ColorEdit4("Outline Color", &outlineColor_.x);
+		ImGui::DragFloat("Outline Width", &outlineWidth_, 0.1f, 0.0f, 20.0f);
+
+		if (ImGui::Checkbox("Shadow", &shadowEnabled_)) isDirty_ = true;
+		if (shadowEnabled_) {
+			ImGui::ColorEdit4("Shadow Color", &shadowColor_.x);
+			ImGui::DragFloat2("Shadow Offset", &shadowOffset_.x, 0.5f);
+			ImGui::DragFloat("Shadow Softness", &shadowSoftness_, 0.1f, 0.0f, 20.0f);
+		}
+		ImGui::TreePop();
+	}
 #endif
 }
 
@@ -319,6 +395,13 @@ void FontTextComponent::Serialize(json& j) const {
 	j["lineSpacing"] = lineSpacing_;
 	j["layer"] = layer_;
 	j["isVisible"] = isVisible_;
+	j["useSDF"] = useSDF_;
+	j["outlineColor"] = { outlineColor_.x, outlineColor_.y, outlineColor_.z, outlineColor_.w };
+	j["outlineWidth"] = outlineWidth_;
+	j["shadowEnabled"] = shadowEnabled_;
+	j["shadowColor"] = { shadowColor_.x, shadowColor_.y, shadowColor_.z, shadowColor_.w };
+	j["shadowOffset"] = { shadowOffset_.x, shadowOffset_.y };
+	j["shadowSoftness"] = shadowSoftness_;
 }
 
 void FontTextComponent::Deserialize(const json& j) {
@@ -335,6 +418,13 @@ void FontTextComponent::Deserialize(const json& j) {
 	if (j.contains("lineSpacing")) lineSpacing_ = j["lineSpacing"];
 	if (j.contains("layer")) layer_ = j["layer"];
 	if (j.contains("isVisible")) isVisible_ = j["isVisible"];
+	if (j.contains("useSDF")) useSDF_ = j["useSDF"];
+	if (j.contains("outlineColor")) outlineColor_ = { j["outlineColor"][0], j["outlineColor"][1], j["outlineColor"][2], j["outlineColor"][3] };
+	if (j.contains("outlineWidth")) outlineWidth_ = j["outlineWidth"];
+	if (j.contains("shadowEnabled")) shadowEnabled_ = j["shadowEnabled"];
+	if (j.contains("shadowColor")) shadowColor_ = { j["shadowColor"][0], j["shadowColor"][1], j["shadowColor"][2], j["shadowColor"][3] };
+	if (j.contains("shadowOffset")) shadowOffset_ = { j["shadowOffset"][0], j["shadowOffset"][1] };
+	if (j.contains("shadowSoftness")) shadowSoftness_ = j["shadowSoftness"];
 
 	// AddComponent の時点で Initialize 済みなら、読み込んだフォント設定で取り直す
 	Initialize();

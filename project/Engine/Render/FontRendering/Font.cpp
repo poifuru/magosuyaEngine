@@ -2,6 +2,7 @@
 #include "Font.h"
 #include "ChangeString.h"
 #include "TextureManager.h"
+#include <cstring>
 
 // stb_truetype の実装をこのファイルに展開する
 // ImGui側(imgui_draw.cpp)も static で実装しているので、こちらも static にして衝突を避ける
@@ -43,9 +44,97 @@ namespace {
 		stbtt_PackEnd(&packContext);
 		return result != 0;
 	}
+
+	// SDF の距離が 0〜255 のどこに入るか
+	// 文字の輪郭ちょうどが 128、内側ほど大きく、外側ほど小さい
+	constexpr unsigned char kSdfOnEdge = 128;
+
+	// SDF で全部の文字を焼いて、アトラスに詰める
+	// stbtt_Pack は SDF に対応していないので、焼く(stbtt_GetCodepointSDF)と詰める(stbrp)を自分でやる
+	bool BakeSDF(
+		const stbtt_fontinfo& info, float scale, const std::vector<int>& codepoints, int padding,
+		std::vector<uint8_t>& atlasPixels, int& atlasSize, std::unordered_map<char32_t, Glyph>& glyphs
+	) {
+		// 距離 1px あたりに値がいくつ変わるか（padding px 離れると 0 になる）
+		const float pixelDistScale = static_cast<float>(kSdfOnEdge) / static_cast<float>(padding);
+
+		// 1. 1文字ずつ距離場の画像を作る
+		struct BakedGlyph {
+			int codepoint = 0;
+			unsigned char* bitmap = nullptr;
+			int width = 0, height = 0, xoff = 0, yoff = 0;
+			float advance = 0.0f;
+		};
+		std::vector<BakedGlyph> baked;
+		baked.reserve(codepoints.size());
+		for (int cp : codepoints) {
+			// フォントに入っていない文字は飛ばす（'?' で代用される）
+			if (cp != ' ' && stbtt_FindGlyphIndex(&info, cp) == 0) continue;
+
+			BakedGlyph g{};
+			g.codepoint = cp;
+			// 見た目の無い文字(スペースなど)は nullptr が返る
+			g.bitmap = stbtt_GetCodepointSDF(&info, scale, cp, padding, kSdfOnEdge, pixelDistScale,
+				&g.width, &g.height, &g.xoff, &g.yoff);
+			int advanceWidth = 0, leftSideBearing = 0;
+			stbtt_GetCodepointHMetrics(&info, cp, &advanceWidth, &leftSideBearing);
+			g.advance = advanceWidth * scale;
+			baked.push_back(g);
+		}
+
+		// 2. 入るサイズのアトラスを探しながら詰める（1px の隙間付き）
+		bool packedOk = false;
+		std::vector<stbrp_rect> rects(baked.size());
+		for (int size : kAtlasSizes) {
+			for (size_t i = 0; i < baked.size(); ++i) {
+				rects[i] = {};
+				rects[i].id = static_cast<int>(i);
+				rects[i].w = baked[i].bitmap ? baked[i].width + 1 : 0;
+				rects[i].h = baked[i].bitmap ? baked[i].height + 1 : 0;
+			}
+			std::vector<stbrp_node> nodes(size);
+			stbrp_context context{};
+			stbrp_init_target(&context, size, size, nodes.data(), static_cast<int>(nodes.size()));
+			if (stbrp_pack_rects(&context, rects.data(), static_cast<int>(rects.size()))) {
+				atlasSize = size;
+				packedOk = true;
+				break;
+			}
+		}
+
+		// 3. 詰めた場所に画素をコピーして、Glyph の表を作る
+		if (packedOk) {
+			atlasPixels.assign(static_cast<size_t>(atlasSize) * atlasSize, 0);
+			const float inv = 1.0f / static_cast<float>(atlasSize);
+			for (size_t i = 0; i < baked.size(); ++i) {
+				const BakedGlyph& g = baked[i];
+				const stbrp_rect& r = rects[i];
+				Glyph glyph{};
+				glyph.advance = g.advance;
+				if (g.bitmap) {
+					for (int y = 0; y < g.height; ++y) {
+						std::memcpy(&atlasPixels[static_cast<size_t>(r.y + y) * atlasSize + r.x],
+							&g.bitmap[static_cast<size_t>(y) * g.width], static_cast<size_t>(g.width));
+					}
+					glyph.uvMin = { r.x * inv, r.y * inv };
+					glyph.uvMax = { (r.x + g.width) * inv, (r.y + g.height) * inv };
+					glyph.size = { static_cast<float>(g.width), static_cast<float>(g.height) };
+					// SDF の画像は輪郭の外に padding ぶん余白があるので、その分 xoff/yoff もずれている
+					glyph.bearing = { static_cast<float>(g.xoff), static_cast<float>(g.yoff) };
+				}
+				glyphs[static_cast<char32_t>(g.codepoint)] = glyph;
+			}
+		}
+
+		// 4. stb が確保した画像を解放
+		for (BakedGlyph& g : baked) {
+			if (g.bitmap) stbtt_FreeSDF(g.bitmap, nullptr);
+		}
+		return packedOk;
+	}
 }
 
-bool Font::Load(const std::string& fontPath, float pixelHeight, const std::string& charsetPath) {
+bool Font::Load(const std::string& fontPath, float pixelHeight, const std::string& charsetPath, bool sdf) {
 	// 1. フォントファイルを丸ごとメモリに読む
 	std::ifstream file(std::filesystem::path(String::ConvertString(fontPath)), std::ios::binary | std::ios::ate);
 	if (!file) {
@@ -66,8 +155,31 @@ bool Font::Load(const std::string& fontPath, float pixelHeight, const std::strin
 	}
 	pixelHeight_ = pixelHeight;
 
-	// 3. 焼く文字を集めて、入るサイズのアトラスに詰める
+	// 3. 行の高さなどの情報 (フォント内部の単位 → px)
+	const float scale = stbtt_ScaleForPixelHeight(&info, pixelHeight);
+	int ascent = 0, descent = 0, lineGap = 0;
+	stbtt_GetFontVMetrics(&info, &ascent, &descent, &lineGap);
+	ascent_ = ascent * scale;
+	lineHeight_ = (ascent - descent + lineGap) * scale;
+
+	// 4. 焼く文字を集めて、アトラスに詰める
 	const std::vector<int> codepoints = BuildCodepoints(charsetPath);
+	glyphs_.clear();
+	isSDF_ = sdf;
+
+	if (isSDF_) {
+		// SDF: 1文字ずつ距離場を作って、自分で詰める
+		int atlasSize = 0;
+		if (!BakeSDF(info, scale, codepoints, kSdfPadding, atlasPixels_, atlasSize, glyphs_)) {
+			Logger::GetInstance()->Log("Font: 4096x4096 のアトラスにも入りきりません。文字数かサイズを減らしてください");
+			return false;
+		}
+		atlasWidth_ = atlasSize;
+		atlasHeight_ = atlasSize;
+		return true;
+	}
+
+	// ビットマップ: stbtt_Pack に焼くのと詰めるのを両方任せる
 	std::vector<stbtt_packedchar> packed;
 	bool packedOk = false;
 	for (int size : kAtlasSizes) {
@@ -83,15 +195,7 @@ bool Font::Load(const std::string& fontPath, float pixelHeight, const std::strin
 		return false;
 	}
 
-	// 4. 行の高さなどの情報 (フォント内部の単位 → px)
-	const float scale = stbtt_ScaleForPixelHeight(&info, pixelHeight);
-	int ascent = 0, descent = 0, lineGap = 0;
-	stbtt_GetFontVMetrics(&info, &ascent, &descent, &lineGap);
-	ascent_ = ascent * scale;
-	lineHeight_ = (ascent - descent + lineGap) * scale;
-
 	// 5. stb の結果を Glyph の表に変換
-	glyphs_.clear();
 	const float invW = 1.0f / static_cast<float>(atlasWidth_);
 	const float invH = 1.0f / static_cast<float>(atlasHeight_);
 	for (size_t i = 0; i < codepoints.size(); ++i) {
