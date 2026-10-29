@@ -68,6 +68,12 @@ private:
 	// 状態ごとの「船から見た位置」（前方向 forward[m]、横 lateral[m]、深さ depth[m]）と波の強さ（0〜1）を決める
 	void EvaluatePose(float& forward, float& lateral, float& depth, float& waveWeight) const;
 
+	// 来る側を決める（StartEvent で1回）。船がこれから曲がる方向の外側にする
+	// （内側にいると、ボーダーが遠心力で外へ振られて大波に届かない）
+	float DecideSide() const;
+
+	// 波紋が広がる速さ[m/s]。シミュレーションは1フレームに1回進むので、FPS によって変わる
+	float CalcWaveSpeed() const;
 	// 航跡の V の半分の角度 θ の tan（船が波より遅いときは V ができないので 0）
 	float CalcWakeTan() const;
 	// 2つの航跡が交わってほしい点の、船の中心からの後ろ向きの距離 x[m]
@@ -83,8 +89,8 @@ private:
 	float scale_ = 3.0f;              // 大きさ（モデルは全長 2.6 m）
 
 	// --- 位置 ---
-	int side_ = 0;                    // 来る側（1 = 右、-1 = 左、0 = 毎回ランダム）
-	float waveSpeed_ = 7.3f;          // 波紋が広がる速さ[m/s]（Ripple.CS の waveSpeed 0.7、1マス 0.29 m、60FPS のとき）
+	int side_ = 0;                    // 来る側（1 = 右、-1 = 左、0 = 自動：カーブの外側。直線ならランダム）
+	float waveSpeedScale_ = 1.0f;     // 波の速さの補正（デバッグ線が白い航跡とずれていたら動かす。1 = 計算どおり）
 	float crossAdjust_ = 0.0f;        // 交わる点を後ろへずらす量[m]（+ で遠く、- で船の近く）
 	float approachFrom_ = 40.0f;      // Approach の開始位置：並走位置よりさらに外側[m]
 	float approachAhead_ = 30.0f;     // Approach の開始位置：船より前[m]
@@ -98,7 +104,7 @@ private:
 	float fallbackDelay_ = 10.0f;     // ウェイポイントが無いコースのとき、スタートから何秒で来るか
 
 	// --- 波 ---
-	float waveStrength_ = 1.0f;       // 立てる波の強さ（船 = 1）
+	float waveStrength_ = 1.5f;       // 立てる波の強さ（船 = 1）
 	float waveRadius_ = 5.0f;         // 波源の半径[m]（船は 5 m）
 	float foam_ = 0.02f;              // 泡（毎フレーム）
 
@@ -123,6 +129,7 @@ private:
 	bool hasPrevTarget_ = false;
 	float sideSign_ = 1.0f;           // 今回来る側
 	float swimTime_ = 0.0f;           // 上下の泳ぎの位相用
+	float smoothedDt_ = 1.0f / 60.0f; // ならした dt（波の速さの計算用）
 
 	Vector3 position_{};              // ワールド位置
 	Vector2 prevXZ_{};

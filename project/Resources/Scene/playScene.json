@@ -50,54 +50,62 @@
                 {
                     "acceleration": 10.0,
                     "arriveRadius": 15.0,
-                    "boatHeight": 1.5,
+                    "boatHeight": 1.0,
                     "cruiseSpeed": 60.0,
                     "gateWidth": 24.0,
-                    "isRunning": true,
+                    "isRunning": false,
                     "loop": true,
                     "maxTurnRate": 0.30000001192092896,
                     "showPreview": true,
                     "type": "BoatDriverComponent",
                     "waypoints": [
                         [
-                            -41.42266845703125,
-                            -36.38047790527344,
-                            0
+                            -76.46469116210938,
+                            -14.57781982421875,
+                            0,
+                            1
                         ],
                         [
-                            -513.9752197265625,
-                            122.59812927246094,
+                            -513.1273193359375,
+                            123.93345642089844,
+                            0,
                             0
                         ],
                         [
                             -987.292236328125,
                             310.1388244628906,
+                            0,
                             0
                         ],
                         [
                             -525.882568359375,
                             429.2123107910156,
+                            0,
                             0
                         ],
                         [
                             -203.78652954101563,
                             842.04052734375,
+                            0,
                             0
                         ],
                         [
                             414.5820007324219,
                             725.5638427734375,
+                            0,
                             0
                         ],
                         [
                             268.9179382324219,
                             379.11956787109375,
+                            0,
                             0
                         ],
                         [
                             257.1073303222656,
                             -2.7564697265625,
-                            1
+                            1,
+                            0
                         ]
                     ]
                 },
@@ -117,13 +125,13 @@
             "name": "Boat",
             "transform": {
                 "position": [
-                    399.8684387207031,
-                    1.5,
-                    -88.11161041259766
+                    -1078.2908935546875,
+                    1.0,
+                    492.54034423828125
                 ],
                 "rotation": [
                     0.0,
-                    2.109661102294922,
+                    0.5923265218734741,
                     0.0
                 ],
                 "scale": [
@@ -177,13 +185,13 @@
             "name": "MainCamera",
             "transform": {
                 "position": [
-                    305.6933288574219,
-                    8.996304512023926,
-                    -44.60921096801758
+                    -1147.1058349609375,
+                    11.319502830505371,
+                    369.0685729980469
                 ],
                 "rotation": [
-                    0.10120174288749695,
-                    1.7811782360076904,
+                    0.0746418908238411,
+                    0.43372321128845215,
                     0.0
                 ],
                 "scale": [
@@ -197,7 +205,7 @@
             "components": [
                 {
                     "fov": 0.44999998807907104,
-                    "priority": 20,
+                    "priority": 10,
                     "sensitivity": 0.0010000000474974513,
                     "speed": 0.30000001192092896,
                     "type": "VirtualDebugCamera"
@@ -206,13 +214,13 @@
             "name": "DebugCamera",
             "transform": {
                 "position": [
-                    305.6933288574219,
-                    8.996304512023926,
-                    -44.60921096801758
+                    257.8367919921875,
+                    98.57359313964844,
+                    -62.93864059448242
                 ],
                 "rotation": [
-                    0.10120174288749695,
-                    1.7811782360076904,
+                    0.03820173069834709,
+                    2.605177879333496,
                     0.0
                 ],
                 "scale": [
@@ -244,7 +252,7 @@
                         5.099999904632568,
                         -70.0
                     ],
-                    "priority": 10,
+                    "priority": 20,
                     "targetName": "Player",
                     "targetOffsetY": 6.0,
                     "type": "VirtualFollowCamera",
@@ -255,13 +263,13 @@
             "name": "FollowCamera",
             "transform": {
                 "position": [
-                    278.612548828125,
-                    11.411051750183105,
-                    -15.588314056396484
+                    -1147.1058349609375,
+                    11.319502830505371,
+                    369.0685729980469
                 ],
                 "rotation": [
-                    0.07464185357093811,
-                    2.109818458557129,
+                    0.0746418908238411,
+                    0.43372321128845215,
                     0.0
                 ],
                 "scale": [
@@ -345,9 +353,9 @@
             "name": "Watersurface",
             "transform": {
                 "position": [
-                    304.6875,
+                    -1148.4375,
                     0.0,
-                    -44.921875
+                    367.1875
                 ],
                 "rotation": [
                     0.0,
@@ -434,17 +442,18 @@
                     "landingDepthScale": 0.05999999865889549,
                     "landingFoam": 0.800000011920929,
                     "landingRadius": 2.5,
-                    "launchScale": 4.0,
+                    "launchScale": 0.800000011920929,
                     "maxAngle": 0.8500000238418579,
-                    "maxJumpHeight": 300.0,
+                    "maxJumpHeight": 40.0,
                     "maxLandingDepth": 1.2000000476837158,
-                    "maxRiseMemory": 8.0,
+                    "maxRiseMemory": 200.0,
                     "rideFoam": 0.019999999552965164,
                     "rideWaveRadius": 1.5,
                     "rideWaveStrength": 0.30000001192092896,
                     "riseMemoryDecay": 5.0,
                     "ropeLength": 70.0,
                     "ropePull": 5.0,
+                    "softKneeHeight": 20.0,
                     "sternOffset": 2.0,
                     "type": "BoarderComponent",
                     "useRightStick": true,
@@ -454,13 +463,13 @@
             "name": "Player",
             "transform": {
                 "position": [
-                    338.0772399902344,
-                    0.2588472366333008,
-                    -51.15422058105469
+                    -1118.4561767578125,
+                    0.14628320932388306,
+                    432.7845458984375
                 ],
                 "rotation": [
                     0.0,
-                    2.109818458557129,
+                    0.5923265814781189,
                     0.0
                 ],
                 "scale": [
@@ -519,7 +528,7 @@
                         3.0
                     ],
                     "shadowSoftness": 2.0,
-                    "text": "JumpHeight",
+                    "text": "",
                     "type": "FontTextComponent",
                     "useSDF": true
                 }
@@ -579,7 +588,7 @@
                     "type": "GameMessageHudComponent"
                 },
                 {
-                    "alignment": 0,
+                    "alignment": 1,
                     "anchorPoint": [
                         0.5,
                         0.5
@@ -621,12 +630,60 @@
                         3.0
                     ],
                     "shadowSoftness": 2.0,
-                    "text": "Hello, テキスト!",
+                    "text": "ジャンプ終了\n\nJUMP 1   11.1 m\nJUMP 2   26.8 m\nJUMP 3   14.4 m\n\n最高 26.8 m\n\nA / Space : 再挑戦\nB / BackSpace : タイトル",
                     "type": "FontTextComponent",
                     "useSDF": true
                 }
             ],
             "name": "GameMessageHUD",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "components": [
+                {
+                    "approachAhead": 30.0,
+                    "approachFrom": 40.0,
+                    "approachTime": 3.5,
+                    "crossAdjust": 0.0,
+                    "escortTime": 9.0,
+                    "fallbackDelay": 10.0,
+                    "foam": 0.019999999552965164,
+                    "hiddenDepth": 3.0,
+                    "isVisible": true,
+                    "leaveAhead": 40.0,
+                    "leaveTime": 3.0,
+                    "leaveTo": 50.0,
+                    "modelPath": "Resources/dolphin/dolphin.obj",
+                    "porpoiseHeight": 0.4000000059604645,
+                    "porpoisePitch": 0.25,
+                    "porpoiseSpeed": 3.0,
+                    "scale": 4.0,
+                    "side": 0,
+                    "swimDepth": 0.6000000238418579,
+                    "texturePath": "Resources/dolphin/dolphin_palette.png",
+                    "type": "DolphinEventComponent",
+                    "waveRadius": 5.0,
+                    "waveSpeedScale": 1.399999976158142,
+                    "waveStrength": 1.7000000476837158
+                }
+            ],
+            "name": "DolphinEvent",
             "transform": {
                 "position": [
                     0.0,

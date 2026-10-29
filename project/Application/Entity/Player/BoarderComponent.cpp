@@ -153,8 +153,16 @@ void BoarderComponent::UpdateBoard(float dt) {
 
 		// 押している間ためて、離した瞬間にジャンプ
 		if (jumpReleased) {
-			float maxVy = std::sqrt(2.0f * gravity_ * maxJumpHeight_); // 高さ H に必要な初速 √(2gH)
-			vy_ = (std::min)(riseMemory_ * launchScale_ + baseJump_, maxVy);
+			// 高さを先に決めて、その高さに届く初速 √(2gH) で打ち上げる
+			float rawHeight = 0.0f;
+			float height = CalcJumpHeight(riseMemory_, &rawHeight);
+			vy_ = std::sqrt(2.0f * gravity_ * height);
+			lastTakeoffRise_ = riseMemory_;
+
+			// 調整用に記録（着水したら actualHeight を入れる）
+			jumpLog_[jumpLogCount_ % kJumpLogSize] = { riseMemory_, rawHeight, height, -1.0f };
+			jumpLogCount_++;
+
 			state_ = State::Airborne;
 			takeoffWaterY_ = waterY_;
 			currentJumpHeight_ = 0.0f;
@@ -183,8 +191,27 @@ void BoarderComponent::UpdateBoard(float dt) {
 			riseMemory_ = 0.0f;
 			lastJumpHeight_ = currentJumpHeight_;
 			bestJumpHeight_ = (std::max)(bestJumpHeight_, lastJumpHeight_);
+			if (jumpLogCount_ > 0) {
+				jumpLog_[(jumpLogCount_ - 1) % kJumpLogSize].actualHeight = currentJumpHeight_;
+			}
 		}
 	}
+}
+
+float BoarderComponent::CalcJumpHeight(float rise, float* rawHeight) const {
+	// そのままの高さ：今までと同じ初速 = rise × launchScale + baseJump から、届く高さ v² / 2g
+	float v = rise * launchScale_ + baseJump_;
+	float raw = (gravity_ > 0.0f) ? v * v / (2.0f * gravity_) : 0.0f;
+	if (rawHeight) { *rawHeight = raw; }
+
+	// ひざ（knee）までは、そのままの高さ
+	float knee = (std::min)(softKneeHeight_, maxJumpHeight_);
+	if (raw <= knee) return raw;
+
+	// 超えた分は tanh で maxJumpHeight_ に近づける（傾きは knee の所で 1 なので、なめらかにつながる）
+	float range = maxJumpHeight_ - knee;
+	if (range <= 0.001f) return knee;
+	return knee + range * std::tanh((raw - knee) / range);
 }
 
 float BoarderComponent::ReadSwingInput() const {
@@ -221,7 +248,37 @@ void BoarderComponent::ImGui() {
 		ImGui::Text("waterY %.3f  surfaceRise %.2f m/s  memory %.2f", waterY_, surfaceRise_, riseMemory_);
 		ImGui::PlotLines("surfaceRise", riseHistory_, kHistorySize, historyIndex_, nullptr, -5.0f, 5.0f, ImVec2(0, 60));
 		ImGui::Text("jump: last %.2f m  best %.2f m", lastJumpHeight_, bestJumpHeight_);
+		float nowRaw = 0.0f;
+		float nowHeight = CalcJumpHeight(riseMemory_, &nowRaw);
+		ImGui::Text("now release -> %.1f m (raw %.1f m)", nowHeight, nowRaw);
 		if (ImGui::Button("Reset Best")) { bestJumpHeight_ = 0.0f; }
+	}
+
+	// 調整用の記録：普通の航跡とイルカの波で何回か跳んで、rise の差を見る
+	if (ImGui::CollapsingHeader("Jump Log", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::BeginTable("JumpLogTable", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit)) {
+			ImGui::TableSetupColumn("#");
+			ImGui::TableSetupColumn("rise m/s");
+			ImGui::TableSetupColumn("raw m");
+			ImGui::TableSetupColumn("target m");
+			ImGui::TableSetupColumn("actual m");
+			ImGui::TableHeadersRow();
+			int count = (std::min)(jumpLogCount_, kJumpLogSize);
+			for (int n = 0; n < count; ++n) {
+				int index = jumpLogCount_ - 1 - n; // 新しい順
+				const JumpLog& log = jumpLog_[index % kJumpLogSize];
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn(); ImGui::Text("%d", index + 1);
+				ImGui::TableNextColumn(); ImGui::Text("%.2f", log.rise);
+				ImGui::TableNextColumn(); ImGui::Text("%.1f", log.rawHeight);
+				ImGui::TableNextColumn(); ImGui::Text("%.1f", log.targetHeight);
+				ImGui::TableNextColumn();
+				if (log.actualHeight >= 0.0f) { ImGui::Text("%.1f", log.actualHeight); }
+				else { ImGui::TextDisabled("air"); }
+			}
+			ImGui::EndTable();
+		}
+		if (ImGui::Button("Clear Log")) { jumpLogCount_ = 0; }
 	}
 
 	// ロープと横移動
@@ -240,11 +297,27 @@ void BoarderComponent::ImGui() {
 	if (ImGui::CollapsingHeader("Jump")) {
 		ImGui::DragFloat("Launch Scale", &launchScale_, 0.1f, 0.0f, 10.0f);
 		ImGui::DragFloat("Base Jump", &baseJump_, 0.1f, 0.0f, 10.0f);
-		ImGui::DragFloat("Max Jump Height", &maxJumpHeight_, 0.1f, 0.5f, 50.0f);
+		ImGui::DragFloat("Soft Knee Height", &softKneeHeight_, 0.1f, 0.5f, 300.0f, "%.1f m");
+		ImGui::DragFloat("Max Jump Height", &maxJumpHeight_, 0.1f, 0.5f, 300.0f, "%.1f m");
 		ImGui::DragFloat("Gravity", &gravity_, 0.1f, 1.0f, 50.0f);
 		ImGui::DragFloat("Rise Memory Decay", &riseMemoryDecay_, 0.1f, 0.0f, 50.0f);
-		ImGui::DragFloat("Max Rise Memory", &maxRiseMemory_, 0.1f, 0.0f, 20.0f);
+		ImGui::DragFloat("Max Rise Memory", &maxRiseMemory_, 0.1f, 0.0f, 100.0f);
 		ImGui::Text("air time at max = %.2f s", gravity_ > 0.0f ? 2.0f * std::sqrt(2.0f * maxJumpHeight_ / gravity_) : 0.0f);
+
+		// rise → 高さ の曲線（横：0 〜 Max Rise Memory、縦：0 〜 Max Jump Height）
+		constexpr int kCurveSamples = 64;
+		float curve[kCurveSamples];
+		for (int i = 0; i < kCurveSamples; ++i) {
+			curve[i] = CalcJumpHeight(maxRiseMemory_ * static_cast<float>(i) / (kCurveSamples - 1));
+		}
+		ImGui::PlotLines("height by rise", curve, kCurveSamples, 0, nullptr, 0.0f, maxJumpHeight_, ImVec2(0, 80));
+		ImGui::Text("x: rise 0 - %.0f m/s   y: 0 - %.0f m", maxRiseMemory_, maxJumpHeight_);
+
+		// ひざの高さになる rise（ここより大きい波は伸びにくくなる）
+		if (launchScale_ > 0.0f) {
+			float kneeV = std::sqrt(2.0f * gravity_ * (std::min)(softKneeHeight_, maxJumpHeight_));
+			ImGui::Text("knee at rise %.2f m/s", (std::max)((kneeV - baseJump_) / launchScale_, 0.0f));
+		}
 	}
 
 	// 入力
@@ -281,6 +354,7 @@ void BoarderComponent::Serialize(json& j) const {
 	j["launchScale"] = launchScale_;
 	j["baseJump"] = baseJump_;
 	j["maxJumpHeight"] = maxJumpHeight_;
+	j["softKneeHeight"] = softKneeHeight_;
 	j["gravity"] = gravity_;
 	j["riseMemoryDecay"] = riseMemoryDecay_;
 	j["maxRiseMemory"] = maxRiseMemory_;
@@ -311,6 +385,7 @@ void BoarderComponent::Deserialize(const json& j) {
 	if (j.contains("launchScale")) launchScale_ = j["launchScale"];
 	if (j.contains("baseJump")) baseJump_ = j["baseJump"];
 	if (j.contains("maxJumpHeight")) maxJumpHeight_ = j["maxJumpHeight"];
+	if (j.contains("softKneeHeight")) softKneeHeight_ = j["softKneeHeight"];
 	if (j.contains("gravity")) gravity_ = j["gravity"];
 	if (j.contains("riseMemoryDecay")) riseMemoryDecay_ = j["riseMemoryDecay"];
 	if (j.contains("maxRiseMemory")) maxRiseMemory_ = j["maxRiseMemory"];

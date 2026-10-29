@@ -11,7 +11,9 @@ using json = nlohmann::json;
 // ・高さは水面（Gerstner + 波紋）に乗る
 // ・ジャンプボタンを押している間ためて、離すとジャンプ
 //   打ち上げ速度 = 足元の水面が持ち上がる速さ dot(∇h, 船に対する相対速度) × 誇張倍率 + 基本ジャンプ
-//   （上限は最高到達点 maxJumpHeight_ から √(2gH) で決める）
+//   この初速で届く高さ（そのままの高さ）が softKneeHeight_ を超えたら、超えた分は maxJumpHeight_ に向かって
+//   だんだん伸びにくくする（ソフトな上限）。決めた高さ H から初速 √(2gH) を出す
+//   → 大きい波ほど少しずつ高くなり、上限に張り付いて全部同じ高さ、にならない
 class BoarderComponent : public Component {
 public:
 	enum class State {
@@ -37,6 +39,10 @@ public:
 	float GetBestJumpHeight() const { return bestJumpHeight_; } // これまでの最高記録[m]
 	float GetRopeLength() const { return ropeLength_; }   // ロープの長さ[m]（イルカの並走位置の計算に使う）
 	float GetSternOffset() const { return sternOffset_; } // 船の中心からロープの付け根まで[m]
+	float GetLastTakeoffRise() const { return lastTakeoffRise_; } // 直前の踏み切りの riseMemory[m/s]（演出の判定などに使う）
+
+	// riseMemory から跳ぶ高さ[m]を決める（rawHeight にはソフトな上限をかける前の高さを入れる）
+	float CalcJumpHeight(float rise, float* rawHeight = nullptr) const;
 
 	// 入力の受付を外から切り替える（カウントダウン中・ゲーム終了後に止める）
 	void SetSwingEnabled(bool enabled) { swingEnabled_ = enabled; } // 横移動
@@ -70,10 +76,11 @@ private:
 	// --- ジャンプ ---
 	float launchScale_ = 4.0f;      // 水面の持ち上がる速さ → 打ち上げ速度の誇張倍率
 	float baseJump_ = 1.0f;         // ボタンだけで出る小ジャンプ[m/s]
-	float maxJumpHeight_ = 10.0f;   // 最高到達点[m]
+	float maxJumpHeight_ = 40.0f;   // 最高到達点[m]（ソフトな上限が近づいていく先。ここには届かない）
+	float softKneeHeight_ = 15.0f;  // ここまではそのままの高さ。超えた分は伸びにくくなる[m]
 	float gravity_ = 25.0f;         // 重力[m/s²]（高さは変えず、滞空時間を変える）
 	float riseMemoryDecay_ = 5.0f;  // 踏み切りの猶予が減る速さ[(m/s)/s]
-	float maxRiseMemory_ = 8.0f;    // 猶予として覚えておく値の上限[m/s]（安全装置）
+	float maxRiseMemory_ = 30.0f;   // 猶予として覚えておく値の上限[m/s]（安全装置。高さの上限はソフトな上限で決める）
 
 	// --- 波を立てる ---
 	float rideWaveStrength_ = 0.3f;  // 滑っている間に立てる波の強さ（船 = 1）
@@ -123,6 +130,18 @@ private:
 	float lastJumpHeight_ = 0.0f;
 	float bestJumpHeight_ = 0.0f;
 	float lastLandingDepth_ = 0.0f; // 直前の着水で押し込んだ深さ（デバッグ表示）
+	float lastTakeoffRise_ = 0.0f;  // 直前の踏み切りの riseMemory
+
+	// --- 調整用の記録（普通の航跡とイルカの波で、踏み切りの値と高さを比べる） ---
+	struct JumpLog {
+		float rise = 0.0f;          // 踏み切りの riseMemory[m/s]
+		float rawHeight = 0.0f;     // ソフトな上限をかける前の高さ[m]
+		float targetHeight = 0.0f;  // 決めた高さ[m]
+		float actualHeight = -1.0f; // 実際に届いた高さ[m]（着水で入る。-1 = 空中）
+	};
+	static constexpr int kJumpLogSize = 10;
+	JumpLog jumpLog_[kJumpLogSize]{};
+	int jumpLogCount_ = 0;          // これまでの記録の数（リングバッファの書き込み位置にも使う）
 
 	// --- デバッグ表示 ---
 	static constexpr int kHistorySize = 120;

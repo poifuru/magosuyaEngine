@@ -83,14 +83,6 @@ void DolphinEventComponent::ChooseWaypoint() {
 		std::uniform_int_distribution<size_t> pick(0, candidates.size() - 1);
 		chosenWaypoint_ = candidates[pick(Rng())];
 	}
-
-	// 来る側
-	if (side_ == 0) {
-		std::bernoulli_distribution coin(0.5);
-		sideSign_ = coin(Rng()) ? 1.0f : -1.0f;
-	} else {
-		sideSign_ = (side_ > 0) ? 1.0f : -1.0f;
-	}
 }
 
 void DolphinEventComponent::ChangeState(State next) {
@@ -105,16 +97,55 @@ void DolphinEventComponent::ChangeState(State next) {
 	stateTime_ = 0.0f;
 }
 
+float DolphinEventComponent::DecideSide() const {
+	if (side_ != 0) { return (side_ > 0) ? 1.0f : -1.0f; }
+
+	// 抽選した点 k と、その次の点 k+1 で曲がる量を足す（並走している間に曲がる量）
+	// yaw は atan2(x, z) なので、増える = 右に曲がる
+	float turn = 0.0f;
+	if (boat_ && chosenWaypoint_ >= 0) {
+		const size_t count = boat_->GetWaypoints().size();
+		auto yawOf = [&](size_t i) {
+			Vector3 d = boat_->GetIncomingDir(i);
+			return std::atan2(d.x, d.z);
+		};
+		auto wrap = [](float a) { return std::remainder(a, 6.2831853f); }; // -π〜π
+		size_t k = static_cast<size_t>(chosenWaypoint_);
+		if (k + 1 < count) { turn += wrap(yawOf(k + 1) - yawOf(k)); }
+		if (k + 2 < count) { turn += wrap(yawOf(k + 2) - yawOf(k + 1)); }
+	}
+
+	// 右に曲がる → 外側は左
+	const float kStraight = 0.1f; // これより小さければ直線とみなす[rad]（約6°）
+	if (turn > kStraight) return -1.0f;
+	if (turn < -kStraight) return 1.0f;
+
+	// 直線：ランダム
+	std::bernoulli_distribution coin(0.5);
+	return coin(Rng()) ? 1.0f : -1.0f;
+}
+
 void DolphinEventComponent::StartEvent() {
+	sideSign_ = DecideSide();
 	hasPrevXZ_ = false;
 	swimTime_ = 0.0f;
 	ChangeState(State::Approach);
 }
 
+float DolphinEventComponent::CalcWaveSpeed() const {
+	// Ripple.CS：h += 速度 + waveSpeed(0.7) × 0.25 × ラプラシアン → 1フレームに √0.175 ≒ 0.418 マス進む
+	// シェーダーの waveSpeed を変えたら、ここも合わせる
+	constexpr float kTexelsPerFrame = 0.4183f;
+	constexpr float kSimResolution = 512.0f; // BoatWakeComponent の kSimRes
+	float texel = wake_ ? wake_->GetSimSize().x / kSimResolution : 150.0f / kSimResolution;
+	return kTexelsPerFrame * texel / (std::max)(smoothedDt_, 1e-4f) * waveSpeedScale_;
+}
+
 float DolphinEventComponent::CalcWakeTan() const {
 	float speed = boat_ ? boat_->GetSpeed() : 0.0f;
-	if (speed <= waveSpeed_ + 0.1f) return 0.0f; // 波より遅いと V 字にならない
-	float s = waveSpeed_ / speed;                 // sinθ
+	float waveSpeed = CalcWaveSpeed();
+	if (speed <= waveSpeed + 0.1f) return 0.0f; // 波より遅いと V 字にならない
+	float s = waveSpeed / speed;                 // sinθ
 	return s / std::sqrt(1.0f - s * s);           // tanθ
 }
 
@@ -181,6 +212,7 @@ void DolphinEventComponent::Update() {
 
 	float dt = Time::GetDeltaTime();
 	if (dt <= 0.0f) return;
+	smoothedDt_ += (dt - smoothedDt_) * 0.05f; // FPS のぶれをならす
 
 	// ステージ開始時に1回だけ抽選（リトライはシーンを作り直すので、毎回引き直しになる）
 	if (!isChosen_) { ChooseWaypoint(); }
@@ -230,6 +262,7 @@ void DolphinEventComponent::Update() {
 
 	if (state_ != State::Approach && state_ != State::Escort && state_ != State::Leave) {
 		lastWaveWeight_ = 0.0f;
+		UpdateModel();
 		return;
 	}
 
@@ -293,6 +326,10 @@ void DolphinEventComponent::Update() {
 		src.foam = foam_ * weight;
 		wake_->AddWaveSource(src);
 	}
+
+	// Play 中は GameObject::UpdateTransformBuffer が呼ばれないので、ここでモデルの行列も更新する
+	// （CourseBuoyComponent と同じ。カメラは前フレームの値になる）
+	UpdateModel();
 }
 
 void DolphinEventComponent::UpdateModel() {
@@ -353,7 +390,7 @@ void DolphinEventComponent::DrawDebug() {
 
 	if (state_ != State::Approach && state_ != State::Escort && state_ != State::Leave) return;
 
-	// 予想した航跡の腕と、交わる点。実際の白い航跡と見比べて waveSpeed を合わせる
+	// 予想した航跡の腕と、交わる点。実際の白い航跡と見比べて Wave Speed Scale を合わせる
 	const Vector3& boatPos = boat_->GetGameObject()->GetTransform().translate;
 	float yaw = boat_->GetYaw();
 	Vector2 fwd = { std::sin(yaw), std::cos(yaw) };
@@ -383,10 +420,11 @@ void DolphinEventComponent::ImGui() {
 	ImGui::Text("--- イルカの大波イベント ---");
 	ImGui::Checkbox("Visible", &isVisible_);
 	ImGui::DragFloat("Scale", &scale_, 0.05f, 0.1f, 20.0f);
-	ImGui::SliderInt("Side (1 R / -1 L / 0 Random)", &side_, -1, 1);
+	ImGui::SliderInt("Side (1 R / -1 L / 0 Auto)", &side_, -1, 1);
 
 	if (ImGui::TreeNode("Position")) {
-		ImGui::DragFloat("Wave Speed (m/s)", &waveSpeed_, 0.05f, 0.5f, 50.0f);
+		ImGui::DragFloat("Wave Speed Scale", &waveSpeedScale_, 0.01f, 0.2f, 5.0f);
+		ImGui::Text("wave speed: %.1f m/s (%.0f FPS)", CalcWaveSpeed(), 1.0f / (std::max)(smoothedDt_, 1e-4f));
 		ImGui::DragFloat("Cross Adjust", &crossAdjust_, 0.1f, -50.0f, 50.0f, "%.1f m");
 		ImGui::DragFloat("Approach From", &approachFrom_, 0.5f, 0.0f, 200.0f, "%.1f m");
 		ImGui::DragFloat("Approach Ahead", &approachAhead_, 0.5f, -100.0f, 200.0f, "%.1f m");
@@ -444,7 +482,7 @@ void DolphinEventComponent::Serialize(json& j) const {
 	j["texturePath"] = texturePath_;
 	j["scale"] = scale_;
 	j["side"] = side_;
-	j["waveSpeed"] = waveSpeed_;
+	j["waveSpeedScale"] = waveSpeedScale_;
 	j["crossAdjust"] = crossAdjust_;
 	j["approachFrom"] = approachFrom_;
 	j["approachAhead"] = approachAhead_;
@@ -470,7 +508,7 @@ void DolphinEventComponent::Deserialize(const json& j) {
 	if (j.contains("texturePath")) texturePath_ = j["texturePath"];
 	if (j.contains("scale")) scale_ = j["scale"];
 	if (j.contains("side")) side_ = j["side"];
-	if (j.contains("waveSpeed")) waveSpeed_ = j["waveSpeed"];
+	if (j.contains("waveSpeedScale")) waveSpeedScale_ = j["waveSpeedScale"];
 	if (j.contains("crossAdjust")) crossAdjust_ = j["crossAdjust"];
 	if (j.contains("approachFrom")) approachFrom_ = j["approachFrom"];
 	if (j.contains("approachAhead")) approachAhead_ = j["approachAhead"];
