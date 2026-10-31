@@ -18,9 +18,9 @@ void Dissolve::Initialize(ID3D12Device* device) {
 
 void Dissolve::ImGui() {
 	bool changed = false;
-	changed |= ImGui::DragFloat("threshold##Dissolve", &param_.threshold, 0.01f, 0.0f, 1.0f);
-	changed |= ImGui::DragFloat("edgeWidth##Dissolve", &param_.edgeWidth, 0.005f, 0.0f, 0.2f);
-	changed |= ImGui::ColorEdit3("edgeColor##Dissolve", &param_.edgeColor.x);
+	changed |= ImGui::DragFloat("しきい値##Dissolve", &param_.threshold, 0.01f, 0.0f, 1.0f);
+	changed |= ImGui::DragFloat("縁の幅##Dissolve", &param_.edgeWidth, 0.005f, 0.0f, 0.2f);
+	changed |= ImGui::ColorEdit3("縁の色##Dissolve", &param_.edgeColor.x);
 
 	// ImGuiで値が変わったら更新
 	if (changed) {

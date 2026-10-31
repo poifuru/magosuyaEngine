@@ -40,24 +40,24 @@ void PostEffectManager::ClearEffects() {
 void PostEffectManager::ImGui() {
 #ifdef USEIMGUI
 	// ポストエフェクト全体の管理ウィンドウを開く
-	ImGui::Begin("PostEffect Manager");
+	ImGui::Begin("ポストエフェクト");
 
 	// 全エフェクトの ON/OFF チェックボックスを一覧表示する
-	ImGui::Text("Active Switches");
+	ImGui::Text("オン・オフ");
 
 	for (size_t i = 0; i < static_cast<size_t>(PostEffectType::Count); ++i) {
 		if (effects_[i] == nullptr) continue;
 
 		// 列挙型に応じて表示する名前を決定する
-		const char* effectName = "Unknown";
+		const char* effectName = "不明";
 		switch (static_cast<PostEffectType>(i)) {
-		case PostEffectType::Outline:      effectName = "Outline";       break;
-		case PostEffectType::ColorGrading: effectName = "Color Grading"; break;
-		case PostEffectType::Fog:		   effectName = "Fog";			 break;
-		case PostEffectType::Vignette:     effectName = "Vignette";      break;
-		case PostEffectType::RadialBlur:   effectName = "Radial Blur";   break;
-		case PostEffectType::Dissolve:     effectName = "Dissolve";      break;
-		case PostEffectType::RandomNoise:  effectName = "Random Noise";  break;
+		case PostEffectType::Outline:      effectName = "輪郭線";       break;
+		case PostEffectType::ColorGrading: effectName = "色調補正"; break;
+		case PostEffectType::Fog:		   effectName = "フォグ";			 break;
+		case PostEffectType::Vignette:     effectName = "ビネット";      break;
+		case PostEffectType::RadialBlur:   effectName = "放射ブラー";   break;
+		case PostEffectType::Dissolve:     effectName = "ディゾルブ";      break;
+		case PostEffectType::RandomNoise:  effectName = "ノイズ";  break;
 		}
 
 		// 現在のフラグ状態を取得
@@ -70,7 +70,7 @@ void PostEffectManager::ImGui() {
 	}
 
 	ImGui::Separator();
-	ImGui::Text("Parameters");
+	ImGui::Text("パラメータ");
 
 	// ON になっているエフェクトの内部パラメータだけを下に展開する
 	for (size_t i = 0; i < static_cast<size_t>(PostEffectType::Count); ++i) {
@@ -78,15 +78,15 @@ void PostEffectManager::ImGui() {
 		if (effects_[i] != nullptr && effects_[i]->GetIsActive()) {
 
 			// ImGui の折りたたみヘッダー（CollapsingHeader）を使うと画面がスッキリしておすすめ
-			const char* headerName = "Unknown Param";
+			const char* headerName = "不明なパラメータ";
 			switch (static_cast<PostEffectType>(i)) {
-			case PostEffectType::Outline:      headerName = "Outline Settings";       break;
-			case PostEffectType::ColorGrading: headerName = "Color Grading Settings"; break;
-			case PostEffectType::Fog:		   headerName = "Fog Settings";			  break;
-			case PostEffectType::Vignette:     headerName = "Vignette Settings";      break;
-			case PostEffectType::RadialBlur:   headerName = "Radial Blur Settings";   break;
-			case PostEffectType::Dissolve:     headerName = "Dissolve Settings";      break;
-			case PostEffectType::RandomNoise:  headerName = "Random Noise Settings";  break;
+			case PostEffectType::Outline:      headerName = "輪郭線の設定";       break;
+			case PostEffectType::ColorGrading: headerName = "色調補正の設定"; break;
+			case PostEffectType::Fog:		   headerName = "フォグの設定";			  break;
+			case PostEffectType::Vignette:     headerName = "ビネットの設定";      break;
+			case PostEffectType::RadialBlur:   headerName = "放射ブラーの設定";   break;
+			case PostEffectType::Dissolve:     headerName = "ディゾルブの設定";      break;
+			case PostEffectType::RandomNoise:  headerName = "ノイズの設定";  break;
 			}
 
 			if (ImGui::CollapsingHeader(headerName, ImGuiTreeNodeFlags_DefaultOpen)) {

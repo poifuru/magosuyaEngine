@@ -16,7 +16,7 @@ void RandomNoise::Initialize(ID3D12Device* device) {
 
 void RandomNoise::ImGui() {
 	bool changed = false;
-	changed |= ImGui::DragFloat("Intensity##Noise", &param_.intensity, 0.005f, 0.0f, 1.0f, "%.3f");
+	changed |= ImGui::DragFloat("強さ##Noise", &param_.intensity, 0.005f, 0.0f, 1.0f, "%.3f");
 
 	// ImGuiで値が変わったら更新
 	if (changed) {

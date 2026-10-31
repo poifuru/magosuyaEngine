@@ -116,26 +116,26 @@ void WaterSurfaceComponent::ImGui() {
 	Component::ImGui();
 
 	// マテリアルの編集
-	if(material_ && ImGui::CollapsingHeader("Material Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if(material_ && ImGui::CollapsingHeader("マテリアル設定", ImGuiTreeNodeFlags_DefaultOpen)) {
 		auto matData = material_->GetMaterialData();
 		auto uvTrans = material_->GetUvTransform();
 		// ベースカラー
-		if(ImGui::ColorEdit4("Water Color", &matData.color.x)) {
+		if(ImGui::ColorEdit4("水の色", &matData.color.x)) {
 			material_->SetColor(matData.color);
 		}
 		// Roughness（ツルツル具合）
-		if(ImGui::SliderFloat("Roughness", &matData.roughness, 0.0f, 1.0f)) {
+		if(ImGui::SliderFloat("粗さ", &matData.roughness, 0.0f, 1.0f)) {
 			material_->SetRoughness(matData.roughness);
 		}
 		// Metallic（金属感/反射強度）
-		if(ImGui::SliderFloat("Metallic", &matData.metallic, 0.0f, 1.0f)) {
+		if(ImGui::SliderFloat("金属っぽさ", &matData.metallic, 0.0f, 1.0f)) {
 			material_->SetMetallic(matData.metallic);
 		}
 		// UV タイリング（テクスチャの繰り返し数）
-		if(ImGui::DragFloat3("UV Scale", &uvTrans.scale.x, 0.01f)) {
+		if(ImGui::DragFloat3("UV の拡大率", &uvTrans.scale.x, 0.01f)) {
 			material_->SetUvScale(uvTrans.scale);
 		}
-		if(ImGui::DragFloat3("UV Offset", &uvTrans.translate.x, 0.01f)) {
+		if(ImGui::DragFloat3("UV のずらし", &uvTrans.translate.x, 0.01f)) {
 			material_->SetUvTranslate(uvTrans.translate);
 		}
 	}
@@ -144,41 +144,41 @@ void WaterSurfaceComponent::ImGui() {
 	// テクスチャパスの表示と変更
 	char texBuf[256];
 	strcpy_s(texBuf, texPath_.c_str());
-	if(ImGui::InputText("Texture Path", texBuf, sizeof(texBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+	if(ImGui::InputText("テクスチャのパス", texBuf, sizeof(texBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
 		SetTexture(texBuf);
 	}
 	ImGui::Spacing();
 
 	ImGui::Separator();
-	ImGui::Text("Mesh Info");
+	ImGui::Text("メッシュ情報");
 
 	// メッシュの情報を編集
-	ImGui::DragFloat("Width", &width_, 1.0f, 0.0f, 1000.0f);
+	ImGui::DragFloat("幅", &width_, 1.0f, 0.0f, 1000.0f);
 	if(ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
-	ImGui::DragFloat("Depth", &depth_, 1.0f, 0.0f, 1000.0f);
+	ImGui::DragFloat("奥行き", &depth_, 1.0f, 0.0f, 1000.0f);
 	if(ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
-	ImGui::DragInt("SubdivisionX", &subdivisionX_, 1, 1, 1000);
+	ImGui::DragInt("分割数 X", &subdivisionX_, 1, 1, 1000);
 	if(ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
-	ImGui::DragInt("SubdivisionZ", &subdivisionZ_, 1, 1, 1000);
+	ImGui::DragInt("分割数 Z", &subdivisionZ_, 1, 1, 1000);
 	if(ImGui::IsItemDeactivatedAfterEdit()) GenerateMesh();
-	ImGui::Checkbox("Follow Camera", &followCamera_);
+	ImGui::Checkbox("カメラについていく", &followCamera_);
 
 	ImGui::Separator();
-	ImGui::Text("Gerstner Wave System");
+	ImGui::Text("Gerstner 波");
 	// 有効にする波の数 (1〜4)
-	ImGui::SliderInt("Active Waves Count", &numActiveWaves_, 1, kMaxWaves);
+	ImGui::SliderInt("使う波の数", &numActiveWaves_, 1, kMaxWaves);
 	// 各波のパラメータを編集
 	for(int i = 0; i < numActiveWaves_; ++i) {
 		ImGui::PushID(i); // IDの衝突を防ぐため、波のインデックスをPush
 
 		char label[64];
-		sprintf_s(label, "Wave %d", i + 1);
+		sprintf_s(label, "波 %d", i + 1);
 		if(ImGui::CollapsingHeader(label, ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::DragFloat("Amplitude (A)", &waves_[i].amplitude, 0.01f, 0.0f, 5.0f);
-			ImGui::DragFloat("Frequency (w)", &waves_[i].frequency, 0.01f, 0.0f, 5.0f);
-			ImGui::DragFloat("Steepness (Q)", &waves_[i].steepness, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("振幅 (A)", &waves_[i].amplitude, 0.01f, 0.0f, 5.0f);
+			ImGui::DragFloat("周波数 (w)", &waves_[i].frequency, 0.01f, 0.0f, 5.0f);
+			ImGui::DragFloat("とがり具合 (Q)", &waves_[i].steepness, 0.01f, 0.0f, 1.0f);
 
-			if(ImGui::DragFloat2("Direction (D)", &waves_[i].direction.x, 0.01f, -1.0f, 1.0f)) {
+			if(ImGui::DragFloat2("向き (D)", &waves_[i].direction.x, 0.01f, -1.0f, 1.0f)) {
 				// 方向ベクトルを変更したら必ず正規化する
 				float len = std::sqrt(waves_[i].direction.x * waves_[i].direction.x + waves_[i].direction.y * waves_[i].direction.y);
 				if(len > 0.001f) {
@@ -192,9 +192,9 @@ void WaterSurfaceComponent::ImGui() {
 	}
 
 	ImGui::Separator();
-	ImGui::Text("Water Transparency Fade");
-	ImGui::DragFloat("Near Fade Distance", &nearFadeDistance_, 1.0f, 0.0f, 1000.0f);
-	ImGui::DragFloat("Far Fade Distance", &farFadeDistance_, 1.0f, 0.0f, 1000.0f);
+	ImGui::Text("水の透明度のフェード");
+	ImGui::DragFloat("フェードの近い距離", &nearFadeDistance_, 1.0f, 0.0f, 1000.0f);
+	ImGui::DragFloat("フェードの遠い距離", &farFadeDistance_, 1.0f, 0.0f, 1000.0f);
 }
 
 float WaterSurfaceComponent::SampleGerstnerHeight(float x, float z) const {

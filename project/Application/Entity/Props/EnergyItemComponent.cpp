@@ -72,10 +72,10 @@ void EnergyItemComponent::OnCollect() {
 
 void EnergyItemComponent::ImGui() {
 #ifdef USEIMGUI
-	ImGui::Text("--- Energy Battery Item ---");
-	ImGui::DragInt("Heal Amount (Power)", &healAmount_, 1, 1, 100);
-	ImGui::DragFloat("Water Surface Y", &waterSurfaceY_, 0.1f, -10.0f, 10.0f);
-	ImGui::DragFloat("Lifetime", &lifetime_, 1.0f, 10.0f, 300.0f);
+	ImGui::Text("--- エネルギー電池アイテム ---");
+	ImGui::DragInt("回復量（パワー）", &healAmount_, 1, 1, 100);
+	ImGui::DragFloat("水面の高さ", &waterSurfaceY_, 0.1f, -10.0f, 10.0f);
+	ImGui::DragFloat("寿命", &lifetime_, 1.0f, 10.0f, 300.0f);
 #endif
 }
 

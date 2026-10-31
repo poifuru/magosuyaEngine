@@ -45,8 +45,8 @@ void JumpHeightHudComponent::Update() {
 void JumpHeightHudComponent::ImGui() {
 #ifdef USEIMGUI
 	ImGui::Text("--- ジャンプ高度 HUD ---");
-	ImGui::DragFloat("Hold Time", &holdTime_, 0.05f, 0.0f, 10.0f);
-	ImGui::Text("boarder: %s  font text: %s", boarder_ ? "found" : "none", text_ ? "found" : "none");
+	ImGui::DragFloat("表示を残す時間", &holdTime_, 0.05f, 0.0f, 10.0f);
+	ImGui::Text("プレイヤー: %s  文字: %s", boarder_ ? "あり" : "なし", text_ ? "あり" : "なし");
 #endif
 }
 

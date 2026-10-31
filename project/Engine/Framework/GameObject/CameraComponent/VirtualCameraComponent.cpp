@@ -14,8 +14,8 @@ void VirtualCameraComponent::Initialize() {
 }
 
 void VirtualCameraComponent::ImGui() {
-	ImGui::DragInt("Priority", &priority_, 1, 0, 100);
-	ImGui::DragFloat("FOV", &fov_, 0.01f, 0.1f, 2.0f);
+	ImGui::DragInt("優先度", &priority_, 1, 0, 100);
+	ImGui::DragFloat("視野角", &fov_, 0.01f, 0.1f, 2.0f);
 }
 
 void VirtualCameraComponent::Serialize(json& j) const {

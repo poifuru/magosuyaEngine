@@ -177,31 +177,31 @@ void VirtualFollowCamera::ImGui() {
 	VirtualCameraComponent::ImGui(); // 親のImGui（優先度・FOV）を描画
 
 	ImGui::Separator();
-	ImGui::Checkbox("Is Underwater", &isUnderwater_);
-	if (ImGui::Checkbox("First Person Mode", &isFirstPerson_)) {
+	ImGui::Checkbox("水中", &isUnderwater_);
+	if (ImGui::Checkbox("一人称視点", &isFirstPerson_)) {
 		UpdateTargetVisibility();
 	}
-	ImGui::DragFloat3("First Person Offset", &firstPersonOffset_.x, 0.1f);
+	ImGui::DragFloat3("一人称のオフセット", &firstPersonOffset_.x, 0.1f);
 
 	char nameBuf[256];
 	strcpy_s(nameBuf, targetName_.c_str());
-	if (ImGui::InputText("Target Object Name", nameBuf, sizeof(nameBuf))) {
+	if (ImGui::InputText("追いかけるオブジェクトの名前", nameBuf, sizeof(nameBuf))) {
 		targetName_ = nameBuf;
 		target_ = nullptr; // ターゲットを再検索させる
 	}
-	ImGui::DragFloat3("Offset", &offset_.x, 0.1f);
-	ImGui::DragFloat("Target Center Y Offset", &targetOffsetY_, 0.1f, 0.0f, 15.0f);
-	ImGui::SeparatorText("Smooth Follow");
-	ImGui::DragFloat("XZ Half-life", &xzHalfLife_, 0.005f, 0.0f, 2.0f, "%.3f s");
-	ImGui::DragFloat("Y Smooth Time", &ySmoothTime_, 0.01f, 0.0f, 3.0f, "%.2f s");
-	ImGui::DragFloat("Air Y Smooth Time", &airYSmoothTime_, 0.01f, 0.0f, 3.0f, "%.2f s");
-	ImGui::SeparatorText("Boat Heading");
-	ImGui::Checkbox("Follow Boat Heading", &followBoatHeading_);
-	ImGui::Checkbox("Align To Rope (Boat - Player line)", &alignToRope_);
-	ImGui::DragFloat("Heading Half-life", &headingHalfLife_, 0.01f, 0.0f, 3.0f, "%.2f s");
-	ImGui::SeparatorText("Angle");
-	ImGui::SliderAngle("Pitch", &angleX_, -80.0f, 80.0f);
-	ImGui::SliderAngle("Yaw Offset", &angleY_, -180.0f, 180.0f);
+	ImGui::DragFloat3("オフセット", &offset_.x, 0.1f);
+	ImGui::DragFloat("注視点の高さ", &targetOffsetY_, 0.1f, 0.0f, 15.0f);
+	ImGui::SeparatorText("なめらかな追従");
+	ImGui::DragFloat("XZ の半減期", &xzHalfLife_, 0.005f, 0.0f, 2.0f, "%.3f s");
+	ImGui::DragFloat("Y の追従時間", &ySmoothTime_, 0.01f, 0.0f, 3.0f, "%.2f s");
+	ImGui::DragFloat("空中の Y の追従時間", &airYSmoothTime_, 0.01f, 0.0f, 3.0f, "%.2f s");
+	ImGui::SeparatorText("船の向き");
+	ImGui::Checkbox("船の向きに合わせる", &followBoatHeading_);
+	ImGui::Checkbox("ロープに合わせる（船とプレイヤーを結ぶ線）", &alignToRope_);
+	ImGui::DragFloat("向きの半減期", &headingHalfLife_, 0.01f, 0.0f, 3.0f, "%.2f s");
+	ImGui::SeparatorText("角度");
+	ImGui::SliderAngle("上下の角度", &angleX_, -80.0f, 80.0f);
+	ImGui::SliderAngle("左右の角度のずらし", &angleY_, -180.0f, 180.0f);
 }
 
 void VirtualFollowCamera::Serialize(json& j) const {

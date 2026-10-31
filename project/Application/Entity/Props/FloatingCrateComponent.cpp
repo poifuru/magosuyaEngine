@@ -122,15 +122,15 @@ void FloatingCrateComponent::OnDestroyed() {
 
 void FloatingCrateComponent::ImGui() {
 #ifdef USEIMGUI
-	ImGui::Text("--- Floating Crate ---");
-	ImGui::Text("query slot: %d", querySlot_);
+	ImGui::Text("--- 浮かぶ木箱 ---");
+	ImGui::Text("水面問い合わせの枠: %d", querySlot_);
 	ImGui::DragInt("HP", &hp_, 1, 1, 10);
-	ImGui::DragFloat("Water Surface Y", &waterSurfaceY_, 0.1f, -10.0f, 10.0f);
-	ImGui::DragFloat("Bobbing Speed", &bobbingSpeed_, 0.1f, 0.1f, 10.0f);
-	ImGui::DragFloat("Bobbing Amount", &bobbingAmount_, 0.05f, 0.0f, 2.0f);
-	ImGui::DragFloat3("Drift Velocity", &driftVelocity_.x, 0.05f, -5.0f, 5.0f);
-	ImGui::DragFloat("Lifetime", &lifetime_, 1.0f, 10.0f, 300.0f);
-	if (ImGui::Button("Destroy (Drop Item)")) {
+	ImGui::DragFloat("水面の高さ", &waterSurfaceY_, 0.1f, -10.0f, 10.0f);
+	ImGui::DragFloat("上下に揺れる速さ", &bobbingSpeed_, 0.1f, 0.1f, 10.0f);
+	ImGui::DragFloat("上下に揺れる幅", &bobbingAmount_, 0.05f, 0.0f, 2.0f);
+	ImGui::DragFloat3("流される速さ", &driftVelocity_.x, 0.05f, -5.0f, 5.0f);
+	ImGui::DragFloat("寿命", &lifetime_, 1.0f, 10.0f, 300.0f);
+	if (ImGui::Button("壊す（アイテムを落とす）")) {
 		OnDestroyed();
 	}
 #endif

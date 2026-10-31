@@ -37,7 +37,7 @@ namespace {
 		return rng;
 	}
 
-	const char* kStateNames[] = { "Waiting", "Approach", "Escort", "Leave", "Done" };
+	const char* kStateNames[] = { "待機", "接近", "並走", "退場", "終了" };
 }
 
 DolphinEventComponent::DolphinEventComponent() = default;
@@ -418,63 +418,63 @@ void DolphinEventComponent::DrawDebug() {
 void DolphinEventComponent::ImGui() {
 #ifdef USEIMGUI
 	ImGui::Text("--- イルカの大波イベント ---");
-	ImGui::Checkbox("Visible", &isVisible_);
-	ImGui::DragFloat("Scale", &scale_, 0.05f, 0.1f, 20.0f);
-	ImGui::SliderInt("Side (1 R / -1 L / 0 Auto)", &side_, -1, 1);
+	ImGui::Checkbox("表示", &isVisible_);
+	ImGui::DragFloat("大きさ", &scale_, 0.05f, 0.1f, 20.0f);
+	ImGui::SliderInt("並ぶ側（1 右 / -1 左 / 0 自動）", &side_, -1, 1);
 
-	if (ImGui::TreeNode("Position")) {
-		ImGui::DragFloat("Wave Speed Scale", &waveSpeedScale_, 0.01f, 0.2f, 5.0f);
-		ImGui::Text("wave speed: %.1f m/s (%.0f FPS)", CalcWaveSpeed(), 1.0f / (std::max)(smoothedDt_, 1e-4f));
-		ImGui::DragFloat("Cross Adjust", &crossAdjust_, 0.1f, -50.0f, 50.0f, "%.1f m");
-		ImGui::DragFloat("Approach From", &approachFrom_, 0.5f, 0.0f, 200.0f, "%.1f m");
-		ImGui::DragFloat("Approach Ahead", &approachAhead_, 0.5f, -100.0f, 200.0f, "%.1f m");
-		ImGui::DragFloat("Leave To", &leaveTo_, 0.5f, 0.0f, 200.0f, "%.1f m");
-		ImGui::DragFloat("Leave Ahead", &leaveAhead_, 0.5f, -100.0f, 200.0f, "%.1f m");
+	if (ImGui::TreeNode("位置")) {
+		ImGui::DragFloat("波の速さの倍率", &waveSpeedScale_, 0.01f, 0.2f, 5.0f);
+		ImGui::Text("波の速さ: %.1f m/s（%.0f FPS）", CalcWaveSpeed(), 1.0f / (std::max)(smoothedDt_, 1e-4f));
+		ImGui::DragFloat("交わる点の調整", &crossAdjust_, 0.1f, -50.0f, 50.0f, "%.1f m");
+		ImGui::DragFloat("接近を始める距離", &approachFrom_, 0.5f, 0.0f, 200.0f, "%.1f m");
+		ImGui::DragFloat("接近を始める前後の位置", &approachAhead_, 0.5f, -100.0f, 200.0f, "%.1f m");
+		ImGui::DragFloat("去っていく距離", &leaveTo_, 0.5f, 0.0f, 200.0f, "%.1f m");
+		ImGui::DragFloat("去っていく前後の位置", &leaveAhead_, 0.5f, -100.0f, 200.0f, "%.1f m");
 		ImGui::TreePop();
 	}
-	if (ImGui::TreeNode("Time")) {
-		ImGui::DragFloat("Approach Time", &approachTime_, 0.05f, 0.1f, 20.0f, "%.2f s");
-		ImGui::DragFloat("Escort Time", &escortTime_, 0.05f, 0.1f, 60.0f, "%.2f s");
-		ImGui::DragFloat("Leave Time", &leaveTime_, 0.05f, 0.1f, 20.0f, "%.2f s");
-		ImGui::DragFloat("Fallback Delay", &fallbackDelay_, 0.1f, 0.0f, 120.0f, "%.1f s");
+	if (ImGui::TreeNode("時間")) {
+		ImGui::DragFloat("近づく時間", &approachTime_, 0.05f, 0.1f, 20.0f, "%.2f s");
+		ImGui::DragFloat("並走する時間", &escortTime_, 0.05f, 0.1f, 60.0f, "%.2f s");
+		ImGui::DragFloat("去る時間", &leaveTime_, 0.05f, 0.1f, 20.0f, "%.2f s");
+		ImGui::DragFloat("代わりに出すまでの時間", &fallbackDelay_, 0.1f, 0.0f, 120.0f, "%.1f s");
 		ImGui::TreePop();
 	}
-	if (ImGui::TreeNode("Wave")) {
-		ImGui::DragFloat("Strength", &waveStrength_, 0.01f, 0.0f, 5.0f);
-		ImGui::DragFloat("Radius", &waveRadius_, 0.05f, 0.5f, 20.0f, "%.2f m");
-		ImGui::DragFloat("Foam", &foam_, 0.001f, 0.0f, 1.0f, "%.3f");
+	if (ImGui::TreeNode("波")) {
+		ImGui::DragFloat("強さ", &waveStrength_, 0.01f, 0.0f, 5.0f);
+		ImGui::DragFloat("半径", &waveRadius_, 0.05f, 0.5f, 20.0f, "%.2f m");
+		ImGui::DragFloat("泡", &foam_, 0.001f, 0.0f, 1.0f, "%.3f");
 		ImGui::TreePop();
 	}
-	if (ImGui::TreeNode("Swim")) {
-		ImGui::DragFloat("Swim Depth", &swimDepth_, 0.01f, -2.0f, 5.0f, "%.2f m");
-		ImGui::DragFloat("Hidden Depth", &hiddenDepth_, 0.05f, 0.0f, 20.0f, "%.2f m");
-		ImGui::DragFloat("Porpoise Height", &porpoiseHeight_, 0.01f, 0.0f, 5.0f, "%.2f m");
-		ImGui::DragFloat("Porpoise Speed", &porpoiseSpeed_, 0.05f, 0.0f, 20.0f, "%.2f rad/s");
-		ImGui::DragFloat("Porpoise Pitch", &porpoisePitch_, 0.01f, 0.0f, 1.5f, "%.2f rad");
+	if (ImGui::TreeNode("泳ぎ")) {
+		ImGui::DragFloat("泳ぐ深さ", &swimDepth_, 0.01f, -2.0f, 5.0f, "%.2f m");
+		ImGui::DragFloat("隠れる深さ", &hiddenDepth_, 0.05f, 0.0f, 20.0f, "%.2f m");
+		ImGui::DragFloat("跳ねる高さ", &porpoiseHeight_, 0.01f, 0.0f, 5.0f, "%.2f m");
+		ImGui::DragFloat("跳ねる速さ", &porpoiseSpeed_, 0.05f, 0.0f, 20.0f, "%.2f rad/s");
+		ImGui::DragFloat("跳ねるときの傾き", &porpoisePitch_, 0.01f, 0.0f, 1.5f, "%.2f rad");
 		ImGui::TreePop();
 	}
-	if (ImGui::TreeNode("Notice")) {
+	if (ImGui::TreeNode("告知")) {
 		// ステージセレクトに出す予告文（どこで来るかは書かない）
 		char buf[512];
 		strncpy_s(buf, noticeText_.c_str(), _TRUNCATE);
-		if (ImGui::InputTextMultiline("Notice Text", buf, sizeof(buf))) { noticeText_ = buf; }
+		if (ImGui::InputTextMultiline("告知の文", buf, sizeof(buf))) { noticeText_ = buf; }
 		ImGui::TreePop();
 	}
 
 	ImGui::Separator();
-	ImGui::Text("state: %s (%.2f s)", kStateNames[static_cast<int>(state_)], stateTime_);
-	ImGui::Text("waypoint: %d  side: %s", chosenWaypoint_, sideSign_ > 0.0f ? "right" : "left");
+	ImGui::Text("状態: %s（%.2f 秒）", kStateNames[static_cast<int>(state_)], stateTime_);
+	ImGui::Text("通過点: %d  側: %s", chosenWaypoint_, sideSign_ > 0.0f ? "右" : "左");
 	float t = boat_ ? CalcWakeTan() : 0.0f;
-	ImGui::Text("wake angle: %.1f deg  cross: %.1f m behind  lateral: %.1f m",
+	ImGui::Text("航跡の角度: %.1f 度  交わる点: 後ろ %.1f m  横: %.1f m",
 		std::atan(t) * 57.2958f, boat_ ? CalcCrossDistance() : 0.0f, boat_ ? CalcEscortLateral() : 0.0f);
-	ImGui::Text("wave weight: %.2f  query slot: %d", lastWaveWeight_, querySlot_);
-	ImGui::Text("boat: %s  wake: %s  boarder: %s  flow: %s",
-		boat_ ? "found" : "none", wake_ ? "found" : "none", boarder_ ? "found" : "none", flow_ ? "found" : "none");
+	ImGui::Text("波の重み: %.2f  水面問い合わせの枠: %d", lastWaveWeight_, querySlot_);
+	ImGui::Text("船: %s  航跡: %s  プレイヤー: %s  進行: %s",
+		boat_ ? "あり" : "なし", wake_ ? "あり" : "なし", boarder_ ? "あり" : "なし", flow_ ? "あり" : "なし");
 
 	// 確認用（Play 中に押す）
-	if (ImGui::Button("Trigger Now")) { StartEvent(); }
+	if (ImGui::Button("今すぐ発生させる")) { StartEvent(); }
 	ImGui::SameLine();
-	if (ImGui::Button("Re-roll")) {
+	if (ImGui::Button("抽選し直す")) {
 		if (boat_) { ChooseWaypoint(); }
 		state_ = State::Waiting;
 		hasPrevTarget_ = false;

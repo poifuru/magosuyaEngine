@@ -28,7 +28,7 @@ void JumpCountHudComponent::Update() {
 void JumpCountHudComponent::ImGui() {
 #ifdef USEIMGUI
 	ImGui::Text("--- 残りジャンプ HUD ---");
-	ImGui::Text("game flow: %s  font text: %s", flow_ ? "found" : "none", text_ ? "found" : "none");
+	ImGui::Text("ゲーム進行: %s  文字: %s", flow_ ? "あり" : "なし", text_ ? "あり" : "なし");
 #endif
 }
 

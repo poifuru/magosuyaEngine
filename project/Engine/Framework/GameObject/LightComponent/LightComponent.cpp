@@ -57,9 +57,9 @@ void LightComponent::Update() {
 
 void LightComponent::ImGui() {
 	// ライトタイプの切り替え
-	const char* types[] = { "Directional", "Point", "Spot", "Rect" };
+	const char* types[] = { "平行光源", "点光源", "スポットライト", "面光源" };
 	int currentType = static_cast<int>(type_);
-	if(ImGui::Combo("Type", &currentType, types, IM_ARRAYSIZE(types))) {
+	if(ImGui::Combo("種類", &currentType, types, IM_ARRAYSIZE(types))) {
 		type_ = static_cast<LightType>(currentType);
 		// タイプが切り替わったら variant の中身を再初期化する
 		if(type_ == DIRECTIONALLIGHT) param_ = Directional{
@@ -80,31 +80,31 @@ void LightComponent::ImGui() {
 
 	// 共通パラメータの編集
 	Vector4 color = GetColor();
-	if (ImGui::ColorEdit4("Color", &color.x)) {
+	if (ImGui::ColorEdit4("色", &color.x)) {
 		SetColor(color);
 	}
 	float intensity = GetIntensity();
-	if (ImGui::DragFloat("Intensity", &intensity, 0.05f, 0.0f, 100.0f)) {
+	if (ImGui::DragFloat("強さ", &intensity, 0.05f, 0.0f, 100.0f)) {
 		SetIntensity(intensity);
 	}
 
 	// 個別パラメータの編集
 	if (auto* p = std::get_if<Point>(&param_)) {
-		ImGui::DragFloat("Radius", &p->radius, 0.1f, 0.0f, 100.0f);
-		ImGui::DragFloat("Decay", &p->decay, 0.05f, 0.0f, 10.0f);
+		ImGui::DragFloat("半径", &p->radius, 0.1f, 0.0f, 100.0f);
+		ImGui::DragFloat("減衰", &p->decay, 0.05f, 0.0f, 10.0f);
 	}
 	else if (auto* p = std::get_if<Spot>(&param_)) {
-		ImGui::DragFloat("Distance", &p->distance, 0.1f, 0.0f, 100.0f);
-		ImGui::DragFloat("Decay", &p->decay, 0.05f, 0.0f, 10.0f);
+		ImGui::DragFloat("距離", &p->distance, 0.1f, 0.0f, 100.0f);
+		ImGui::DragFloat("減衰", &p->decay, 0.05f, 0.0f, 10.0f);
 		// コサインだと角度の感覚が掴みづらいので、度数法(0~180度)に変換して編集できるようにする
 		float angle = acosf(p->cosAngle) * (180.0f / 3.14159265f) * 2.0f;
-		if (ImGui::DragFloat("Angle", &angle, 0.5f, 0.0f, 180.0f)) {
+		if (ImGui::DragFloat("角度", &angle, 0.5f, 0.0f, 180.0f)) {
 			p->cosAngle = cosf((angle * 0.5f) * (3.14159265f / 180.0f));
 		}
 	}
 	else if (auto* p = std::get_if<Rect>(&param_)) {
-		ImGui::DragFloat2("Size", &p->size.x, 0.05f, 0.0f, 50.0f);
-		ImGui::DragFloat("Decay", &p->decay, 0.05f, 0.0f, 10.0f);
+		ImGui::DragFloat2("大きさ", &p->size.x, 0.05f, 0.0f, 50.0f);
+		ImGui::DragFloat("減衰", &p->decay, 0.05f, 0.0f, 10.0f);
 	}
 }
 

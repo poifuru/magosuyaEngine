@@ -52,8 +52,8 @@ void GameMessageHudComponent::Update() {
 void GameMessageHudComponent::ImGui() {
 #ifdef USEIMGUI
 	ImGui::Text("--- メッセージ HUD ---");
-	ImGui::DragFloat("GO Time", &goTime_, 0.05f, 0.0f, 5.0f);
-	ImGui::Text("game flow: %s  font text: %s", flow_ ? "found" : "none", text_ ? "found" : "none");
+	ImGui::DragFloat("GO の表示時間", &goTime_, 0.05f, 0.0f, 5.0f);
+	ImGui::Text("ゲーム進行: %s  文字: %s", flow_ ? "あり" : "なし", text_ ? "あり" : "なし");
 #endif
 }
 

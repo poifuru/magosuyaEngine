@@ -145,17 +145,17 @@ void CourseBuoyComponent::Update() {
 
 void CourseBuoyComponent::ImGui() {
 #ifdef USEIMGUI
-	ImGui::Checkbox("Visible", &isVisible_);
-	ImGui::DragFloat("Scale", &buoyScale_, 0.05f, 0.1f, 20.0f);
-	ImGui::Checkbox("Float On Water", &floatOnWater_);
-	ImGui::DragFloat("Height Offset", &heightOffset_, 0.01f, -5.0f, 5.0f, "%.2f m");
-	ImGui::Checkbox("Use Ripple (Wake)", &useRipple_);
-	ImGui::DragFloat("Tilt Scale", &tiltScale_, 0.01f, 0.0f, 3.0f);
-	ImGui::DragFloat("Max Tilt", &maxTilt_, 0.01f, 0.0f, 1.5f, "%.2f rad");
-	ImGui::DragFloat("Sway", &swayAmount_, 0.005f, 0.0f, 0.5f, "%.3f rad");
-	ImGui::Checkbox("Flip Flag", &flipFlag_);
-	ImGui::TextDisabled("buoys: pass %d / goal %d", static_cast<int>(passActive_), static_cast<int>(goalActive_));
-	ImGui::TextDisabled("water query slots: %d / %d used", static_cast<int>(WaterQuery::GetAllocatedSlotCount()), static_cast<int>(WaterQuery::kMaxQueries));
+	ImGui::Checkbox("表示", &isVisible_);
+	ImGui::DragFloat("大きさ", &buoyScale_, 0.05f, 0.1f, 20.0f);
+	ImGui::Checkbox("水面に浮かべる", &floatOnWater_);
+	ImGui::DragFloat("高さのずらし", &heightOffset_, 0.01f, -5.0f, 5.0f, "%.2f m");
+	ImGui::Checkbox("波紋（航跡）も使う", &useRipple_);
+	ImGui::DragFloat("傾きの倍率", &tiltScale_, 0.01f, 0.0f, 3.0f);
+	ImGui::DragFloat("傾きの上限", &maxTilt_, 0.01f, 0.0f, 1.5f, "%.2f rad");
+	ImGui::DragFloat("揺れ", &swayAmount_, 0.005f, 0.0f, 0.5f, "%.3f rad");
+	ImGui::Checkbox("旗を反転", &flipFlag_);
+	ImGui::TextDisabled("ブイ: 通過 %d / ゴール %d", static_cast<int>(passActive_), static_cast<int>(goalActive_));
+	ImGui::TextDisabled("水面問い合わせの枠: %d / %d 使用中", static_cast<int>(WaterQuery::GetAllocatedSlotCount()), static_cast<int>(WaterQuery::kMaxQueries));
 	if (!gameObject_ || !gameObject_->GetComponent<BoatDriverComponent>()) {
 		ImGui::TextColored({ 1.0f, 0.5f, 0.3f, 1.0f }, "Boat Driver が同じオブジェクトにありません");
 	}

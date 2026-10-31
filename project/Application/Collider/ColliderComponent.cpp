@@ -53,7 +53,7 @@ void ColliderComponent::Update() {
 
 void ColliderComponent::ImGui() {
 	// エディタ上でコライダーの半径をドラッグ調整できるようにする
-	ImGui::DragFloat("Radius", &radius_, 0.1f, 0.01f, 50.0f);
+	ImGui::DragFloat("半径", &radius_, 0.1f, 0.01f, 50.0f);
 }
 
 void ColliderComponent::Serialize(json& j) const {

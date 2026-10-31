@@ -20,9 +20,9 @@ void ColorGrading::Initialize(ID3D12Device* device) {
 
 void ColorGrading::ImGui() {
 	bool changed = false;
-	changed |= ImGui::DragFloat("intensity##ColorGrading", &param_.intensity, 0.01f, 0.0f, 1.0f);
-	changed |= ImGui::DragFloat("sepiaAmount##ColorGrading", &param_.sepiaAmount, 0.01f, 0.0f, 1.0f);
-	changed |= ImGui::DragFloat3("tintColor##ColorGrading", &param_.tintColor.x, 0.01f, 0.0f, 1.0f);
+	changed |= ImGui::DragFloat("強さ##ColorGrading", &param_.intensity, 0.01f, 0.0f, 1.0f);
+	changed |= ImGui::DragFloat("セピアの量##ColorGrading", &param_.sepiaAmount, 0.01f, 0.0f, 1.0f);
+	changed |= ImGui::DragFloat3("色味##ColorGrading", &param_.tintColor.x, 0.01f, 0.0f, 1.0f);
 
 	// ImGuiで値が変わったら更新
 	if (changed) {

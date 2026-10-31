@@ -17,9 +17,9 @@ void RadialBlur::Initialize(ID3D12Device* device) {
 
 void RadialBlur::ImGui() {
 	bool changed = false;
-	changed |= ImGui::DragFloat2("center##RadialBlur", &param_.center.x, 0.01f, 0.0f, 1.0f);
-	changed |= ImGui::DragFloat("blurWidth##RadialBlur", &param_.blurWidth, 0.001f, 0.0f, 0.1f);
-	changed |= ImGui::DragInt("sampleCount##RadialBlur", &param_.sampleCount, 1.f, 1, 64);
+	changed |= ImGui::DragFloat2("中心##RadialBlur", &param_.center.x, 0.01f, 0.0f, 1.0f);
+	changed |= ImGui::DragFloat("ぼかしの幅##RadialBlur", &param_.blurWidth, 0.001f, 0.0f, 0.1f);
+	changed |= ImGui::DragInt("サンプル数##RadialBlur", &param_.sampleCount, 1.f, 1, 64);
 
 	// ImGuiで値が変わったら更新
 	if (changed) {

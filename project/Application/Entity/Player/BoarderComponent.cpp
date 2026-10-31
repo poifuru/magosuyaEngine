@@ -283,29 +283,29 @@ void BoarderComponent::ImGui() {
 	ImGui::Text("--- プレイヤー ---");
 
 	// 状態の確認
-	if (ImGui::CollapsingHeader("Status", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::Text("state: %s", state_ == State::Riding ? "Riding" : "Airborne");
-		ImGui::Text("angle %.2f rad (vel %.2f)  speed %.2f m/s", angle_, angleVel_, Math::Length(horizVel_));
-		ImGui::Text("waterY %.3f  surfaceRise %.2f m/s  memory %.2f", waterY_, surfaceRise_, riseMemory_);
-		ImGui::PlotLines("surfaceRise", riseHistory_, kHistorySize, historyIndex_, nullptr, -5.0f, 5.0f, ImVec2(0, 60));
-		ImGui::Text("jump: last %.2f m  best %.2f m", lastJumpHeight_, bestJumpHeight_);
+	if (ImGui::CollapsingHeader("状態", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::Text("状態: %s", state_ == State::Riding ? "滑走中" : "空中");
+		ImGui::Text("振り出し角 %.2f rad（角速度 %.2f）  速さ %.2f m/s", angle_, angleVel_, Math::Length(horizVel_));
+		ImGui::Text("水面の高さ %.3f  水面の上がる速さ %.2f m/s  猶予 %.2f", waterY_, surfaceRise_, riseMemory_);
+		ImGui::PlotLines("水面の上がる速さ", riseHistory_, kHistorySize, historyIndex_, nullptr, -5.0f, 5.0f, ImVec2(0, 60));
+		ImGui::Text("ジャンプ: 直前 %.2f m  最高 %.2f m", lastJumpHeight_, bestJumpHeight_);
 		float nowCrest = waterY_ - restWaterY_;
 		float nowRaw = 0.0f;
 		float nowHeight = CalcJumpHeight(riseMemory_, nowCrest, &nowRaw);
-		ImGui::Text("now release -> %.1f m (raw %.1f m, crest %.2f m)", nowHeight, nowRaw, nowCrest);
-		if (ImGui::Button("Reset Best")) { bestJumpHeight_ = 0.0f; }
+		ImGui::Text("今離すと -> %.1f m（上限前 %.1f m、山の高さ %.2f m）", nowHeight, nowRaw, nowCrest);
+		if (ImGui::Button("最高記録をリセット")) { bestJumpHeight_ = 0.0f; }
 	}
 
 	// 調整用の記録：普通の航跡とイルカの波で何回か跳んで、rise の差を見る
-	if (ImGui::CollapsingHeader("Jump Log", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader("ジャンプの記録", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::BeginTable("JumpLogTable", 7, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit)) {
 			ImGui::TableSetupColumn("#");
-			ImGui::TableSetupColumn("rise m/s");
-			ImGui::TableSetupColumn("crest m");
-			ImGui::TableSetupColumn("kick m/s");
-			ImGui::TableSetupColumn("raw m");
-			ImGui::TableSetupColumn("target m");
-			ImGui::TableSetupColumn("actual m");
+			ImGui::TableSetupColumn("勢い m/s");
+			ImGui::TableSetupColumn("山の高さ m");
+			ImGui::TableSetupColumn("横押し m/s");
+			ImGui::TableSetupColumn("上限前 m");
+			ImGui::TableSetupColumn("目標 m");
+			ImGui::TableSetupColumn("実際 m");
 			ImGui::TableHeadersRow();
 			int count = (std::min)(jumpLogCount_, kJumpLogSize);
 			for (int n = 0; n < count; ++n) {
@@ -320,39 +320,39 @@ void BoarderComponent::ImGui() {
 				ImGui::TableNextColumn(); ImGui::Text("%.1f", log.targetHeight);
 				ImGui::TableNextColumn();
 				if (log.actualHeight >= 0.0f) { ImGui::Text("%.1f", log.actualHeight); }
-				else { ImGui::TextDisabled("air"); }
+				else { ImGui::TextDisabled("空中"); }
 			}
 			ImGui::EndTable();
 		}
-		if (ImGui::Button("Clear Log")) { jumpLogCount_ = 0; }
+		if (ImGui::Button("記録を消す")) { jumpLogCount_ = 0; }
 	}
 
 	// ロープと横移動
-	if (ImGui::CollapsingHeader("Rope / Swing")) {
-		ImGui::DragFloat("Rope Length", &ropeLength_, 0.1f, 3.0f, 40.0f);
-		ImGui::DragFloat("Stern Offset", &sternOffset_, 0.1f, 0.0f, 10.0f);
-		ImGui::DragFloat("Max Angle", &maxAngle_, 0.01f, 0.1f, 1.5f);
-		ImGui::DragFloat("Edge Accel", &edgeAccel_, 0.05f, 0.0f, 20.0f);
-		ImGui::DragFloat("Rope Pull", &ropePull_, 0.05f, 0.0f, 20.0f);
-		ImGui::DragFloat("Water Drag", &waterDrag_, 0.05f, 0.0f, 10.0f);
-		ImGui::DragFloat("Air Control", &airControl_, 0.01f, 0.0f, 1.0f);
-		ImGui::Text("hold angle = %.2f rad", ropePull_ > 0.0f ? edgeAccel_ / ropePull_ : 0.0f);
+	if (ImGui::CollapsingHeader("ロープ・横移動")) {
+		ImGui::DragFloat("ロープの長さ", &ropeLength_, 0.1f, 3.0f, 40.0f);
+		ImGui::DragFloat("船の中心から船尾まで", &sternOffset_, 0.1f, 0.0f, 10.0f);
+		ImGui::DragFloat("振り出し角の限界", &maxAngle_, 0.01f, 0.1f, 1.5f);
+		ImGui::DragFloat("エッジで切る力", &edgeAccel_, 0.05f, 0.0f, 20.0f);
+		ImGui::DragFloat("ロープの引き戻す力", &ropePull_, 0.05f, 0.0f, 20.0f);
+		ImGui::DragFloat("水の抵抗", &waterDrag_, 0.05f, 0.0f, 10.0f);
+		ImGui::DragFloat("空中での操作の効き", &airControl_, 0.01f, 0.0f, 1.0f);
+		ImGui::Text("倒しっぱなしの角度 = %.2f rad", ropePull_ > 0.0f ? edgeAccel_ / ropePull_ : 0.0f);
 	}
 
 	// ジャンプ
-	if (ImGui::CollapsingHeader("Jump")) {
-		ImGui::DragFloat("Launch Scale", &launchScale_, 0.1f, 0.0f, 10.0f);
-		ImGui::DragFloat("Base Jump", &baseJump_, 0.1f, 0.0f, 10.0f);
-		ImGui::DragFloat("Soft Knee Height", &softKneeHeight_, 0.1f, 0.5f, 300.0f, "%.1f m");
-		ImGui::DragFloat("Max Jump Height", &maxJumpHeight_, 0.1f, 0.5f, 300.0f, "%.1f m");
-		ImGui::DragFloat("Gravity", &gravity_, 0.1f, 1.0f, 50.0f);
-		ImGui::DragFloat("Rise Memory Decay", &riseMemoryDecay_, 0.1f, 0.0f, 50.0f);
-		ImGui::DragFloat("Max Rise Memory", &maxRiseMemory_, 0.1f, 0.0f, 100.0f);
-		ImGui::DragFloat("Descend Decay", &descendDecay_, 0.5f, 0.0f, 200.0f);
-		ImGui::DragFloat("Crest Scale", &crestScale_, 0.1f, 0.0f, 30.0f);
-		ImGui::DragFloat("Rest Water Y", &restWaterY_, 0.01f, -10.0f, 10.0f, "%.2f m");
-		ImGui::DragFloat("Slope Kick", &slopeKick_, 0.01f, 0.0f, 2.0f);
-		ImGui::Text("air time at max = %.2f s", gravity_ > 0.0f ? 2.0f * std::sqrt(2.0f * maxJumpHeight_ / gravity_) : 0.0f);
+	if (ImGui::CollapsingHeader("ジャンプ")) {
+		ImGui::DragFloat("打ち上げの誇張倍率", &launchScale_, 0.1f, 0.0f, 10.0f);
+		ImGui::DragFloat("ボタンだけの小ジャンプ", &baseJump_, 0.1f, 0.0f, 10.0f);
+		ImGui::DragFloat("伸びにくくなり始める高さ", &softKneeHeight_, 0.1f, 0.5f, 300.0f, "%.1f m");
+		ImGui::DragFloat("最高到達点", &maxJumpHeight_, 0.1f, 0.5f, 300.0f, "%.1f m");
+		ImGui::DragFloat("重力", &gravity_, 0.1f, 1.0f, 50.0f);
+		ImGui::DragFloat("猶予の減る速さ", &riseMemoryDecay_, 0.1f, 0.0f, 50.0f);
+		ImGui::DragFloat("猶予の上限", &maxRiseMemory_, 0.1f, 0.0f, 100.0f);
+		ImGui::DragFloat("下りでの猶予の減る速さ", &descendDecay_, 0.5f, 0.0f, 200.0f);
+		ImGui::DragFloat("山の高さの倍率", &crestScale_, 0.1f, 0.0f, 30.0f);
+		ImGui::DragFloat("波がないときの水面の高さ", &restWaterY_, 0.01f, -10.0f, 10.0f, "%.2f m");
+		ImGui::DragFloat("斜面の向きへの押し出し", &slopeKick_, 0.01f, 0.0f, 2.0f);
+		ImGui::Text("最高点での滞空時間 = %.2f 秒", gravity_ > 0.0f ? 2.0f * std::sqrt(2.0f * maxJumpHeight_ / gravity_) : 0.0f);
 
 		// rise → 高さ の曲線（横：0 〜 Max Rise Memory、縦：0 〜 Max Jump Height）
 		constexpr int kCurveSamples = 64;
@@ -360,30 +360,30 @@ void BoarderComponent::ImGui() {
 		for (int i = 0; i < kCurveSamples; ++i) {
 			curve[i] = CalcJumpHeight(maxRiseMemory_ * static_cast<float>(i) / (kCurveSamples - 1), 0.0f); // 山の高さ 0 のとき
 		}
-		ImGui::PlotLines("height by rise", curve, kCurveSamples, 0, nullptr, 0.0f, maxJumpHeight_, ImVec2(0, 80));
-		ImGui::Text("x: rise 0 - %.0f m/s   y: 0 - %.0f m", maxRiseMemory_, maxJumpHeight_);
+		ImGui::PlotLines("勢いと高さ", curve, kCurveSamples, 0, nullptr, 0.0f, maxJumpHeight_, ImVec2(0, 80));
+		ImGui::Text("横: 勢い 0 - %.0f m/s   縦: 0 - %.0f m", maxRiseMemory_, maxJumpHeight_);
 
 		// ひざの高さになる rise（ここより大きい波は伸びにくくなる）
 		if (launchScale_ > 0.0f) {
 			float kneeV = std::sqrt(2.0f * gravity_ * (std::min)(softKneeHeight_, maxJumpHeight_));
-			ImGui::Text("knee at rise %.2f m/s", (std::max)((kneeV - baseJump_) / launchScale_, 0.0f));
+			ImGui::Text("伸びにくくなり始める勢い %.2f m/s", (std::max)((kneeV - baseJump_) / launchScale_, 0.0f));
 		}
 	}
 
 	// 入力
-	if (ImGui::CollapsingHeader("Water Waves")) {
-		ImGui::DragFloat("Ride Wave Strength", &rideWaveStrength_, 0.01f, 0.0f, 3.0f);
-		ImGui::DragFloat("Ride Wave Radius", &rideWaveRadius_, 0.05f, 0.3f, 10.0f, "%.2f m");
-		ImGui::DragFloat("Ride Foam", &rideFoam_, 0.001f, 0.0f, 0.5f, "%.3f");
-		ImGui::DragFloat("Landing Depth Scale", &landingDepthScale_, 0.005f, 0.0f, 1.0f, "%.3f");
-		ImGui::DragFloat("Max Landing Depth", &maxLandingDepth_, 0.05f, 0.0f, 5.0f, "%.2f m");
-		ImGui::DragFloat("Landing Radius", &landingRadius_, 0.05f, 0.3f, 15.0f, "%.2f m");
-		ImGui::DragFloat("Landing Foam", &landingFoam_, 0.01f, 0.0f, 1.0f);
-		ImGui::Text("last landing depth: %.2f m", lastLandingDepth_);
+	if (ImGui::CollapsingHeader("波を立てる")) {
+		ImGui::DragFloat("滑走中の波の強さ", &rideWaveStrength_, 0.01f, 0.0f, 3.0f);
+		ImGui::DragFloat("滑走中の波の半径", &rideWaveRadius_, 0.05f, 0.3f, 10.0f, "%.2f m");
+		ImGui::DragFloat("滑走中の泡", &rideFoam_, 0.001f, 0.0f, 0.5f, "%.3f");
+		ImGui::DragFloat("着水の押し込みの倍率", &landingDepthScale_, 0.005f, 0.0f, 1.0f, "%.3f");
+		ImGui::DragFloat("着水の押し込みの上限", &maxLandingDepth_, 0.05f, 0.0f, 5.0f, "%.2f m");
+		ImGui::DragFloat("着水の波の半径", &landingRadius_, 0.05f, 0.3f, 15.0f, "%.2f m");
+		ImGui::DragFloat("着水の泡", &landingFoam_, 0.01f, 0.0f, 1.0f);
+		ImGui::Text("直前の着水の押し込み: %.2f m", lastLandingDepth_);
 	}
 
-	if (ImGui::CollapsingHeader("Input")) {
-		ImGui::Checkbox("Use Right Stick (test)", &useRightStick_);
+	if (ImGui::CollapsingHeader("入力")) {
+		ImGui::Checkbox("右スティックを使う（テスト用）", &useRightStick_);
 	}
 #endif
 }

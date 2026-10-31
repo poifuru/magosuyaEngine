@@ -20,8 +20,8 @@ void MainCameraComponent::Update() {
 }
 
 void MainCameraComponent::ImGui() {
-	ImGui::DragFloat("Near Clip", &near_, 0.1f, 0.01f, 10.0f);
-	ImGui::DragFloat("Far Clip", &far_, 10.0f, 10.0f, 5000.0f);
+	ImGui::DragFloat("近クリップ", &near_, 0.1f, 0.01f, 10.0f);
+	ImGui::DragFloat("遠クリップ", &far_, 10.0f, 10.0f, 5000.0f);
 }
 
 void MainCameraComponent::UpdateMatrix() {

@@ -19,12 +19,12 @@ void Vignette::Initialize(ID3D12Device* device) {
 
 void Vignette::ImGui() {
 	bool changed = false;
-	changed |= ImGui::DragFloat2("center##Vignette", &param_.centerAndRadius.x, 0.01f, 0.0f, 1.0f);
-	changed |= ImGui::DragFloat("innerRadius##Vignette", &param_.centerAndRadius.z, 0.01f, 0.0f, 1.0f);
-	changed |= ImGui::DragFloat("outerRadius##Vignette", &param_.centerAndRadius.w, 0.01f, 0.0f, 1.0f);
-	changed |= ImGui::DragFloat3("vignetteColor##Vignette", &param_.colorAndIntensity.x, 0.01f, 0.0f, 1.0f);
-	changed |= ImGui::DragFloat("intensity##Vignette", &param_.colorAndIntensity.w, 0.01f, 0.0f, 1.0f);
-	ImGui::Text("aspectRatio : %.3f", param_.aspectAndPadding.x);
+	changed |= ImGui::DragFloat2("中心##Vignette", &param_.centerAndRadius.x, 0.01f, 0.0f, 1.0f);
+	changed |= ImGui::DragFloat("内側の半径##Vignette", &param_.centerAndRadius.z, 0.01f, 0.0f, 1.0f);
+	changed |= ImGui::DragFloat("外側の半径##Vignette", &param_.centerAndRadius.w, 0.01f, 0.0f, 1.0f);
+	changed |= ImGui::DragFloat3("色##Vignette", &param_.colorAndIntensity.x, 0.01f, 0.0f, 1.0f);
+	changed |= ImGui::DragFloat("強さ##Vignette", &param_.colorAndIntensity.w, 0.01f, 0.0f, 1.0f);
+	ImGui::Text("アスペクト比 : %.3f", param_.aspectAndPadding.x);
 
 	// ImGuiで値が変わったら更新
 	if (changed) {

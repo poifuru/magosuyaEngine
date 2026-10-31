@@ -130,16 +130,16 @@ void BoatWakeComponent::Update() {
 
 void BoatWakeComponent::ImGui() {
 	ImGui::Separator();
-	ImGui::Text("Boat Wake Settings");
-	ImGui::DragFloat("Spawn Interval", &spawnInterval_, 0.05f, 0.1f, 5.0f);
-	ImGui::DragFloat("Max Lifetime", &maxLifetime_, 0.1f, 0.5f, 10.0f);
-	ImGui::DragFloat("Trail Width", &trailWidth_, 0.1f, 0.1f, 10.0f);
-	ImGui::DragFloat("Width Expand Rate", &widthExpandRate_, 0.1f, 0.0f, 5.0f);
-	ImGui::Text("speed %.2f m/s", Math::Length(velocity));
+	ImGui::Text("航跡の設定");
+	ImGui::DragFloat("出す間隔", &spawnInterval_, 0.05f, 0.1f, 5.0f);
+	ImGui::DragFloat("寿命の上限", &maxLifetime_, 0.1f, 0.5f, 10.0f);
+	ImGui::DragFloat("航跡の幅", &trailWidth_, 0.1f, 0.1f, 10.0f);
+	ImGui::DragFloat("幅の広がる速さ", &widthExpandRate_, 0.1f, 0.0f, 5.0f);
+	ImGui::Text("速さ %.2f m/s", Math::Length(velocity));
 
 	const auto& r = waterQuery_.GetResult(0);
-	ImGui::Text("ripple h=%.3f\n  slope=(%.3f, %.3f)\n  in=%.1f\n", r.height, r.dhdx, r.dhdz, r.inRange);
-	ImGui::Text("wave sources: %u / %u", lastSourceCount_, RippleSimulationParams::kMaxWaveSources);
+	ImGui::Text("波紋 高さ=%.3f\n  傾き=(%.3f, %.3f)\n  範囲内=%.1f\n", r.height, r.dhdx, r.dhdz, r.inRange);
+	ImGui::Text("波の発生源: %u / %u", lastSourceCount_, RippleSimulationParams::kMaxWaveSources);
 
 	auto G = [&](int i) { const Vector4& v = kernel_[i / 4]; float c[4] = { v.x, v.y, v.z, v.w }; return c[i % 4]; };
 	ImGui::Text("G(0,0)=%.4f\n G(1,0)=%.4f\n G(1,1)=%.4f\n G(2,0)=%.4f\n", G(84), G(85), G(98), G(86));

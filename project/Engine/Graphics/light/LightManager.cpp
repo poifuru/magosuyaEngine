@@ -19,20 +19,20 @@ void LightManager::Update() {
 
 void LightManager::ImGui() {
 #ifdef USEIMGUI
-	ImGui::Begin("Light Manager");
+	ImGui::Begin("ライト管理");
 	// 環境光 (Ambient Light)
-	if (ImGui::CollapsingHeader("Ambient Light", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::ColorEdit3("Ambient Color", &ambientColor_.x);
-		ImGui::DragFloat("Ambient Intensity", &ambientIntensity_, 0.01f, 0.0f, 5.0f);
+	if (ImGui::CollapsingHeader("環境光", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::ColorEdit3("環境光の色", &ambientColor_.x);
+		ImGui::DragFloat("環境光の強さ", &ambientIntensity_, 0.01f, 0.0f, 5.0f);
 	}
 	ImGui::Separator();
 
 	// 有効ライト数のサマリー表示
-	ImGui::Text("Active Lights Count:");
-	ImGui::Text("  Directional: %d / %d", lightCPUData_.count.dirLight, MaxCount);
-	ImGui::Text("  Point      : %d / %d", lightCPUData_.count.pointLight, MaxCount);
-	ImGui::Text("  Spot       : %d / %d", lightCPUData_.count.spotLight, MaxCount);
-	ImGui::Text("  Rect       : %d / %d", lightCPUData_.count.rectLight, MaxCount);
+	ImGui::Text("使っているライトの数:");
+	ImGui::Text("  平行光源      : %d / %d", lightCPUData_.count.dirLight, MaxCount);
+	ImGui::Text("  点光源        : %d / %d", lightCPUData_.count.pointLight, MaxCount);
+	ImGui::Text("  スポットライト: %d / %d", lightCPUData_.count.spotLight, MaxCount);
+	ImGui::Text("  面光源        : %d / %d", lightCPUData_.count.rectLight, MaxCount);
 
 	ImGui::Separator();
 	

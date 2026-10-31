@@ -20,11 +20,11 @@ void Outline::Initialize(ID3D12Device* device) {
 
 void Outline::ImGui() {
 	bool changed = false;
-	changed |= ImGui::ColorEdit4("Color##Outline", &param_.color.x);
-	changed |= ImGui::DragFloat("Threshold##Outline", &param_.edgeThreshold, 0.001f, 0.0f, 1.0f, "%.4f");
-	changed |= ImGui::DragFloat("Thickness##Outline", &param_.edgeThickness, 0.1f, 0.0f, 10.0f);
-	ImGui::Text("CameraNear : %.3f", param_.cameraNear);
-	ImGui::Text("CameraFar : %.3f", param_.cameraFar);
+	changed |= ImGui::ColorEdit4("色##Outline", &param_.color.x);
+	changed |= ImGui::DragFloat("しきい値##Outline", &param_.edgeThreshold, 0.001f, 0.0f, 1.0f, "%.4f");
+	changed |= ImGui::DragFloat("太さ##Outline", &param_.edgeThickness, 0.1f, 0.0f, 10.0f);
+	ImGui::Text("カメラの近クリップ : %.3f", param_.cameraNear);
+	ImGui::Text("カメラの遠クリップ : %.3f", param_.cameraFar);
 
 	// ImGuiで値が変わったら更新
 	if (changed) {

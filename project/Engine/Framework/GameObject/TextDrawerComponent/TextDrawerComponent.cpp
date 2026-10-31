@@ -42,36 +42,36 @@ void TextDrawerComponent::ImGui() {
 #ifdef USEIMGUI
 	char texBuf[256];
 	strcpy_s(texBuf, texPath_.c_str());
-	if (ImGui::InputText("Texture Atlas", texBuf, sizeof(texBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+	if (ImGui::InputText("テクスチャアトラス", texBuf, sizeof(texBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
 		SetTexture(texBuf);
 	}
 
 	char textBuf[512];
 	strcpy_s(textBuf, text_.c_str());
-	if (ImGui::InputText("Text", textBuf, sizeof(textBuf))) {
+	if (ImGui::InputText("文字", textBuf, sizeof(textBuf))) {
 		SetText(textBuf);
 	}
 
-	ImGui::DragFloat2("Position", &position_.x, 1.0f);
-	ImGui::DragFloat2("Char Size", &size_.x, 1.0f, 0.0f, 4096.0f);
-	ImGui::DragFloat("Spacing", &spacing_, 1.0f, -100.0f, 100.0f);
-	ImGui::DragFloat2("Scale", &scale_.x, 0.01f);
+	ImGui::DragFloat2("位置", &position_.x, 1.0f);
+	ImGui::DragFloat2("文字の大きさ", &size_.x, 1.0f, 0.0f, 4096.0f);
+	ImGui::DragFloat("間隔", &spacing_, 1.0f, -100.0f, 100.0f);
+	ImGui::DragFloat2("拡大率", &scale_.x, 0.01f);
 
 	float colorArr[4] = { color_.x, color_.y, color_.z, color_.w };
-	if (ImGui::ColorEdit4("Color", colorArr)) {
+	if (ImGui::ColorEdit4("色", colorArr)) {
 		color_ = { colorArr[0], colorArr[1], colorArr[2], colorArr[3] };
 	}
 
-	ImGui::DragFloat2("AnchorPoint", &anchorPoint_.x, 0.05f, 0.0f, 1.0f);
+	ImGui::DragFloat2("基準点", &anchorPoint_.x, 0.05f, 0.0f, 1.0f);
 
 	int layerVal = layer_;
-	if (ImGui::DragInt("Layer", &layerVal, 1.0f, 0, 255)) {
+	if (ImGui::DragInt("レイヤー", &layerVal, 1.0f, 0, 255)) {
 		layer_ = static_cast<uint8_t>(layerVal);
 	}
 
-	const char* items[] = { "Left", "Center", "Right" };
+	const char* items[] = { "左寄せ", "中央", "右寄せ" };
 	int currentAlign = static_cast<int>(alignment_);
-	if (ImGui::Combo("Alignment", &currentAlign, items, IM_ARRAYSIZE(items))) {
+	if (ImGui::Combo("寄せ方", &currentAlign, items, IM_ARRAYSIZE(items))) {
 		alignment_ = static_cast<Alignment>(currentAlign);
 	}
 #endif

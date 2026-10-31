@@ -101,7 +101,7 @@ void GameObject::ImGui() {
 	// オブジェクト名の編集
 	char nameBuf[128];
 	strcpy_s(nameBuf, name_.c_str());
-	if(ImGui::InputText("Name", nameBuf, sizeof(nameBuf))) {
+	if(ImGui::InputText("名前", nameBuf, sizeof(nameBuf))) {
 		name_ = nameBuf;
 		std::string newName = nameBuf;
 		// 空文字やスペース/タブだけの名前は反映させない（元の名前を維持する）
@@ -113,10 +113,10 @@ void GameObject::ImGui() {
 	ImGui::Separator();
 
 	// Transformの編集（デフォルトで常に表示）
-	if(ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::DragFloat3("Position", &transform_.translate.x, 0.1f);
-		ImGui::DragFloat3("Rotation", &transform_.rotate.x, 0.1f);
-		ImGui::DragFloat3("Scale", &transform_.scale.x, 0.1f);
+	if(ImGui::CollapsingHeader("トランスフォーム", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::DragFloat3("位置", &transform_.translate.x, 0.1f);
+		ImGui::DragFloat3("回転", &transform_.rotate.x, 0.1f);
+		ImGui::DragFloat3("拡大率", &transform_.scale.x, 0.1f);
 	}
 
 	// 各コンポーネントのImGui描画（折りたたみヘッダーで表示）
@@ -162,7 +162,7 @@ void GameObject::ImGui() {
 	ImGui::Spacing();
 
 	// 「Add Component」ボタンを表示
-	if(ImGui::Button("Add Component", ImVec2(-1, 30))) {
+	if(ImGui::Button("コンポーネントを追加", ImVec2(-1, 30))) {
 		ImGui::OpenPopup("AddComponentPopup");
 	}
 

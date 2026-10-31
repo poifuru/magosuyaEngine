@@ -223,8 +223,8 @@ MyEngine::Rendering::InputLayoutType SkyboxComponent::GetInputLayoutType() {
 void SkyboxComponent::ImGui() {
 	char texBuf[256];
 	strcpy_s(texBuf, texturePath_.c_str());
-	if (ImGui::InputText("Texture Path", texBuf, sizeof(texBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+	if (ImGui::InputText("テクスチャのパス", texBuf, sizeof(texBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
 		SetTexture(texBuf);
 	}
-	ImGui::Text("Loaded Index: %u", textureIndex_);
+	ImGui::Text("読み込んだ番号: %u", textureIndex_);
 }

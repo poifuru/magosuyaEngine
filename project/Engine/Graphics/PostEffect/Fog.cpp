@@ -22,13 +22,13 @@ void Fog::Initialize(ID3D12Device* device) {
 
 void Fog::ImGui() {
 	bool changed = false;
-	changed |= ImGui::ColorEdit4("color##Fog", &param_.color.x);
-	changed |= ImGui::DragFloat("start##Fog", &param_.start, 0.1f, 0.0f, 1000.0f);
-	changed |= ImGui::DragFloat("end##Fog", &param_.end, 0.1f, 0.0f, 1000.0f);
-	changed |= ImGui::DragFloat("heightStart##Fog", &param_.heightStart, 0.1f, -100.0f, 100.0f);
-	changed |= ImGui::DragFloat("heightEnd##Fog", &param_.heightEnd, 0.1f, -100.0f, 100.0f);
-	ImGui::Text("cameraNear : %.3f", param_.cameraNear);
-	ImGui::Text("cameraFar : %.3f", param_.cameraFar);
+	changed |= ImGui::ColorEdit4("色##Fog", &param_.color.x);
+	changed |= ImGui::DragFloat("開始距離##Fog", &param_.start, 0.1f, 0.0f, 1000.0f);
+	changed |= ImGui::DragFloat("終了距離##Fog", &param_.end, 0.1f, 0.0f, 1000.0f);
+	changed |= ImGui::DragFloat("高さフォグの開始##Fog", &param_.heightStart, 0.1f, -100.0f, 100.0f);
+	changed |= ImGui::DragFloat("高さフォグの終了##Fog", &param_.heightEnd, 0.1f, -100.0f, 100.0f);
+	ImGui::Text("カメラの近クリップ : %.3f", param_.cameraNear);
+	ImGui::Text("カメラの遠クリップ : %.3f", param_.cameraFar);
 
 	// ImGuiで値が変わったら更新
 	if (changed) {

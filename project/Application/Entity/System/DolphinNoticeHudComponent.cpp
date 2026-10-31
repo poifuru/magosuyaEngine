@@ -22,7 +22,7 @@ void DolphinNoticeHudComponent::Update() {
 void DolphinNoticeHudComponent::ImGui() {
 #ifdef USEIMGUI
 	ImGui::Text("--- イルカ告知 HUD ---");
-	ImGui::Text("dolphin: %s  font text: %s", dolphin_ ? "found" : "none", text_ ? "found" : "none");
+	ImGui::Text("イルカ: %s  文字: %s", dolphin_ ? "あり" : "なし", text_ ? "あり" : "なし");
 #endif
 }
 

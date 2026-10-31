@@ -10,7 +10,6 @@
 #include "InputManager.h"
 #include "RawInput.h"
 #include "GamePad.h"
-#include <format>
 
 void StageSelectComponent::Update() {
 	if (!gameObject_) return;
@@ -161,14 +160,14 @@ void StageSelectComponent::ImGui() {
 	ImGui::Text("--- ステージセレクト ---");
 	char buf[128];
 	strncpy_s(buf, detailObjectName_.c_str(), _TRUNCATE);
-	if (ImGui::InputText("Detail Object", buf, sizeof(buf))) {
+	if (ImGui::InputText("詳細を表示するオブジェクト", buf, sizeof(buf))) {
 		detailObjectName_ = buf;
 		detailText_ = nullptr; // 名前が変わったので探し直す
 	}
-	ImGui::SliderFloat("Stick Threshold", &stickThreshold_, 0.1f, 0.9f);
-	ImGui::Text("stages: %d  cursor: %d", static_cast<int>(stages_.size()), cursor_);
-	ImGui::Text("list text: %s  detail text: %s", listText_ ? "found" : "none", detailText_ ? "found" : "none");
-	if (ImGui::Button("Reload stages.json")) { LoadStages(); }
+	ImGui::SliderFloat("スティックが反応する量", &stickThreshold_, 0.1f, 0.9f);
+	ImGui::Text("ステージ数: %d  カーソル: %d", static_cast<int>(stages_.size()), cursor_);
+	ImGui::Text("一覧の文字: %s  詳細の文字: %s", listText_ ? "あり" : "なし", detailText_ ? "あり" : "なし");
+	if (ImGui::Button("stages.json を読み直す")) { LoadStages(); }
 #endif
 }
 

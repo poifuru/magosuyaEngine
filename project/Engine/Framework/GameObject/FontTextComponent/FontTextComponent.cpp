@@ -317,17 +317,17 @@ void FontTextComponent::ImGui() {
 	// テキスト（複数行OK）
 	char textBuf[1024];
 	strncpy_s(textBuf, text_.c_str(), _TRUNCATE);
-	if (ImGui::InputTextMultiline("Text", textBuf, sizeof(textBuf), ImVec2(0.0f, ImGui::GetTextLineHeight() * 4.0f))) {
+	if (ImGui::InputTextMultiline("文字", textBuf, sizeof(textBuf), ImVec2(0.0f, ImGui::GetTextLineHeight() * 4.0f))) {
 		SetText(textBuf);
 	}
 
 	// フォントファイルと焼くサイズ（変更すると焼き直すので、確定したときだけ反映）
 	char fontBuf[256];
 	strncpy_s(fontBuf, fontPath_.c_str(), _TRUNCATE);
-	if (ImGui::InputText("Font Path", fontBuf, sizeof(fontBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+	if (ImGui::InputText("フォントのパス", fontBuf, sizeof(fontBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
 		SetFont(fontBuf, bakeSize_);
 	}
-	ImGui::DragFloat("Bake Size", &bakeSize_, 1.0f, 8.0f, 256.0f);
+	ImGui::DragFloat("焼き込みサイズ", &bakeSize_, 1.0f, 8.0f, 256.0f);
 	if (ImGui::IsItemDeactivatedAfterEdit()) {
 		ApplyFont();
 	}
@@ -336,44 +336,44 @@ void FontTextComponent::ImGui() {
 		SetUseSDF(useSDF);
 	}
 	if (!font_) {
-		ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "Font not loaded");
+		ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "フォントが読み込まれていません");
 	}
 
-	ImGui::DragFloat2("Position", &position_.x, 1.0f);
-	ImGui::DragFloat("Font Size", &fontSize_, 0.5f, 1.0f, 512.0f);
-	ImGui::DragFloat("Rotation", &rotation_, 0.01f);
+	ImGui::DragFloat2("位置", &position_.x, 1.0f);
+	ImGui::DragFloat("文字の大きさ", &fontSize_, 0.5f, 1.0f, 512.0f);
+	ImGui::DragFloat("回転", &rotation_, 0.01f);
 
 	float colorArr[4] = { color_.x, color_.y, color_.z, color_.w };
-	if (ImGui::ColorEdit4("Color", colorArr)) {
+	if (ImGui::ColorEdit4("色", colorArr)) {
 		color_ = { colorArr[0], colorArr[1], colorArr[2], colorArr[3] };
 	}
 
-	ImGui::DragFloat2("AnchorPoint", &anchorPoint_.x, 0.05f, 0.0f, 1.0f);
+	ImGui::DragFloat2("基準点", &anchorPoint_.x, 0.05f, 0.0f, 1.0f);
 
-	const char* items[] = { "Left", "Center", "Right" };
+	const char* items[] = { "左寄せ", "中央", "右寄せ" };
 	int currentAlign = static_cast<int>(alignment_);
-	if (ImGui::Combo("Alignment", &currentAlign, items, IM_ARRAYSIZE(items))) {
+	if (ImGui::Combo("寄せ方", &currentAlign, items, IM_ARRAYSIZE(items))) {
 		SetAlignment(static_cast<Alignment>(currentAlign));
 	}
 
-	if (ImGui::DragFloat("Letter Spacing", &letterSpacing_, 0.1f, -50.0f, 100.0f)) isDirty_ = true;
-	if (ImGui::DragFloat("Line Spacing", &lineSpacing_, 0.01f, 0.1f, 5.0f)) isDirty_ = true;
+	if (ImGui::DragFloat("文字の間隔", &letterSpacing_, 0.1f, -50.0f, 100.0f)) isDirty_ = true;
+	if (ImGui::DragFloat("行の間隔", &lineSpacing_, 0.01f, 0.1f, 5.0f)) isDirty_ = true;
 
 	int layerVal = layer_;
-	if (ImGui::DragInt("Layer", &layerVal, 1.0f, 0, 255)) {
+	if (ImGui::DragInt("レイヤー", &layerVal, 1.0f, 0, 255)) {
 		layer_ = static_cast<uint8_t>(layerVal);
 	}
 
 	// 縁取り・影（SDF の時だけ）
-	if (useSDF_ && ImGui::TreeNode("Outline / Shadow")) {
-		ImGui::ColorEdit4("Outline Color", &outlineColor_.x);
-		ImGui::DragFloat("Outline Width", &outlineWidth_, 0.1f, 0.0f, 20.0f);
+	if (useSDF_ && ImGui::TreeNode("縁取り・影")) {
+		ImGui::ColorEdit4("縁取りの色", &outlineColor_.x);
+		ImGui::DragFloat("縁取りの太さ", &outlineWidth_, 0.1f, 0.0f, 20.0f);
 
-		if (ImGui::Checkbox("Shadow", &shadowEnabled_)) isDirty_ = true;
+		if (ImGui::Checkbox("影", &shadowEnabled_)) isDirty_ = true;
 		if (shadowEnabled_) {
-			ImGui::ColorEdit4("Shadow Color", &shadowColor_.x);
-			ImGui::DragFloat2("Shadow Offset", &shadowOffset_.x, 0.5f);
-			ImGui::DragFloat("Shadow Softness", &shadowSoftness_, 0.1f, 0.0f, 20.0f);
+			ImGui::ColorEdit4("影の色", &shadowColor_.x);
+			ImGui::DragFloat2("影のずれ", &shadowOffset_.x, 0.5f);
+			ImGui::DragFloat("影のぼかし", &shadowSoftness_, 0.1f, 0.0f, 20.0f);
 		}
 		ImGui::TreePop();
 	}

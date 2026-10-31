@@ -442,14 +442,14 @@ void BoatDriverComponent::DrawWaypointList() {
 
 		// 種類（道中 / ゴール）
 		bool isGoal = waypoints_[i].type == WaypointType::Goal;
-		if (ImGui::Checkbox("Goal", &isGoal)) {
+		if (ImGui::Checkbox("ゴール", &isGoal)) {
 			waypoints_[i].type = isGoal ? WaypointType::Goal : WaypointType::Pass;
 			targetIndex_ = 0;
 		}
 		ImGui::SameLine();
 
 		// イルカイベントの候補
-		ImGui::Checkbox("Dolphin", &waypoints_[i].dolphin);
+		ImGui::Checkbox("イルカ", &waypoints_[i].dolphin);
 		ImGui::SameLine();
 
 		// 座標（X, Z）
@@ -484,25 +484,25 @@ void BoatDriverComponent::DrawWaypointList() {
 
 void BoatDriverComponent::ImGui() {
 #ifdef USEIMGUI
-	ImGui::Text("--- Boat Driver ---");
+	ImGui::Text("--- 船の自動運転 ---");
 
 	// 状態の確認
-	if (ImGui::CollapsingHeader("Status", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::Text("speed %.2f m/s (%.1f km/h)", speed_, speed_ * 3.6f);
-		ImGui::Text("yaw %.2f rad  distance %.1f m", yaw_, distance_);
+	if (ImGui::CollapsingHeader("状態", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::Text("速さ %.2f m/s（%.1f km/h）", speed_, speed_ * 3.6f);
+		ImGui::Text("向き %.2f rad  進んだ距離 %.1f m", yaw_, distance_);
 		if (waypoints_.empty()) {
-			ImGui::Text("course: none (straight)");
+			ImGui::Text("コース: なし（まっすぐ）");
 		} else if (isFinished_) {
-			ImGui::Text("course: GOAL!");
+			ImGui::Text("コース: ゴール！");
 		} else if (targetIndex_ < waypoints_.size()) {
-			ImGui::Text("course: heading to %d / %d", static_cast<int>(targetIndex_), static_cast<int>(waypoints_.size()));
+			ImGui::Text("コース: %d / %d に向かっている", static_cast<int>(targetIndex_), static_cast<int>(waypoints_.size()));
 		} else {
-			ImGui::Text("course: finished");
+			ImGui::Text("コース: 終了");
 		}
-		ImGui::Checkbox("Running", &isRunning_);
-		if (ImGui::Button("Reset To Start")) { ResetToStart(); }
+		ImGui::Checkbox("走らせる", &isRunning_);
+		if (ImGui::Button("スタート地点に戻す")) { ResetToStart(); }
 		ImGui::SameLine();
-		if (ImGui::Button("Set Start Here")) {
+		if (ImGui::Button("ここをスタート地点にする")) {
 			// 今の位置と向きをスタート地点にする（保存はされない）
 			startPos_ = gameObject_->GetTransform().translate;
 			startYaw_ = gameObject_->GetTransform().rotate.y;
@@ -511,19 +511,19 @@ void BoatDriverComponent::ImGui() {
 	}
 
 	// 走行パラメータ
-	if (ImGui::CollapsingHeader("Drive", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::DragFloat("Cruise Speed [m/s]", &cruiseSpeed_, 0.1f, 0.0f, 40.0f);
-		ImGui::DragFloat("Acceleration [m/s2]", &acceleration_, 0.05f, 0.1f, 20.0f);
-		ImGui::DragFloat("Boat Height", &boatHeight_, 0.01f, -2.0f, 2.0f);
+	if (ImGui::CollapsingHeader("運転", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::DragFloat("巡航速度 [m/s]", &cruiseSpeed_, 0.1f, 0.0f, 40.0f);
+		ImGui::DragFloat("加速度 [m/s2]", &acceleration_, 0.05f, 0.1f, 20.0f);
+		ImGui::DragFloat("船の高さ", &boatHeight_, 0.01f, -2.0f, 2.0f);
 		if (acceleration_ > 0.0f) {
-			ImGui::Text("time to cruise: %.1f s", cruiseSpeed_ / acceleration_);
+			ImGui::Text("巡航速度までの時間: %.1f 秒", cruiseSpeed_ / acceleration_);
 		}
 	}
 
 	// コース（編集はコースエディタのウィンドウで行う）
-	if (ImGui::CollapsingHeader("Course (Waypoints)", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::Text("points: %d  loop: %s", static_cast<int>(waypoints_.size()), loop_ ? "on" : "off");
-		if (ImGui::Button("Open Course Editor")) {
+	if (ImGui::CollapsingHeader("コース（通過点）", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::Text("点の数: %d  ループ: %s", static_cast<int>(waypoints_.size()), loop_ ? "オン" : "オフ");
+		if (ImGui::Button("コースエディタを開く")) {
 			if (auto* window = EditorManager::GetInstance()->GetWindow<CourseEditorWindow>()) {
 				window->SetOpen(true);
 				ImGui::SetWindowFocus(window->GetName().c_str());

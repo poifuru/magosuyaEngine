@@ -93,8 +93,8 @@ void VirtualDebugCamera::Update() {
 void VirtualDebugCamera::ImGui() {
 	VirtualCameraComponent::ImGui();
 	ImGui::Separator();
-	ImGui::DragFloat("Move Speed", &speed_, 0.1f, 0.01f, 10.0f);
-	ImGui::DragFloat("Mouse Sensitivity", &sensitivity_, 0.0001f, 0.0001f, 0.01f, "%.4f");
+	ImGui::DragFloat("移動の速さ", &speed_, 0.1f, 0.01f, 10.0f);
+	ImGui::DragFloat("マウス感度", &sensitivity_, 0.0001f, 0.0001f, 0.01f, "%.4f");
 }
 
 void VirtualDebugCamera::Serialize(json& j) const {

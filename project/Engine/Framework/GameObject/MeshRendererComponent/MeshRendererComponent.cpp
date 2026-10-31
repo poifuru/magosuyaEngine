@@ -37,7 +37,7 @@ void MyEngine::Rendering::MeshRendererComponent::ImGui() {
 	// モデルパスの表示と変更（簡易的なInputText）
 	char pathBuf[256];
 	strcpy_s(pathBuf, modelPath_.c_str());
-	if (ImGui::InputText("Model Path", pathBuf, sizeof(pathBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+	if (ImGui::InputText("モデルのパス", pathBuf, sizeof(pathBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
 		SetModel(pathBuf);
 	}
 	ImGui::Spacing();
@@ -45,13 +45,13 @@ void MyEngine::Rendering::MeshRendererComponent::ImGui() {
 	// テクスチャパスの表示と変更
 	char texBuf[256];
 	strcpy_s(texBuf, texPath_.c_str());
-	if (ImGui::InputText("Texture Path", texBuf, sizeof(texBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+	if (ImGui::InputText("テクスチャのパス", texBuf, sizeof(texBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
 		SetTexture(texBuf);
 	}
 	ImGui::Spacing();
 
 	// デプスの有効・無効のチェックボックス
-	if (ImGui::Checkbox("Depth Enable", &isDepthEnable_)) {
+	if (ImGui::Checkbox("深度テスト", &isDepthEnable_)) {
 		if (model_) {
 			model_->SetDepthEnable(isDepthEnable_);
 		}
@@ -59,7 +59,7 @@ void MyEngine::Rendering::MeshRendererComponent::ImGui() {
 	ImGui::Spacing();
 
 	// 表示・非表示のチェックボックス
-	ImGui::Checkbox("Visible", &isVisible_);
+	ImGui::Checkbox("表示", &isVisible_);
 	ImGui::Spacing();
 
 	// 既存のModelクラスが持っているImGuiの調整機能もそのまま呼べる
