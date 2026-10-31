@@ -9,7 +9,7 @@ class FontTextComponent;
 
 // ボーダーのジャンプの高さを、同じ GameObject の FontText に表示する
 // ・空中：今のジャンプでここまでの最高点（上がっていき、頂点で止まる）
-// ・着水後：確定した高さを holdTime_ 秒だけ残す。記録更新なら "NEW RECORD!" を付ける
+// ・着水後：確定した高さを holdTime_ 秒だけ残す（記録更新の表示はリザルトで出す）
 // ・滑っている間：何も出さない
 class JumpHeightHudComponent : public Component {
 public:
@@ -33,6 +33,4 @@ private:
 	FontTextComponent* text_ = nullptr;   // 同じ GameObject の FontText
 	BoarderComponent::State prevState_ = BoarderComponent::State::Riding;
 	float holdTimer_ = 0.0f;
-	float prevBest_ = 0.0f;   // 踏み切った時点での最高記録
-	bool isNewRecord_ = false;
 };

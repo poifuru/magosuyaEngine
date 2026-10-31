@@ -75,7 +75,8 @@ void AudioManager::Finalize() {
 }
 
 void AudioManager::Load(const std::string& filename, const std::string& name) {
-	if (audioResources_.count(name)) {
+	auto it = audioResources_.find(name);
+	if (it == audioResources_.end()) {
 		//重複読み込み回避
 		return;
 	}
@@ -141,7 +142,7 @@ void AudioManager::Load(const std::string& filename, const std::string& name) {
 		}
 	}
 
-	audioResources_[name] = audioData;
+	it->second = audioData;
 }
 
 void AudioManager::Unload(const std::string& name) {
@@ -221,11 +222,12 @@ void AudioManager::Stop(uint32_t playID) {
 	// 終了処理済みなら何もしない
 	if(isFinalized_) return;
 
-	if (activeVoices_.count(playID)) {
+	auto it = activeVoices_.find(playID);
+	if (it != activeVoices_.end()) {
 		//ボイスを停止
-		activeVoices_[playID]->Stop();
+		it->second->Stop();
 		//ボイスを破壊
-		activeVoices_[playID]->DestroyVoice();
+		it->second->DestroyVoice();
 		//再生中音声リストから削除
 		activeVoices_.erase(playID);
 	}
@@ -233,9 +235,10 @@ void AudioManager::Stop(uint32_t playID) {
 
 void AudioManager::SetVolume(uint32_t playID, float volume) {
 	// 指定したIDが再生中かチェック
-	if(activeVoices_.count(playID)) {
+	auto it = activeVoices_.find(playID);
+	if(it != activeVoices_.end()) {
 		//IXAudio2SourceVoiceのSetVolumeを呼ぶ
-		activeVoices_[playID]->SetVolume(volume);
+		it->second->SetVolume(volume);
 	}
 }
 

@@ -3,7 +3,6 @@
 #include "GameFlowComponent.h"
 #include "GameObject.h"
 #include "FontTextComponent.h"
-#include "DolphinEventComponent.h"
 #include <cmath>
 #include <format>
 
@@ -12,7 +11,6 @@ void GameMessageHudComponent::Update() {
 
 	if (!text_) { text_ = gameObject_->GetComponent<FontTextComponent>(); }
 	if (!flow_) { flow_ = gameObject_->FindComponentInScene<GameFlowComponent>(); }
-	if (!dolphin_) { dolphin_ = gameObject_->FindComponentInScene<DolphinEventComponent>(); } // 無いステージもある
 	if (!text_ || !flow_) return;
 
 	using Phase = GameFlowComponent::Phase;
@@ -25,16 +23,12 @@ void GameMessageHudComponent::Update() {
 		// 3 → 2 → 1（残り時間の切り上げ）
 		int count = static_cast<int>(std::ceil(flow_->GetCountdownTime() - t));
 		if (count > 0) { str = std::to_string(count); }
-		// イルカが来るステージなら予告する（どこで来るかは言わない）
-		if (dolphin_) { str += "\n\n" + dolphin_->GetNoticeText(); }
+		// イルカの予告はステージセレクトで出すので、ここでは出さない
 		break;
 	}
 	case Phase::Playing:
 		if (t < goTime_) { str = "GO!"; }
-		// イルカが近づいてくる間（予兆）
-		else if (dolphin_ && dolphin_->GetState() == DolphinEventComponent::State::Approach) {
-			str = dolphin_->GetArrivalText();
-		}
+		// イルカの告知は DolphinNoticeHudComponent が左上に出す
 		break;
 	case Phase::Ending:
 		str = (flow_->GetEndReason() == EndReason::Goal) ? "GOAL!" : "FINISH!";
@@ -46,8 +40,8 @@ void GameMessageHudComponent::Update() {
 			str += std::format("JUMP {}   {:.1f} m\n", i + 1, heights[i]);
 		}
 		str += std::format("\n最高 {:.1f} m\n", flow_->GetBestHeight());
-		if (flow_->IsNewRecord()) { str += "NEW RECORD!\n"; }
-		str += "\nA / Space : 再挑戦\nB / BackSpace : タイトル";
+		str += std::format("平均 {:.1f} m\n", flow_->GetAverageHeight());
+		str += "\nA / Space : 再挑戦\nB / BackSpace : ステージ選択";
 		break;
 	}
 	}

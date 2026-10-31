@@ -184,6 +184,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Application\Entity\System\GameFlowComponent.cpp" />
     <ClCompile Include="Application\Entity\System\JumpCountHudComponent.cpp" />
     <ClCompile Include="Application\Entity\System\GameMessageHudComponent.cpp" />
+    <ClCompile Include="Application\Entity\System\DolphinNoticeHudComponent.cpp" />
     <ClCompile Include="Application\Scene\BaseScene.cpp" />
     <ClCompile Include="application\scene\ClearScene.cpp" />
     <ClCompile Include="application\scene\GameoverScene.cpp" />
@@ -319,11 +320,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Framework\Object\2d\SpriteRenderer.cpp" />
     <ClCompile Include="application\scene\SceneManager.cpp" />
     <ClCompile Include="Application\Scene\StartupSceneSettings.cpp" />
+    <ClCompile Include="Application\Scene\StageSelection.cpp" />
+    <ClCompile Include="Application\Scene\StageSelectScene.cpp" />
+    <ClCompile Include="Application\Entity\System\StageSelectComponent.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\scene\PlayScene.cpp" />
     <ClCompile Include="Engine\Render\PSO\RootSignatureManager.cpp" />
     <ClCompile Include="Engine\Render\PSO\PSOManager.cpp" />
-    <ClCompile Include="Engine\Graphics\primitive\Mesh.cpp" />
     <ClCompile Include="Engine\Graphics\light\PointLight.cpp" />
     <ClCompile Include="Engine\Graphics\light\SpotLight.cpp" />
     <ClCompile Include="Engine\Graphics\light\RectLight.cpp" />
@@ -367,6 +370,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Application\Entity\System\GameFlowComponent.h" />
     <ClInclude Include="Application\Entity\System\JumpCountHudComponent.h" />
     <ClInclude Include="Application\Entity\System\GameMessageHudComponent.h" />
+    <ClInclude Include="Application\Entity\System\DolphinNoticeHudComponent.h" />
     <ClInclude Include="application\scene\BaseScene.h" />
     <ClInclude Include="application\scene\ClearScene.h" />
     <ClInclude Include="application\entity\Entity.h" />
@@ -486,11 +490,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Framework\Object\2d\SpriteRenderer.h" />
     <ClInclude Include="application\scene\SceneManager.h" />
     <ClInclude Include="Application\Scene\StartupSceneSettings.h" />
+    <ClInclude Include="Application\Scene\StageSelection.h" />
+    <ClInclude Include="Application\Scene\StageSelectScene.h" />
+    <ClInclude Include="Application\Entity\System\StageSelectComponent.h" />
     <ClInclude Include="application\scene\TitleScene.h" />
     <ClInclude Include="application\scene\PlayScene.h" />
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />
     <ClInclude Include="Engine\Render\PSO\PSOManager.h" />
-    <ClInclude Include="Engine\Graphics\primitive\Mesh.h" />
     <ClInclude Include="Engine\Graphics\light\PointLight.h" />
     <ClInclude Include="Engine\Graphics\light\SpotLight.h" />
     <ClInclude Include="Engine\Graphics\light\RectLight.h" />

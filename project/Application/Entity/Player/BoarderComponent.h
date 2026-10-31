@@ -14,6 +14,10 @@ using json = nlohmann::json;
 //   この初速で届く高さ（そのままの高さ）が softKneeHeight_ を超えたら、超えた分は maxJumpHeight_ に向かって
 //   だんだん伸びにくくする（ソフトな上限）。決めた高さ H から初速 √(2gH) を出す
 //   → 大きい波ほど少しずつ高くなり、上限に張り付いて全部同じ高さ、にならない
+// ・波の山で離すほど得をする（ランプ＝ジャンプ台の考え方）
+//   傾き：斜面を登ってきた勢い（riseMemory）と、打ち出す向き（斜面の上り方向へ押し出す）に使う
+//   高さ：踏み切った位置の山の高さ × crestScale_ を、跳ぶ高さに足す（ソフトな上限より前に足す）
+//   山を越えて下りに入ったら勢いの記憶を早く消す → 「早すぎ／ちょうど／遅すぎ」のタイミングができる
 class BoarderComponent : public Component {
 public:
 	enum class State {
@@ -27,6 +31,7 @@ public:
 	void Initialize() override;
 	void Update() override;
 	void ImGui() override;
+	void DrawDebug() override; // 直前の踏み切りの位置と水面の法線（USEIMGUI のときだけ）
 
 	void Serialize(json& j) const override;
 	void Deserialize(const json& j) override;
@@ -40,9 +45,11 @@ public:
 	float GetRopeLength() const { return ropeLength_; }   // ロープの長さ[m]（イルカの並走位置の計算に使う）
 	float GetSternOffset() const { return sternOffset_; } // 船の中心からロープの付け根まで[m]
 	float GetLastTakeoffRise() const { return lastTakeoffRise_; } // 直前の踏み切りの riseMemory[m/s]（演出の判定などに使う）
+	float GetLastTakeoffCrest() const { return lastTakeoffCrest_; } // 直前の踏み切りの山の高さ（waterY - restY）[m]
 
-	// riseMemory から跳ぶ高さ[m]を決める（rawHeight にはソフトな上限をかける前の高さを入れる）
-	float CalcJumpHeight(float rise, float* rawHeight = nullptr) const;
+	// riseMemory と踏み切った位置の山の高さ crest から、跳ぶ高さ[m]を決める
+	// （rawHeight にはソフトな上限をかける前の高さを入れる）
+	float CalcJumpHeight(float rise, float crest, float* rawHeight = nullptr) const;
 
 	// 入力の受付を外から切り替える（カウントダウン中・ゲーム終了後に止める）
 	void SetSwingEnabled(bool enabled) { swingEnabled_ = enabled; } // 横移動
@@ -81,6 +88,10 @@ private:
 	float gravity_ = 25.0f;         // 重力[m/s²]（高さは変えず、滞空時間を変える）
 	float riseMemoryDecay_ = 5.0f;  // 踏み切りの猶予が減る速さ[(m/s)/s]
 	float maxRiseMemory_ = 30.0f;   // 猶予として覚えておく値の上限[m/s]（安全装置。高さの上限はソフトな上限で決める）
+	float descendDecay_ = 30.0f;    // 山を越えて下りに入ったときの、踏み切りの猶予が減る速さ[(m/s)/s]
+	float crestScale_ = 5.0f;       // 踏み切った位置の山の高さ → 跳ぶ高さに足す倍率（0 = 山の高さを使わない）
+	float restWaterY_ = 0.0f;       // 波がないときの水面の高さ[m]（山の高さはここから測る）
+	float slopeKick_ = 0.5f;        // 斜面の上り方向へ押し出す効き（0 = 真上だけ）。踏み切りの初速 × 傾き × これ [m/s]
 
 	// --- 波を立てる ---
 	float rideWaveStrength_ = 0.3f;  // 滑っている間に立てる波の強さ（船 = 1）
@@ -131,10 +142,15 @@ private:
 	float bestJumpHeight_ = 0.0f;
 	float lastLandingDepth_ = 0.0f; // 直前の着水で押し込んだ深さ（デバッグ表示）
 	float lastTakeoffRise_ = 0.0f;  // 直前の踏み切りの riseMemory
+	float lastTakeoffCrest_ = 0.0f; // 直前の踏み切りの山の高さ[m]
+	Vector3 lastTakeoffPos_{};      // 直前の踏み切りの位置（デバッグ表示）
+	Vector3 lastTakeoffNormal_ = { 0.0f, 1.0f, 0.0f }; // 直前の踏み切りの水面の法線（デバッグ表示）
 
 	// --- 調整用の記録（普通の航跡とイルカの波で、踏み切りの値と高さを比べる） ---
 	struct JumpLog {
 		float rise = 0.0f;          // 踏み切りの riseMemory[m/s]
+		float crest = 0.0f;         // 踏み切った位置の山の高さ[m]
+		float kick = 0.0f;          // 斜面の向きで横に押し出した速さ[m/s]（ロープの接線方向）
 		float rawHeight = 0.0f;     // ソフトな上限をかける前の高さ[m]
 		float targetHeight = 0.0f;  // 決めた高さ[m]
 		float actualHeight = -1.0f; // 実際に届いた高さ[m]（着水で入る。-1 = 空中）

@@ -27,11 +27,13 @@
     <ClCompile Include="Engine\Framework\Object\2d\SpriteRenderer.cpp" />
     <ClCompile Include="application\scene\SceneManager.cpp" />
     <ClCompile Include="Application\Scene\StartupSceneSettings.cpp" />
+    <ClCompile Include="Application\Scene\StageSelection.cpp" />
+    <ClCompile Include="Application\Scene\StageSelectScene.cpp" />
+    <ClCompile Include="Application\Entity\System\StageSelectComponent.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\scene\PlayScene.cpp" />
     <ClCompile Include="Engine\Render\PSO\RootSignatureManager.cpp" />
     <ClCompile Include="Engine\Render\PSO\PSOManager.cpp" />
-    <ClCompile Include="Engine\Graphics\primitive\Mesh.cpp" />
     <ClCompile Include="Engine\Common\Utility\Easing.cpp" />
     <ClCompile Include="application\entity\Entity.cpp" />
     <ClCompile Include="Engine\Render\PSO\ShaderManager.cpp" />
@@ -138,6 +140,7 @@
     <ClCompile Include="Application\Entity\System\GameFlowComponent.cpp" />
     <ClCompile Include="Application\Entity\System\JumpCountHudComponent.cpp" />
     <ClCompile Include="Application\Entity\System\GameMessageHudComponent.cpp" />
+    <ClCompile Include="Application\Entity\System\DolphinNoticeHudComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\Component\ComponentRegistry.cpp" />
     <ClCompile Include="Engine\Render\FontRendering\FontManager.cpp" />
     <ClCompile Include="Engine\Render\FontRendering\Font.cpp" />
@@ -185,6 +188,9 @@
     <ClInclude Include="Engine\Framework\Object\2d\SpriteRenderer.h" />
     <ClInclude Include="application\scene\SceneManager.h" />
     <ClInclude Include="Application\Scene\StartupSceneSettings.h" />
+    <ClInclude Include="Application\Scene\StageSelection.h" />
+    <ClInclude Include="Application\Scene\StageSelectScene.h" />
+    <ClInclude Include="Application\Entity\System\StageSelectComponent.h" />
     <ClInclude Include="application\scene\TitleScene.h" />
     <ClInclude Include="application\scene\PlayScene.h" />
     <ClInclude Include="Engine\Common\Utility\Easing.h" />
@@ -309,6 +315,7 @@
     <ClInclude Include="Application\Entity\System\GameFlowComponent.h" />
     <ClInclude Include="Application\Entity\System\JumpCountHudComponent.h" />
     <ClInclude Include="Application\Entity\System\GameMessageHudComponent.h" />
+    <ClInclude Include="Application\Entity\System\DolphinNoticeHudComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\Component\ComponentRegistry.h" />
     <ClInclude Include="Engine\Render\FontRendering\FontManager.h" />
     <ClInclude Include="Engine\Render\FontRendering\Font.h" />
@@ -317,7 +324,6 @@
   <ItemGroup>
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />
     <ClInclude Include="Engine\Render\PSO\PSOManager.h" />
-    <ClInclude Include="Engine\Graphics\primitive\Mesh.h" />
     <Filter Include="general">
       <UniqueIdentifier>{3e5e4c26-2402-409b-9ddb-c94548049e20}</UniqueIdentifier>
     </Filter>

@@ -200,7 +200,7 @@ float GamePad::GetTrigger (LR dir) {
 
 void GamePad::Vibration (float leftMotor, float rightMotor, float rumbleTime) {
 	// コントローラーが接続されているかチェック
-	if (!IsConection ()) {
+	if (!IsConnection ()) {
 		return;
 	}
 
@@ -225,7 +225,7 @@ void GamePad::Vibration (float leftMotor, float rightMotor, float rumbleTime) {
 	XInputSetState (controllerIndex_, &vibration);
 }
 
-bool GamePad::IsConection () {
+bool GamePad::IsConnection () {
 	XINPUT_STATE tmp{};
 	return XInputGetState (controllerIndex_, &tmp) == ERROR_SUCCESS;
 }

@@ -10,13 +10,15 @@ using json = nlohmann::json;
 class BoatDriverComponent;
 
 // インゲームの進行を管理する（表示はしない。HUD は Getter を読む）
-// Ready（カウントダウン）→ Playing → Ending（GOAL!/FINISH! を見せる）→ Result（リトライ / タイトル）
+// Ready（カウントダウン）→ Playing → Ending（GOAL!/FINISH! を見せる）→ Result（リトライ / ステージ選択）
 // ・船が Goal のウェイポイントに着いたらゴール
 // ・maxJumps_ 回跳んで、最後のジャンプが着水したら強制終了
 class GameFlowComponent : public Component {
 public:
 	enum class Phase { Ready, Playing, Ending, Result };
 	enum class EndReason { None, Goal, OutOfJumps };
+
+	static constexpr int kDefaultMaxJumps = 3; // maxJumps_ の初期値（ステージセレクトがシーンjsonを読むときにも使う）
 
 	GameFlowComponent() = default;
 	~GameFlowComponent() override = default;
@@ -39,6 +41,7 @@ public:
 	int GetRemainingJumps() const { return (std::max)(maxJumps_ - jumpsUsed_, 0); }
 	const std::vector<float>& GetJumpHeights() const { return jumpHeights_; } // 着水したジャンプの高さ[m]
 	float GetBestHeight() const;      // このプレイでの最高[m]
+	float GetAverageHeight() const;   // このプレイでの平均[m]（着水したジャンプの平均。跳んでいなければ 0）
 	bool IsNewRecord() const { return isNewRecord_; } // このプレイで自己ベストを更新したか
 
 private:
@@ -55,7 +58,7 @@ private:
 
 private:
 	// ===== 調整パラメータ（シリアライズ対象） =====
-	int maxJumps_ = 3;              // このステージで跳べる回数（3〜5）
+	int maxJumps_ = kDefaultMaxJumps; // このステージで跳べる回数（3〜5）
 	float countdownTime_ = 3.0f;    // 3,2,1 の長さ[s]
 	float endingTime_ = 2.0f;       // GOAL!/FINISH! を見せる時間[s]（着水してから数える）
 	float resultInputDelay_ = 0.5f; // リザルトが出てから入力を受け付けるまで[s]（連打で即リトライしないように）
@@ -68,13 +71,11 @@ private:
 
 	int jumpsUsed_ = 0;
 	std::vector<float> jumpHeights_;
-	float prevBest_ = 0.0f;     // スタート時点の自己ベスト（シーンをまたいで static に覚えておく値）
+	float prevBest_ = 0.0f;     // スタート時点のこのステージの自己ベスト
+	std::string recordKey_;     // 自己ベストを記録するキー（今のシーンjsonのパス）
 	bool isNewRecord_ = false;
 	BoarderComponent::State prevBoarderState_ = BoarderComponent::State::Riding;
 
 	BoarderComponent* boarder_ = nullptr;
 	BoatDriverComponent* boat_ = nullptr;
-
-	// 自己ベスト（リトライでシーンを作り直しても残るように static。アプリを閉じると消える）
-	static float sessionBest_;
 };

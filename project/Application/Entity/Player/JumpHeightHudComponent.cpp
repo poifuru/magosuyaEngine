@@ -18,15 +18,12 @@ void JumpHeightHudComponent::Update() {
 
 	// --- 状態が切り替わった瞬間を拾う ---
 	if (prevState_ == BoarderComponent::State::Riding && state == BoarderComponent::State::Airborne) {
-		// 踏み切り：この時点の記録と比べて、更新したかを着水時に判定する
-		prevBest_ = boarder_->GetBestJumpHeight();
-		isNewRecord_ = false;
+		// 踏み切り：前のジャンプの表示を消す
 		holdTimer_ = 0.0f;
 	}
 	if (prevState_ == BoarderComponent::State::Airborne && state == BoarderComponent::State::Riding) {
 		// 着水：確定した高さをしばらく残す
 		holdTimer_ = holdTime_;
-		isNewRecord_ = boarder_->GetLastJumpHeight() > prevBest_;
 	}
 	prevState_ = state;
 
@@ -39,7 +36,6 @@ void JumpHeightHudComponent::Update() {
 	else if (holdTimer_ > 0.0f) {
 		holdTimer_ -= dt;
 		str = std::format("{:.1f} m", boarder_->GetLastJumpHeight());
-		if (isNewRecord_) { str += "\nNEW RECORD!"; }
 	}
 	// それ以外は空文字 = 何も出ない
 

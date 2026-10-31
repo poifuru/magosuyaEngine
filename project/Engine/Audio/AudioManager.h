@@ -87,8 +87,8 @@ private:
 	Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
 	IXAudio2MasteringVoice* masterVoice_ = nullptr;
 
-	std::map<std::string, AudioData> audioResources_; // 読み込み済みデータ
-	std::map<uint32_t, IXAudio2SourceVoice*> activeVoices_; // 再生中のボイス
+	std::unordered_map<std::string, AudioData> audioResources_; // 読み込み済みデータ
+	std::unordered_map<uint32_t, IXAudio2SourceVoice*> activeVoices_; // 再生中のボイス
 	uint32_t nextPlayID_ = 0;
 
 	VoiceCallback voiceCallback_;

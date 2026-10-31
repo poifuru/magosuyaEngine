@@ -6,13 +6,12 @@ using json = nlohmann::json;
 
 class FontTextComponent;
 class GameFlowComponent;
-class DolphinEventComponent;
 
 // 画面中央のメッセージを、同じ GameObject の FontText に表示する
 // ・Ready：3 → 2 → 1
 // ・Playing：最初の goTime_ 秒だけ "GO!"
 // ・Ending："GOAL!" / "FINISH!"
-// ・Result：各ジャンプの高さと最高、操作説明
+// ・Result：各ジャンプの高さと最高・平均、操作説明
 class GameMessageHudComponent : public Component {
 public:
 	GameMessageHudComponent() = default;
@@ -33,5 +32,4 @@ private:
 	// ===== 実行時の状態 =====
 	GameFlowComponent* flow_ = nullptr;   // シーン内の GameFlow（最初に1回だけ探す）
 	FontTextComponent* text_ = nullptr;   // 同じ GameObject の FontText
-	DolphinEventComponent* dolphin_ = nullptr; // シーン内のイルカイベント（無ければ予告を出さない）
 };

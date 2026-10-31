@@ -50,7 +50,7 @@ public:
 	/// <param name="rumbleTime">振動させる時間(秒)</param>
 	void Vibration (float leftMotor, float rightMotor, float rumbleTime);
 
-	bool IsConection ();
+	bool IsConnection ();
 
 	// デッドゾーンのゲッター・セッター
 	SHORT GetStickDeadZone() const { return stickDeadZone_; }

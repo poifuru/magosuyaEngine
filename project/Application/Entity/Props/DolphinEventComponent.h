@@ -35,6 +35,9 @@ public:
 		Done,     // 終わった（このプレイではもう来ない）
 	};
 
+	// noticeText_ の初期値（ステージセレクトがシーンjsonを読むときにも使う）
+	static constexpr const char* kDefaultNoticeText = "このコースのどこかで\nイルカが並走して\n大きめの波が起きるかも";
+
 	DolphinEventComponent();
 	~DolphinEventComponent() override;
 
@@ -55,7 +58,7 @@ public:
 	// ===== HUD 用 =====
 	State GetState() const { return state_; }
 	float GetStateTime() const { return stateTime_; }
-	const std::string& GetNoticeText() const { return noticeText_; }   // カウントダウン中に出す予告
+	const std::string& GetNoticeText() const { return noticeText_; }   // ステージセレクトに出す予告
 	const std::string& GetArrivalText() const { return arrivalText_; } // 近づいてくるときに出す
 	int GetChosenWaypoint() const { return chosenWaypoint_; }
 
@@ -116,7 +119,7 @@ private:
 	float porpoisePitch_ = 0.25f;     // 上下に合わせて頭を上げ下げする量[rad]
 
 	// --- メッセージ（文字は Resources/Font/charset.txt に入っていること） ---
-	std::string noticeText_ = "このコースのどこかで\nイルカが並走して\n大きめの波が起きるかも";
+	std::string noticeText_ = kDefaultNoticeText; // シリアライズ対象（ステージごとに変えられる）
 	std::string arrivalText_ = "イルカが来た！\n大きな波のチャンス";
 
 	// ===== 実行時の状態 =====

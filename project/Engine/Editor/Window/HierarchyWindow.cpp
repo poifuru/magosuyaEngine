@@ -6,6 +6,8 @@
 #include "VirtualFollowCamera.h"
 #include "TitleScene.h"
 #include "PlayScene.h"
+#include "StageSelectScene.h"
+#include "StageSelection.h"
 #include "SceneManager.h"
 #include "StartupSceneSettings.h"
 
@@ -157,7 +159,15 @@ void HierarchyWindow::UpdateAndDraw(const EditorContext& context) {
 			return; // ★ シーンが変わったらこのフレームのヒエラルキー描画は即座に終了
 		}
 		ImGui::SameLine();
+		if (ImGui::Button("StageSelect へ")) {
+			sceneCtx->sceneManager->ChangeSceneWithDissolve<StageSelectScene>(transitionDuration, transitionDuration);
+			ImGui::End();
+			return;
+		}
+		ImGui::SameLine();
 		if (ImGui::Button("PlayScene へ")) {
+			// エディタからは起動シーン設定のシーンを開きたいので、ステージの選択は解除する
+			StageSelection::Clear();
 			// ディゾルブ遷移を呼び出す！
 			sceneCtx->sceneManager->ChangeSceneWithDissolve<PlayScene>(transitionDuration, transitionDuration);
 			ImGui::End();

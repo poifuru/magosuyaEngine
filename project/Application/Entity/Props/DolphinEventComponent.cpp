@@ -453,6 +453,13 @@ void DolphinEventComponent::ImGui() {
 		ImGui::DragFloat("Porpoise Pitch", &porpoisePitch_, 0.01f, 0.0f, 1.5f, "%.2f rad");
 		ImGui::TreePop();
 	}
+	if (ImGui::TreeNode("Notice")) {
+		// ステージセレクトに出す予告文（どこで来るかは書かない）
+		char buf[512];
+		strncpy_s(buf, noticeText_.c_str(), _TRUNCATE);
+		if (ImGui::InputTextMultiline("Notice Text", buf, sizeof(buf))) { noticeText_ = buf; }
+		ImGui::TreePop();
+	}
 
 	ImGui::Separator();
 	ImGui::Text("state: %s (%.2f s)", kStateNames[static_cast<int>(state_)], stateTime_);
@@ -500,6 +507,7 @@ void DolphinEventComponent::Serialize(json& j) const {
 	j["porpoiseHeight"] = porpoiseHeight_;
 	j["porpoiseSpeed"] = porpoiseSpeed_;
 	j["porpoisePitch"] = porpoisePitch_;
+	j["noticeText"] = noticeText_;
 }
 
 void DolphinEventComponent::Deserialize(const json& j) {
@@ -526,4 +534,5 @@ void DolphinEventComponent::Deserialize(const json& j) {
 	if (j.contains("porpoiseHeight")) porpoiseHeight_ = j["porpoiseHeight"];
 	if (j.contains("porpoiseSpeed")) porpoiseSpeed_ = j["porpoiseSpeed"];
 	if (j.contains("porpoisePitch")) porpoisePitch_ = j["porpoisePitch"];
+	if (j.contains("noticeText")) noticeText_ = j["noticeText"];
 }

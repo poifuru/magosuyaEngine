@@ -5,13 +5,13 @@
 #include "BaseScene.h"
 #include "SceneManager.h"
 #include "PlayScene.h"
-#include "TitleScene.h"
+#include "StageSelectScene.h"
+#include "StageSelection.h"
+#include "StartupSceneSettings.h"
 #include "Time.h"
 #include "InputManager.h"
 #include "RawInput.h"
 #include "GamePad.h"
-
-float GameFlowComponent::sessionBest_ = 0.0f;
 
 void GameFlowComponent::Update() {
 	if (!gameObject_) return;
@@ -51,7 +51,9 @@ void GameFlowComponent::StartRace() {
 	jumpsUsed_ = 0;
 	jumpHeights_.clear();
 	endReason_ = EndReason::None;
-	prevBest_ = sessionBest_;
+	// 自己ベストはステージ（シーンjson）ごとに StageRecords が覚えている
+	recordKey_ = StartupSceneSettings::GetCurrentScenePath();
+	prevBest_ = StageRecords::GetBestHeight(recordKey_);
 	isNewRecord_ = false;
 	prevBoarderState_ = boarder_->GetState();
 	ChangePhase(Phase::Ready);
@@ -73,7 +75,7 @@ void GameFlowComponent::TrackJumps() {
 		float height = boarder_->GetLastJumpHeight();
 		jumpHeights_.push_back(height);
 		if (height > prevBest_) { isNewRecord_ = true; }
-		sessionBest_ = (std::max)(sessionBest_, height);
+		StageRecords::SubmitHeight(recordKey_, height);
 	}
 	prevBoarderState_ = state;
 }
@@ -128,11 +130,11 @@ void GameFlowComponent::UpdateResult() {
 
 	InputManager* input = InputManager::GetInstance();
 	GamePad* pad = input->GetGamePad();
-	bool padOk = pad->IsConection();
+	bool padOk = pad->IsConnection();
 
-	// ESC はポーズに使っているので、タイトルへは BackSpace / B
+	// ESC はポーズに使っているので、ステージ選択へは BackSpace / B
 	bool retry = input->GetRawInput()->Trigger(VK_SPACE) || (padOk && pad->TriggerButton(Button::A));
-	bool title = input->GetRawInput()->Trigger(VK_BACK) || (padOk && pad->TriggerButton(Button::B));
+	bool back = input->GetRawInput()->Trigger(VK_BACK) || (padOk && pad->TriggerButton(Button::B));
 
 	SceneContext* context = gameObject_->GetContext();
 	SceneManager* sceneManager = context ? context->sceneManager : nullptr;
@@ -141,8 +143,8 @@ void GameFlowComponent::UpdateResult() {
 	if (retry) {
 		sceneManager->ChangeSceneWithDissolve<PlayScene>(0.5f, 0.5f);
 	}
-	else if (title) {
-		sceneManager->ChangeSceneWithDissolve<TitleScene>(0.8f, 0.8f);
+	else if (back) {
+		sceneManager->ChangeSceneWithDissolve<StageSelectScene>(0.8f, 0.8f);
 	}
 }
 
@@ -150,6 +152,13 @@ float GameFlowComponent::GetBestHeight() const {
 	float best = 0.0f;
 	for (float h : jumpHeights_) { best = (std::max)(best, h); }
 	return best;
+}
+
+float GameFlowComponent::GetAverageHeight() const {
+	if (jumpHeights_.empty()) return 0.0f;
+	float sum = 0.0f;
+	for (float h : jumpHeights_) { sum += h; }
+	return sum / static_cast<float>(jumpHeights_.size());
 }
 
 void GameFlowComponent::ImGui() {
@@ -162,9 +171,10 @@ void GameFlowComponent::ImGui() {
 
 	static const char* kPhaseNames[] = { "Ready", "Playing", "Ending", "Result" };
 	ImGui::Text("phase: %s (%.2f s)", kPhaseNames[static_cast<int>(phase_)], phaseTime_);
-	ImGui::Text("jumps: %d / %d  best %.1f m  session best %.1f m", jumpsUsed_, maxJumps_, GetBestHeight(), sessionBest_);
+	ImGui::Text("jumps: %d / %d  best %.1f m  stage best %.1f m", jumpsUsed_, maxJumps_, GetBestHeight(), StageRecords::GetBestHeight(recordKey_));
 	ImGui::Text("boat: %s  boarder: %s", boat_ ? "found" : "none", boarder_ ? "found" : "none");
-	if (ImGui::Button("Reset Session Best")) { sessionBest_ = 0.0f; }
+	ImGui::Text("record key: %s", recordKey_.c_str());
+	if (ImGui::Button("Reset Stage Best")) { StageRecords::Reset(recordKey_); }
 #endif
 }
 

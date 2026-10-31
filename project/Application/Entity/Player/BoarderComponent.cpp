@@ -9,6 +9,7 @@
 #include "GamePad.h"
 #include "WaterSurfaceComponent.h"
 #include "BoatWakeComponent.h"
+#include "LineRenderer.h"
 #include <algorithm>
 #include <cmath>
 
@@ -149,18 +150,41 @@ void BoarderComponent::UpdateBoard(float dt) {
 		}
 
 		// 直近の最大値を覚えておく（ボタンが少し遅れても許す）
-		riseMemory_ = std::clamp((std::max)(surfaceRise_, riseMemory_ - riseMemoryDecay_ * dt), 0.0f, maxRiseMemory_);
+		// 山を越えて下りに入ったら（足元の水面が下がっている）、勢いを早く失う
+		// → 斜面の途中は「早すぎ」、山のてっぺんが「ちょうど」、下りに入ってからは「遅すぎ」
+		float decay = (surfaceRise_ < 0.0f) ? descendDecay_ : riseMemoryDecay_;
+		riseMemory_ = std::clamp((std::max)(surfaceRise_, riseMemory_ - decay * dt), 0.0f, maxRiseMemory_);
 
 		// 押している間ためて、離した瞬間にジャンプ
 		if (jumpReleased) {
 			// 高さを先に決めて、その高さに届く初速 √(2gH) で打ち上げる
+			// 踏み切った位置の山の高さも足す（山で離すほど高い）
+			float crest = waterY_ - restWaterY_;
 			float rawHeight = 0.0f;
-			float height = CalcJumpHeight(riseMemory_, &rawHeight);
+			float height = CalcJumpHeight(riseMemory_, crest, &rawHeight);
 			vy_ = std::sqrt(2.0f * gravity_ * height);
 			lastTakeoffRise_ = riseMemory_;
+			lastTakeoffCrest_ = crest;
+
+			// 斜面の上り方向（∇h の向き）へ押し出す = ジャンプ台に投げ出されて波を越えていく
+			// （法線 n = (-∂h/∂x, 1, -∂h/∂z) の横成分は「来た側」を向くので、そのまま使うと押し戻されてしまう）
+			// 横の位置はロープの振り子が決めているので、横に押し出す速さは振り出し角の角速度に変える
+			// 山のてっぺんは傾き ≒ 0 なのでほぼ真上、斜面の途中で離すと横に流れる
+			// 高さは上の vy_ で決めたまま。高さのルールと向きのルールを分けておく
+			Vector2 kickXZ = { grad.x * vy_ * slopeKick_, grad.y * vy_ * slopeKick_ };
+			Vector2 right = { boatDir_.y, -boatDir_.x };
+			Vector2 ropeTangent = boatDir_ * std::sin(angle_) + right * std::cos(angle_); // 振り出し角が増える向き
+			float kick = kickXZ.x * ropeTangent.x + kickXZ.y * ropeTangent.y;
+			if (ropeLength_ > 0.001f) {
+				angleVel_ += kick / ropeLength_;
+			}
+
+			// デバッグ表示用
+			lastTakeoffPos_ = { t.translate.x, waterY_, t.translate.z };
+			lastTakeoffNormal_ = Math::Normalize(Vector3{ -grad.x, 1.0f, -grad.y });
 
 			// 調整用に記録（着水したら actualHeight を入れる）
-			jumpLog_[jumpLogCount_ % kJumpLogSize] = { riseMemory_, rawHeight, height, -1.0f };
+			jumpLog_[jumpLogCount_ % kJumpLogSize] = { riseMemory_, crest, kick, rawHeight, height, -1.0f };
 			jumpLogCount_++;
 
 			state_ = State::Airborne;
@@ -198,10 +222,13 @@ void BoarderComponent::UpdateBoard(float dt) {
 	}
 }
 
-float BoarderComponent::CalcJumpHeight(float rise, float* rawHeight) const {
+float BoarderComponent::CalcJumpHeight(float rise, float crest, float* rawHeight) const {
 	// そのままの高さ：今までと同じ初速 = rise × launchScale + baseJump から、届く高さ v² / 2g
 	float v = rise * launchScale_ + baseJump_;
 	float raw = (gravity_ > 0.0f) ? v * v / (2.0f * gravity_) : 0.0f;
+	// 山の高さのごほうび（位置エネルギーの考え方）。谷で離してもマイナスにはしない
+	// ソフトな上限より前に足すので、山のごほうびも maxJumpHeight_ を超えない
+	raw += crestScale_ * (std::max)(crest, 0.0f);
 	if (rawHeight) { *rawHeight = raw; }
 
 	// ひざ（knee）までは、そのままの高さ
@@ -214,6 +241,20 @@ float BoarderComponent::CalcJumpHeight(float rise, float* rawHeight) const {
 	return knee + range * std::tanh((raw - knee) / range);
 }
 
+void BoarderComponent::DrawDebug() {
+#ifdef USEIMGUI
+	if (!gameObject_ || jumpLogCount_ == 0) return;
+	auto* line = LineRenderer::GetInstance();
+	const Vector4 kNormalColor = { 0.3f, 1.0f, 0.4f, 1.0f }; // 踏み切った位置の水面の法線
+
+	// 直前の踏み切り：位置の円と、水面の法線（長さ 3m）
+	// 法線が傾いているほど斜面で離している（山のてっぺんならほぼ真上）
+	const Vector3& p = lastTakeoffPos_;
+	line->DrawCircleXZ(p, 1.0f, kNormalColor, 16, false);
+	line->DrawArrow(p, { p.x + lastTakeoffNormal_.x * 3.0f, p.y + lastTakeoffNormal_.y * 3.0f, p.z + lastTakeoffNormal_.z * 3.0f }, kNormalColor, 0.25f, false);
+#endif
+}
+
 float BoarderComponent::ReadSwingInput() const {
 	if (!swingEnabled_) return 0.0f;
 
@@ -223,7 +264,7 @@ float BoarderComponent::ReadSwingInput() const {
 	if (input->GetRawInput()->Push('A')) { x -= 1.0f; }
 	if (input->GetRawInput()->Push('D')) { x += 1.0f; }
 
-	if (input->GetGamePad()->IsConection()) {
+	if (input->GetGamePad()->IsConnection()) {
 		Vector2 stick = input->GetGamePad()->GetStick(useRightStick_ ? LR::Right : LR::Left);
 		if (stick.x != 0.0f) { x = stick.x; }
 	}
@@ -233,7 +274,7 @@ float BoarderComponent::ReadSwingInput() const {
 bool BoarderComponent::IsJumpHeld() const {
 	InputManager* input = InputManager::GetInstance();
 	if (input->GetRawInput()->Push(VK_SPACE)) { return true; }
-	if (input->GetGamePad()->IsConection() && input->GetGamePad()->PushButton(Button::A)) { return true; }
+	if (input->GetGamePad()->IsConnection() && input->GetGamePad()->PushButton(Button::A)) { return true; }
 	return false;
 }
 
@@ -248,17 +289,20 @@ void BoarderComponent::ImGui() {
 		ImGui::Text("waterY %.3f  surfaceRise %.2f m/s  memory %.2f", waterY_, surfaceRise_, riseMemory_);
 		ImGui::PlotLines("surfaceRise", riseHistory_, kHistorySize, historyIndex_, nullptr, -5.0f, 5.0f, ImVec2(0, 60));
 		ImGui::Text("jump: last %.2f m  best %.2f m", lastJumpHeight_, bestJumpHeight_);
+		float nowCrest = waterY_ - restWaterY_;
 		float nowRaw = 0.0f;
-		float nowHeight = CalcJumpHeight(riseMemory_, &nowRaw);
-		ImGui::Text("now release -> %.1f m (raw %.1f m)", nowHeight, nowRaw);
+		float nowHeight = CalcJumpHeight(riseMemory_, nowCrest, &nowRaw);
+		ImGui::Text("now release -> %.1f m (raw %.1f m, crest %.2f m)", nowHeight, nowRaw, nowCrest);
 		if (ImGui::Button("Reset Best")) { bestJumpHeight_ = 0.0f; }
 	}
 
 	// 調整用の記録：普通の航跡とイルカの波で何回か跳んで、rise の差を見る
 	if (ImGui::CollapsingHeader("Jump Log", ImGuiTreeNodeFlags_DefaultOpen)) {
-		if (ImGui::BeginTable("JumpLogTable", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit)) {
+		if (ImGui::BeginTable("JumpLogTable", 7, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit)) {
 			ImGui::TableSetupColumn("#");
 			ImGui::TableSetupColumn("rise m/s");
+			ImGui::TableSetupColumn("crest m");
+			ImGui::TableSetupColumn("kick m/s");
 			ImGui::TableSetupColumn("raw m");
 			ImGui::TableSetupColumn("target m");
 			ImGui::TableSetupColumn("actual m");
@@ -270,6 +314,8 @@ void BoarderComponent::ImGui() {
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn(); ImGui::Text("%d", index + 1);
 				ImGui::TableNextColumn(); ImGui::Text("%.2f", log.rise);
+				ImGui::TableNextColumn(); ImGui::Text("%.2f", log.crest);
+				ImGui::TableNextColumn(); ImGui::Text("%.2f", log.kick);
 				ImGui::TableNextColumn(); ImGui::Text("%.1f", log.rawHeight);
 				ImGui::TableNextColumn(); ImGui::Text("%.1f", log.targetHeight);
 				ImGui::TableNextColumn();
@@ -302,13 +348,17 @@ void BoarderComponent::ImGui() {
 		ImGui::DragFloat("Gravity", &gravity_, 0.1f, 1.0f, 50.0f);
 		ImGui::DragFloat("Rise Memory Decay", &riseMemoryDecay_, 0.1f, 0.0f, 50.0f);
 		ImGui::DragFloat("Max Rise Memory", &maxRiseMemory_, 0.1f, 0.0f, 100.0f);
+		ImGui::DragFloat("Descend Decay", &descendDecay_, 0.5f, 0.0f, 200.0f);
+		ImGui::DragFloat("Crest Scale", &crestScale_, 0.1f, 0.0f, 30.0f);
+		ImGui::DragFloat("Rest Water Y", &restWaterY_, 0.01f, -10.0f, 10.0f, "%.2f m");
+		ImGui::DragFloat("Slope Kick", &slopeKick_, 0.01f, 0.0f, 2.0f);
 		ImGui::Text("air time at max = %.2f s", gravity_ > 0.0f ? 2.0f * std::sqrt(2.0f * maxJumpHeight_ / gravity_) : 0.0f);
 
 		// rise → 高さ の曲線（横：0 〜 Max Rise Memory、縦：0 〜 Max Jump Height）
 		constexpr int kCurveSamples = 64;
 		float curve[kCurveSamples];
 		for (int i = 0; i < kCurveSamples; ++i) {
-			curve[i] = CalcJumpHeight(maxRiseMemory_ * static_cast<float>(i) / (kCurveSamples - 1));
+			curve[i] = CalcJumpHeight(maxRiseMemory_ * static_cast<float>(i) / (kCurveSamples - 1), 0.0f); // 山の高さ 0 のとき
 		}
 		ImGui::PlotLines("height by rise", curve, kCurveSamples, 0, nullptr, 0.0f, maxJumpHeight_, ImVec2(0, 80));
 		ImGui::Text("x: rise 0 - %.0f m/s   y: 0 - %.0f m", maxRiseMemory_, maxJumpHeight_);
@@ -358,6 +408,10 @@ void BoarderComponent::Serialize(json& j) const {
 	j["gravity"] = gravity_;
 	j["riseMemoryDecay"] = riseMemoryDecay_;
 	j["maxRiseMemory"] = maxRiseMemory_;
+	j["descendDecay"] = descendDecay_;
+	j["crestScale"] = crestScale_;
+	j["restWaterY"] = restWaterY_;
+	j["slopeKick"] = slopeKick_;
 
 	j["rideWaveStrength"] = rideWaveStrength_;
 	j["rideWaveRadius"] = rideWaveRadius_;
@@ -389,6 +443,10 @@ void BoarderComponent::Deserialize(const json& j) {
 	if (j.contains("gravity")) gravity_ = j["gravity"];
 	if (j.contains("riseMemoryDecay")) riseMemoryDecay_ = j["riseMemoryDecay"];
 	if (j.contains("maxRiseMemory")) maxRiseMemory_ = j["maxRiseMemory"];
+	if (j.contains("descendDecay")) descendDecay_ = j["descendDecay"];
+	if (j.contains("crestScale")) crestScale_ = j["crestScale"];
+	if (j.contains("restWaterY")) restWaterY_ = j["restWaterY"];
+	if (j.contains("slopeKick")) slopeKick_ = j["slopeKick"];
 
 	if (j.contains("rideWaveStrength")) rideWaveStrength_ = j["rideWaveStrength"];
 	if (j.contains("rideWaveRadius")) rideWaveRadius_ = j["rideWaveRadius"];

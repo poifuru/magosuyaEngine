@@ -18,6 +18,7 @@
 #include "SceneManager.h"
 #include "ScopeTimer.h"
 #include "StartupSceneSettings.h"
+#include "StageSelection.h"
 
 namespace {
 	// 安全にカーソルの表示/非表示を切り替える関数
@@ -60,8 +61,11 @@ void PlayScene::Initialize() {
 	// 本番の生存リストをセット
 	context_->activeGameObjects = &gameObjects_;
 
-	// 起動シーン設定で指定されたシーンを読み込む（無ければ defaultScene.json）
-	const std::string startupScenePath = StartupSceneSettings::LoadStartupScenePath();
+	// ステージセレクトで選んだステージがあればそのシーン、
+	// 無ければ起動シーン設定で指定されたシーンを読み込む（無ければ defaultScene.json）
+	const std::string startupScenePath = StageSelection::HasSelection()
+		? StageSelection::GetSelectedScenePath()
+		: StartupSceneSettings::LoadStartupScenePath();
 	StartupSceneSettings::SetCurrentScenePath(startupScenePath);
 	if (std::filesystem::exists(startupScenePath)) {
 		std::ifstream file(startupScenePath);

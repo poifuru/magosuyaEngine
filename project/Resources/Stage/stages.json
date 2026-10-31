@@ -1,0 +1,19 @@
+{
+    "stages": [
+        {
+            "name": "初級ステージ",
+            "scene": "Resources/Scene/playScene.json",
+            "description": "ボートについて走る練習コース。\n大きな波を見つけて跳ぼう"
+        },
+        {
+            "name": "中級ステージ",
+            "scene": "Resources/Scene/stage2.json",
+            "description": "準備中"
+        },
+        {
+            "name": "上級ステージ",
+            "scene": "Resources/Scene/stage3.json",
+           "description": "準備中"
+        }
+    ]
+}

@@ -432,153 +432,6 @@ namespace Math {
 		return result;
 	}
 
-	//void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
-	//	Novice::ScreenPrintf(x, y, "%0.2f", vector.x);
-	//	Novice::ScreenPrintf(x + kColumnWidth, y, "%0.2f", vector.y);
-	//	Novice::ScreenPrintf(x + kColumnWidth * 2, y, "%0.2f", vector.z);
-	//	Novice::ScreenPrintf(x + kColumnWidth * 3, y, "%s", label);
-	//}
-
-	//void MatrixScreenPrint(int x, int y, const Matrix4x4& m, const char* str) {
-	//	Novice::ScreenPrintf(x, y, "%s", str);
-	//	for (int row = 0; row < 4; ++row) {
-	//		for (int column = 0; column < 4; ++column) {
-	//			Novice::ScreenPrintf(
-	//				x + column * kColumnWidth, y + 20 + row * kRowHeight, "%6.02f", m.m[row][column]
-	//			);
-	//		}
-	//	}
-	//}
-
-	//void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
-	//	const float kGridHalfWidth = 2.0f;											//Gridの半分の幅
-	//	const uint32_t kSubdivision = 10;											//分割数
-	//	const float kGridEvery = (kGridHalfWidth * 2.0f) / float(kSubdivision);		//1つ分の長さ
-	//
-	//	Vector3 start;
-	//	Vector3 end;
-	//	Vector3 ndcVertexStart;
-	//	Vector3 ndcVertexEnd;
-	//	Vector3 screenStart;
-	//	Vector3 screenEnd;
-	//
-	//	//奥から手前への線を順々に引いていく
-	//	for (uint32_t xIndex = 0; xIndex <= kSubdivision; ++xIndex) {
-	//		float x = -kGridHalfWidth + kGridEvery * xIndex;
-	//
-	//		start = Vector3(x, 0.0f, kGridHalfWidth);
-	//		end = Vector3(x, 0.0f, -kGridHalfWidth);
-	//
-	//		//NDC変換
-	//		ndcVertexStart = Transform(start, viewProjectionMatrix);
-	//		ndcVertexEnd = Transform(end, viewProjectionMatrix);
-	//
-	//		screenStart = Transform(ndcVertexStart, viewportMatrix);
-	//		screenEnd = Transform(ndcVertexEnd, viewportMatrix);
-	//
-	//		// 線を描画（薄い灰色、真ん中だけ黒）
-	//		if (xIndex == 5) {
-	//			Novice::DrawLine(
-	//				static_cast<int>(screenStart.x), static_cast<int>(screenStart.y),
-	//				static_cast<int>(screenEnd.x), static_cast<int>(screenEnd.y), 0x000000FF
-	//			);
-	//		}
-	//		else {
-	//			Novice::DrawLine(
-	//				static_cast<int>(screenStart.x), static_cast<int>(screenStart.y),
-	//				static_cast<int>(screenEnd.x), static_cast<int>(screenEnd.y), 0xAAAAAAFF
-	//			);
-	//		}
-	//	}
-	//
-	//	//左から右への線を順々に引いていく
-	//	for (uint32_t zIndex = 0; zIndex <= kSubdivision; ++zIndex) {
-	//		float z = -kGridHalfWidth + kGridEvery * zIndex;
-	//
-	//		start = Vector3(-kGridHalfWidth, 0.0f, z);
-	//		end = Vector3(kGridHalfWidth, 0.0f, z);
-	//
-	//		//NDC変換
-	//		ndcVertexStart = Transform(start, viewProjectionMatrix);
-	//		ndcVertexEnd = Transform(end, viewProjectionMatrix);
-	//
-	//		screenStart = Transform(ndcVertexStart, viewportMatrix);
-	//		screenEnd = Transform(ndcVertexEnd, viewportMatrix);
-	//
-	//		// 線を描画（薄い灰色、真ん中だけ黒）
-	//		if (zIndex == 5) {
-	//			Novice::DrawLine(
-	//				static_cast<int>(screenStart.x), static_cast<int>(screenStart.y),
-	//				static_cast<int>(screenEnd.x), static_cast<int>(screenEnd.y), 0x000000FF
-	//			);
-	//		}
-	//		else {
-	//			Novice::DrawLine(
-	//				static_cast<int>(screenStart.x), static_cast<int>(screenStart.y),
-	//				static_cast<int>(screenEnd.x), static_cast<int>(screenEnd.y), 0xAAAAAAFF
-	//			);
-	//		}
-	//	}
-	//}
-
-	//void DrawSphere(const Vector3& center, const float& radius, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
-	//	const uint32_t kLatSubdivision = 10;		//分割数
-	//	const uint32_t kLonSubdivision = 20;
-	//	const float kLatEvery = static_cast<float>(M_PI) / kLatSubdivision;				//経度1つ分の角度
-	//	const float kLonEvery = static_cast<float>(M_PI * 2.0f) / kLonSubdivision;		//緯度1つ分の角度
-	//
-	//	//緯度(横)の方向に分割 -π/2 ~ π/2[
-	//	for (uint32_t latIndex = 0; latIndex < kLatSubdivision; ++latIndex) {
-	//		float lat = float(-M_PI) / 2.0f + kLatEvery * latIndex;	//現在の緯度 
-	//		//経度(縦)の方向に分割 0~2π
-	//		for (uint32_t lonIndex = 0; lonIndex < kLonSubdivision; ++lonIndex) {
-	//			float lon = lonIndex * kLonEvery;	//現在の経度
-	//			//world座標系でのa,b,cを求める
-	//			Vector3 a, b, c;
-	//			Vector3 ndcVertexA, ndcVertexB, ndcVertexC;
-	//			Vector3 ScreenA, ScreenB, ScreenC;
-	//			a = Vector3(
-	//				cosf(lon) * cosf(lat) * radius + center.x,
-	//				sinf(lon) * radius + center.y,
-	//				cosf(lon) * sinf(lat) * radius + center.z
-	//			);
-	//
-	//			b = Vector3(
-	//				cosf(kLonEvery + lon) * cosf(lat) * radius + center.x,
-	//				sinf(kLonEvery + lon) * radius + center.y,
-	//				cosf(kLonEvery + lon) * sinf(lat) * radius + center.z
-	//			);
-	//
-	//			c = Vector3(
-	//				cosf(lon) * cosf(kLatEvery + lat) * radius + center.x,
-	//				sinf(lon) * radius + center.y,
-	//				cosf(lon) * sinf(kLatEvery + lat) * radius + center.z
-	//			);
-	//
-	//			//a,b,cをScreen座標まで変換
-	//			//NDC変換
-	//			ndcVertexA = Transform(a, viewProjectionMatrix);
-	//			ndcVertexB = Transform(b, viewProjectionMatrix);
-	//			ndcVertexC = Transform(c, viewProjectionMatrix);
-	//
-	//			ScreenA = Transform(ndcVertexA, viewportMatrix);
-	//			ScreenB = Transform(ndcVertexB, viewportMatrix);
-	//			ScreenC = Transform(ndcVertexC, viewportMatrix);
-	//
-	//			//ab,bcで線を引く
-	//			Novice::DrawLine(
-	//				static_cast<int>(ScreenA.x), static_cast<int>(ScreenA.y),
-	//				static_cast<int>(ScreenB.x), static_cast<int>(ScreenB.y),
-	//				color
-	//			);
-	//			Novice::DrawLine(
-	//				static_cast<int>(ScreenA.x), static_cast<int>(ScreenA.y),
-	//				static_cast<int>(ScreenC.x), static_cast<int>(ScreenC.y),
-	//				color
-	//			);
-	//		}
-	//	}
-	//}
 
 	Vector3 Project (const Vector3& v1, const Vector3& v2) {
 		Vector3 result{};
@@ -695,58 +548,12 @@ namespace Math {
 		return false;
 	}
 
-	//void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
-	//	Triangle screenTriangle;
-	//	for (int i = 0; i < 3; i++) {
-	//		screenTriangle.vertices[i] = Transform(Transform(triangle.vertices[i], viewProjectionMatrix), viewportMatrix);
-	//	}
-	//
-	//	Novice::DrawTriangle(
-	//		int(screenTriangle.vertices[0].x), int(screenTriangle.vertices[0].y),
-	//		int(screenTriangle.vertices[1].x), int(screenTriangle.vertices[1].y),
-	//		int(screenTriangle.vertices[2].x), int(screenTriangle.vertices[2].y),
-	//		color, kFillModeWireFrame
-	//	);
-	//}
-
 	bool IsCollision (const AABB& aabb1, const AABB& aabb2) {
 		return
 			(aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x) &&
 			(aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y) &&
 			(aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z);
 	}
-
-	//void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
-	//	//引数を元に八つの頂点を作る
-	//	Vector3 vertex[8];
-	//	Vector3 screenVertex[8];
-	//
-	//	vertex[0] = { aabb.min.x, aabb.max.y, aabb.min.z };
-	//	vertex[1] = { aabb.max.x, aabb.max.y, aabb.min.z };
-	//	vertex[2] = { aabb.max.x, aabb.max.y, aabb.max.z };
-	//	vertex[3] = { aabb.min.x, aabb.max.y, aabb.max.z };
-	//	vertex[4] = { aabb.min.x, aabb.min.y, aabb.min.z };
-	//	vertex[5] = { aabb.max.x, aabb.min.y, aabb.min.z };
-	//	vertex[6] = { aabb.max.x, aabb.min.y, aabb.max.z };
-	//	vertex[7] = { aabb.min.x, aabb.min.y, aabb.max.z };
-	//
-	//	for (int i = 0; i < 8; i++) {
-	//		screenVertex[i] = Transform(Transform(vertex[i], viewProjectionMatrix), viewportMatrix);
-	//	}
-	//
-	//	Novice::DrawLine(int(screenVertex[0].x), int(screenVertex[0].y), int(screenVertex[1].x), int(screenVertex[1].y), color);
-	//	Novice::DrawLine(int(screenVertex[1].x), int(screenVertex[1].y), int(screenVertex[2].x), int(screenVertex[2].y), color);
-	//	Novice::DrawLine(int(screenVertex[2].x), int(screenVertex[2].y), int(screenVertex[3].x), int(screenVertex[3].y), color);
-	//	Novice::DrawLine(int(screenVertex[3].x), int(screenVertex[3].y), int(screenVertex[0].x), int(screenVertex[0].y), color);
-	//	Novice::DrawLine(int(screenVertex[4].x), int(screenVertex[4].y), int(screenVertex[5].x), int(screenVertex[5].y), color);
-	//	Novice::DrawLine(int(screenVertex[5].x), int(screenVertex[5].y), int(screenVertex[6].x), int(screenVertex[6].y), color);
-	//	Novice::DrawLine(int(screenVertex[6].x), int(screenVertex[6].y), int(screenVertex[7].x), int(screenVertex[7].y), color);
-	//	Novice::DrawLine(int(screenVertex[7].x), int(screenVertex[7].y), int(screenVertex[4].x), int(screenVertex[4].y), color);
-	//	Novice::DrawLine(int(screenVertex[0].x), int(screenVertex[0].y), int(screenVertex[4].x), int(screenVertex[4].y), color);
-	//	Novice::DrawLine(int(screenVertex[1].x), int(screenVertex[1].y), int(screenVertex[5].x), int(screenVertex[5].y), color);
-	//	Novice::DrawLine(int(screenVertex[2].x), int(screenVertex[2].y), int(screenVertex[6].x), int(screenVertex[6].y), color);
-	//	Novice::DrawLine(int(screenVertex[3].x), int(screenVertex[3].y), int(screenVertex[7].x), int(screenVertex[7].y), color);
-	//}
 
 	bool IsCollision (const AABB& aabb, const Vector3& point) {
 		return
@@ -807,58 +614,6 @@ namespace Math {
 		return true;
 	}
 
-	//void objectRotation(Vector3& rotate) {
-	//	static int prevMouseX = 0;
-	//	static int prevMouseY = 0;
-	//	static bool isDragging = false;
-	//	static bool wasMousePressed = false;
-	//
-	//	int currentMouseX = 0;
-	//	int currentMouseY = 0;
-	//
-	//	bool isMousePressed = Novice::IsPressMouse(0);
-	//	const float rotationSpeed = 0.01f; // ← ここで動きの速さを調整
-	//
-	//	if (!wasMousePressed && isMousePressed) {
-	//		isDragging = true;
-	//		Novice::GetMousePosition(&prevMouseX, &prevMouseY);
-	//	}
-	//
-	//	if (isMousePressed && isDragging) {
-	//		Novice::GetMousePosition(&currentMouseX, &currentMouseY);
-	//
-	//		int dx = currentMouseX - prevMouseX;
-	//		int dy = currentMouseY - prevMouseY;
-	//
-	//		// スケーリングして回転に加える
-	//		rotate.x -= static_cast<float>(dy) * rotationSpeed;
-	//		rotate.y -= static_cast<float>(dx) * rotationSpeed;
-	//
-	//		prevMouseX = currentMouseX;
-	//		prevMouseY = currentMouseY;
-	//	}
-	//
-	//	if (wasMousePressed && !isMousePressed) {
-	//		isDragging = false;
-	//	}
-	//
-	//	wasMousePressed = isMousePressed;
-	//}
-
-	/*float Lerp(const float& start, const float& end, float t) {
-		return t * end + (1 - t) * start;
-	}
-
-	Vector3 Lerp(const Vector3& start, const Vector3& end, float t) {
-		Vector3 v = {};
-
-		v.x = t * end.x + (1 - t) * start.x;
-		v.y = t * end.y + (1 - t) * start.y;
-		v.z = t * end.z + (1 - t) * start.z;
-
-		return v;
-	}*/
-
 	Vector3 ComputeBezierPoint (const Vector3& p0, const Vector3& p1, const Vector3& p2, float t) {
 		Vector3 a = Lerp (p0, p1, t);
 		Vector3 b = Lerp (p1, p2, t);
@@ -877,28 +632,6 @@ namespace Math {
 
 		return result * 0.5f;
 	}
-
-	//void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2,
-	//	const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
-	//	const int maxIndex = 32;
-	//
-	//	for (int index = 0; index < maxIndex; index++) {
-	//		float t0 = index / float(maxIndex);
-	//		float t1 = (index + 1) / float(maxIndex);
-	//
-	//		//controlPoint0と1、1と2間の点を求める
-	//		Vector3 v0 = ComputeBezierPoint(controlPoint0, controlPoint1, controlPoint2, t0);
-	//		Vector3 v1 = ComputeBezierPoint(controlPoint0, controlPoint1, controlPoint2, t1);
-	//
-	//		//求めた点をスクリーン座標に変換
-	//		Vector3 screenV0 = Transform(Transform(v0, viewProjectionMatrix), viewportMatrix);
-	//		Vector3 screenV1 = Transform(Transform(v1, viewProjectionMatrix), viewportMatrix);
-	//
-	//		//求めた二つの点で曲線を描画
-	//		Novice::DrawLine(static_cast<int>(screenV0.x), static_cast<int>(screenV0.y),
-	//			static_cast<int>(screenV1.x), static_cast<int>(screenV1.y), color);
-	//	}
-	//}
 
 	Vector3 Reflect (const Vector3& input, Vector3& normal) {
 		Vector3 reflect;

@@ -1,6 +1,6 @@
 #include "PCH.h"
 #include "TitleScene.h"
-#include "PlayScene.h"
+#include "StageSelectScene.h"
 #include "SceneManager.h"
 #include "Renderer.h"
 #include "RenderSystem.h"
@@ -14,6 +14,7 @@
 #include "PostEffectManager.h"
 #include "GraphicsDevice.h"
 #include "Dissolve.h"
+#include "StartupSceneSettings.h"
 
 TitleScene::TitleScene() = default;
 
@@ -62,6 +63,8 @@ void TitleScene::Initialize() {
 
 	// titleScene.json があれば読み込む
 	const std::string scenePath = "Resources/Scene/titleScene.json";
+	// エディタの保存先をこのシーンのファイルにする（設定しないと直前に開いた PlayScene のファイルに保存されてしまう）
+	StartupSceneSettings::SetCurrentScenePath(scenePath);
 	if (std::filesystem::exists(scenePath)) {
 		std::ifstream file(scenePath);
 		if (file.is_open()) {
@@ -85,16 +88,16 @@ void TitleScene::Initialize() {
 }
 
 void TitleScene::UpdateGame(const CameraData* cameraData) {
-	// スペースキーまたはゲームパッドのボタンでインゲームへ遷移
+	// スペースキーでステージセレクトへ遷移
 	auto* rawInput = InputManager::GetInstance()->GetRawInput();
 	if (rawInput->Trigger(VK_SPACE)) {
 		if (context_->sceneManager) {
 #ifdef USEIMGUI
-			// ゲームスタートなので、エディタも再生状態（Playモード）にする
+			// ステージセレクトも操作を受け付けるので、エディタを再生状態（Playモード）にする
 			EditorManager::GetInstance()->Play();
 #endif
 			// ディゾルブ遷移開始
-			context_->sceneManager->ChangeSceneWithDissolve<PlayScene>(0.8f, 0.8f);
+			context_->sceneManager->ChangeSceneWithDissolve<StageSelectScene>(0.8f, 0.8f);
 		}
 	}
 

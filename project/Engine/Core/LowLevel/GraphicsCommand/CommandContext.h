@@ -9,11 +9,7 @@ public:
 	
 
 public:
-	// コピー・移動禁止
-	CommandContext(const CommandContext&) = delete;
-	CommandContext& operator=(const CommandContext&) = delete;
-	CommandContext(CommandContext&&) = delete;
-	CommandContext& operator=(CommandContext&&) = delete;
+
 
 private:
 	

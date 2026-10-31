@@ -97,18 +97,6 @@ namespace Math {
 
 	Vector3 Transform(const Vector3& v, const Matrix4x4& m);
 
-	//Vector3数値表示
-	//void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label);
-
-	//4x4行列の数値表示
-	//void MatrixScreenPrint(int x, int y, const Matrix4x4& m, const char* str);
-
-	//Grid描画関数
-	//void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
-
-	//球を描画する関数
-	//void DrawSphere(const Vector3& center, const float& radius, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
-
 	//正射影ベクトルを求める関数
 	Vector3 Project(const Vector3& v1, const Vector3& v2);
 
@@ -124,30 +112,14 @@ namespace Math {
 	//頂点を求める関数
 	Vector3 Perpendicular(const Vector3& vector3);
 
-	//平面を描画する関数
-	//void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
-
-	/*線と平面の当たり判定*/
-	//直線
-	//bool IsCollision(const Line& line, const Plane& plane);
-
-	//半直線
-	//bool IsCollision(const Ray& ray, const Plane& plane);
-
 	//線分
 	bool IsCollision(const Segment& segment, const Plane& plane);
 
 	//三角形と線分の当たり判定
 	bool IsCollision(const Triangle& triangle, const Segment& segment);
 
-	//三角形描画の関数
-	//void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
-
 	//AABBの当たり判定
 	bool IsCollision(const AABB& aabb1, const AABB& aabb2);
-
-	//AABBの描画
-	//void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
 	//AABBと点の当たり判定
 	bool IsCollision(const AABB& aabb, const Vector3& point);
@@ -158,24 +130,11 @@ namespace Math {
 	//AABBと線分の当たり判定
 	bool IsCollision(const AABB& aabb, const Segment& segment);
 
-	//オブジェクトの回転を操作する関数
-	//void objectRotation(Vector3& rotate);
-
-	//// floatLerp関数
-	//float Lerp(const float& f1, const float& f2, float t);
-
-	////Vector3Lerp関数
-	//Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
-
 	//ベジェ曲線描画用の点を求める関数
 	Vector3 ComputeBezierPoint(const Vector3& p0, const Vector3& p1, const Vector3& p2, float t);
 
 	// Catmull-Rom スプライン
 	Vector3 CatmullRom(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
-
-	//ベジェ曲線描画関数
-	//void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2,
-	//	const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
 	//反射ベクトルを求める関数
 	Vector3 Reflect(const Vector3& input, Vector3& normal);
