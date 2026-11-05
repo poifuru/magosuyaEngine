@@ -5,6 +5,7 @@
 struct RenderCommand {
 	// PSO
 	ID3D12PipelineState* pso = nullptr;
+	ID3D12PipelineState* shadowPso = nullptr;
 	MyEngine::Rendering::ShadingModel shadingModel = MyEngine::Rendering::ShadingModel::Standard;
 	MyEngine::Rendering::InputLayoutType inputLayout = MyEngine::Rendering::InputLayoutType::Standard3D;
 	MyEngine::Rendering::BlendModeType blendMode = MyEngine::Rendering::BlendModeType::Opaque;

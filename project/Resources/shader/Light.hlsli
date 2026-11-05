@@ -104,7 +104,8 @@ MaterialData material,
 float3 normal,
 float3 worldPosition,
 float4 color,
-float3 toEye
+float3 toEye,
+float mainDirLightShadow = 1.0f // 1本目の平行光源の影（1 = 光が当たる, 0 = 影）
 )
 {
     float3 totalDiffuse = float3(0.0f, 0.0f, 0.0f);
@@ -112,6 +113,9 @@ float3 toEye
     // DirectionalLights
     for (int i = 0; i < allLights.count.dirLight; ++i)
     {
+        // シャドウマップを作っているのは1本目だけ
+        float shadow = (i == 0) ? mainDirLightShadow : 1.0f;
+
         float3 L = normalize(-allLights.dirLights[i].direction);
         float3 N = normalize(normal);
         float3 V = toEye;
@@ -133,7 +137,7 @@ float3 toEye
         float3 kD = (float3(1.0f, 1.0f, 1.0f) - F) * (1.0f - metallic);
         float3 diffuse = kD * albedo / PI;
 
-        totalDiffuse += (diffuse + specular) * lightColor * intensity * saturate(dot(N, L));
+        totalDiffuse += (diffuse + specular) * lightColor * intensity * saturate(dot(N, L)) * shadow;
     }
     
     // PointLight

@@ -96,6 +96,13 @@ public:
 	// 描画時にバッファーのアドレスを渡すための関数
 	D3D12_GPU_VIRTUAL_ADDRESS GetLightGPUAddress() const { return lightBuffer_.GetGPUVirtualAddress(); }
 
+	// 影を落とす平行光源（1本目）の向きを取得する。平行光源が無ければ false
+	bool GetMainDirectionalLightDirection(Vector3& outDirection) const {
+		if (lightCPUData_.count.dirLight <= 0) return false;
+		outDirection = lightCPUData_.dirLights[0].direction;
+		return true;
+	}
+
 private:
 	// ライト登録の補助関数
 	void RegisterDirectionalLight(const Vector4& color, const Vector3& direction, float intensity);

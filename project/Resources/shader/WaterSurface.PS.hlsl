@@ -1,16 +1,22 @@
 #include "WaterSurface.hlsli"
 #include "MaterialData.hlsli"
 #include "Light.hlsli"
+#include "Shadow.hlsli"
 
 struct PixelShaderOutput
 {
     float4 color : SV_TARGET0;
 };
 
+// C++ の CameraForGPU と同じ並びにすること
 struct Camera
 {
     float3 worldPosition;
     float padding;
+    float4x4 lightViewProj; // シャドウマップ用のライトVP行列
+    uint shadowMapIndex; // シャドウマップのSRV番号
+    float shadowBias;
+    float2 padding2;
 };
 
 struct PushIndices
@@ -37,7 +43,9 @@ struct WaterSurface
     float nearFadeDistance;
     float farFadeDistance;
     uint rippleTextureIndex; // 波紋のテクスチャ
-    float3 padding;
+    float shadowStrength; // 影の中の水の色をどれだけ暗くするか（0〜1）
+    float shadowReflectionStrength; // 影の中の空の反射をどれだけ暗くするか（0〜1）
+    float padding;
     float2 waterMin; // 水面位置
     float2 waterSize; // 水面サイズ
 };
@@ -62,6 +70,9 @@ ConstantBuffer<WaterSurface> gWaterSurface : register(b4, space0);
 
 // サンプラー (s0, space0)
 SamplerState gSampler : register(s0, space0);
+
+// シャドウマップ比較用サンプラー (s1, space0)
+SamplerComparisonState gShadowSampler : register(s1, space0);
 
 float Hash12(float2 p)
 {
@@ -167,11 +178,20 @@ PixelShaderOutput main(VertexShaderOutput input)
     // ---------- 太陽 ----------
     float3 L = normalize(float3(-0.35f, 0.6f, 0.45f)); // ライトが無いとき用
     float3 sunColor = float3(1.0f, 1.0f, 1.0f) * 3.0f;
+    float shadow = 1.0f; // 1 = 日なた, 0 = 影
     if (gLightData.count.dirLight > 0)
     {
         L = normalize(-gLightData.dirLights[0].direction);
         sunColor = gLightData.dirLights[0].color.rgb * gLightData.dirLights[0].intensity;
+
+        // ボートなどの影（法線は細かい揺らぎを入れる前の頂点法線を使う）
+        shadow = CalcShadow(
+            g_Textures[gCamera.shadowMapIndex], gShadowSampler, gCamera.lightViewProj, gCamera.shadowBias,
+            input.worldPosition, baseNormal, -L);
     }
+
+    // 影の中では太陽の光が届かない（ハイライト・透過光・泡の陰影すべてに効く）
+    sunColor *= shadow;
 
     float3 finalN = worldNormal;
     
@@ -237,9 +257,14 @@ PixelShaderOutput main(VertexShaderOutput input)
 
     bodyColor += scatterColor * sunLight * (sssView * crestMask * 2.5f + NdotL * 0.03f);
 
+    // 影の中は水の中の色を暗くする
+    bodyColor *= lerp(1.0f - gWaterSurface.shadowStrength, 1.0f, shadow);
+
     // ---------- フレネルで混ぜる ----------
     float waterF = 0.02f + 0.98f * pow(1.0f - saturate(dot(finalN, V)), 5.0f);
-    float3 waterColor = lerp(bodyColor, skyColor, waterF);
+    // 空の反射も影の中では少し暗くする（現実ではほぼ暗くならないが、ゲームとして影を見やすくするため）
+    float3 reflectedSky = skyColor * lerp(1.0f - gWaterSurface.shadowReflectionStrength, 1.0f, shadow);
+    float3 waterColor = lerp(bodyColor, reflectedSky, waterF);
 
     // ---------- 太陽のハイライト ----------
     float roughness = 0.08f;
@@ -296,5 +321,8 @@ PixelShaderOutput main(VertexShaderOutput input)
     output.color.rgb = waterColor;
     output.color.a = material.color.a * finalAlpha;
     
+#if SHADOW_DEBUG
+    output.color = float4(shadow.xxx, 1.0f);
+#endif
     return output;
 }

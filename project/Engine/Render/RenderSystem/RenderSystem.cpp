@@ -30,10 +30,18 @@ void MyEngine::Rendering::RenderSystem::PushCommand(const RenderCommand& command
 }
 
 void MyEngine::Rendering::RenderSystem::SetCameraPosition(const Vector3& cameraPos) {
-	CameraForGPU gpuData{};
-	gpuData.worldPosition = cameraPos;
-	gpuData.padding = 0.0f;
-	cameraBuffer_.Update(gpuData);
+	cameraCPUData_.worldPosition = cameraPos;
+	cameraCPUData_.padding = 0.0f;
+	cameraBuffer_.Update(cameraCPUData_);
+}
+
+void MyEngine::Rendering::RenderSystem::SetShadowData(
+	const Matrix4x4& lightViewProj, uint32_t shadowMapIndex, float shadowBias
+) {
+	cameraCPUData_.lightViewProj = lightViewProj;
+	cameraCPUData_.shadowMapIndex = shadowMapIndex;
+	cameraCPUData_.shadowBias = shadowBias;
+	cameraBuffer_.Update(cameraCPUData_);
 }
 
 uint32_t MyEngine::Rendering::RenderSystem::sDrawCallCount_ = 0;
@@ -122,6 +130,48 @@ void MyEngine::Rendering::RenderSystem::WriteCommandList(ID3D12GraphicsCommandLi
 		// ドローコールが終わったら即座に閉じる！
 		PIXEndEvent(cmdList);
 	}
+}
+
+void MyEngine::Rendering::RenderSystem::WriteShadowCommandList(ID3D12GraphicsCommandList* cmdList) {
+	// 共通ルートシグネチャとヒープはメインと同じ
+	cmdList->SetGraphicsRootSignature(commonRootSignature_);
+	heapManager_->SetGraphicsHeap(cmdList);
+	cmdList->SetGraphicsRootDescriptorTable(2, heapManager_->GetGpuHandle(0));
+	cmdList->SetGraphicsRootDescriptorTable(3, heapManager_->GetGpuHandle(0));
+
+	if (commandQueue_.empty()) return;
+
+	// Slot 4: カメラバッファ（lightViewProj が入っている）
+	cmdList->SetGraphicsRootConstantBufferView(4, cameraBuffer_.GetGPUVirtualAddress());
+
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	PIXBeginEvent(cmdList, PIX_COLOR(80, 80, 80), "ShadowPass");
+
+	ID3D12PipelineState* lastPSO = nullptr;
+	for (const auto& cmd : commandQueue_) {
+		// 影を落とすかどうかはSubmitで決まっている
+		if (!cmd.shadowPso) continue;
+
+		if (cmd.shadowPso != lastPSO) {
+			cmdList->SetPipelineState(cmd.shadowPso);
+			lastPSO = cmd.shadowPso;
+		}
+
+		cmdList->IASetVertexBuffers(0, 1, &cmd.vbView);
+		cmdList->IASetIndexBuffer(&cmd.ibv);
+
+		// Slot 0: World行列を使う
+		cmdList->SetGraphicsRootConstantBufferView(0, cmd.transformGPUAddress);
+
+		if (cmd.indexCount > 0) {
+			cmdList->DrawIndexedInstanced(cmd.indexCount, 1, 0, 0, 0);
+		} else {
+			cmdList->DrawInstanced(cmd.vertexCount, 1, 0, 0);
+		}
+	}
+
+	PIXEndEvent(cmdList);
 }
 
 void MyEngine::Rendering::RenderSystem::ClearCommands() {

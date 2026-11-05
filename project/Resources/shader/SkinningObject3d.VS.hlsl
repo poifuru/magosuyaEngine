@@ -1,4 +1,5 @@
 #include "Object3d.hlsli"
+#include "Matrix.hlsli"
 
 struct VertexShaderInput
 {
@@ -9,13 +10,7 @@ struct VertexShaderInput
     int4 index : INDEX0;
 };
 
-struct TransformaitionMatrix
-{
-    float4x4 WVP;
-    float4x4 World;
-    float4x4 WorldInverseTranspose;
-};
-ConstantBuffer<TransformaitionMatrix> gTransformaitionMatrix : register(b0);
+ConstantBuffer<TransformationMatrix> gTransformaitionMatrix : register(b0);
 
 struct Well
 {

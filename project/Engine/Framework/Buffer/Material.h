@@ -47,6 +47,10 @@ namespace MyEngine::Rendering {
 		uint8_t GetLayer() const;
 		void SetLayer(uint8_t layer);
 
+		// 影を落とすか（シャドウマップに描くか）
+		bool CastsShadow() const { return castShadow_; }
+		void SetCastShadow(bool castShadow) { castShadow_ = castShadow; }
+
 		uint32_t GetTextureIndex() const { return textureIndex_; }
 		void SetTextureIndex(uint32_t textureIndex) { textureIndex_ = textureIndex; }
 
@@ -81,6 +85,7 @@ namespace MyEngine::Rendering {
 		bool isDoubleSided_ = true;
 		bool depthWriteEnable_ = true;
 		uint8_t layer_ = 0;
+		bool castShadow_ = true;
 
 		uint32_t textureIndex_ = 0;
 		

@@ -94,6 +94,8 @@ void WaterSurfaceComponent::Update() {
 	}
 	params.nearFadeDistance = nearFadeDistance_;
 	params.farFadeDistance = farFadeDistance_;
+	params.shadowStrength = shadowStrength_;
+	params.shadowReflectionStrength = shadowReflectionStrength_;
 
 	// シーン内のオブジェクトから BoatWakeComponent を探す
 	auto* wakeComp = GetGameObject()->FindComponentInScene<BoatWakeComponent>();
@@ -195,6 +197,11 @@ void WaterSurfaceComponent::ImGui() {
 	ImGui::Text("水の透明度のフェード");
 	ImGui::DragFloat("フェードの近い距離", &nearFadeDistance_, 1.0f, 0.0f, 1000.0f);
 	ImGui::DragFloat("フェードの遠い距離", &farFadeDistance_, 1.0f, 0.0f, 1000.0f);
+
+	ImGui::Separator();
+	ImGui::Text("水面に落ちる影");
+	ImGui::SliderFloat("影の濃さ (水の色)", &shadowStrength_, 0.0f, 1.0f);
+	ImGui::SliderFloat("影の濃さ (空の反射)", &shadowReflectionStrength_, 0.0f, 1.0f);
 }
 
 float WaterSurfaceComponent::SampleGerstnerHeight(float x, float z) const {
@@ -264,6 +271,8 @@ void WaterSurfaceComponent::Serialize(json& j) const {
 
 	j["nearFadeDistance"] = nearFadeDistance_;
 	j["farFadeDistance"] = farFadeDistance_;
+	j["shadowStrength"] = shadowStrength_;
+	j["shadowReflectionStrength"] = shadowReflectionStrength_;
 }
 
 void WaterSurfaceComponent::Deserialize(const json& j) {
@@ -303,6 +312,12 @@ void WaterSurfaceComponent::Deserialize(const json& j) {
 	}
 	if(j.contains("farFadeDistance")) {
 		farFadeDistance_ = j["farFadeDistance"];
+	}
+	if(j.contains("shadowStrength")) {
+		shadowStrength_ = j["shadowStrength"];
+	}
+	if(j.contains("shadowReflectionStrength")) {
+		shadowReflectionStrength_ = j["shadowReflectionStrength"];
 	}
 
 	// メッシュ生成は次のUpdateで行う（1000x1000分割だと1回で数百msかかるため、二重生成を避ける）

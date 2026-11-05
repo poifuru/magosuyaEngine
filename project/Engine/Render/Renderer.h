@@ -21,6 +21,7 @@ namespace MyEngine::Rendering {
 	class InputLayoutManager;
 	class BlendModeManager;
 	class PSOManager;
+	class ShadowPass;
 
 	struct Mesh;
 	class Material;
@@ -77,6 +78,7 @@ namespace MyEngine::Rendering {
 		MyEngine::Rendering::ShaderManager* GetShaderManager() { return shaderManager_.get(); }
 		MyEngine::Rendering::InputLayoutManager* GetInputLayoutManager() { return inputLayoutManager_.get(); }
 		MyEngine::Rendering::BlendModeManager* GetBlendModeManager() { return blendModeManager_.get(); }
+		MyEngine::Rendering::ShadowPass* GetShadowPass() { return shadowPass_.get(); }
 
 		void SetPostEffectManager(PostEffectManager* postEffectManager) { postEffectManager_ = postEffectManager; }
 
@@ -136,6 +138,12 @@ namespace MyEngine::Rendering {
 
 		// シェーダーの組み合わせを保存しておく
 		std::unordered_map<uint64_t, ShaderPair> shaderTable_;
+
+		// 影を落とすシェーダーの組み合わせ → 影用VS（登録されていないものは影を落とさない）
+		std::unordered_map<uint64_t, uint32_t> shadowVsTable_;
+
+		// シャドウマップと影の設定
+		std::unique_ptr<MyEngine::Rendering::ShadowPass> shadowPass_;
 
 		// objectsの参照を覚えておく
 		std::vector<std::unique_ptr<GameObject>>* currentObjects_ = nullptr;

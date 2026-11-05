@@ -6,7 +6,7 @@
 #include <cassert>
 #include "ScopeTimer.h"
 
-ID3D12PipelineState* MyEngine::Rendering::PSOManager::GetOrCreatePSO (
+ID3D12PipelineState* MyEngine::Rendering::PSOManager::GetOrCreatePSO(
 	ID3D12Device* device,
 	const MyEngine::Rendering::PSODescriptor& desc,
 	ID3D12RootSignature* commonRootSignature,
@@ -20,7 +20,7 @@ ID3D12PipelineState* MyEngine::Rendering::PSOManager::GetOrCreatePSO (
 	uint64_t hash = ComputeHash(desc);
 
 	// キャッシュを検索
-	if (psoCache_.count(hash)) {
+	if(psoCache_.count(hash)) {
 		return psoCache_.at(hash).Get();
 	}
 
@@ -33,7 +33,12 @@ ID3D12PipelineState* MyEngine::Rendering::PSOManager::GetOrCreatePSO (
 
 	// Shaderを取得(ShaderManagerから)
 	psoDesc.VS = shaderManager.GetShaderBytecode(desc.VS_ID);
-	psoDesc.PS = shaderManager.GetShaderBytecode(desc.PS_ID);
+	if(desc.UsePixelShader) {
+		psoDesc.PS = shaderManager.GetShaderBytecode(desc.PS_ID);
+	}
+	else {
+		psoDesc.PS = {};
+	}
 
 	// InputLayoutを取得(InputLayoutManagerから)
 	const D3D12_INPUT_LAYOUT_DESC* inputLayoutDesc = inputLayoutManager.GetInputLayout(desc.InputLayoutID);
@@ -62,8 +67,14 @@ ID3D12PipelineState* MyEngine::Rendering::PSOManager::GetOrCreatePSO (
 	psoDesc.DepthStencilState = depthStencilDesc;
 
 	// 出力ターゲットの設定 (Descriptorから直接設定)
-	psoDesc.NumRenderTargets = desc.NumRenderTargets;
-	psoDesc.RTVFormats[0] = desc.RTVFormat; // 複数のRTが必要ならDescを配列にする
+	if(desc.UsePixelShader) {
+		psoDesc.NumRenderTargets = desc.NumRenderTargets;
+		psoDesc.RTVFormats[0] = desc.RTVFormat; // 複数のRTが必要ならDescを配列にする
+	}
+	else {
+		psoDesc.NumRenderTargets = 0;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+	}
 	psoDesc.DSVFormat = desc.DSVFormat;
 
 	// その他
@@ -90,38 +101,39 @@ inline void hash_combine_simple(uint64_t& seed, uint64_t value) {
 	seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
-uint64_t MyEngine::Rendering::PSOManager::ComputeHash (const PSODescriptor& desc) const {
+uint64_t MyEngine::Rendering::PSOManager::ComputeHash(const PSODescriptor& desc) const {
 	uint64_t hash = 0;
 
 	// --- マネージャー管理のIDをハッシュ化（最重要）---
 	// IDが変われば、シェーダーやルートシグネチャも変わるのでハッシュは必ず変える
-	hash_combine_simple (hash, desc.VS_ID);
-	hash_combine_simple (hash, desc.PS_ID);
+	hash_combine_simple(hash, desc.VS_ID);
+	hash_combine_simple(hash, desc.PS_ID);
+	hash_combine_simple(hash, desc.UsePixelShader);
 	// InputLayoutIDの型をInputLayoutType(enum class)に合わせた場合も、uint32_tに変換してOK
-	hash_combine_simple (hash, (uint32_t)desc.InputLayoutID);
+	hash_combine_simple(hash, (uint32_t)desc.InputLayoutID);
 	// BlendModeType (enum class)は、ManagerでD3D12_BLEND_DESCに変換されるので、IDをハッシュ化する
-	hash_combine_simple (hash, (uint32_t)desc.BlendMode);
+	hash_combine_simple(hash, (uint32_t)desc.BlendMode);
 
 	// --- ラスタライザーステート ---
-	hash_combine_simple (hash, (uint32_t)desc.CullMode);
-	hash_combine_simple (hash, (uint32_t)desc.FillMode);
+	hash_combine_simple(hash, (uint32_t)desc.CullMode);
+	hash_combine_simple(hash, (uint32_t)desc.FillMode);
 
 	// --- デプス/ステンシルステート ---
 	// BOOLはTRUE(1)かFALSE(0)なのでそのままハッシュ化できる
-	hash_combine_simple (hash, desc.DepthEnable);
-	hash_combine_simple (hash, (uint32_t)desc.DepthWriteMask);
-	hash_combine_simple (hash, (uint32_t)desc.DepthFunc);
+	hash_combine_simple(hash, desc.DepthEnable);
+	hash_combine_simple(hash, (uint32_t)desc.DepthWriteMask);
+	hash_combine_simple(hash, (uint32_t)desc.DepthFunc);
 
 	// --- その他の設定 ---
-	hash_combine_simple (hash, (uint32_t)desc.PrimitiveTopologyType);
-	hash_combine_simple (hash, (uint32_t)desc.RTVFormat);
-	hash_combine_simple (hash, desc.NumRenderTargets);
-	hash_combine_simple (hash, (uint32_t)desc.DSVFormat);
+	hash_combine_simple(hash, (uint32_t)desc.PrimitiveTopologyType);
+	hash_combine_simple(hash, (uint32_t)desc.RTVFormat);
+	hash_combine_simple(hash, desc.NumRenderTargets);
+	hash_combine_simple(hash, (uint32_t)desc.DSVFormat);
 
 	// --- サンプリング ---
-	hash_combine_simple (hash, desc.SampleCount);
+	hash_combine_simple(hash, desc.SampleCount);
 	// SampleMaskは32bit値なので、uint32_tでキャストするだけで十分
-	hash_combine_simple (hash, desc.SampleMask);
+	hash_combine_simple(hash, desc.SampleMask);
 
 	return hash;
 }

@@ -10,7 +10,8 @@ namespace MyEngine::Rendering {
 	struct PSODescriptor {
 		// --- マネージャーで管理してるID ---
 		uint32_t VS_ID = 0;										// ShaderManagerから取得したVertex Shader ID
-		uint32_t PS_ID = 0;										// ShaderManagerから取得したPixel Shader ID	
+		uint32_t PS_ID = 0;										// ShaderManagerから取得したPixel Shader ID
+		bool UsePixelShader = true;								// PixelShaderを使うかのフラグ
 		InputLayoutType InputLayoutID = (InputLayoutType)0;		// InputLayoutManagerから取得したID
 		BlendModeType BlendMode = BlendModeType::Opaque;		// BlendModeManagerから取得する
 
@@ -29,8 +30,8 @@ namespace MyEngine::Rendering {
 		//トポロジータイプ
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		//RTVの情報
-		DXGI_FORMAT RTVFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 		UINT NumRenderTargets = 1;
+		DXGI_FORMAT RTVFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 
 		//DepthStencilの設定
 		DXGI_FORMAT DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -38,6 +39,10 @@ namespace MyEngine::Rendering {
 		//Sampling
 		UINT SampleCount = 1;
 		UINT SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+
+		// シャドウマップ用の設定
+		UINT DepthBias = 0;
+		float SlopeScaledDepthBias = 0.0f;
 	};
 
 	class PSOManager {

@@ -394,28 +394,27 @@ namespace Math {
 
 		Matrix4x4 result = {};
 
+		// エンジンは行ベクトル（mul(pos, M)）なので、各軸は「列」に、平行移動は4行目に入れる
+
 		//X軸(右ベクトル r)
 		result.m[0][0] = r.x;
-		result.m[0][1] = r.y;
-		result.m[0][2] = r.z;
-		result.m[0][3] = t_x; //-r・e
+		result.m[1][0] = r.y;
+		result.m[2][0] = r.z;
 
 		//Y軸(上ベクトル u)
-		result.m[1][0] = u.x;
+		result.m[0][1] = u.x;
 		result.m[1][1] = u.y;
-		result.m[1][2] = u.z;
-		result.m[1][3] = t_y; //-u・e
+		result.m[2][1] = u.z;
 
 		//Z軸(前ベクトル f)
-		result.m[2][0] = f.x;
-		result.m[2][1] = f.y;
+		result.m[0][2] = f.x;
+		result.m[1][2] = f.y;
 		result.m[2][2] = f.z;
-		result.m[2][3] = t_z; //-f・e
 
-		//W成分
-		result.m[3][0] = 0.0f;
-		result.m[3][1] = 0.0f;
-		result.m[3][2] = 0.0f;
+		//平行移動とW成分
+		result.m[3][0] = t_x; //-r・e
+		result.m[3][1] = t_y; //-u・e
+		result.m[3][2] = t_z; //-f・e
 		result.m[3][3] = 1.0f;
 
 		return result;

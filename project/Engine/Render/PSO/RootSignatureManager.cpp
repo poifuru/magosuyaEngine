@@ -68,25 +68,39 @@ void MyEngine::Rendering::RootSignatureManager::Initialize (ID3D12Device* device
 	rootParameters[6].Descriptor.ShaderRegister = 4;
 	rootParameters[6].Descriptor.RegisterSpace = 0;
 
+	D3D12_STATIC_SAMPLER_DESC staticSamplers[2] = {};
+
 	// --- 静的サンプラーの設定（s0, space0） --- //
-	D3D12_STATIC_SAMPLER_DESC staticSampler{};
-	staticSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	staticSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-	staticSampler.MaxLOD = D3D12_FLOAT32_MAX;
-	staticSampler.ShaderRegister = 0;
-	staticSampler.RegisterSpace = 0;
-	staticSampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+	staticSamplers[0].ShaderRegister = 0;
+	staticSamplers[0].RegisterSpace = 0;
+	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	// --- シャドウマップ比較用サンプラーの設定（s1, space0） --- //
+	// 「参照値 <= シャドウマップの深度」なら1（光が当たる）を返す。LINEARなので周囲2x2の結果を補間してくれる
+	staticSamplers[1].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+	staticSamplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	staticSamplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	staticSamplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	staticSamplers[1].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;	// 範囲外は影なし
+	staticSamplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	staticSamplers[1].MaxLOD = D3D12_FLOAT32_MAX;
+	staticSamplers[1].ShaderRegister = 1;
+	staticSamplers[1].RegisterSpace = 0;
+	staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 	// --- ルートシグネチャのビルド --- //
 	D3D12_ROOT_SIGNATURE_DESC desc = {};
 	desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 	desc.pParameters = rootParameters;
 	desc.NumParameters = _countof(rootParameters);
-	desc.pStaticSamplers = &staticSampler;
-	desc.NumStaticSamplers = 1;
+	desc.pStaticSamplers = staticSamplers;
+	desc.NumStaticSamplers = _countof(staticSamplers);
 
 	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob;
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;

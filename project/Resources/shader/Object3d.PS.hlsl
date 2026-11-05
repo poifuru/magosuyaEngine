@@ -1,6 +1,7 @@
 #include "Object3d.hlsli"
 #include "Light.hlsli"
 #include "MaterialData.hlsli"
+#include "Shadow.hlsli"
 
 //***構造体やレジスターの定義***//
 struct PixelShaderOutput
@@ -8,10 +9,15 @@ struct PixelShaderOutput
     float4 color : SV_TARGET0;
 };
 
+// C++ の CameraForGPU と同じ並びにすること
 struct Camera
 {
     float3 worldPosition;
     float padding;
+    float4x4 lightViewProj; // シャドウマップ用のライトVP行列
+    uint shadowMapIndex; // シャドウマップのSRV番号
+    float shadowBias;
+    float2 padding2;
 };
 
 struct PushIndices
@@ -37,6 +43,9 @@ ConstantBuffer<AllLightData> gLightData : register(b3, space0);
 
 // サンプラー (s0, space0)
 SamplerState gSampler : register(s0, space0);
+
+// シャドウマップ比較用サンプラー (s1, space0)
+SamplerComparisonState gShadowSampler : register(s1, space0);
 //******//
 
 PixelShaderOutput main(VertexShaderOutput input)
@@ -58,7 +67,16 @@ PixelShaderOutput main(VertexShaderOutput input)
     float3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
     AllLightData allLights = gLightData;
     
-    totalDiffuse = UpdateLights(allLights, myMaterial, input.normal, input.worldPosition, textureColor, toEye);
+    // 影を落とす平行光源（1本目）の影
+    float shadow = 1.0f;
+    if (allLights.count.dirLight > 0)
+    {
+        shadow = CalcShadow(
+            g_Textures[gCamera.shadowMapIndex], gShadowSampler, gCamera.lightViewProj, gCamera.shadowBias,
+            input.worldPosition, normalize(input.normal), normalize(allLights.dirLights[0].direction));
+    }
+
+    totalDiffuse = UpdateLights(allLights, myMaterial, input.normal, input.worldPosition, textureColor, toEye, shadow);
     
     // 環境マップは未バインドのため、0.0で安全にフォールバック
     float4 environmentColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -77,5 +95,8 @@ PixelShaderOutput main(VertexShaderOutput input)
     //float fogT = saturate(length(gCamera.worldPosition - input.worldPosition) / 450.0f);
     //output.color.rgb = lerp(output.color.rgb, float3(0.65f, 0.82f, 0.92f), fogT * fogT * 0.85f);
     
+#if SHADOW_DEBUG
+    output.color = float4(shadow.xxx, 1.0f);
+#endif
     return output;
 }

@@ -19,6 +19,8 @@
 #include "ScopeTimer.h"
 #include "StartupSceneSettings.h"
 #include "StageSelection.h"
+#include "ShadowPass.h"
+#include "BoatDriverComponent.h"
 
 namespace {
 	// 安全にカーソルの表示/非表示を切り替える関数
@@ -265,6 +267,16 @@ void PlayScene::UpdateEdit(const CameraData* cameraData) {
 }
 
 void PlayScene::Draw(MyEngine::Rendering::Renderer* renderer) {
+	renderer->GetShadowPass()->ImGui();
+
+	// 影の中心をプレイヤー（ボート）の位置にする
+	for (auto& obj : gameObjects_) {
+		if (obj->GetComponent<BoatDriverComponent>()) {
+			renderer->GetShadowPass()->SetCenter(obj->GetTransform().translate);
+			break;
+		}
+	}
+
 	// デバッグ線の描画要求（Draw は Play・Pause・Stop のどれでも毎フレーム呼ばれる）
 	for (auto& obj : gameObjects_) {
 		obj->DrawDebug();

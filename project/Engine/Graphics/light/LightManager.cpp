@@ -9,7 +9,7 @@ void LightManager::Initialize(ID3D12Device* device) {
 }
 
 void LightManager::Update() {
-	// 環境光の色を Linear 化して intensity を掛け合わせて構造体にセット！
+	// 環境光の色を Linear 化して intensity を掛け合わせて構造体にセット
 	Vector3 linearColor = ColorUtils::ToLinear(ambientColor_) * ambientIntensity_;
 	lightCPUData_.ambientColor = Vector4(linearColor.x, linearColor.y, linearColor.z, 1.0f);
 

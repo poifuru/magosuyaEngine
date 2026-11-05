@@ -145,6 +145,7 @@
     <ClCompile Include="Engine\Render\FontRendering\FontManager.cpp" />
     <ClCompile Include="Engine\Render\FontRendering\Font.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\FontTextComponent\FontTextComponent.cpp" />
+    <ClCompile Include="Engine\Render\Shadow\ShadowPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -320,6 +321,7 @@
     <ClInclude Include="Engine\Render\FontRendering\FontManager.h" />
     <ClInclude Include="Engine\Render\FontRendering\Font.h" />
     <ClInclude Include="Engine\Framework\GameObject\FontTextComponent\FontTextComponent.h" />
+    <ClInclude Include="Engine\Render\Shadow\ShadowPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />
@@ -371,13 +373,16 @@
     <None Include="Resources\Shader\Fullscreen.hlsli" />
     <None Include="packages.config" />
     <None Include="Resources\Shader\Light.hlsli" />
+    <None Include="Resources\Shader\Shadow.hlsli" />
     <None Include="Resources\Shader\MaterialData.hlsli" />
     <None Include="Resources\Shader\WaterSurface.hlsli" />
+    <None Include="Resources\Shader\Matrix.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shader\WaterQuery.CS.hlsl" />
+    <FxCompile Include="Resources\Shader\ShadowDepth.VS.hlsl" />
   </ItemGroup>
 </Project>

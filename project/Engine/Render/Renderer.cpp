@@ -23,6 +23,8 @@
 #include "GameObject.h"
 #include "BoatWakeComponent.h"
 #include "LineRenderer.h"
+#include "ShadowPass.h"
+#include "LightManager.h"
 
 MyEngine::Rendering::Renderer::Renderer(
 	ID3D12Device* device,
@@ -92,6 +94,9 @@ MyEngine::Rendering::Renderer::Renderer(
 			);
 	}
 
+	// シャドウマップ（シーン全体で1枚）
+	shadowPass_ = std::make_unique<MyEngine::Rendering::ShadowPass>(device, heapContext);
+
 	InitializeShaderTable();
 
 #ifdef USEIMGUI
@@ -145,6 +150,29 @@ void MyEngine::Rendering::Renderer::RenderScene(
 ) {
 	cmdList_ = cmdList;
 
+	// 全コンポーネントのCSを一括実行（波の更新をシャドウパスにも反映するため先に行う）
+	DispatchCS(heapManager);
+
+	// カメラ座標を取得して RenderSystem に設定
+	Vector3 cameraPos = CameraOrganizer::GetInstance()->GetCameraData().transform.translate;
+	renderSystem_->SetCameraPosition(cameraPos);
+
+	// ===== シャドウパス =====
+	// 平行光源がある時だけライトVPを更新する（無ければ前の値のまま）
+	Vector3 lightDir{};
+	const LightManager* lightManager = renderSystem_->GetLightManager();
+	if (lightManager && lightManager->GetMainDirectionalLightDirection(lightDir)) {
+		// 影の中心：シーンが SetCenter したらその位置（プレイヤー）、無ければカメラ位置
+		shadowPass_->Update(lightDir, shadowPass_->ConsumeCenter(cameraPos));
+	}
+	renderSystem_->SetShadowData(
+		shadowPass_->GetLightViewProj(),
+		shadowPass_->GetShadowMapSrvIndex(),
+		shadowPass_->GetBias()
+	);
+	shadowPass_->Execute(cmdList_, renderSystem_.get());
+
+	// ===== メインパス =====
 	// 描画する直前に RENDER_TARGET へバリア遷移
 	renderTexture_->ChangeState(cmdList_, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
@@ -158,15 +186,9 @@ void MyEngine::Rendering::Renderer::RenderScene(
 	cmdList_->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	cmdList_->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
+	// シャドウパスでシャドウマップのサイズにしているので画面サイズへ戻す
 	SetupViewport(cmdList_);
 	SetupScissorRect(cmdList_);
-
-	// 全コンポーネントのCSを一括実行
-	DispatchCS(heapManager);
-
-	// カメラ座標を取得して RenderSystem に設定
-	Vector3 cameraPos = CameraOrganizer::GetInstance()->GetCameraData().transform.translate;
-	renderSystem_->SetCameraPosition(cameraPos);
 
 	renderSystem_->WriteCommandList(cmdList_);
 	renderSystem_->ClearCommands();
@@ -356,6 +378,11 @@ void MyEngine::Rendering::Renderer::InitializeShaderTable() {
 	uint32_t outObjPS = sm->CompileAndCacheShader(L"Resources/Shader/OutlineObject.PS.hlsl", L"ps_6_0");
 	shaderTable_[MakeShaderKey(ShadingModel::OutlineObject, InputLayoutType::Standard3D)] = { outObjVS, outObjPS };
 
+	//*** Shadow ***//
+	// 影を落とす組み合わせだけ登録する（Sprite や Text も Standard3D なので、入力レイアウトだけでは判定できない）
+	uint32_t shadowVS = sm->CompileAndCacheShader(L"Resources/Shader/ShadowDepth.VS.hlsl", L"vs_6_0");
+	shadowVsTable_[MakeShaderKey(ShadingModel::Standard, InputLayoutType::Standard3D)] = shadowVS;
+
 	//*** PostEffect ***//
 	// VSは共通
 	uint32_t postEffectVS = sm->CompileAndCacheShader(L"Resources/shader/Fullscreen.VS.hlsl", L"vs_6_0");
@@ -440,6 +467,24 @@ void MyEngine::Rendering::Renderer::Submit(
 	// RenderCommandに詰めてキューに積む
 	RenderCommand cmd{};
 	cmd.pso = pso;
+	// 影用PSO（nullptrのままなら影を落とさない）
+	cmd.shadowPso = nullptr;
+	auto shadowIt = shadowVsTable_.find(key);
+	if (shadowIt != shadowVsTable_.end() && material->CastsShadow() && material->GetLayer() == 0) {
+		PSODescriptor shadowDesc{};
+		shadowDesc.VS_ID = shadowIt->second;
+		shadowDesc.InputLayoutID = mesh.inputLayout;
+		shadowPass_->ApplySettings(shadowDesc);	// Cull など ShadowPass の設定を反映
+
+		cmd.shadowPso = psoManager_->GetOrCreatePSO(
+			device_,
+			shadowDesc,
+			rootSigManager_->GetCommonRootSignature(),
+			*shaderManager_,
+			*inputLayoutManager_,
+			*blendModeManager_
+		);
+	}
 	cmd.vbView = mesh.vbView;
 	cmd.ibv = mesh.ibView;
 	cmd.vertexCount = mesh.vertexCount;

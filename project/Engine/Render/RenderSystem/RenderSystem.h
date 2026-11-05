@@ -18,6 +18,10 @@ class LightManager;
 struct CameraForGPU {
 	Vector3 worldPosition;
 	float padding; // 16バイトアライメント用のパディング
+	Matrix4x4 lightViewProj;	// シャドウマップ用のライトVP行列
+	uint32_t shadowMapIndex;	// シャドウマップのSRV番号
+	float shadowBias;
+	float padding2[2];			// 16バイトアライメント用のパディング
 };
 
 namespace MyEngine::Rendering {
@@ -43,10 +47,17 @@ namespace MyEngine::Rendering {
 		// カメラ位置の設定・更新用
 		void SetCameraPosition(const Vector3& cameraPos);
 
+		// シャドウマップ用のデータ設定
+		void SetShadowData(const Matrix4x4& lightViewProj, uint32_t shadowMapIndex, float shadowBias);
+
 		// アクティブなライトマネージャーの登録用
 		void SetLightManager(LightManager* lightManager);
+		const LightManager* GetLightManager() const { return activeLightManager_; }
 
 		void WriteCommandList(ID3D12GraphicsCommandList* cmdList);
+
+		// 影を落とすコマンドだけをシャドウ用PSOで描く
+		void WriteShadowCommandList(ID3D12GraphicsCommandList* cmdList);
 
 		void ClearCommands();
 
@@ -76,6 +87,8 @@ namespace MyEngine::Rendering {
 
 		// カメラ用の定数バッファ
 		ConstantBuffer<CameraForGPU> cameraBuffer_;
+		// カメラ位置とシャドウ情報を別々に設定するのでCPU側にも保持しておく
+		CameraForGPU cameraCPUData_{};
 
 		// アクティブなライトマネージャーへのポインタ
 		LightManager* activeLightManager_ = nullptr;

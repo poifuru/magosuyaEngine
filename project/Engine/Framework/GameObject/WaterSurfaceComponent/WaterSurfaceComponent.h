@@ -72,7 +72,9 @@ private:
 		float nearFadeDistance;
 		float farFadeDistance;
 		uint32_t rippleTextureIndex;
-		float padding[3];
+		float shadowStrength;			// 影の中の水の色をどれだけ暗くするか（0〜1）
+		float shadowReflectionStrength;	// 影の中の空の反射をどれだけ暗くするか（0〜1）
+		float padding;
 		Vector2 waterMin; 
 		Vector2 waterSize;
 	};
@@ -106,6 +108,10 @@ private:
 	int numActiveWaves_ = 2; // デフォルトで有効にする波の数（1〜4）
 	float nearFadeDistance_ = 30.0f; // デフォルト値（近距離で透け始める距離）
 	float farFadeDistance_ = 150.0f; // デフォルト値（これより遠いと完全に不透明）
+
+	// 水面に落ちる影の濃さ（0 で影なし、1 で真っ暗）
+	float shadowStrength_ = 0.8f;			// 水の中の色
+	float shadowReflectionStrength_ = 0.5f;	// 空の反射
 
 	ConstantBuffer<WaterSurfaceForGPU> waterSurfaceBuffer_;
 };
