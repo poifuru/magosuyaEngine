@@ -21,6 +21,10 @@ public:
 	// Update と違い、エディタの Play・Pause・Stop のどの状態でも毎フレーム呼ばれる
 	virtual void DrawDebug() {}
 
+	// 衝突したときに呼ばれる（同じ GameObject に付いた ColliderComponent から通知が届く）
+	// 反応したいコンポーネントだけ override する。何もしないのがデフォルト
+	virtual void OnCollision(GameObject* other) {}
+
 	// Jsonへの書き出し
 	virtual void Serialize(json& j) const {}
 	// Jsonからの読み込み

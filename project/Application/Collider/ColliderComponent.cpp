@@ -2,8 +2,6 @@
 #include "ColliderComponent.h"
 #include "GameObject.h"
 #include "CollisionManager.h"
-#include "EnergyItemComponent.h"
-#include "BoarderComponent.h"
 #include "MathFunction.h"
 
 // デフォルトは半径1の球として CollisionObject を初期化
@@ -66,7 +64,7 @@ void ColliderComponent::Deserialize(const json& j) {
 	if (j.contains("radius")) radius_ = j["radius"];
 }
 
-void ColliderComponent::OnCollision(CollisionObject* other) {
+void ColliderComponent::OnHit(CollisionObject* other) {
 	// 衝突相手のコライダーコンポーネントを取得
 	auto* otherCollider = dynamic_cast<ColliderComponent*>(other);
 	if (!otherCollider) return;
@@ -83,16 +81,7 @@ void ColliderComponent::OnCollision(CollisionObject* other) {
 			  Math::Length(Math::Subtract(myObj->GetTransform().translate, otherObj->GetTransform().translate))); // 距離も測る
 	OutputDebugStringA(debugMsg);
 
-	// ボーダーがアイテムに触れたら回収
-	bool isMyPlayer = myObj->GetComponent<BoarderComponent>() != nullptr;
-	bool isOtherPlayer = otherObj->GetComponent<BoarderComponent>() != nullptr;
-	if (isMyPlayer) {
-		if (auto* item = otherObj->GetComponent<EnergyItemComponent>()) {
-			item->OnCollect();
-		}
-	} else if (isOtherPlayer) {
-		if (auto* item = myObj->GetComponent<EnergyItemComponent>()) {
-			item->OnCollect();
-		}
-	}
+	// 自分のGameObjectに付いている全コンポーネントへ通知
+	// 当たったら何をするかは各コンポーネントがして決める
+	myObj->OnCollision(otherObj);
 }

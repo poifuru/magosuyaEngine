@@ -28,6 +28,9 @@ public:
 	// 全コンポーネントの DrawDebug を呼ぶ（エディタの状態に関係なく毎フレーム）
 	void DrawDebug();
 
+	// 衝突を全コンポーネントに知らせる（ColliderComponent から呼ばれる）
+	void OnCollision(GameObject* other);
+
 	void ImGui();
 
 	// シリアライズ用

@@ -21,6 +21,9 @@ public:
 
 	// 取得処理（ボーダーが近づいたら呼ばれる）
 	void OnCollect();
+
+	// ボーダーのコライダーと当たったら回収する
+	void OnCollision(GameObject* other) override;
 	bool IsCollected() const { return isCollected_; }
 
 	int GetHealAmount() const { return healAmount_; }

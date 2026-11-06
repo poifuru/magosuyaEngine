@@ -20,7 +20,7 @@ public:
 	void SetRadius(float r) { radius_ = r; }
 
 	// 衝突した時のコールバック（CollisionObjectの仮想関数をオーバーライド）
-	void OnCollision(CollisionObject* other) override;
+	void OnHit(CollisionObject* other) override;
 
 	const Vector3& GetPrevPosition() const { return prevPosition_; }
 private:

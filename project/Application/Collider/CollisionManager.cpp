@@ -62,8 +62,8 @@ void CollisionManager::UpdateAllCollisions() {
 		bool bExists = std::find(objects_.begin(), objects_.end(), pair.second) != objects_.end();
 
 		if(aExists && bExists) {
-			pair.first->OnCollision(pair.second);
-			pair.second->OnCollision(pair.first);
+			pair.first->OnHit(pair.second);
+			pair.second->OnHit(pair.first);
 		}
 	}
 }
@@ -73,36 +73,8 @@ bool CollisionManager::CheckActualCollision(CollisionObject* a, CollisionObject*
 	auto* colA = dynamic_cast<ColliderComponent*>(a);
 	auto* colB = dynamic_cast<ColliderComponent*>(b);
 
-	if (colA && colB && 
-		colA->GetCollisionType() == CollisionType::Sphere && 
-		colB->GetCollisionType() == CollisionType::Sphere)
-	{
-		// どちらか一方が弾（PlayerBullet）の場合、移動軌跡の線分で判定する
-		bool isBulletA = (colA->GetGameObject() && colA->GetGameObject()->GetName() == "PlayerBullet");
-		bool isBulletB = (colB->GetGameObject() && colB->GetGameObject()->GetName() == "PlayerBullet");
-
-		if (isBulletA || isBulletB) {
-			ColliderComponent* bullet = isBulletA ? colA : colB;
-			ColliderComponent* target = isBulletA ? colB : colA;
-
-			// A: 弾の前フレーム位置, B: 弾の現フレーム位置, C: 敵の中心
-			Vector3 A = bullet->GetPrevPosition();
-			Vector3 B = bullet->GetSphere().center;
-			Vector3 C = target->GetSphere().center;
-			float sqDist = SqDistPointSegment(A, B, C);
-			float radiusSum = bullet->GetSphere().radius + target->GetSphere().radius;
-
-			// 最短距離の二乗が、お互いの半径の合計の二乗以下なら衝突！
-			return sqDist <= (radiusSum * radiusSum);
-		}
-
-		// どちらも弾ではない通常の場合は、従来の球同士の判定
-		return Math::IsCollision(a->GetSphere(), b->GetSphere());
-	}
-
-
 	// 関数内での OnCollision 呼び出しをやめて、純粋に判定結果（bool）だけを返す
-	else if (a->GetCollisionType() == CollisionType::AABB && 
+	if (a->GetCollisionType() == CollisionType::AABB && 
 			 b->GetCollisionType() == CollisionType::AABB)
 	{
 		return Math::IsCollision(a->GetAABB(), b->GetAABB());

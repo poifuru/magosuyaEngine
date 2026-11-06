@@ -55,6 +55,13 @@ void EnergyItemComponent::Update() {
 	}
 }
 
+void EnergyItemComponent::OnCollision(GameObject* other) {
+	// 当たった相手がボーダーのときだけ回収する（判断はアイテム自身が持つ）
+	if (other && other->GetComponent<BoarderComponent>()) {
+		OnCollect();
+	}
+}
+
 void EnergyItemComponent::OnCollect() {
 	if (isCollected_) return;
 	isCollected_ = true;

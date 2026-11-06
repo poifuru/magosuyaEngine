@@ -39,6 +39,13 @@ void GameObject::DrawDebug() {
 	}
 }
 
+void GameObject::OnCollision(GameObject* other) {
+	// 通知中に AddComponent されて vector が伸びても壊れないよう、範囲 for ではなく添字で回す
+	for (size_t i = 0; i < components_.size(); ++i) {
+		components_[i]->OnCollision(other);
+	}
+}
+
 void GameObject::Update() {
 	for (auto& component : components_) {
 		component->Update();

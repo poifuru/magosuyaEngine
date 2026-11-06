@@ -22,7 +22,7 @@ public:
 	virtual ~CollisionObject() = default;
 
 	// 衝突したときにマネージャーから呼ばれる仮想関数
-	virtual void OnCollision(CollisionObject* other) = 0;
+	virtual void OnHit(CollisionObject* other) = 0;
 
 	CollisionType GetCollisionType() const { return type_; }
 
