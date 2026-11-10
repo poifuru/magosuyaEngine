@@ -68,18 +68,18 @@
 
 						<!-- 就職作品 (Main Work) -->
 							<article id="main-work">
-								<h2 class="major">就職作品（TPSアクション）</h2>
-								
-								<h3>とりうおハント！</h3>
-								<p>害獣を駆除して海の平和を守る TPSゲーム</p>
-								
+								<h2 class="major">就職作品（水上アクション）</h2>
+
+								<h3>ボートウェイク</h3>
+								<p>ボートに引かれて、波の山でジャンプする水上アクションゲーム</p>
+
 								<!-- YouTube 埋め込み動画 -->
 								<h4>プレイ動画</h4>
 								<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; margin-bottom: 2rem; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,0.4);">
-									<iframe src="https://www.youtube.com/embed/fNg64NOWd60" title="とりうおハント！ プレイ動画" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+									<iframe src="https://www.youtube.com/embed/bH3RyKRXd54" title="ボートウェイク プレイ動画" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 								</div>
 
-								<span class="image main"><img src="images/page_5.png" alt="就職作品 メインビジュアル" /></span>
+								<span class="image main"><img src="images/boatwake_main.jpg" alt="ボートウェイク メインビジュアル" /></span>
 
 								<div class="table-wrapper">
 									<table>
@@ -100,21 +100,18 @@
 									</table>
 								</div>
 
-								<p>広大な海を舞台に、害獣を駆除しながら海の平和を守る三人称視点（TPS）アクションゲームです。カメラワークと水面シェーダーの表現に徹底してこだわって開発しています。</p>
+								<p>ボートに引かれて、波の山でジャンプする水上アクションゲーム「ボートウェイク」です。船の航跡やイルカが立てる波をGPUで計算し、その波の傾きと高さでジャンプの高さが決まるようにしています。</p>
 
 								<hr />
 
-								<h3>こだわりポイント 1：Unityを参考にした柔軟なカメラワークシステム</h3>
-								<p>プレイヤーの臨場感やアクションの迫力を引き出すため、Unityのカメラ機構を参考に、自作エンジン内でカメラワークを直感的に工夫・構築できる制御システムを実装しました。</p>
-
-								<hr />
-
-								<h3>こだわりポイント 2：ゲルストナー波を用いたリアルな水面 &amp; 航跡波</h3>
-								<span class="image main"><img src="images/page_6.png" alt="ゲルストナー波と航跡波" /></span>
+								<h3>機能紹介：インタラクティブな波</h3>
+								<span class="image main"><img src="images/boatwake_ripple.jpg" alt="船が立てる波紋" /></span>
+								<span class="image main"><img src="images/boatwake_wake.jpg" alt="船の航跡波" /></span>
 								<ul>
-									<li><strong>ゲルストナー波（Gerstner Wave）の実装:</strong> 自然な海のうねりや尖った波頭を物理アルゴリズムでリアルタイム計算して再現。</li>
-									<li><strong>ImGuiによるメッシュ動的生成:</strong> 水面メッシュのサイズや分割数をImGuiからリアルタイムにパラメータ調整でき、その場でメッシュを動的再生成する仕組みを構築。</li>
-									<li><strong>コンピュートシェーダー（CS）による航跡波・泡表現:</strong> プレイヤーが水面を航行した軌跡をコンピュートシェーダーで追跡し、通過後に白い航跡波と泡が立つ演出をGPU上で高速処理。</li>
+									<li><strong>ゲルストナー波:</strong> 大きなうねりはゲルストナー波で表現。</li>
+									<li><strong>コンピュートシェーダーによる高さ場:</strong> 船や物が立てる波は、CSを用いて高さ場として毎フレーム計算。</li>
+									<li><strong>波動方程式とiWaveの比較:</strong> 両方を実装して比べ、波の山が見やすい波動方程式を採用。</li>
+									<li><strong>CPUへの読み戻し:</strong> 計算した波の高さと傾きをCPUに読み戻し、ジャンプの判定に使用。</li>
 								</ul>
 							</article>
 
