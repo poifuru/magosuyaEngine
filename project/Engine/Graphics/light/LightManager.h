@@ -1,12 +1,12 @@
 #pragma once
-#include "DirectionalLight.h"
-#include "PointLight.h"
-#include "SpotLight.h"
-#include "RectLight.h"
 #include "ConstantBuffer.h"
 
 // 前方宣言
 class LightComponent;
+struct Directional;
+struct Point;
+struct Spot;
+struct Rect;
 
 //ライトの最大数
 const uint32_t MaxCount = 50;
@@ -105,7 +105,9 @@ public:
 
 private:
 	// ライト登録の補助関数
-	void RegisterDirectionalLight(const Vector4& color, const Vector3& direction, float intensity);
+	void RegisterDirectionalLight(
+		const Vector4& color, const Vector3& direction, float intensity
+	);
 	void RegisterPointLight(
 		const Vector4& color, const Vector3& position, float intensity, float radius, float decay
 	);
@@ -119,20 +121,18 @@ private:
 	);
 
 private:
-	//ライトの種類ごとにリストを持つ
-	std::vector<std::unique_ptr<DirectionalLight>> dirLights_;
-	std::vector<std::unique_ptr<PointLight>> pointLights_;
-	std::vector<std::unique_ptr<SpotLight>> spotLights_;
-	std::vector<std::unique_ptr<RectLight>> rectLights_;
+	// ライトの型ごとに、対応する登録関数を呼ぶ
+	struct RegisterVisitor {
+		LightManager* manager;
+
+		void operator()(const Directional& p) const;
+		void operator()(const Point& p) const;
+		void operator()(const Spot& p) const;
+		void operator()(const Rect& p) const;
+	};
 
 	ConstantBuffer<AllLightDataForGPU> lightBuffer_;
 	AllLightDataForGPU lightCPUData_{}; // CPU側の一時保存用
-
-	//ImGui編集用の変数
-	int selectDirLightIndex_ = 0;
-	int selectPointLightIndex_ = 0;
-	int selectSpotLightIndex_ = 0;
-	int selectRectLightIndex_ = 0;
 
 	Vector3 ambientColor_ = { 0.2f, 0.3f, 0.45f }; // デフォルトはほんのり青みがかった空色
 	float ambientIntensity_ = 5.0f;                // 環境光の強さ

@@ -73,7 +73,7 @@
                         ],
                         [
                             -53.2669563293457,
-                            -98.14810180664062,
+                            -98.14810180664063,
                             0,
                             1
                         ],
@@ -150,7 +150,7 @@
                         1.0,
                         1.0
                     ],
-                    "intensity": 3.0,
+                    "intensity": 50.0,
                     "lightType": 0,
                     "type": "LightComponent"
                 }
@@ -186,12 +186,12 @@
             "transform": {
                 "position": [
                     249.44873046875,
-                    98.57359313964844,
+                    2.573356866836548,
                     -69.74139404296875
                 ],
                 "rotation": [
-                    0.12520179152488708,
-                    5.201364994049072,
+                    0.05420178547501564,
+                    3.7961792945861816,
                     0.0
                 ],
                 "scale": [
@@ -215,12 +215,12 @@
             "transform": {
                 "position": [
                     249.44873046875,
-                    98.57359313964844,
+                    2.573356866836548,
                     -69.74139404296875
                 ],
                 "rotation": [
-                    0.12520179152488708,
-                    5.201364994049072,
+                    0.05420178547501564,
+                    3.7961792945861816,
                     0.0
                 ],
                 "scale": [
@@ -263,7 +263,7 @@
             "name": "FollowCamera",
             "transform": {
                 "position": [
-                    -2.6468887329101562,
+                    -2.6468887329101563,
                     11.270694732666016,
                     -170.59649658203125
                 ],
@@ -291,6 +291,8 @@
                     "followCamera": true,
                     "nearFadeDistance": 0.0,
                     "numActiveWaves": 6,
+                    "shadowReflectionStrength": 0.5,
+                    "shadowStrength": 0.800000011920929,
                     "type": "WaterSurfaceComponent",
                     "waves": [
                         {
@@ -437,6 +439,8 @@
                 {
                     "airControl": 0.10000000149011612,
                     "baseJump": 1.0,
+                    "crestScale": 5.0,
+                    "descendDecay": 30.0,
                     "edgeAccel": 1.0,
                     "gravity": 25.0,
                     "landingDepthScale": 0.05999999865889549,
@@ -447,12 +451,14 @@
                     "maxJumpHeight": 40.0,
                     "maxLandingDepth": 1.2000000476837158,
                     "maxRiseMemory": 200.0,
+                    "restWaterY": 0.0,
                     "rideFoam": 0.019999999552965164,
                     "rideWaveRadius": 1.5,
                     "rideWaveStrength": 0.30000001192092896,
                     "riseMemoryDecay": 5.0,
                     "ropeLength": 70.0,
                     "ropePull": 5.0,
+                    "slopeKick": 0.5,
                     "softKneeHeight": 20.0,
                     "sternOffset": 2.0,
                     "type": "BoarderComponent",

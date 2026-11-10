@@ -3,18 +3,175 @@
 #include "GameObject.h"
 #include "MathFunction.h"
 
+
+namespace {
+#pragma region ライトの種類ごとの値をJSONに書き出す
+	struct LightParamWriter {
+		json& j;
+
+		void operator()(const Directional& p) const{
+			j["color"] = { p.color.x, p.color.y, p.color.z, p.color.w };
+			j["intensity"] = p.intensity;
+		}
+
+		void operator()(const Point& p) const {
+			j["color"] = { p.color.x, p.color.y, p.color.z, p.color.w };
+			j["intensity"] = p.intensity;
+			j["radius"] = p.radius;
+			j["decay"] = p.decay;
+		}
+
+		void operator()(const Spot& p) const {
+			j["color"] = { p.color.x, p.color.y, p.color.z, p.color.w };
+			j["intensity"] = p.intensity;
+			j["distance"] = p.distance;
+			j["decay"] = p.decay;
+			j["cosAngle"] = p.cosAngle;
+		}
+
+		void operator()(const Rect& p) const{
+			j["color"] = { p.color.x, p.color.y, p.color.z, p.color.w };
+			j["intensity"] = p.intensity;
+			j["size"] = { p.size.x, p.size.y };
+			j["decay"] = p.decay;
+		}
+	};
+#pragma endregion
+
+#pragma region ライトの値をJSONから読み取る
+	struct LightParamReader {
+		const json& j;
+
+		void operator()(Directional& p) const{
+			// 値が1つのものはj.valueを使って安全に読み込み
+			p.intensity = j.value("intensity", p.intensity);
+
+			// 他の値は配列を指定して読み込み
+			if(j.contains("color")) {
+				p.color = { j["color"][0], j["color"][1],j["color"][2],j["color"][3] };
+			}
+		}
+
+		void operator()(Point& p) const {
+			p.intensity = j.value("intensity", p.intensity);
+			p.radius = j.value("radius", p.radius);
+			p.decay = j.value("decay", p.decay);
+
+			if(j.contains("color")) {
+				p.color = { j["color"][0], j["color"][1],j["color"][2],j["color"][3] };
+			}
+		}
+
+		void operator()(Spot& p) const {
+			p.intensity = j.value("intensity", p.intensity);
+			p.distance = j.value("distance", p.distance);
+			p.decay = j.value("decay", p.decay);
+			p.cosAngle = j.value("cosAngle", p.cosAngle);
+
+			if(j.contains("color")) {
+				p.color = { j["color"][0], j["color"][1],j["color"][2],j["color"][3] };
+			}
+		}
+
+		void operator()(Rect& p) const {
+			p.intensity = j.value("intensity", p.intensity);
+			p.decay = j.value("decay", p.decay);
+
+			if(j.contains("color")) {
+				p.color = { j["color"][0], j["color"][1],j["color"][2],j["color"][3] };
+			}
+			if(j.contains("size")) {
+				p.size = { j["size"][0], j["size"][1] };
+			}
+		}
+	};
+#pragma endregion
+
+#pragma region エディタで編集する
+	struct LightParamEditor {
+		void operator()(Directional& p) const {
+			ImGui::ColorEdit4("色", &p.color.x);
+			ImGui::DragFloat("強さ", &p.intensity, 0.05f, 0.0f, 100.0f);
+		}
+
+		void operator()(Point& p) const{
+			ImGui::ColorEdit4("色", &p.color.x);
+			ImGui::DragFloat("強さ", &p.intensity, 0.05f, 0.0f, 100.0f);
+			ImGui::DragFloat("半径", &p.radius, 0.1f, 0.0f, 100.0f);
+			ImGui::DragFloat("減衰", &p.decay, 0.05f, 0.0f, 10.0f);
+		}
+
+		void operator()(Spot& p) const {
+			ImGui::ColorEdit4("色", &p.color.x);
+			ImGui::DragFloat("強さ", &p.intensity, 0.05f, 0.0f, 100.0f);
+			ImGui::DragFloat("距離", &p.distance, 0.1f, 0.0f, 100.0f);
+			ImGui::DragFloat("減衰", &p.decay, 0.05f, 0.0f, 10.0f);
+			// コサインだと角度の感覚が掴みづらいので、度数法(0~180度)に変換して編集できるようにする
+			float angle = acosf(p.cosAngle) * (180.0f / 3.14159265f) * 2.0f;
+			if (ImGui::DragFloat("角度", &angle, 0.5f, 0.0f, 180.0f)) {
+				p.cosAngle = cosf((angle * 0.5f) * (3.14159265f / 180.0f));
+			}
+		}
+
+		void operator()(Rect& p) const {
+			ImGui::ColorEdit4("色", &p.color.x);
+			ImGui::DragFloat("強さ", &p.intensity, 0.05f, 0.0f, 100.0f);
+			ImGui::DragFloat2("大きさ", &p.size.x, 0.05f, 0.0f, 50.0f);
+			ImGui::DragFloat("減衰", &p.decay, 0.05f, 0.0f, 10.0f);
+		}
+	};
+#pragma endregion
+
+#pragma region 更新処理
+	struct LightTransformSync {
+		const Vector3& position;
+		const Matrix4x4& rotMatrix;
+
+		void operator()(Directional& p) const {
+			p.direction = Math::Transform({ 0.0f, -1.0f, 0.0f }, rotMatrix);
+		}
+
+		void operator()(Point& p) const {
+			p.position = position;
+		}
+
+		void operator()(Spot& p) const {
+			p.position = position;
+			p.direction = Math::Transform({ 0.0f, 0.0f, 1.0f }, rotMatrix);
+		}
+
+		void operator()(Rect& p) const {
+			p.position = position;
+			p.direction = Math::Transform({ 0.0f, 0.0f, 1.0f }, rotMatrix);
+			p.right = Math::Transform({ 1.0f, 0.0f, 0.0f }, rotMatrix);
+			p.up = Math::Transform({ 0.0f, 1.0f, 0.0f }, rotMatrix);
+		}
+	};
+#pragma endregion
+}
+
+LightParam LightComponent::MakeDefaultParam(size_t index) {
+	const Vector4 white = { 1.0f, 1.0f, 1.0f, 1.0f };
+	switch (index) {
+	case POINTLIGHT:
+		return Point{ white, 1.0f, { 0.0f, 0.0f, 0.0f }, 10.0f, 1.0f };
+	case SPOTLIGHT:
+		return Spot{ white, 1.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, 10.0f, 1.0f, 0.5f };
+	case RECTLIGHT:
+		return Rect{ white, 1.0f, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f },
+					 { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, 1.0f };
+	case DIRECTIONALLIGHT:
+	default:
+		return Directional{ white, 1.0f, { 0.0f, -1.0f, 0.0f } };
+	}
+}
+
 void LightComponent::Initialize() {
 	if (isInitialized_) return;
 	isInitialized_ = true;
 
 	// デフォルトのDirectionalLightで初期化しておく
-	type_ = DIRECTIONALLIGHT;
-
-	Directional dir;
-	dir.color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	dir.intensity = 1.0f;
-	dir.direction = { 0.0f, -1.0f, 0.0f };
-	param_ = dir;
+	param_ = MakeDefaultParam(DIRECTIONALLIGHT);
 }
 
 void LightComponent::Update() {
@@ -24,13 +181,6 @@ void LightComponent::Update() {
 	// Transformの取得
 	auto& transform = owner->GetTransform();
 
-	// パラメータを必要としているライトに同期させる 
-	// 位置(Point, Spot, Rect)
-	if(auto* p = std::get_if<Point>(&param_))      p->position = transform.translate;
-	else if(auto* p = std::get_if<Spot>(&param_)) p->position = transform.translate;
-	else if(auto* p = std::get_if<Rect>(&param_)) p->position = transform.translate;
-
-	// 向き (Directional, Spot, Rect）
 	// 各軸の回転から Quaternion を作成して合成する
 	Quaternion qX = Math::MakeRotateAxisAngleQuaternion({1.0f, 0.0f, 0.0f}, transform.rotate.x);
 	Quaternion qY = Math::MakeRotateAxisAngleQuaternion({0.0f, 1.0f, 0.0f}, transform.rotate.y);
@@ -39,242 +189,126 @@ void LightComponent::Update() {
 	// Quaternion から回転行列を作る
 	Matrix4x4 rotMat = Math::MakeRotateMatrix(q);
 
-	if(auto* p = std::get_if<Directional>(&param_)) {
-		p->direction = Math::Transform({ 0.0f, -1.0f, 0.0f }, rotMat); // デフォルト方向を回転
-	}
-	else if(auto* p = std::get_if<Spot>(&param_)) {
-		p->direction = Math::Transform({ 0.0f, 0.0f, 1.0f }, rotMat);
-	}
-	else if(auto* p = std::get_if<Rect>(&param_)) {
-		p->direction = Math::Transform({ 0.0f, 0.0f, 1.0f }, rotMat);
-		p->right = Math::Transform({ 1.0f, 0.0f, 0.0f }, rotMat);
-		p->up = Math::Transform({ 0.0f, 1.0f, 0.0f }, rotMat);
-	}
-
-	// 位置の同期
-	Vector3 lightPosition = transform.translate;
+	// パラメータを必要としているライトに同期させる
+	std::visit(LightTransformSync{ transform.translate, rotMat }, param_);
 }
 
 void LightComponent::ImGui() {
 	// ライトタイプの切り替え
 	const char* types[] = { "平行光源", "点光源", "スポットライト", "面光源" };
-	int currentType = static_cast<int>(type_);
+	int currentType = static_cast<int>(param_.index());
 	if(ImGui::Combo("種類", &currentType, types, IM_ARRAYSIZE(types))) {
-		type_ = static_cast<LightType>(currentType);
-		// タイプが切り替わったら variant の中身を再初期化する
-		if(type_ == DIRECTIONALLIGHT) param_ = Directional{
-			{1.0f,1.0f,1.0f,1.0f}, 1.0f, {0.0f,-1.0f,0.0f} 
-		};
-		else if(type_ == POINTLIGHT) param_ = Point{ 
-			{1.0f, 1.0f, 1.0f, 1.0f}, 1.0f, {0.0f, 0.0f, 0.0f }, 10.0f, 1.0f
-		};
-		else if(type_ == SPOTLIGHT) param_ = Spot{
-			{1.0f, 1.0f, 1.0f, 1.0f }, 1.0f, {0.0f, 0.0f, 0.0f }, {0.0f, 0.0f, 1.0f }, 10.0f, 1.0f, 0.5f
-		};
-		else if(type_ == RECTLIGHT) param_ = Rect{
-			{1.0f, 1.0f, 1.0f, 1.0f }, 1.0f, {0.0f, 0.0f, 0.0f }, {0.0f, 0.0f, 1.0f }, {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f }, {0.0f, 1.0f, 0.0f }, 1.0f 
-		};
+		// タイプが切り替わったら variant の中身をその種類の初期値で作り直す
+		param_ = MakeDefaultParam(static_cast<size_t>(currentType));
 	}
 
 	ImGui::Separator();
 
-	// 共通パラメータの編集
-	Vector4 color = GetColor();
-	if (ImGui::ColorEdit4("色", &color.x)) {
-		SetColor(color);
-	}
-	float intensity = GetIntensity();
-	if (ImGui::DragFloat("強さ", &intensity, 0.05f, 0.0f, 100.0f)) {
-		SetIntensity(intensity);
-	}
-
 	// 個別パラメータの編集
-	if (auto* p = std::get_if<Point>(&param_)) {
-		ImGui::DragFloat("半径", &p->radius, 0.1f, 0.0f, 100.0f);
-		ImGui::DragFloat("減衰", &p->decay, 0.05f, 0.0f, 10.0f);
-	}
-	else if (auto* p = std::get_if<Spot>(&param_)) {
-		ImGui::DragFloat("距離", &p->distance, 0.1f, 0.0f, 100.0f);
-		ImGui::DragFloat("減衰", &p->decay, 0.05f, 0.0f, 10.0f);
-		// コサインだと角度の感覚が掴みづらいので、度数法(0~180度)に変換して編集できるようにする
-		float angle = acosf(p->cosAngle) * (180.0f / 3.14159265f) * 2.0f;
-		if (ImGui::DragFloat("角度", &angle, 0.5f, 0.0f, 180.0f)) {
-			p->cosAngle = cosf((angle * 0.5f) * (3.14159265f / 180.0f));
-		}
-	}
-	else if (auto* p = std::get_if<Rect>(&param_)) {
-		ImGui::DragFloat2("大きさ", &p->size.x, 0.05f, 0.0f, 50.0f);
-		ImGui::DragFloat("減衰", &p->decay, 0.05f, 0.0f, 10.0f);
-	}
+	std::visit(LightParamEditor{}, param_);
 }
 
 void LightComponent::Serialize(json& j) const {
 	j["type"] = "LightComponent";
-	j["lightType"] = static_cast<int>(type_);
-	j["color"] = { GetColor().x, GetColor().y, GetColor().z, GetColor().w };
-	j["intensity"] = GetIntensity();
-	if (auto* p = std::get_if<Point>(&param_)) {
-		j["radius"] = p->radius;
-		j["decay"] = p->decay;
-	}
-	else if (auto* p = std::get_if<Spot>(&param_)) {
-		j["distance"] = p->distance;
-		j["decay"] = p->decay;
-		j["cosAngle"] = p->cosAngle;
-	}
-	else if (auto* p = std::get_if<Rect>(&param_)) {
-		j["size"] = { p->size.x, p->size.y };
-		j["decay"] = p->decay;
-	}
+	j["lightType"] = static_cast<int>(param_.index());
+
+	// オペレータに登録した処理を使う
+	std::visit(LightParamWriter{ j }, param_);
 }
 
 void LightComponent::Deserialize(const json& j) {
 	isInitialized_ = true;
-	type_ = static_cast<LightType>(j["lightType"]);
-	Vector4 color = { j["color"][0], j["color"][1], j["color"][2], j["color"][3] };
-	float intensity = j["intensity"];
-	if (type_ == DIRECTIONALLIGHT) {
-		param_ = Directional{ color, intensity, {0,-1,0} };
-	}
-	else if (type_ == POINTLIGHT) {
-		param_ = Point{ color, intensity, {0,0,0}, j["radius"], j["decay"] };
-	}
-	else if (type_ == SPOTLIGHT) {
-		param_ = Spot{ color, intensity, {0,0,0}, {0,0,1}, j["distance"], j["decay"], j["cosAngle"] };
-	}
-	else if (type_ == RECTLIGHT) {
-		param_ = Rect{ color, intensity, {0,0,0}, {0,0,1}, { j["size"][0], j["size"][1] }, {1,0,0}, {0,1,0}, j["decay"] };
-	}
+
+	// まず種類ごとの初期値で作り、JSON にある項目だけ上書きする
+	// （項目が欠けていても初期値が残るので、古いシーンファイルでも落ちない）
+	size_t index = j.value("lightType", static_cast<int>(DIRECTIONALLIGHT));
+	if (index >= std::variant_size_v<LightParam>) index = DIRECTIONALLIGHT;
+	param_ = MakeDefaultParam(index);
+
+	// オペレータに登録した処理を使う
+	std::visit(LightParamReader{ j }, param_);
 }
 
-#pragma region アクセッサ
-Vector4 LightComponent::GetColor() const {
-	if(auto* p = std::get_if<Directional>(&param_)) return p->color;
-	if(auto* p = std::get_if<Point>(&param_))		return p->color;
-	if(auto* p = std::get_if<Spot>(&param_))		return p->color;
-	if(auto* p = std::get_if<Rect>(&param_))		return p->color;
+#pragma region アクセッサ用の構造体
+namespace {
+	struct ColorGetter {
+		template <class T>
+		Vector4 operator()(const T& p) const { return p.color; }
+	};
 
-	return { 1.0f, 1.0f, 1.0f, 1.0f };
+	struct ColorSetter {
+		const Vector4& color;
+
+		template <class T>
+		void operator()(T& p) const { p.color = color; }
+	};
+
+	struct IntensityGetter {
+		template <class T>
+		float operator()(const T& p) const { return p.intensity; }
+	};
+
+	struct IntensitySetter {
+		float intensity;
+
+		template <class T>
+		void operator()(T& p) const { p.intensity = intensity; }
+	};
+}
+#pragma endregion
+
+#pragma region アクセッサ
+// 全種類が持っている値
+Vector4 LightComponent::GetColor() const {
+	return std::visit(ColorGetter{}, param_);
 }
 
 void LightComponent::SetColor(const Vector4& color) {
-	if(auto* p = std::get_if<Directional>(&param_)) { p->color = color; return; }
-	if(auto* p = std::get_if<Point>(&param_)) { p->color = color; return; }
-	if(auto* p = std::get_if<Spot>(&param_)) { p->color = color; return; }
-	if(auto* p = std::get_if<Rect>(&param_)) { p->color = color; return; }
+	std::visit(ColorSetter{ color }, param_);
 }
 
 float LightComponent::GetIntensity() const {
-	if(auto* p = std::get_if<Directional>(&param_)) return p->intensity;
-	if(auto* p = std::get_if<Point>(&param_))		return p->intensity;
-	if(auto* p = std::get_if<Spot>(&param_))		return p->intensity;
-	if(auto* p = std::get_if<Rect>(&param_))		return p->intensity;
-
-	return 0.0f;
+	return std::visit(IntensityGetter{}, param_);
 }
 
 void LightComponent::SetIntensity(const float& intensity) {
-	if(auto* p = std::get_if<Directional>(&param_)) { p->intensity = intensity; return; }
-	if(auto* p = std::get_if<Point>(&param_)) { p->intensity = intensity; return; }
-	if(auto* p = std::get_if<Spot>(&param_)) { p->intensity = intensity; return; }
-	if(auto* p = std::get_if<Rect>(&param_)) { p->intensity = intensity; return; }
+	std::visit(IntensitySetter{ intensity }, param_);
 }
 
-Vector3 LightComponent::GetPosition() const {
-	if(auto* p = std::get_if<Point>(&param_)) return p->position;
-	if(auto* p = std::get_if<Spot>(&param_)) return p->position;
-	if(auto* p = std::get_if<Rect>(&param_)) return p->position;
-
-	return { 0.0f, 0.0f, 0.0f };
-}
-
-void LightComponent::SetPosition(const Vector3& position) {
-	if(auto* p = std::get_if<Point>(&param_)) { p->position = position; return; }
-	if(auto* p = std::get_if<Spot>(&param_)) { p->position = position; return; }
-	if(auto* p = std::get_if<Rect>(&param_)) { p->position = position; return; }
-}
-
-Vector3 LightComponent::GetDirection() const {
-	if(auto* p = std::get_if<Directional>(&param_)) return p->direction;
-	if(auto* p = std::get_if<Spot>(&param_)) return p->direction;
-	if(auto* p = std::get_if<Rect>(&param_)) return p->direction;
-
-	return { 0.0f, 0.0f, 0.0f };
-}
-
-void LightComponent::SetDirection(const Vector3& direction) {
-	if(auto* p = std::get_if<Directional>(&param_)) { p->direction = direction; return; }
-	if(auto* p = std::get_if<Spot>(&param_)) { p->direction = direction; return; }
-	if(auto* p = std::get_if<Rect>(&param_)) { p->direction = direction; return; }
-}
-
+// 1種類だけが持っている値
 float LightComponent::GetRadius() const {
-	if(auto* p = std::get_if<Point>(&param_)) return p->radius;
-
+	if (auto* p = std::get_if<Point>(&param_)) return p->radius;
 	return 0.0f;
 }
 
 void LightComponent::SetRadius(const float& radius) {
-	if(auto* p = std::get_if<Point>(&param_)) { p->radius = radius; return; }
-}
-
-float LightComponent::GetDecay() const {
-	if(auto* p = std::get_if<Point>(&param_)) return p->decay;
-	if(auto* p = std::get_if<Spot>(&param_)) return p->decay;
-	if(auto* p = std::get_if<Rect>(&param_)) return p->decay;
-
-	return 0.0f;
-}
-
-void LightComponent::SetDecay(const float& decay) {
-	if(auto* p = std::get_if<Point>(&param_)) { p->decay = decay; return; }
-	if(auto* p = std::get_if<Spot>(&param_)) { p->decay = decay; return; }
-	if(auto* p = std::get_if<Rect>(&param_)) { p->decay = decay; return; }
+	if (auto* p = std::get_if<Point>(&param_)) p->radius = radius;
 }
 
 float LightComponent::GetDistance() const {
-	if(auto* p = std::get_if<Spot>(&param_)) return p->distance;
-
+	if (auto* p = std::get_if<Spot>(&param_)) return p->distance;
 	return 0.0f;
 }
 
 void LightComponent::SetDistance(const float& distance) {
-	if(auto* p = std::get_if<Spot>(&param_)) { p->distance = distance; return; }
+	if (auto* p = std::get_if<Spot>(&param_)) p->distance = distance;
 }
 
 float LightComponent::GetCosAngle() const {
-	if(auto* p = std::get_if<Spot>(&param_)) return p->cosAngle;
-
+	if (auto* p = std::get_if<Spot>(&param_)) return p->cosAngle;
 	return 0.0f;
 }
 
 void LightComponent::SetCosAngle(const float& cosAngle) {
-	if(auto* p = std::get_if<Spot>(&param_)) { p->cosAngle = cosAngle; return; }
+	if (auto* p = std::get_if<Spot>(&param_)) p->cosAngle = cosAngle;
 }
 
 Vector2 LightComponent::GetSize() const {
-	if(auto* p = std::get_if<Rect>(&param_)) return p->size;
-
+	if (auto* p = std::get_if<Rect>(&param_)) return p->size;
 	return { 0.0f, 0.0f };
 }
 
 void LightComponent::SetSize(const Vector2& size) {
-	if(auto* p = std::get_if<Rect>(&param_)) { p->size = size; return; }
-}
-
-const Directional* LightComponent::GetDirectionalParam() const {
-	return std::get_if<Directional>(&param_);
-}
-
-const Point* LightComponent::GetPointParam() const {
-	return std::get_if<Point>(&param_);
-}
-
-const Spot* LightComponent::GetSpotParam() const {
-	return std::get_if<Spot>(&param_);
-}
-
-const Rect* LightComponent::GetRectParam() const {
-	return std::get_if<Rect>(&param_);
+	if (auto* p = std::get_if<Rect>(&param_)) p->size = size;
 }
 #pragma endregion

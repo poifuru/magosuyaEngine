@@ -51,29 +51,8 @@ void LightManager::ClearLights() {
 void LightManager::Register(const LightComponent* light) {
 	if(!light) return;
 
-	// ライトの種類に応じてプライベート関数にデータを流す
-	LightType type = light->GetLightType();
-
-	if (type == DIRECTIONALLIGHT) {
-		if (auto* dir = light->GetDirectionalParam()) {
-			RegisterDirectionalLight(dir->color, dir->direction, dir->intensity);
-		}
-	}
-	else if (type == POINTLIGHT) {
-		if (auto* pt = light->GetPointParam()) {
-			RegisterPointLight(pt->color, pt->position, pt->intensity, pt->radius, pt->decay);
-		}
-	}
-	else if (type == SPOTLIGHT) {
-		if (auto* spot = light->GetSpotParam()) {
-			RegisterSpotLight(spot->color, spot->position, spot->intensity, spot->direction, spot->distance, spot->decay, spot->cosAngle);
-		}
-	}
-	else if (type == RECTLIGHT) {
-		if (auto* rect = light->GetRectParam()) {
-			RegisterRectLight(rect->color, rect->position, rect->intensity, rect->direction, rect->size, rect->right, rect->up, rect->decay);
-		}
-	}
+	// variantの実際の型に合ったオペレータが呼ばれる
+	std::visit(RegisterVisitor{ this }, light->GetParam());
 }
 
 void LightManager::RegisterDirectionalLight(const Vector4& color, const Vector3& direction, float intensity) {
@@ -128,4 +107,20 @@ void LightManager::RegisterRectLight(const Vector4& color, const Vector3& positi
 	lightCPUData_.rectLights[index].up = up;
 	lightCPUData_.rectLights[index].decay = decay;
 	lightCPUData_.count.rectLight++;
+}
+
+void LightManager::RegisterVisitor::operator()(const Directional& p) const {
+	manager->RegisterDirectionalLight(p.color, p.direction, p.intensity);
+}
+
+void LightManager::RegisterVisitor::operator()(const Point& p) const {
+	manager->RegisterPointLight(p.color, p.position, p.intensity, p.radius, p.decay);
+}
+
+void LightManager::RegisterVisitor::operator()(const Spot& p) const {
+	manager->RegisterSpotLight(p.color, p.position, p.intensity, p.direction, p.distance, p.decay, p.cosAngle);
+}
+
+void LightManager::RegisterVisitor::operator()(const Rect& p) const {
+	manager->RegisterRectLight(p.color, p.position, p.intensity, p.direction, p.size, p.right, p.up, p.decay);
 }

@@ -2,6 +2,8 @@
 #include "Component.h"
 #include "LightManager.h"
 #include "struct.h"
+#include <variant>
+#include <type_traits>
 
 //　--- 構造体の定義 --- //
 // DirectionalLight
@@ -43,6 +45,11 @@ struct Rect {
 	float	decay;		// 減衰率
 };
 
+// ライトのパラメータ（4種類のどれか1つだけを持つ）
+// ※並び順は LightType（DIRECTIONALLIGHT, POINTLIGHT, SPOTLIGHT, RECTLIGHT）と揃えること
+//   index() をそのまま LightType として使っている
+using LightParam = std::variant<Directional, Point, Spot, Rect>;
+
 class LightComponent : public Component {
 public:
 	LightComponent() = default;
@@ -58,8 +65,11 @@ public:
 	const char* GetName() const override { return "Light"; }
 
 #pragma region アクセッサ (LightManagerがデータを集約するときに使う)
-	// LightTypeを返す
-	LightType GetLightType() const { return type_; }
+	// LightTypeを返す（variant が今どの型を持っているか = index()）
+	LightType GetLightType() const { return static_cast<LightType>(param_.index()); }
+
+	// パラメータを丸ごと返す（LightManager が std::visit で読む）
+	const LightParam& GetParam() const { return param_; }
 
 	// Colorを返す
 	Vector4 GetColor() const;
@@ -71,25 +81,10 @@ public:
 	// Intensityをセット
 	void SetIntensity(const float& intensity);
 
-	// Positionを返す
-	Vector3 GetPosition() const;
-	// Positionをセット
-	void SetPosition(const Vector3& position);
-
-	// Directionを返す
-	Vector3 GetDirection() const;
-	// Directionをセット
-	void SetDirection(const Vector3& direction);
-
 	// Radiusを返す
 	float GetRadius() const;
 	// Radiusをセット
 	void SetRadius(const float& radius);
-
-	// Decayを返す
-	float GetDecay() const;
-	// Decayをセット
-	void SetDecay(const float& decay);
 
 	// Distanceを返す
 	float GetDistance() const;
@@ -105,23 +100,14 @@ public:
 	Vector2 GetSize() const;
 	// Sizeをセット
 	void SetSize(const Vector2& size);
-
-	// --- 構造体を丸ごと返す --- //
-	// Directional構造体を返す
-	const Directional* GetDirectionalParam() const;
-
-	// Point構造体を返す
-	const Point* GetPointParam() const;
-
-	// Spot構造体を返す
-	const Spot* GetSpotParam() const;
-
-	// Rect構造体を返す
-	const Rect* GetRectParam() const;
 #pragma endregion
 
 private:
-	LightType type_ = DIRECTIONALLIGHT;
-	std::variant<Directional, Point, Spot, Rect> param_;
+	// 種類ごとの初期値を返す（index は LightType の値）
+	static LightParam MakeDefaultParam(size_t index);
+
+private:
+	// 種類は param_.index() で分かるので、別に type_ は持たない（ズレる心配がない）
+	LightParam param_ = MakeDefaultParam(DIRECTIONALLIGHT);
 	bool isInitialized_ = false;
 };
