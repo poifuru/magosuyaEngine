@@ -24,6 +24,10 @@ void RandomNoise::ImGui() {
 	}
 }
 
+const char* RandomNoise::GetDisplayName() const {
+	return "ノイズ";
+}
+
 D3D12_GPU_VIRTUAL_ADDRESS RandomNoise::GetConstantBufferAddress() const {
 	return buffer_->GetGPUVirtualAddress();
 }

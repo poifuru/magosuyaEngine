@@ -49,16 +49,7 @@ void PostEffectManager::ImGui() {
 		if (effects_[i] == nullptr) continue;
 
 		// 列挙型に応じて表示する名前を決定する
-		const char* effectName = "不明";
-		switch (static_cast<PostEffectType>(i)) {
-		case PostEffectType::Outline:      effectName = "輪郭線";       break;
-		case PostEffectType::ColorGrading: effectName = "色調補正"; break;
-		case PostEffectType::Fog:		   effectName = "フォグ";			 break;
-		case PostEffectType::Vignette:     effectName = "ビネット";      break;
-		case PostEffectType::RadialBlur:   effectName = "放射ブラー";   break;
-		case PostEffectType::Dissolve:     effectName = "ディゾルブ";      break;
-		case PostEffectType::RandomNoise:  effectName = "ノイズ";  break;
-		}
+		const char* effectName = effects_[i]->GetDisplayName();
 
 		// 現在のフラグ状態を取得
 		bool isActive = effects_[i]->GetIsActive();
@@ -69,30 +60,14 @@ void PostEffectManager::ImGui() {
 		}
 	}
 
-	ImGui::Separator();
-	ImGui::Text("パラメータ");
+	for(size_t i = 0; i < static_cast<size_t>(PostEffectType::Count); ++i) {
+		ImGui::Separator();
+		ImGui::Text("パラメータ");
 
-	// ON になっているエフェクトの内部パラメータだけを下に展開する
-	for (size_t i = 0; i < static_cast<size_t>(PostEffectType::Count); ++i) {
-		// ここでは「実体が存在する」かつ「ONになっている」ものだけパラメータ調整を表示
-		if (effects_[i] != nullptr && effects_[i]->GetIsActive()) {
+		std::string headerName = std::format("{}の設定", effects_[i]->GetDisplayName());
 
-			// ImGui の折りたたみヘッダー（CollapsingHeader）を使うと画面がスッキリしておすすめ
-			const char* headerName = "不明なパラメータ";
-			switch (static_cast<PostEffectType>(i)) {
-			case PostEffectType::Outline:      headerName = "輪郭線の設定";       break;
-			case PostEffectType::ColorGrading: headerName = "色調補正の設定"; break;
-			case PostEffectType::Fog:		   headerName = "フォグの設定";			  break;
-			case PostEffectType::Vignette:     headerName = "ビネットの設定";      break;
-			case PostEffectType::RadialBlur:   headerName = "放射ブラーの設定";   break;
-			case PostEffectType::Dissolve:     headerName = "ディゾルブの設定";      break;
-			case PostEffectType::RandomNoise:  headerName = "ノイズの設定";  break;
-			}
-
-			if (ImGui::CollapsingHeader(headerName, ImGuiTreeNodeFlags_DefaultOpen)) {
-				// 各クラス固有の DragFloat とかを呼び出す
-				effects_[i]->ImGui();
-			}
+		if(ImGui::CollapsingHeader(headerName.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+			effects_[i]->ImGui();
 		}
 	}
 

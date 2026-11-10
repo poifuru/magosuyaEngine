@@ -11,6 +11,9 @@ public:
 	// ImGui用関数
 	virtual void ImGui() = 0;
 
+	// ImGuiに表示する名前
+	virtual const char* GetDisplayName() const = 0;
+
 	bool GetIsActive() const { return isActive_; }
 	void SetIsActive(bool flag) { isActive_ = flag; }
 

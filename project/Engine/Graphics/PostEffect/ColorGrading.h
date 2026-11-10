@@ -8,6 +8,8 @@ public:
 
 	void ImGui() override;
 
+	const char* GetDisplayName() const override;
+
 	D3D12_GPU_VIRTUAL_ADDRESS GetConstantBufferAddress() const override;
 
 private:

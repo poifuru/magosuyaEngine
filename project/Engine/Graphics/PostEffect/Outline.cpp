@@ -32,6 +32,10 @@ void Outline::ImGui() {
 	}
 }
 
+const char* Outline::GetDisplayName() const {
+	return "アウトライン";
+}
+
 void Outline::UpdateCameraNearFar(float nearClip, float farClip) {
 	param_.cameraNear = nearClip;
 	param_.cameraFar = farClip;

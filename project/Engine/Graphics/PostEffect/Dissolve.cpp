@@ -28,6 +28,10 @@ void Dissolve::ImGui() {
 	}
 }
 
+const char* Dissolve::GetDisplayName() const {
+	return "ディゾルブ";
+}
+
 D3D12_GPU_VIRTUAL_ADDRESS Dissolve::GetConstantBufferAddress() const {
 	return buffer_->GetGPUVirtualAddress();
 }

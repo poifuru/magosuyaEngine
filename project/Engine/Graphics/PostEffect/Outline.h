@@ -8,6 +8,8 @@ public:
 
 	void ImGui() override;
 
+	const char* GetDisplayName() const override;
+
 	void UpdateCameraNearFar(float nearClip, float farClip);
 
 	D3D12_GPU_VIRTUAL_ADDRESS GetConstantBufferAddress() const override;

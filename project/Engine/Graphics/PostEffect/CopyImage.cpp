@@ -10,6 +10,10 @@ void CopyImageEffect::ImGui() {
 	// 調整するパラメータはないので空
 }
 
+const char* CopyImageEffect::GetDisplayName() const {
+	return "コピー";
+}
+
 D3D12_GPU_VIRTUAL_ADDRESS CopyImageEffect::GetConstantBufferAddress() const {
 	return 0;
 }

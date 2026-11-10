@@ -32,6 +32,10 @@ void Vignette::ImGui() {
 	}
 }
 
+const char* Vignette::GetDisplayName() const {
+	return "ビネット";
+}
+
 D3D12_GPU_VIRTUAL_ADDRESS Vignette::GetConstantBufferAddress() const {
 	return buffer_->GetGPUVirtualAddress();
 }

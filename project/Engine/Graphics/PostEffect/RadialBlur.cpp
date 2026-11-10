@@ -27,6 +27,10 @@ void RadialBlur::ImGui() {
 	}
 }
 
+const char* RadialBlur::GetDisplayName() const {
+	return "ラジアルブラー";
+}
+
 D3D12_GPU_VIRTUAL_ADDRESS RadialBlur::GetConstantBufferAddress() const {
 	return buffer_->GetGPUVirtualAddress();
 }

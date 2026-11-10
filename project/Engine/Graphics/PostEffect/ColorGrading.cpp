@@ -30,6 +30,10 @@ void ColorGrading::ImGui() {
 	}
 }
 
+const char* ColorGrading::GetDisplayName() const {
+	return "色調補正";
+}
+
 D3D12_GPU_VIRTUAL_ADDRESS ColorGrading::GetConstantBufferAddress() const {
 	return buffer_->GetGPUVirtualAddress();
 }

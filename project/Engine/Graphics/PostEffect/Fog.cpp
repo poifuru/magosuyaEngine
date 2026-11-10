@@ -36,6 +36,10 @@ void Fog::ImGui() {
 	}
 }
 
+const char* Fog::GetDisplayName() const {
+	return "フォグ";
+}
+
 D3D12_GPU_VIRTUAL_ADDRESS Fog::GetConstantBufferAddress() const {
     return buffer_->GetGPUVirtualAddress();
 }
