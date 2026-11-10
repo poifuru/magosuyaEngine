@@ -2,7 +2,7 @@ name: DebugBuild
 on:
   push:
     branches:
-      - master
+      - Master
       
 env:
   #リポジトリのルートディレクトリを基準としたソリューションパス
