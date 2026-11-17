@@ -6,7 +6,7 @@
 #include "BaseScene.h"
 #include "Time.h"
 #include "MathFunction.h"
-#include "../../../../Engine/Editor/ParticleEditor/ParticleSpawner.h"
+#include "ParticleSpawner.h"
 #include <cmath>
 
 void EnergyItemComponent::Initialize() {

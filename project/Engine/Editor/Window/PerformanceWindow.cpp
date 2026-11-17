@@ -2,6 +2,7 @@
 #include "PerformanceWindow.h"
 #include "Engine.h"
 #include "RenderSystem.h"
+#include "GpuParticlePool.h"
 
 PerformanceWindow::PerformanceWindow()
 	: IEditorWindow("パフォーマンス", true) {
@@ -30,6 +31,8 @@ void PerformanceWindow::UpdateAndDraw(const EditorContext& context) {
 
 		// ドローコール数とメインメモリ使用量の表示
 		ImGui::Text("Draw Calls: %u", MyEngine::Rendering::RenderSystem::GetDrawCallCount());
+
+		ImGui::Text("空きリストの頂上: %d", GpuParticlePool::GetDebugFreeListTop());
 
 		PROCESS_MEMORY_COUNTERS memCounter;
 		GetProcessMemoryInfo(GetCurrentProcess(), &memCounter, sizeof(memCounter));

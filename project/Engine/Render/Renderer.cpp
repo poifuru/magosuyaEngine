@@ -25,6 +25,7 @@
 #include "LineRenderer.h"
 #include "ShadowPass.h"
 #include "LightManager.h"
+#include "GpuParticlePool.h"
 
 MyEngine::Rendering::Renderer::Renderer(
 	ID3D12Device* device,
@@ -96,6 +97,15 @@ MyEngine::Rendering::Renderer::Renderer(
 
 	// シャドウマップ（シーン全体で1枚）
 	shadowPass_ = std::make_unique<MyEngine::Rendering::ShadowPass>(device, heapContext);
+
+	// GPUパーティクル（テスト用）
+	testParticlePool_ = std::make_unique<GpuParticlePool>();
+	testParticlePool_->Initialize(
+		device,
+		*shaderManager_,
+		rootSigManager_->GetParticleRootSignature(),
+		1024
+	);
 
 	InitializeShaderTable();
 
@@ -217,6 +227,11 @@ void MyEngine::Rendering::Renderer::DispatchCS(
 	// CSでディスクリプタヒープを使う前にコマンドリストへセットする
 	if(heapManager) {
 		heapManager->SetGraphicsHeap(cmdList_);
+	}
+
+	// GPUパーティクル（テスト用）
+	if(testParticlePool_ && heapManager) {
+		testParticlePool_->Dispatch(cmdList_, heapManager->GetGpuHandle(0));
 	}
 
 	if(currentObjects_) {

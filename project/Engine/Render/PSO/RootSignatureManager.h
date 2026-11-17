@@ -11,6 +11,7 @@ namespace MyEngine::Rendering {
 		// レンダラーやPSOManagerが使うゲッター
 		ID3D12RootSignature* GetCommonRootSignature() const { return rootSignature_.Get(); }
 		ID3D12RootSignature* GetComputeRootSignature() const { return computeRootSignature_.Get(); }
+		ID3D12RootSignature* GetParticleRootSignature() const { return particleRootSignature_.Get(); }
 
 	public:
 		// コピー・移動禁止
@@ -22,5 +23,6 @@ namespace MyEngine::Rendering {
 	private:	// メンバ変数
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> computeRootSignature_;	// CS用
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> particleRootSignature_;	// GpuParticle用
 	};
 }

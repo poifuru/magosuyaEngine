@@ -7,7 +7,7 @@
 #include "BaseScene.h"
 #include "Time.h"
 #include "MathFunction.h"
-#include "../../../../Engine/Editor/ParticleEditor/ParticleSpawner.h"
+#include "ParticleSpawner.h"
 #include "WaterSurfaceComponent.h"
 #include "BoatWakeComponent.h"
 

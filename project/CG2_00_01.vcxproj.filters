@@ -4,8 +4,8 @@
     <ClCompile Include="application\scene\ClearScene.cpp" />
     <ClCompile Include="application\scene\GameoverScene.cpp" />
     <ClCompile Include="Engine\Framework\Camera\CameraOrganizer.cpp" />
-    <ClCompile Include="Engine\Graphics\primitive\cube\CubeRenderer.cpp" />
-    <ClCompile Include="Engine\Graphics\primitive\line\LineRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\Primitive\cube\CubeRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\Primitive\line\LineRenderer.cpp" />
     <ClCompile Include="Engine\Render\PSO\BlendModeManager.cpp" />
     <ClCompile Include="Engine\Common\Utility\Logger.cpp" />
     <ClCompile Include="Engine\Common\Utility\ChangeString.cpp" />
@@ -38,13 +38,13 @@
     <ClCompile Include="application\entity\Entity.cpp" />
     <ClCompile Include="Engine\Render\PSO\ShaderManager.cpp" />
     <ClCompile Include="Engine\Framework\Object\3d\BaseObject3d.cpp" />
-    <ClCompile Include="Engine\Graphics\light\LightManager.cpp" />
-    <ClCompile Include="Engine\Graphics\light\BaseLight.cpp" />
-    <ClCompile Include="Engine\Graphics\light\DirectionalLight.cpp" />
-    <ClCompile Include="Engine\Graphics\light\PointLight.cpp" />
-    <ClCompile Include="Engine\Graphics\light\SpotLight.cpp" />
+    <ClCompile Include="Engine\Graphics\Light\LightManager.cpp" />
+    <ClCompile Include="Engine\Graphics\Light\BaseLight.cpp" />
+    <ClCompile Include="Engine\Graphics\Light\DirectionalLight.cpp" />
+    <ClCompile Include="Engine\Graphics\Light\PointLight.cpp" />
+    <ClCompile Include="Engine\Graphics\Light\SpotLight.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="Engine\Graphics\light\RectLight.cpp" />
+    <ClCompile Include="Engine\Graphics\Light\RectLight.cpp" />
     <ClCompile Include="Engine\Audio\AudioManager.cpp" />
     <ClCompile Include="application\scene\DebugScene.cpp" />
     <ClCompile Include="application\scene\TestScene.cpp" />
@@ -95,10 +95,10 @@
     <ClCompile Include="Application\Entity\Props\EnergyItemComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\CourseBuoyComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\DolphinEventComponent.cpp" />
-    <ClCompile Include="Engine\Editor\ParticleEditor\EmitterComponent.cpp" />
-    <ClCompile Include="Engine\Editor\ParticleEditor\ParticleComponent.cpp" />
-    <ClCompile Include="Engine\Editor\ParticleEditor\ParticleSpawner.cpp" />
-    <ClCompile Include="Engine\Editor\ParticleEditor\ParticleData.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\EmitterComponent.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleComponent.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleSpawner.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleData.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsDevice\GraphicsDeviceCreator.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DxcCompiler\DxcCompiler.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsCommand\CommandQueue.cpp" />
@@ -146,17 +146,19 @@
     <ClCompile Include="Engine\Render\FontRendering\Font.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\FontTextComponent\FontTextComponent.cpp" />
     <ClCompile Include="Engine\Render\Shadow\ShadowPass.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\GpuParticlePool.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />
     <ClInclude Include="application\scene\ClearScene.h" />
     <ClInclude Include="Engine\Framework\Camera\CameraOrganizer.h" />
     <ClInclude Include="Engine\Framework\Camera\BaseCamera.h" />
-    <ClInclude Include="Engine\Graphics\primitive\cube\CubeRenderer.h" />
-    <ClInclude Include="Engine\Graphics\primitive\cube\CubeRenderData.h" />
-    <ClInclude Include="Engine\Graphics\primitive\line\LineRenderData.h" />
-    <ClInclude Include="Engine\Graphics\primitive\line\LineRenderer.h" />
-    <ClInclude Include="Engine\Graphics\primitive\MaxMeshNum.h" />
+    <ClInclude Include="Engine\Graphics\Primitive\cube\CubeRenderer.h" />
+    <ClInclude Include="Engine\Graphics\Primitive\cube\CubeRenderData.h" />
+    <ClInclude Include="Engine\Graphics\Primitive\line\LineRenderData.h" />
+    <ClInclude Include="Engine\Graphics\Primitive\line\LineRenderer.h" />
+    <ClInclude Include="Engine\Graphics\Primitive\MaxMeshNum.h" />
     <ClInclude Include="Engine\Render\PSO\BlendModeManager.h" />
     <ClInclude Include="externals\externals.h" />
     <ClInclude Include="application\scene\GameoverScene.h" />
@@ -198,14 +200,14 @@
     <ClInclude Include="application\entity\Entity.h" />
     <ClInclude Include="Engine\Render\PSO\ShaderManager.h" />
     <ClInclude Include="Engine\Framework\Object\3d\BaseObject3d.h" />
-    <ClInclude Include="Engine\Graphics\light\LightManager.h" />
-    <ClInclude Include="Engine\Graphics\light\BaseLight.h" />
-    <ClInclude Include="Engine\Graphics\light\DirectionalLight.h" />
-    <ClInclude Include="Engine\Graphics\light\PointLight.h" />
-    <ClInclude Include="Engine\Graphics\light\SpotLight.h" />
+    <ClInclude Include="Engine\Graphics\Light\LightManager.h" />
+    <ClInclude Include="Engine\Graphics\Light\BaseLight.h" />
+    <ClInclude Include="Engine\Graphics\Light\DirectionalLight.h" />
+    <ClInclude Include="Engine\Graphics\Light\PointLight.h" />
+    <ClInclude Include="Engine\Graphics\Light\SpotLight.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="application\scene\SceneType.h" />
-    <ClInclude Include="Engine\Graphics\light\RectLight.h" />
+    <ClInclude Include="Engine\Graphics\Light\RectLight.h" />
     <ClInclude Include="Engine\Audio\AudioManager.h" />
     <ClInclude Include="Engine\Audio\VoiceCallback.h" />
     <ClInclude Include="application\scene\DebugScene.h" />
@@ -235,7 +237,7 @@
     <ClInclude Include="Engine\Framework\Buffer\SpriteData.h" />
     <ClInclude Include="Engine\Framework\Buffer\SkinCluster.h" />
     <ClInclude Include="Engine\Framework\Buffer\Skeleton.h" />
-    <ClInclude Include="Engine\Editor\ParticleEditor\ParticleData.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleData.h" />
     <ClInclude Include="Engine\Framework\Buffer\MeshData.h" />
     <ClInclude Include="Engine\Framework\Buffer\MaterialData.h" />
     <ClInclude Include="Engine\Framework\Buffer\Animation.h" />
@@ -273,9 +275,9 @@
     <ClInclude Include="Application\Entity\Props\EnergyItemComponent.h" />
     <ClInclude Include="Application\Entity\Props\CourseBuoyComponent.h" />
     <ClInclude Include="Application\Entity\Props\DolphinEventComponent.h" />
-    <ClInclude Include="Engine\Editor\ParticleEditor\EmitterComponent.h" />
-    <ClInclude Include="Engine\Editor\ParticleEditor\ParticleSpawner.h" />
-    <ClInclude Include="Engine\Editor\ParticleEditor\ParticleComponent.h" />
+    <ClInclude Include="Engine\Graphics\Particle\EmitterComponent.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleSpawner.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleComponent.h" />
     <ClInclude Include="Engine\Core\LowLevel\GraphicsDevice\GraphicsDeviceCreator.h" />
     <ClInclude Include="Engine\Core\LowLevel\DxcCompiler\DxcCompiler.h" />
     <ClInclude Include="Engine\Core\LowLevel\GraphicsCommand\CommandQueue.h" />
@@ -322,6 +324,8 @@
     <ClInclude Include="Engine\Render\FontRendering\Font.h" />
     <ClInclude Include="Engine\Framework\GameObject\FontTextComponent\FontTextComponent.h" />
     <ClInclude Include="Engine\Render\Shadow\ShadowPass.h" />
+    <ClInclude Include="Engine\Graphics\Particle\GpuParticlePool.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />

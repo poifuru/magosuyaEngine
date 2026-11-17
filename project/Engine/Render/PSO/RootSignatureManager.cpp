@@ -163,4 +163,40 @@ void MyEngine::Rendering::RootSignatureManager::Initialize (ID3D12Device* device
 	hr = device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(computeRootSignature_.GetAddressOf()));
 	assert(SUCCEEDED(hr));
 #pragma endregion
+
+#pragma region GpuParticle用ルートシグネチャ
+	D3D12_ROOT_PARAMETER particleParams[5]{};
+
+	// Initialize Emitter Update用のUAV
+	for(UINT i = 0; i < 3; ++i) {
+		particleParams[i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_UAV;
+		particleParams[i].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		particleParams[i].Descriptor.ShaderRegister = i; // u0, u1, u2
+		particleParams[i].Descriptor.RegisterSpace = 0;
+	}
+
+	// CBV(b0) エミッタ用
+	particleParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	particleParams[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	particleParams[3].Descriptor.ShaderRegister = 0;
+
+	// バインドレスSRV(t0, space2)
+	particleParams[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	particleParams[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	particleParams[4].DescriptorTable.pDescriptorRanges = &srvRange;
+	particleParams[4].DescriptorTable.NumDescriptorRanges = 1;
+
+	D3D12_ROOT_SIGNATURE_DESC particleCSdesc{};
+	particleCSdesc.pParameters = particleParams;
+	particleCSdesc.NumParameters = _countof(particleParams);
+
+	Microsoft::WRL::ComPtr<ID3DBlob> particleBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> particleCSErrorBlob;
+
+	hr = D3D12SerializeRootSignature(&particleCSdesc, D3D_ROOT_SIGNATURE_VERSION_1, &particleBlob, &particleCSErrorBlob);
+	assert(SUCCEEDED(hr));
+
+	hr = device->CreateRootSignature(0, particleBlob->GetBufferPointer(), particleBlob->GetBufferSize(), IID_PPV_ARGS(particleRootSignature_.GetAddressOf()));
+	assert(SUCCEEDED(hr));
+#pragma endregion
 }

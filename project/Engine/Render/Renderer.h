@@ -3,6 +3,7 @@
 
 class PostEffectManager;
 class GameObject;
+class GpuParticlePool;
 
 namespace MyEngine::LowLevel {
 	class DescriptorHeapPoolContext;;
@@ -154,6 +155,9 @@ namespace MyEngine::Rendering {
 		// ポストエフェクト適用後の最終テクスチャを指すポインタ
 		RenderTexture* finalRenderTexture_ = nullptr;
 		bool lastEffect_ = false;
+
+		// テスト用　パーティクルプール
+		std::unique_ptr<GpuParticlePool> testParticlePool_;
 
 		// 描画コンポーネントのリスト
 		std::vector<RenderComponent*> renderComponents_;
