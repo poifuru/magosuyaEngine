@@ -7,7 +7,6 @@
 #include "BaseScene.h"
 #include "Time.h"
 #include "MathFunction.h"
-#include "ParticleSpawner.h"
 #include "WaterSurfaceComponent.h"
 #include "BoatWakeComponent.h"
 
@@ -94,7 +93,7 @@ void FloatingCrateComponent::OnDestroyed() {
 
 	// 木片爆発パーティクル生成
 	// TODO: 専用のエフェクト（crate_break など）を作ったら名前を差し替える
-	ParticleSpawner::Burst(context, "explosion", spawnPos);
+	
 
 	// 中身（電力バッテリーアイテム）の生成
 	auto itemObj = std::make_unique<GameObject>(context, "EnergyItem");

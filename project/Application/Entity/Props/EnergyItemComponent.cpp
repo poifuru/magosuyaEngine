@@ -6,8 +6,6 @@
 #include "BaseScene.h"
 #include "Time.h"
 #include "MathFunction.h"
-#include "ParticleSpawner.h"
-#include <cmath>
 
 void EnergyItemComponent::Initialize() {
 	if (!gameObject_) return;
@@ -72,7 +70,7 @@ void EnergyItemComponent::OnCollect() {
 		// 回収エフェクト（キラキラ爆発パーティクル）
 		if (gameObject_->GetContext()) {
 			// TODO: 専用のエフェクト（item_get など）を作ったら名前を差し替える
-			ParticleSpawner::Burst(gameObject_->GetContext(), "explosion", gameObject_->GetTransform().translate);
+			
 		}
 		gameObject_->Destroy();
 	}
