@@ -61,6 +61,11 @@ Game::Game() {
 
 		// 初期シーンの設定
 		sceneManager_->SetRenderer(renderer_.get());
+
+		// GPUパーティクルのエフェクトを読む（シーンのコンポーネントが Initialize で使うので、シーンより先に）
+		// テクスチャを読むので、ロード区間（ResetCommandList 〜 ExecuteCommandList）の中で呼ぶ
+		renderer_->GetParticleSystem()->LoadAll(*sceneManager_->GetTextureManager());
+
 		{
 			SCOPE_TIMER("PlayScene初期化");
 			sceneManager_->ChangeScene<PlayScene>();
@@ -78,8 +83,6 @@ Game::Game() {
 		);
 	}
 
-	renderer_->GetParticleSystem()->LoadAll(*sceneManager_->GetTextureManager());
-	renderer_->GetParticleSystem()->SetPosition("fire", { 0, 2, 0 });
 
 	// コマンドリストを実行し、GPUのアップロード完了を待つ
 	{

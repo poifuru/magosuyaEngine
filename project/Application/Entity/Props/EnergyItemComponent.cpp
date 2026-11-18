@@ -71,7 +71,8 @@ void EnergyItemComponent::OnCollect() {
 	if (gameObject_) {
 		// 回収エフェクト（キラキラ爆発パーティクル）
 		if (gameObject_->GetContext()) {
-			ParticleSpawner::SpawnExplosion(gameObject_->GetContext(), gameObject_->GetTransform().translate, 20);
+			// TODO: 専用のエフェクト（item_get など）を作ったら名前を差し替える
+			ParticleSpawner::Burst(gameObject_->GetContext(), "explosion", gameObject_->GetTransform().translate);
 		}
 		gameObject_->Destroy();
 	}

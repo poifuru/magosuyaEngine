@@ -24,3 +24,4 @@
 #include "DolphinNoticeHudComponent.h"
 #include "CourseBuoyComponent.h"
 #include "DolphinEventComponent.h"
+#include "GpuEmitterComponent.h"

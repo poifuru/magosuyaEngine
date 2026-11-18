@@ -96,8 +96,8 @@
     <ClCompile Include="Application\Entity\Props\CourseBuoyComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\DolphinEventComponent.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\EmitterComponent.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\GpuEmitterComponent.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleComponent.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\ParticleSpawner.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsDevice\GraphicsDeviceCreator.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DxcCompiler\DxcCompiler.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsCommand\CommandQueue.cpp" />
@@ -118,6 +118,7 @@
     <ClCompile Include="Engine\Editor\Window\IEditorWindow.cpp" />
     <ClCompile Include="Engine\Editor\Window\PerformanceWindow.cpp" />
     <ClCompile Include="Engine\Editor\Window\CourseEditorWindow.cpp" />
+    <ClCompile Include="Engine\Editor\Window\ParticleEditorWindow.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\RtvDescriptorHeapPool\RtvDescriptorHeapPool.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\DsvDescriptorHeapPool\DsvDescriptorHeapPool.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\BaseDescriptorHeapPool\BaseDescriptorHeapPool.cpp" />
@@ -278,7 +279,7 @@
     <ClInclude Include="Application\Entity\Props\CourseBuoyComponent.h" />
     <ClInclude Include="Application\Entity\Props\DolphinEventComponent.h" />
     <ClInclude Include="Engine\Graphics\Particle\EmitterComponent.h" />
-    <ClInclude Include="Engine\Graphics\Particle\ParticleSpawner.h" />
+    <ClInclude Include="Engine\Graphics\Particle\GpuEmitterComponent.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleComponent.h" />
     <ClInclude Include="Engine\Core\LowLevel\GraphicsDevice\GraphicsDeviceCreator.h" />
     <ClInclude Include="Engine\Core\LowLevel\DxcCompiler\DxcCompiler.h" />
@@ -300,6 +301,7 @@
     <ClInclude Include="Engine\Editor\Window\IEditorWindow.h" />
     <ClInclude Include="Engine\Editor\Window\PerformanceWindow.h" />
     <ClInclude Include="Engine\Editor\Window\CourseEditorWindow.h" />
+    <ClInclude Include="Engine\Editor\Window\ParticleEditorWindow.h" />
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\RtvDescriptorHeapPool\RtvDescriptorHeapPool.h" />
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\DsvDescriptorHeapPool\DsvDescriptorHeapPool.h" />
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\BaseDescriptorHeapPool\BaseDescriptorHeapPool.h" />

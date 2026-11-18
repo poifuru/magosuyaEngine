@@ -210,6 +210,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Core\LowLevel\GraphicsCommand\CommandQueue.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DxcCompiler\DxcCompiler.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\EmitterComponent.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\GpuEmitterComponent.cpp" />
     <ClCompile Include="Engine\Framework\ComputePipeline\ComputePipeline.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\CameraComponent\VirtualCameraComponent.cpp" />
     <ClCompile Include="Engine\Editor\Command\CommandManager.cpp" />
@@ -351,7 +352,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Framework\GameObject\CameraComponent\MainCameraComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\CameraComponent\VirtualDebugCamera.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleComponent.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\ParticleSpawner.cpp" />
     <ClCompile Include="Engine\Render\Renderer.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\WaterSurfaceComponent\WaterSurfaceComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\BoatWakeComponent\BoatWakeComponent.cpp" />
@@ -362,6 +362,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\PostEffect\RandomNoise.cpp" />
     <ClCompile Include="Engine\Editor\Window\PerformanceWindow.cpp" />
     <ClCompile Include="Engine\Editor\Window\CourseEditorWindow.cpp" />
+    <ClCompile Include="Engine\Editor\Window\ParticleEditorWindow.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\RtvDescriptorHeapPool\RtvDescriptorHeapPool.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\RenderTargetFactory\RenderTargetFactory.cpp" />
     <ClCompile Include="Engine\Render\RenderCollector\RenderCollector.cpp" />
@@ -398,6 +399,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Core\LowLevel\GraphicsCommand\CommandQueue.h" />
     <ClInclude Include="Engine\Core\LowLevel\DxcCompiler\DxcCompiler.h" />
     <ClInclude Include="Engine\Graphics\Particle\EmitterComponent.h" />
+    <ClInclude Include="Engine\Graphics\Particle\GpuEmitterComponent.h" />
     <ClInclude Include="Engine\Common\Structure\Geometry.h" />
     <ClInclude Include="Engine\Common\Structure\MathTypes.h" />
     <ClInclude Include="Engine\Common\Structure\PhysicsTypes.h" />
@@ -526,7 +528,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Framework\GameObject\LightComponent\LightComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\CameraComponent\MainCameraComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\CameraComponent\VirtualDebugCamera.h" />
-    <ClInclude Include="Engine\Graphics\Particle\ParticleSpawner.h" />
     <ClInclude Include="Engine\Core\LowLevel\GraphicsDevice\GraphicsDeviceCreator.h" />
     <ClInclude Include="Engine\Core\LowLevel\GraphicsCommand\GraphicsCommandCreator.h" />
     <ClInclude Include="Engine\Render\Renderer.h" />
@@ -539,6 +540,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\PostEffect\RandomNoise.h" />
     <ClInclude Include="Engine\Editor\Window\PerformanceWindow.h" />
     <ClInclude Include="Engine\Editor\Window\CourseEditorWindow.h" />
+    <ClInclude Include="Engine\Editor\Window\ParticleEditorWindow.h" />
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\RtvDescriptorHeapPool\RtvDescriptorHeapPool.h" />
     <ClInclude Include="Engine\Core\LowLevel\DescriptorHeap\BaseDescriptorHeapPool\BaseDescriptorHeapPool.h" />
     <ClInclude Include="Engine\Core\LowLevel\RenderTargetFactory\RenderTargetFactory.h" />

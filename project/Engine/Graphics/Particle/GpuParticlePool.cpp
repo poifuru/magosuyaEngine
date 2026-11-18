@@ -56,9 +56,9 @@ GpuParticlePool::GpuParticlePool(
 	emitter_.maxCount = maxCount_;
 
 	// バースト用のバッファ
-	for(uint32_t i = 0; i < kMaxBurstPerFrame; ++i) {
-		burstBuffers_[i].Initialize(device);
-		burstBuffers_[i].Update(emitter_);
+	for(uint32_t i = 0; i < kMaxEmitPerFrame; ++i) {
+		emitBuffers_[i].Initialize(device);
+		emitBuffers_[i].Update(emitter_);
 	}
 
 	// 構造化バッファのSRV
@@ -110,12 +110,8 @@ void GpuParticlePool::Dispatch(
 		cmdList->ResourceBarrier(1, &uavBarrier);   // Init → Update
 	}
 
-	emitAccumulator_ += emitRate_ * deltaTime;
-	uint32_t emitCount = static_cast<uint32_t>(emitAccumulator_);
-	emitAccumulator_ -= static_cast<float>(emitCount);
-
-	// このフレームの放出数と乱数の種
-	emitter_.emitCount = emitCount;
+	// Update CS 用の定数バッファ（放出は下の要求ごとの定数バッファで行うので、ここでは 0）
+	emitter_.emitCount = 0;
 	emitter_.deltaTime = deltaTime;
 	emitter_.randomSeed = ++frameCount_ * 9781u; // 毎フレーム違う種にする（掛ける数は適当な大きめの素数）
 	emitterBuffer_.Update(emitter_);
@@ -125,28 +121,24 @@ void GpuParticlePool::Dispatch(
 	cmdList->Dispatch((maxCount_ + 255) / 256, 1, 1);
 	cmdList->ResourceBarrier(1, &uavBarrier);       // Update → Emit
 
-	if(emitter_.emitCount > 0) {
-		cmdList->SetPipelineState(pipelines_->emitPso);
-		cmdList->Dispatch((emitter_.emitCount + 63) / 64, 1, 1);
+	// ---- 放出（来た要求の数だけ Emit CS を流す）----
+	if (!emitRequests_.empty()) {
+		cmdList->SetPipelineState(pipelines_->emitPso);   // 直前は Update の PSO なので必ずセットし直す
 	}
 
-	if (!burstRequests_.empty()) {
-		cmdList->SetPipelineState(pipelines_->emitPso);   // loop=false だと、まだ Update の PSO のままなので
-	}
+	for(uint32_t i = 0; i < emitRequests_.size(); ++i) {
+		EmitterForGPU emit = emitter_;          // 見た目と動きの設定はそのまま
+		emit.position = emitRequests_[i].position;
+		emit.emitCount = emitRequests_[i].count;
+		emit.randomSeed = frameCount_ * 64 + i + 1;   // 同じフレームの要求が同じ散り方にならないように
+		emitBuffers_[i].Update(emit);
 
-	for(uint32_t i = 0; i < burstRequests_.size(); ++i) {
-		EmitterForGPU burst = emitter_;          // 見た目と動きの設定はそのまま
-		burst.position = burstRequests_[i];
-		burst.emitCount = burstCount_;
-		burst.randomSeed = frameCount_ * 16 + i + 1;   // 同じフレームの Burst が同じ散り方にならないように
-		burstBuffers_[i].Update(burst);
-
-		// Slot3 = b0。今 emitterBuffer_ をセットしているのと同じ関数で
-		cmdList->SetComputeRootConstantBufferView(3, burstBuffers_[i].GetGPUVirtualAddress());
-		cmdList->Dispatch((burstCount_ + 63) / 64, 1, 1);
+		// 要求ごとに別の定数バッファ（UPLOAD ヒープは GPU 実行時の中身が読まれるので、使い回すと最後の値になる）
+		cmdList->SetComputeRootConstantBufferView(3, emitBuffers_[i].GetGPUVirtualAddress());
+		cmdList->Dispatch((emit.emitCount + 63) / 64, 1, 1);
 		cmdList->ResourceBarrier(1, &uavBarrier);   // 次の Emit も同じ空きリストを触るので
 	}
-	burstRequests_.clear();
+	emitRequests_.clear();
 
 	// 頂上カウンタをリードバックへコピー（UAV → コピー元 → コピー → UAVに戻す）
 	MyEngine::Utility::TransitionBarrier(
@@ -226,14 +218,14 @@ void GpuParticlePool::ApplyEffect(const ParticleEffectData& data) {
 	emitter_.startSize = data.startSize;
 	emitter_.endSize = data.endSize;
 
-	emitRate_ = data.loop ? data.rate : 0.0f;   // loop でないものは出し続けない
 	burstCount_ = data.burstCount;
 	drawPso_ = pipelines_->drawPso[static_cast<size_t>(data.blend)];
 }
 
-void GpuParticlePool::RequestBurst(const Vector3& position) {
-	if(burstRequests_.size() >= kMaxBurstPerFrame) { return; }   // 溢れた分は捨てる
-	burstRequests_.push_back(position);
+void GpuParticlePool::RequestEmit(const Vector3& position, uint32_t count) {
+	if (count == 0) { return; }
+	if (emitRequests_.size() >= kMaxEmitPerFrame) { return; }   // 溢れた分は捨てる
+	emitRequests_.push_back({ position, count });
 }
 
 int32_t GpuParticlePool::GetFreeListTop() {

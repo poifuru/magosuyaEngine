@@ -18,6 +18,7 @@
 #include "InspectorWindow.h"
 #include "GizmoWindow.h"
 #include "CourseEditorWindow.h"
+#include "ParticleEditorWindow.h"
 
 namespace {
 	// 現在の表示状態をチェックして安全に表示/非表示を切り替える関数
@@ -61,6 +62,7 @@ void EditorManager::Initialize() {
 	RegisterWindow<InspectorWindow>();
 	RegisterWindow<GizmoWindow>();
 	RegisterWindow<CourseEditorWindow>();
+	RegisterWindow<ParticleEditorWindow>();
 
 	// 前回の開閉状態を復元
 	LoadLayoutSettings();

@@ -10,6 +10,12 @@ struct CameraData;
 struct GpuParticlePipelines;
 struct ParticleEffectData;
 
+// 放出の要求（このフレームに、この位置へ、この数）
+struct EmitRequest {
+	Vector3 position;
+	uint32_t count;
+};
+
 class GpuParticlePool {
 public:
 	GpuParticlePool(
@@ -37,9 +43,11 @@ public:
 	// 見た目・動きの設定を入れ直す
 	void ApplyEffect(const ParticleEffectData& data);
 
-	void SetPosition(const Vector3& position) { emitter_.position = position; }
+	uint32_t GetMaxCount() const { return maxCount_; }
 
-	void RequestBurst(const Vector3& position);
+	// 放出の要求を積む。Dispatch でまとめて流し、流したら空になる
+	void RequestEmit(const Vector3& position, uint32_t count);
+	uint32_t GetBurstCount() const { return burstCount_; }
 
 	// デバッグ用：頂上カウンタ（1フレーム遅れ）
 	int32_t GetFreeListTop();
@@ -53,7 +61,7 @@ private:
 	void ReadBackIfNeeded();
 
 private:
-	static constexpr uint32_t kMaxBurstPerFrame = 8;
+	static constexpr uint32_t kMaxEmitPerFrame = 32;   // 1エフェクトあたり、1フレームに受け付ける要求の数
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> particleBuffer_;  // u0
 	Microsoft::WRL::ComPtr<ID3D12Resource> freeListBuffer_;  // u1
@@ -77,12 +85,9 @@ private:
 	ConstantBuffer<ParticleDrawForGpu> drawBuffer_;
 	ID3D12PipelineState* drawPso_ = nullptr;
 
-	float emitRate_ = 300.0f;      // 1秒あたりの放出数
-	float emitAccumulator_ = 0.0f; // 端数の持ち越し
-
 	uint32_t textureIndex_ = 0;
 
-	ConstantBuffer<EmitterForGPU> burstBuffers_[kMaxBurstPerFrame];
-	std::vector<Vector3> burstRequests_;                               // このフレームに来た Burst の位置
+	ConstantBuffer<EmitterForGPU> emitBuffers_[kMaxEmitPerFrame];   // 要求ごとに別の定数バッファを使う
+	std::vector<EmitRequest> emitRequests_;                          // このフレームに来た放出の要求
 	uint32_t burstCount_ = 0;  
 };

@@ -93,7 +93,8 @@ void FloatingCrateComponent::OnDestroyed() {
 	Vector3 spawnPos = gameObject_->GetTransform().translate;
 
 	// 木片爆発パーティクル生成
-	ParticleSpawner::SpawnExplosion(context, spawnPos, 15);
+	// TODO: 専用のエフェクト（crate_break など）を作ったら名前を差し替える
+	ParticleSpawner::Burst(context, "explosion", spawnPos);
 
 	// 中身（電力バッテリーアイテム）の生成
 	auto itemObj = std::make_unique<GameObject>(context, "EnergyItem");

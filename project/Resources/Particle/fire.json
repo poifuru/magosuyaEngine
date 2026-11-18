@@ -1,16 +1,63 @@
 {
-  "version": 1,
-  "maxCount": 1024,
-  "emit": { "loop": true, "rate": 300, "burstCount": 100 },
-  "shape": { "type": 1, "radius": 0.3, "boxSize": [1, 1, 1], "direction": [0, 1, 0], "angleDeg": 30 },
-  "life": { "lifeTime": [1, 2], "speed": [4, 8] },
-  "force": { "acceleration": [0, -9.8, 0], "drag": 0 },
+  "emit": {
+    "burstCount": 100,
+    "loop": true,
+    "rate": 300.0
+  },
+  "force": {
+    "acceleration": [
+      0.0,
+      -9.800000190734863,
+      0.0
+    ],
+    "drag": 0.0
+  },
+  "life": {
+    "lifeTime": [
+      1.0,
+      2.0
+    ],
+    "speed": [
+      4.0,
+      8.0
+    ]
+  },
   "look": {
-    "startColor": [1, 0.6, 0.1, 1],
-    "endColor": [1, 0, 0, 0],
-    "startSize": [0.3, 0.7],
-    "endSize": 0.2,
-    "texture": "Resources/ParticleAssets/circle2.png",
-    "blend": "additive"
-  }
+    "blend": "additive",
+    "endColor": [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "endSize": 0.20000000298023224,
+    "startColor": [
+      1.0,
+      0.426612913608551,
+      0.10000002384185791,
+      1.0
+    ],
+    "startSize": [
+      0.30000001192092896,
+      0.699999988079071
+    ],
+    "texture": "Resources/ParticleAssets/circle2.png"
+  },
+  "maxCount": 1024,
+  "shape": {
+    "angleDeg": 30.0,
+    "boxSize": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "direction": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "radius": 0.30000001192092896,
+    "type": 1
+  },
+  "version": 1
 }
