@@ -1,8 +1,7 @@
 #pragma once
 
 // エミッターの構造体
-struct EmitterForGPU
-{
+struct EmitterForGPU {
 	Vector3 position;		// 位置
 	uint32_t emitCount;     // 出現させる数
 
@@ -49,3 +48,22 @@ struct GpuParticle {
 	float alive;
 };
 static_assert(sizeof(GpuParticle) == 64);
+
+// パーティクル描画用の構造体
+struct ParticleDrawForGpu {
+	Matrix4x4 viewProjection;
+
+	Vector3 cameraRight;
+	float size;
+
+	Vector3 cameraUp;
+	float padding;
+
+	Vector4 startColor;
+
+	Vector4 endColor;
+
+	float endSize;        // 消えるときの倍率
+	float padding2[3];
+};
+static_assert(sizeof(ParticleDrawForGpu) == 144);

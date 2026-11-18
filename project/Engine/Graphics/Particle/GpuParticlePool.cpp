@@ -2,25 +2,32 @@
 #include "GpuParticlePool.h"
 #include "ShaderManager.h"
 #include "Function.h"
+#include "SrvDescriptorHeapPool.h"
+#include "PSOManager.h"
+#include "InputLayoutManager.h"
+#include "BlendModeManager.h"
+#include "CameraOrganizer.h"
+#include "GpuParticlePipelines.h"
+#include "ParticleEffectData.h"
 
-void GpuParticlePool::Initialize(
+GpuParticlePool::GpuParticlePool(
 	ID3D12Device* device,
-	MyEngine::Rendering::ShaderManager& shaderManager,
-	ID3D12RootSignature* particleComputeRootSig,
-	uint32_t maxCount
+	const GpuParticlePipelines& pipelines,    // System から借りる（Pool は消さない）
+	const ParticleEffectData& data,
+	uint32_t textureIndex,
+	MyEngine::LowLevel::SrvDescriptorHeapPool& heap
 ) {
 	assert(device != nullptr);
-	assert(particleComputeRootSig != nullptr);
-	assert(maxCount > 0);
 
 	// 引数を保持する
-	rootSig_ = particleComputeRootSig;
-	maxCount_ = maxCount;
-	
+	pipelines_ = &pipelines;
+	maxCount_ = data.maxCount;
+	textureIndex_ = textureIndex;
+
 	// UAVバッファ生成
-	particleBuffer_    = CreateUAVBuffer(device, sizeof(GpuParticle) * maxCount_); // u0
-	freeListBuffer_    = CreateUAVBuffer(device, sizeof(uint32_t) * maxCount_);    // u1
-	freeListTopBuffer_ = CreateUAVBuffer(device, sizeof(int32_t));    
+	particleBuffer_ = CreateUAVBuffer(device, sizeof(GpuParticle) * maxCount_); // u0
+	freeListBuffer_ = CreateUAVBuffer(device, sizeof(uint32_t) * maxCount_);    // u1
+	freeListTopBuffer_ = CreateUAVBuffer(device, sizeof(int32_t));
 
 	// リードバック用（頂上カウンタの4バイトだけ）
 	D3D12_HEAP_PROPERTIES readbackHeap{};
@@ -43,49 +50,107 @@ void GpuParticlePool::Initialize(
 		IID_PPV_ARGS(readbackBuffer_.GetAddressOf()));
 	assert(SUCCEEDED(hr));
 
-	// 定数バッファ（ステップ1では maxCount だけ使う）
+	// 定数バッファ
 	emitterBuffer_.Initialize(device);
-	EmitterForGPU emitter{};
-	emitter.maxCount = maxCount_;
-	emitterBuffer_.Update(emitter);
+	emitterBuffer_.Update(emitter_);
+	emitter_.maxCount = maxCount_;
 
-	// Initialize CS の PSO
-	uint32_t csID = shaderManager.CompileAndCacheShader(
-		L"Resources/Shader/ParticleInit.CS.hlsl", L"cs_6_0");
-	D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc{};
-	psoDesc.pRootSignature = rootSig_;
-	psoDesc.CS = shaderManager.GetShaderBytecode(csID);
-	hr = device->CreateComputePipelineState(&psoDesc, IID_PPV_ARGS(initPso_.GetAddressOf()));
-	assert(SUCCEEDED(hr));
+	// バースト用のバッファ
+	for(uint32_t i = 0; i < kMaxBurstPerFrame; ++i) {
+		burstBuffers_[i].Initialize(device);
+		burstBuffers_[i].Update(emitter_);
+	}
+
+	// 構造化バッファのSRV
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Buffer.FirstElement = 0;
+	srvDesc.Buffer.NumElements = maxCount_;
+	srvDesc.Buffer.StructureByteStride = sizeof(GpuParticle);
+	particleSrvIndex_ = heap.AllocateIndex();
+	heap.CreateSRVforTexture2D(particleSrvIndex_, particleBuffer_.Get(), srvDesc); // 中身は CreateShaderResourceView なのでバッファにも使える
+
+	// 描画用の定数バッファ
+	drawBuffer_.Initialize(device);   // ConstantBuffer<ParticleDrawForGPU>
 
 	// フラグ（作り直したときも、最初の Dispatch で必ず Initialize CS が走るように）
 	needsInitialize_ = true;
 	hasPendingCopy_ = false;
 	freeListTop_ = -1;
+
+	ApplyEffect(data);
 }
 
 void GpuParticlePool::Dispatch(
 	ID3D12GraphicsCommandList* cmdList,
-	D3D12_GPU_DESCRIPTOR_HANDLE srvTableStart) {
+	D3D12_GPU_DESCRIPTOR_HANDLE srvTableStart,
+	float deltaTime
+) {
 	ReadBackIfNeeded();
 
-	cmdList->SetComputeRootSignature(rootSig_);
+	cmdList->SetComputeRootSignature(pipelines_->computeRootSig);
 	cmdList->SetComputeRootUnorderedAccessView(0, particleBuffer_->GetGPUVirtualAddress());
 	cmdList->SetComputeRootUnorderedAccessView(1, freeListBuffer_->GetGPUVirtualAddress());
 	cmdList->SetComputeRootUnorderedAccessView(2, freeListTopBuffer_->GetGPUVirtualAddress());
 	cmdList->SetComputeRootConstantBufferView(3, emitterBuffer_.GetGPUVirtualAddress());
-	// Slot4 は今は使わないが、テーブルは未設定のままにしない方が安全（heapManager->GetGpuHandle(0) を渡す）
 	cmdList->SetComputeRootDescriptorTable(4, srvTableStart);
 
-	if (needsInitialize_) {
-		cmdList->SetPipelineState(initPso_.Get());
+	// Initialize CS の書き込みが終わってから Emit が読むようにする
+	D3D12_RESOURCE_BARRIER uavBarrier{};
+	uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	uavBarrier.UAV.pResource = nullptr; // nullptr = 全てのUAVに対して
+	cmdList->ResourceBarrier(1, &uavBarrier);
+
+	if(needsInitialize_) {
+		cmdList->SetPipelineState(pipelines_->initPso);
 		cmdList->Dispatch((maxCount_ + 255) / 256, 1, 1);
 		needsInitialize_ = false;
+		cmdList->ResourceBarrier(1, &uavBarrier);   // Init → Update
 	}
+
+	emitAccumulator_ += emitRate_ * deltaTime;
+	uint32_t emitCount = static_cast<uint32_t>(emitAccumulator_);
+	emitAccumulator_ -= static_cast<float>(emitCount);
+
+	// このフレームの放出数と乱数の種
+	emitter_.emitCount = emitCount;
+	emitter_.deltaTime = deltaTime;
+	emitter_.randomSeed = ++frameCount_ * 9781u; // 毎フレーム違う種にする（掛ける数は適当な大きめの素数）
+	emitterBuffer_.Update(emitter_);
+
+	// Update（全粒ぶん）
+	cmdList->SetPipelineState(pipelines_->updatePso);
+	cmdList->Dispatch((maxCount_ + 255) / 256, 1, 1);
+	cmdList->ResourceBarrier(1, &uavBarrier);       // Update → Emit
+
+	if(emitter_.emitCount > 0) {
+		cmdList->SetPipelineState(pipelines_->emitPso);
+		cmdList->Dispatch((emitter_.emitCount + 63) / 64, 1, 1);
+	}
+
+	if (!burstRequests_.empty()) {
+		cmdList->SetPipelineState(pipelines_->emitPso);   // loop=false だと、まだ Update の PSO のままなので
+	}
+
+	for(uint32_t i = 0; i < burstRequests_.size(); ++i) {
+		EmitterForGPU burst = emitter_;          // 見た目と動きの設定はそのまま
+		burst.position = burstRequests_[i];
+		burst.emitCount = burstCount_;
+		burst.randomSeed = frameCount_ * 16 + i + 1;   // 同じフレームの Burst が同じ散り方にならないように
+		burstBuffers_[i].Update(burst);
+
+		// Slot3 = b0。今 emitterBuffer_ をセットしているのと同じ関数で
+		cmdList->SetComputeRootConstantBufferView(3, burstBuffers_[i].GetGPUVirtualAddress());
+		cmdList->Dispatch((burstCount_ + 63) / 64, 1, 1);
+		cmdList->ResourceBarrier(1, &uavBarrier);   // 次の Emit も同じ空きリストを触るので
+	}
+	burstRequests_.clear();
 
 	// 頂上カウンタをリードバックへコピー（UAV → コピー元 → コピー → UAVに戻す）
 	MyEngine::Utility::TransitionBarrier(
-		cmdList, 
+		cmdList,
 		freeListTopBuffer_.Get(),
 		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
 		D3D12_RESOURCE_STATE_COPY_SOURCE
@@ -95,9 +160,9 @@ void GpuParticlePool::Dispatch(
 		readbackBuffer_.Get(),
 		0,
 		freeListTopBuffer_.Get(),
-		0, 
+		0,
 		sizeof(int32_t)
-		);
+	);
 
 	MyEngine::Utility::TransitionBarrier(
 		cmdList,
@@ -109,6 +174,66 @@ void GpuParticlePool::Dispatch(
 	// 確認用：頂上カウンタをリードバックへコピー（WaterQuery と同じ遷移の仕方）
 	// UAV → COPY_SOURCE → CopyBufferRegion(4バイト) → UAV
 	hasPendingCopy_ = true;
+}
+
+void GpuParticlePool::Draw(
+	ID3D12GraphicsCommandList* cmdList,
+	ID3D12RootSignature* commonRootSig,
+	D3D12_GPU_DESCRIPTOR_HANDLE srvTableStart,
+	const CameraData& camera
+) {
+	// カメラの右・上ベクトル＝カメラのワールド行列の1行目・2行目
+	ParticleDrawForGpu draw{};
+	draw.viewProjection = camera.vp;
+	draw.cameraRight = { camera.world.m[0][0], camera.world.m[0][1], camera.world.m[0][2] };
+	draw.cameraUp = { camera.world.m[1][0], camera.world.m[1][1], camera.world.m[1][2] };
+	draw.startColor = emitter_.startColor;
+	draw.endColor = emitter_.endColor;
+	draw.endSize = emitter_.endSize;
+	drawBuffer_.Update(draw);
+
+	// CS が書いた粒バッファを VS が読める状態にする
+	MyEngine::Utility::TransitionBarrier(cmdList, particleBuffer_.Get(),
+										 D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+	cmdList->SetGraphicsRootSignature(commonRootSig);
+	cmdList->SetPipelineState(drawPso_);
+	cmdList->SetGraphicsRootConstantBufferView(0, drawBuffer_.GetGPUVirtualAddress()); // b0
+	cmdList->SetGraphicsRoot32BitConstant(1, particleSrvIndex_, 0);                  // b1 の1つ目
+	cmdList->SetGraphicsRootDescriptorTable(2, srvTableStart);                        // t0, space1
+	cmdList->SetGraphicsRoot32BitConstant(1, textureIndex_, 1);       // b1 の2つ目
+	cmdList->SetGraphicsRootDescriptorTable(3, srvTableStart);        // t0, space2（テクスチャ）
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	cmdList->DrawInstanced(6, maxCount_, 0, 0);
+
+	// 次のフレームの CS のために UAV に戻す
+	MyEngine::Utility::TransitionBarrier(cmdList, particleBuffer_.Get(),
+										 D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+}
+
+void GpuParticlePool::ApplyEffect(const ParticleEffectData& data) {
+	emitter_.shape = data.shape;
+	emitter_.radius = data.radius;
+	emitter_.boxSize = data.boxSize;
+	emitter_.direction = data.direction;
+	emitter_.spreadAngle = data.spreadAngle;   // CS がラジアンで使うなら、ここで変換する
+	emitter_.speed = data.speed;
+	emitter_.lifeTime = data.lifeTime;
+	emitter_.acceleration = data.acceleration;
+	emitter_.drag = data.drag;
+	emitter_.startColor = data.startColor;
+	emitter_.endColor = data.endColor;
+	emitter_.startSize = data.startSize;
+	emitter_.endSize = data.endSize;
+
+	emitRate_ = data.loop ? data.rate : 0.0f;   // loop でないものは出し続けない
+	burstCount_ = data.burstCount;
+	drawPso_ = pipelines_->drawPso[static_cast<size_t>(data.blend)];
+}
+
+void GpuParticlePool::RequestBurst(const Vector3& position) {
+	if(burstRequests_.size() >= kMaxBurstPerFrame) { return; }   // 溢れた分は捨てる
+	burstRequests_.push_back(position);
 }
 
 int32_t GpuParticlePool::GetFreeListTop() {
@@ -143,12 +268,12 @@ Microsoft::WRL::ComPtr<ID3D12Resource> GpuParticlePool::CreateUAVBuffer(ID3D12De
 
 void GpuParticlePool::ReadBackIfNeeded() {
 	// コピーを頼んでいなければ何もしない
-	if (!hasPendingCopy_) return;
+	if(!hasPendingCopy_) return;
 
 	// CPUから読む範囲（先頭から4バイト）
 	D3D12_RANGE readRange{ 0, sizeof(int32_t) };
 	void* mapped = nullptr;
-	if (SUCCEEDED(readbackBuffer_->Map(0, &readRange, &mapped))) {
+	if(SUCCEEDED(readbackBuffer_->Map(0, &readRange, &mapped))) {
 		std::memcpy(&freeListTop_, mapped, sizeof(int32_t));
 
 		// CPUからは何も書いていないので、書いた範囲は 0〜0

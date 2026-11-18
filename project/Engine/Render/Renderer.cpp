@@ -26,6 +26,10 @@
 #include "ShadowPass.h"
 #include "LightManager.h"
 #include "GpuParticlePool.h"
+#include "GameTime.h"
+#include "ParticleEffectData.h"
+#include "GpuParticleSystem.h"
+#include "TextureManager.h"
 
 MyEngine::Rendering::Renderer::Renderer(
 	ID3D12Device* device,
@@ -99,14 +103,17 @@ MyEngine::Rendering::Renderer::Renderer(
 	shadowPass_ = std::make_unique<MyEngine::Rendering::ShadowPass>(device, heapContext);
 
 	// GPUパーティクル（テスト用）
-	testParticlePool_ = std::make_unique<GpuParticlePool>();
-	testParticlePool_->Initialize(
+	particleSystem_ = std::make_unique<GpuParticleSystem>(
 		device,
-		*shaderManager_,
+		*shaderManager_.get(),
 		rootSigManager_->GetParticleRootSignature(),
-		1024
+		*psoManager_,
+		*inputLayoutManager_,
+		*blendModeManager_,
+		rootSigManager_->GetCommonRootSignature(),
+		*heapContext->GetSrvPool()
 	);
-
+	
 	InitializeShaderTable();
 
 #ifdef USEIMGUI
@@ -203,6 +210,16 @@ void MyEngine::Rendering::Renderer::RenderScene(
 	renderSystem_->WriteCommandList(cmdList_);
 	renderSystem_->ClearCommands();
 
+	// GPUパーティクル（テスト用）
+	if (particleSystem_ && heapManager) {
+		particleSystem_->Draw(
+			cmdList_, 
+			rootSigManager_->GetCommonRootSignature(),
+			heapManager->GetGpuHandle(0),
+			CameraOrganizer::GetInstance()->GetCameraData()
+		);
+	}
+
 #ifdef USEIMGUI
 	// デバッグ線（シーンと同じレンダーターゲット・深度バッファに描く）
 	LineRenderer::GetInstance()->Render(cmdList_, CameraOrganizer::GetInstance()->GetCameraData().vp);
@@ -230,8 +247,12 @@ void MyEngine::Rendering::Renderer::DispatchCS(
 	}
 
 	// GPUパーティクル（テスト用）
-	if(testParticlePool_ && heapManager) {
-		testParticlePool_->Dispatch(cmdList_, heapManager->GetGpuHandle(0));
+	if(particleSystem_ && heapManager) {
+		particleSystem_->Dispatch(
+			cmdList_,
+			heapManager->GetGpuHandle(0),
+			Time::GetDeltaTime()
+		);
 	}
 
 	if(currentObjects_) {

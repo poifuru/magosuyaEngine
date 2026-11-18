@@ -98,7 +98,6 @@
     <ClCompile Include="Engine\Graphics\Particle\EmitterComponent.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleComponent.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleSpawner.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\ParticleData.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsDevice\GraphicsDeviceCreator.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DxcCompiler\DxcCompiler.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsCommand\CommandQueue.cpp" />
@@ -147,7 +146,10 @@
     <ClCompile Include="Engine\Framework\GameObject\FontTextComponent\FontTextComponent.cpp" />
     <ClCompile Include="Engine\Render\Shadow\ShadowPass.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\GpuParticlePool.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleEffectData.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\GpuParticleSystem.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleInfo.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -326,6 +328,9 @@
     <ClInclude Include="Engine\Render\Shadow\ShadowPass.h" />
     <ClInclude Include="Engine\Graphics\Particle\GpuParticlePool.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleInfo.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleEffectData.h" />
+    <ClInclude Include="Engine\Graphics\Particle\GpuParticleSystem.h" />
+    <ClInclude Include="Engine\Graphics\Particle\GpuParticlePipelines.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Render\PSO\RootSignatureManager.h" />
@@ -371,7 +376,7 @@
     <None Include="Resources\Shader\Cube.hlsli" />
     <None Include="Resources\Shader\Line.hlsli" />
     <None Include="Resources\Shader\Object3d.hlsli" />
-    <None Include="Resources\Shader\Particle.hlsli" />
+    <None Include="Resources\Shader\GpuParticle.hlsli" />
     <None Include="Resources\Shader\Sprite.hlsli" />
     <None Include="Resources\Shader\Skybox.hlsli" />
     <None Include="Resources\Shader\Fullscreen.hlsli" />

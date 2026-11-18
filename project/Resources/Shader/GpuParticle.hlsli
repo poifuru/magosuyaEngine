@@ -53,3 +53,54 @@ struct GPUParticle
     float rotationSpeed;
     float alive;
 };
+
+// パーティクル描画用の構造体
+struct ParticleDraw
+{
+    float4x4 viewProjection;
+    
+    float3 cameraRight;
+    float size;
+    
+    float3 cameraUp;
+    float padding;
+    
+    float4 startColor;
+    
+    float4 endColor;
+    
+    float endSize;
+    float3 padding2;
+};
+
+// CPUから送るインデックス
+struct PushIndices
+{
+    uint particleSrv;
+    uint textureIndex;
+};
+
+// PCGハッシュ：整数をよく混ぜて、見た目ランダムな整数にする
+uint PCGHash(uint v)
+{
+    uint state = v * 747796405u + 2891336453u;
+    uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+    return (word >> 22u) ^ word;
+}
+
+// 呼ぶたびに seed を更新して 0〜1 を返す
+float Random01(inout uint seed)
+{
+    seed = PCGHash(seed);
+    return float(seed) / 4294967295.0;
+}
+
+// 半径 1 の球の中のランダムな点
+float3 RandomInSphere(inout uint seed)
+{
+    float3 p;
+    p.x = Random01(seed) * 2.0 - 1.0;
+    p.y = Random01(seed) * 2.0 - 1.0;
+    p.z = Random01(seed) * 2.0 - 1.0;
+    return normalize(p) * pow(Random01(seed), 1.0 / 3.0); // 中心に偏らないように
+}

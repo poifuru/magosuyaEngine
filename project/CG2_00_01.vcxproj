@@ -202,13 +202,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Core\LowLevel\DescriptorHeap\DsvDescriptorHeapPool\DsvDescriptorHeapPool.cpp" />
     <ClCompile Include="Engine\Editor\Window\IEditorWindow.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\Component\Component.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleData.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleInfo.cpp" />
     <ClCompile Include="Engine\Graphics\PostEffect\Dissolve.cpp" />
     <ClCompile Include="Engine\Common\Utility\ColorUtils.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsCommand\CommandList.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\GraphicsCommand\CommandQueue.cpp" />
     <ClCompile Include="Engine\Core\LowLevel\DxcCompiler\DxcCompiler.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\EmitterComponent.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\ParticleData.cpp" />
     <ClCompile Include="Engine\Framework\ComputePipeline\ComputePipeline.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\CameraComponent\VirtualCameraComponent.cpp" />
     <ClCompile Include="Engine\Editor\Command\CommandManager.cpp" />
@@ -310,6 +311,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Editor\Window\InspectorWindow.cpp" />
     <ClCompile Include="Engine\Editor\Window\GizmoWindow.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\GpuParticlePool.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\GpuParticleSystem.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Engine\Common\Utility\MathFunction.cpp" />
     <ClCompile Include="Engine\Framework\Object\2d\Sprite.cpp" />
@@ -366,7 +368,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Render\RenderComponent\RenderComponent.cpp" />
     <ClCompile Include="Engine\Graphics\RippleSimulator\WaterQuery.cpp" />
     <ClCompile Include="Engine\Render\Shadow\ShadowPass.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\ParticleInfo.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleEffectData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application\Collider\Collision.h" />
@@ -550,6 +552,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Render\Shadow\ShadowPass.h" />
     <ClInclude Include="Engine\Graphics\Particle\GpuParticlePool.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleInfo.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleEffectData.h" />
+    <ClInclude Include="Engine\Graphics\Particle\GpuParticleSystem.h" />
+    <ClInclude Include="Engine\Graphics\Particle\GpuParticlePipelines.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -561,7 +566,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <None Include="Resources\Shader\MaterialData.hlsli" />
     <None Include="Resources\Shader\Matrix.hlsli" />
     <None Include="Resources\Shader\Object3d.hlsli" />
-    <None Include="Resources\Shader\Particle.hlsli" />
+    <None Include="Resources\Shader\GpuParticle.hlsli" />
     <None Include="Resources\Shader\Skybox.hlsli" />
     <None Include="Resources\Shader\Sprite.hlsli" />
     <None Include="Resources\Shader\WaterSurface.hlsli" />

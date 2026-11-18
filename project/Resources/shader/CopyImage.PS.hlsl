@@ -24,6 +24,6 @@ PixelShaderOutput main(VertexShaderOutput input) {
     // 1.0を超えるハイライトを綺麗に 0.0 ~ 1.0 の範囲に収める
     color.rgb = ToneMapExtendedACES(color.rgb, maxScRGB);
     
-    output.color = color;
+    output.color = float4(color.rgb, 1.0);
     return output;
 }

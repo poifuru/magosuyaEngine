@@ -4,6 +4,7 @@
 class PostEffectManager;
 class GameObject;
 class GpuParticlePool;
+class GpuParticleSystem;
 
 namespace MyEngine::LowLevel {
 	class DescriptorHeapPoolContext;;
@@ -88,6 +89,8 @@ namespace MyEngine::Rendering {
 			return finalRenderTexture_ ? finalRenderTexture_ : renderTexture_.get();
 		}
 
+		GpuParticleSystem* GetParticleSystem() { return particleSystem_.get(); }
+
 	private:
 		uint64_t MakeShaderKey(
 			MyEngine::Rendering::ShadingModel model,
@@ -157,8 +160,8 @@ namespace MyEngine::Rendering {
 		bool lastEffect_ = false;
 
 		// テスト用　パーティクルプール
-		std::unique_ptr<GpuParticlePool> testParticlePool_;
-
+		std::unique_ptr<GpuParticleSystem> particleSystem_;
+		
 		// 描画コンポーネントのリスト
 		std::vector<RenderComponent*> renderComponents_;
 

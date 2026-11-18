@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "maxCount": 2048,
+  "emit": { "loop": false, "rate": 0, "burstCount": 200 },
+  "shape": { "type": 1, "radius": 0.2, "boxSize": [1, 1, 1], "direction": [0, 1, 0], "angleDeg": 180 },
+  "life": { "lifeTime": [0.4, 0.8], "speed": [6, 12] },
+  "force": { "acceleration": [0, -4.0, 0], "drag": 2.0 },
+  "look": {
+    "startColor": [1, 0.0, 0.3, 1],
+    "endColor": [1, 0.2, 0, 0],
+    "startSize": [0.4, 0.8],
+    "endSize": 0.1,
+    "texture": "Resources/ParticleAssets/circle2.png",
+    "blend": "additive"
+  }
+}

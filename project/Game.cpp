@@ -11,6 +11,7 @@
 #include "WindowsAPI.h"
 #include "SceneManager.h"
 #include "ScopeTimer.h"
+#include "GpuParticleSystem.h"
 
 Game::Game() {
 	// 起動時間の計測（Loggerの初期化はEngine::Initialize内なので、それより後に終わるスコープだけ計測する）
@@ -76,6 +77,9 @@ Game::Game() {
 			sceneManager_->GetTextureManager()
 		);
 	}
+
+	renderer_->GetParticleSystem()->LoadAll(*sceneManager_->GetTextureManager());
+	renderer_->GetParticleSystem()->SetPosition("fire", { 0, 2, 0 });
 
 	// コマンドリストを実行し、GPUのアップロード完了を待つ
 	{

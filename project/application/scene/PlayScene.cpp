@@ -21,6 +21,7 @@
 #include "StageSelection.h"
 #include "ShadowPass.h"
 #include "BoatDriverComponent.h"
+#include "GpuParticleSystem.h"
 
 namespace {
 	// 安全にカーソルの表示/非表示を切り替える関数
@@ -241,6 +242,11 @@ void PlayScene::UpdateGame(const CameraData* cameraData) {
 }
 
 void PlayScene::UpdateEdit(const CameraData* cameraData) {
+	auto* rawInput = InputManager::GetInstance()->GetRawInput();
+	if(rawInput->Trigger(VK_F1)) {
+		context_->renderer->GetParticleSystem()->Burst("explosion", { 5.0f, 8.0f, 0.0f });
+	}
+
 	// カメラ（デバッグカメラ）を動かす
 	for (auto& obj : gameObjects_) {
 		if (auto* debugCam = obj->GetComponent<VirtualDebugCamera>()) {
