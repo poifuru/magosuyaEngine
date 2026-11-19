@@ -33,6 +33,11 @@ void GameMessageHudComponent::Update() {
 		str = "GOAL!";
 		break;
 	case Phase::Result: {
+		// 結果（高さ）はいったん非表示で、操作説明だけ出す（インスペクターの「リザルトを表示する」で戻せる）
+		if (!showResult_) {
+			str = "A / Space : 再挑戦\nB / BackSpace : ステージ選択";
+			break;
+		}
 		str = "GOAL!\n\n";
 		const auto& heights = flow_->GetJumpHeights();
 		for (size_t i = 0; i < heights.size(); ++i) {
@@ -52,6 +57,7 @@ void GameMessageHudComponent::ImGui() {
 #ifdef USEIMGUI
 	ImGui::Text("--- メッセージ HUD ---");
 	ImGui::DragFloat("GO の表示時間", &goTime_, 0.05f, 0.0f, 5.0f);
+	ImGui::Checkbox("リザルトを表示する", &showResult_);
 	ImGui::Text("ゲーム進行: %s  文字: %s", flow_ ? "あり" : "なし", text_ ? "あり" : "なし");
 #endif
 }
@@ -59,8 +65,10 @@ void GameMessageHudComponent::ImGui() {
 void GameMessageHudComponent::Serialize(json& j) const {
 	j["type"] = "GameMessageHudComponent";
 	j["goTime"] = goTime_;
+	j["showResult"] = showResult_;
 }
 
 void GameMessageHudComponent::Deserialize(const json& j) {
 	if (j.contains("goTime")) goTime_ = j["goTime"];
+	if (j.contains("showResult")) showResult_ = j["showResult"];
 }

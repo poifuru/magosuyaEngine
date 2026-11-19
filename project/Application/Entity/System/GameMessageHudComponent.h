@@ -28,6 +28,7 @@ public:
 private:
 	// ===== 調整パラメータ（シリアライズ対象） =====
 	float goTime_ = 1.0f; // "GO!" を出す時間[s]
+	bool showResult_ = false; // リザルトの結果（高さ）を出すか。false でも操作説明だけは出す
 
 	// ===== 実行時の状態 =====
 	GameFlowComponent* flow_ = nullptr;   // シーン内の GameFlow（最初に1回だけ探す）

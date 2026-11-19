@@ -165,7 +165,7 @@
                         1.0,
                         1.0
                     ],
-                    "intensity": 35.0,
+                    "intensity": 20.0,
                     "lightType": 0,
                     "type": "LightComponent"
                 }
@@ -610,7 +610,6 @@
                 {
                     "countdownTime": 3.0,
                     "endingTime": 2.0,
-                    "maxJumps": 3,
                     "resultInputDelay": 0.5,
                     "type": "GameFlowComponent"
                 }
