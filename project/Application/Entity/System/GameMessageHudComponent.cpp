@@ -14,7 +14,6 @@ void GameMessageHudComponent::Update() {
 	if (!text_ || !flow_) return;
 
 	using Phase = GameFlowComponent::Phase;
-	using EndReason = GameFlowComponent::EndReason;
 	float t = flow_->GetPhaseTime();
 	std::string str;
 
@@ -31,10 +30,10 @@ void GameMessageHudComponent::Update() {
 		// イルカの告知は DolphinNoticeHudComponent が左上に出す
 		break;
 	case Phase::Ending:
-		str = (flow_->GetEndReason() == EndReason::Goal) ? "GOAL!" : "FINISH!";
+		str = "GOAL!";
 		break;
 	case Phase::Result: {
-		str = (flow_->GetEndReason() == EndReason::Goal) ? "GOAL!\n\n" : "ジャンプ終了\n\n";
+		str = "GOAL!\n\n";
 		const auto& heights = flow_->GetJumpHeights();
 		for (size_t i = 0; i < heights.size(); ++i) {
 			str += std::format("JUMP {}   {:.1f} m\n", i + 1, heights[i]);

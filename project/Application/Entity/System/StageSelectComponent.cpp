@@ -133,7 +133,6 @@ void StageSelectComponent::UpdateText() {
 		const StageInfo& stage = stages_[cursor_];
 		detail = stage.name + "\n\n";
 		if (stage.sceneExists) {
-			detail += std::format("ジャンプ {} 回\n", stage.maxJumps);
 			float best = StageRecords::GetBestHeight(stage.scenePath);
 			detail += (best > 0.0f) ? std::format("自己ベスト {:.1f} m\n", best) : "自己ベスト ---\n";
 		}
@@ -143,6 +142,8 @@ void StageSelectComponent::UpdateText() {
 		if (!stage.description.empty()) { detail += "\n" + stage.description + "\n"; }
 		// イルカが来るステージなら予告する（どこで来るかは言わない）
 		if (stage.hasDolphin) { detail += "\n" + stage.dolphinNotice + "\n"; }
+		// うねりは場所が固定。どこかは言わずに「ある」ことだけ伝えて、プレイで覚えてもらう
+		if (stage.hasRoughSea) { detail += "\n" + stage.roughSeaNotice + "\n"; }
 	}
 
 	// 詳細用の FontText が無ければ、一覧の下にまとめて出す

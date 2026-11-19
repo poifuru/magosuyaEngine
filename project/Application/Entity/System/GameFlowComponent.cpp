@@ -22,7 +22,7 @@ void GameFlowComponent::Update() {
 
 	phaseTime_ += Time::GetDeltaTime();
 
-	// 最後のジャンプ中にゴールしても高さを記録できるように、Phase に関係なく毎フレーム数える
+	// ジャンプ中にゴールしても高さを記録できるように、Phase に関係なく毎フレーム数える
 	TrackJumps();
 
 	switch (phase_) {
@@ -62,13 +62,9 @@ void GameFlowComponent::StartRace() {
 void GameFlowComponent::TrackJumps() {
 	BoarderComponent::State state = boarder_->GetState();
 
-	// 踏み切り：回数を使う。使い切ったらもう跳べないようにする
-	// （GameFlow とボーダーの Update 順によっては「着水 → 同じフレームでもう1回踏み切り」が起きうるので、ここで塞ぐ）
+	// 踏み切り：跳んだ回数を数える（回数制限はない）
 	if (prevBoarderState_ == BoarderComponent::State::Riding && state == BoarderComponent::State::Airborne) {
 		jumpsUsed_++;
-		if (jumpsUsed_ >= maxJumps_) {
-			boarder_->SetJumpEnabled(false);
-		}
 	}
 	// 着水：高さを記録
 	if (prevBoarderState_ == BoarderComponent::State::Airborne && state == BoarderComponent::State::Riding) {
@@ -88,7 +84,7 @@ void GameFlowComponent::ChangePhase(Phase next) {
 void GameFlowComponent::EndRace(EndReason reason) {
 	endReason_ = reason;
 	boarder_->SetJumpEnabled(false);
-	boat_->SetRunning(false); // 強制終了のときも船を減速させて「終わった感」を出す
+	boat_->SetRunning(false); // 船を減速させて「終わった感」を出す
 	ChangePhase(Phase::Ending);
 }
 
@@ -102,14 +98,9 @@ void GameFlowComponent::UpdateReady() {
 }
 
 void GameFlowComponent::UpdatePlaying() {
-	// ゴール優先（最後のジャンプ中にゴールしても GOAL 扱い。高さは着水時に記録される）
+	// 終わるのはゴールしたときだけ（ジャンプ中にゴールしても OK。高さは着水時に記録される）
 	if (boat_->IsFinished()) {
 		EndRace(EndReason::Goal);
-		return;
-	}
-	// 回数を使い切って、最後のジャンプが着水した
-	if (jumpsUsed_ >= maxJumps_ && boarder_->GetState() == BoarderComponent::State::Riding) {
-		EndRace(EndReason::OutOfJumps);
 	}
 }
 
@@ -164,14 +155,13 @@ float GameFlowComponent::GetAverageHeight() const {
 void GameFlowComponent::ImGui() {
 #ifdef USEIMGUI
 	ImGui::Text("--- ゲーム進行 ---");
-	ImGui::SliderInt("ジャンプの回数", &maxJumps_, 1, 10);
 	ImGui::DragFloat("カウントダウンの時間", &countdownTime_, 0.1f, 0.0f, 10.0f);
 	ImGui::DragFloat("終わりの演出の時間", &endingTime_, 0.1f, 0.0f, 10.0f);
 	ImGui::DragFloat("リザルトで入力を受け付けるまで", &resultInputDelay_, 0.05f, 0.0f, 3.0f);
 
 	static const char* kPhaseNames[] = { "準備", "プレイ中", "終わりの演出", "リザルト" };
 	ImGui::Text("段階: %s（%.2f 秒）", kPhaseNames[static_cast<int>(phase_)], phaseTime_);
-	ImGui::Text("ジャンプ: %d / %d  最高 %.1f m  ステージ最高 %.1f m", jumpsUsed_, maxJumps_, GetBestHeight(), StageRecords::GetBestHeight(recordKey_));
+	ImGui::Text("ジャンプ: %d 回  最高 %.1f m  ステージ最高 %.1f m", jumpsUsed_, GetBestHeight(), StageRecords::GetBestHeight(recordKey_));
 	ImGui::Text("船: %s  プレイヤー: %s", boat_ ? "あり" : "なし", boarder_ ? "あり" : "なし");
 	ImGui::Text("記録のキー: %s", recordKey_.c_str());
 	if (ImGui::Button("ステージ最高記録をリセット")) { StageRecords::Reset(recordKey_); }
@@ -180,14 +170,12 @@ void GameFlowComponent::ImGui() {
 
 void GameFlowComponent::Serialize(json& j) const {
 	j["type"] = "GameFlowComponent";
-	j["maxJumps"] = maxJumps_;
 	j["countdownTime"] = countdownTime_;
 	j["endingTime"] = endingTime_;
 	j["resultInputDelay"] = resultInputDelay_;
 }
 
 void GameFlowComponent::Deserialize(const json& j) {
-	if (j.contains("maxJumps")) maxJumps_ = j["maxJumps"];
 	if (j.contains("countdownTime")) countdownTime_ = j["countdownTime"];
 	if (j.contains("endingTime")) endingTime_ = j["endingTime"];
 	if (j.contains("resultInputDelay")) resultInputDelay_ = j["resultInputDelay"];

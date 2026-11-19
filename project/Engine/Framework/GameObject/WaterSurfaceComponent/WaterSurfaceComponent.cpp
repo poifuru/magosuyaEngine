@@ -8,6 +8,7 @@
 #include "RenderCollector.h"
 #include "CameraOrganizer.h"
 #include <cmath>
+#include <algorithm>
 #include "ScopeTimer.h"
 
 void WaterSurfaceComponent::Initialize() {
@@ -53,7 +54,7 @@ void WaterSurfaceComponent::Initialize() {
 		}
 	}
 	// 残りの波は初期値0（フラット）にしておく
-	for(int i = 2; i < kMaxWaves; ++i) {
+	for(int i = 2; i < kMaxBaseWaves; ++i) {
 		waves_[i].amplitude = 0.0f;
 		waves_[i].frequency = 1.0f;
 		waves_[i].steepness = 0.0f;
@@ -85,12 +86,15 @@ void WaterSurfaceComponent::Update() {
 		material_->Update();
 	}
 
+	// 使う波の一覧（普段の波 + 荒れ用の波）を作り直す。CPU の SampleGerstnerHeight も同じ一覧を使う
+	RebuildActiveWaves();
+
 	// GPU送信用パラメータの構築
 	WaterSurfaceForGPU params{};
 	params.time = time_;
-	params.numActiveWaves = numActiveWaves_;
+	params.numActiveWaves = activeCount_;
 	for(int i = 0; i < kMaxWaves; ++i) {
-		params.waves[i] = waves_[i];
+		params.waves[i] = activeWaves_[i];
 	}
 	params.nearFadeDistance = nearFadeDistance_;
 	params.farFadeDistance = farFadeDistance_;
@@ -167,8 +171,8 @@ void WaterSurfaceComponent::ImGui() {
 
 	ImGui::Separator();
 	ImGui::Text("Gerstner 波");
-	// 有効にする波の数 (1〜4)
-	ImGui::SliderInt("使う波の数", &numActiveWaves_, 1, kMaxWaves);
+	// 有効にする波の数（荒れ用の波は別枠なので、ここには含めない）
+	ImGui::SliderInt("使う波の数", &numActiveWaves_, 1, kMaxBaseWaves);
 	// 各波のパラメータを編集
 	for(int i = 0; i < numActiveWaves_; ++i) {
 		ImGui::PushID(i); // IDの衝突を防ぐため、波のインデックスをPush
@@ -194,6 +198,29 @@ void WaterSurfaceComponent::ImGui() {
 	}
 
 	ImGui::Separator();
+	ImGui::Text("荒れ用の波（うねり）");
+	ImGui::TextDisabled("RoughSeaComponent が強さを 0〜1 で変える。向きはそのときの船の向き");
+	ImGui::SliderFloat("強さ（確認用）", &stormWeight_, 0.0f, 1.0f);
+	for(int s = 0; s < kStormWaves; ++s) {
+		ImGui::PushID(100 + s);
+		char label[64];
+		sprintf_s(label, "うねり %d", s + 1);
+		if(ImGui::CollapsingHeader(label)) {
+			auto& w = stormWaves_[s];
+			ImGui::DragFloat("振幅 (A)", &w.amplitude, 0.01f, 0.0f, 5.0f, "%.2f m");
+			ImGui::DragFloat("周波数 (k)", &w.frequency, 0.001f, 0.005f, 2.0f, "%.3f");
+			ImGui::DragFloat("とがり具合 (Q)", &w.steepness, 0.01f, 0.0f, 1.0f);
+			float deg = w.angle * 57.2958f;
+			if(ImGui::DragFloat("向きのずれ", &deg, 0.5f, -90.0f, 90.0f, "%.1f 度")) {
+				w.angle = deg / 57.2958f;
+			}
+			float k = (std::max)(w.frequency, 0.001f);
+			ImGui::Text("波長 %.1f m  進む速さ %.1f m/s", 6.2831853f / k, std::sqrt(9.8f / k));
+		}
+		ImGui::PopID();
+	}
+
+	ImGui::Separator();
 	ImGui::Text("水の透明度のフェード");
 	ImGui::DragFloat("フェードの近い距離", &nearFadeDistance_, 1.0f, 0.0f, 1000.0f);
 	ImGui::DragFloat("フェードの遠い距離", &farFadeDistance_, 1.0f, 0.0f, 1000.0f);
@@ -204,13 +231,67 @@ void WaterSurfaceComponent::ImGui() {
 	ImGui::SliderFloat("影の濃さ (空の反射)", &shadowReflectionStrength_, 0.0f, 1.0f);
 }
 
+void WaterSurfaceComponent::RebuildActiveWaves() {
+	// VS と同じく Q = とがり / (k·A·本数) で計算するので、荒れ用の 2 本を足すと
+	// 普段の波の Q まで小さくなって形が変わる。とがりに「本数の比」を掛けて打ち消しておく
+	int base = std::clamp(numActiveWaves_, 1, kMaxBaseWaves);
+	int total = base + kStormWaves;
+	float fix = static_cast<float>(total) / static_cast<float>(base);
+
+	for(int i = 0; i < kMaxWaves; ++i) {
+		activeWaves_[i] = {};
+		activeWaves_[i].frequency = 1.0f;
+		activeWaves_[i].direction = Vector2(1.0f, 0.0f);
+	}
+
+	// 普段の波
+	for(int i = 0; i < base; ++i) {
+		activeWaves_[i] = waves_[i];
+		activeWaves_[i].steepness *= fix;
+	}
+
+	// 荒れ用の波：振幅ととがりの両方に強さを掛ける（強さ 0 で完全に平ら・横ずれもなし）
+	float weight = std::clamp(stormWeight_, 0.0f, 1.0f);
+	for(int s = 0; s < kStormWaves; ++s) {
+		const auto& src = stormWaves_[s];
+		auto& dst = activeWaves_[base + s];
+		dst.amplitude = src.amplitude * weight;
+		dst.frequency = (std::max)(src.frequency, 0.001f);
+		dst.steepness = src.steepness * weight * fix;
+		float c = std::cos(src.angle), sn = std::sin(src.angle);
+		dst.direction = Vector2(stormDir_.x * c - stormDir_.y * sn, stormDir_.x * sn + stormDir_.y * c);
+	}
+
+	// 本数は荒れていないときも変えない（本数が変わると、同じ式の分母が変わって他の波の形が一瞬で変わる）
+	activeCount_ = total;
+}
+
+void WaterSurfaceComponent::SetStormWeight(float weight) {
+	stormWeight_ = std::clamp(weight, 0.0f, 1.0f);
+	RebuildActiveWaves(); // 同じフレームの CPU のサンプルにもすぐ反映する
+}
+
+bool WaterSurfaceComponent::SetStormDirection(const Vector2& dir) {
+	if(stormWeight_ > 1e-4f) return false; // 波が立っている間に向きを変えると瞬間移動する
+	float len = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+	if(len < 1e-4f) return false;
+	stormDir_ = Vector2(dir.x / len, dir.y / len);
+	RebuildActiveWaves();
+	return true;
+}
+
+float WaterSurfaceComponent::GetStormWaveNumber(int index) const {
+	if(index < 0 || index >= kStormWaves) return 0.0f;
+	return (std::max)(stormWaves_[index].frequency, 0.001f);
+}
+
 float WaterSurfaceComponent::SampleGerstnerHeight(float x, float z) const {
 	auto evaluate = [&](float bx, float bz, float& offX, float& offZ) {
 		offX = offZ = 0.0f;
 		float y = 0.0f;
-		int count = (std::min)(numActiveWaves_, kMaxWaves);
+		int count = (std::min)(activeCount_, kMaxWaves);
 		for(int i = 0; i < count; ++i) {
-			const auto& w = waves_[i];
+			const auto& w = activeWaves_[i];
 			float A = w.amplitude;
 			float k = w.frequency;
 			float len = std::sqrt(w.direction.x * w.direction.x + w.direction.y * w.direction.y);
@@ -269,6 +350,17 @@ void WaterSurfaceComponent::Serialize(json& j) const {
 	}
 	j["waves"] = wavesJ;
 
+	json stormJ = json::array();
+	for(int s = 0; s < kStormWaves; ++s) {
+		json w;
+		w["amplitude"] = stormWaves_[s].amplitude;
+		w["frequency"] = stormWaves_[s].frequency;
+		w["steepness"] = stormWaves_[s].steepness;
+		w["angle"] = stormWaves_[s].angle;
+		stormJ.push_back(w);
+	}
+	j["stormWaves"] = stormJ;
+
 	j["nearFadeDistance"] = nearFadeDistance_;
 	j["farFadeDistance"] = farFadeDistance_;
 	j["shadowStrength"] = shadowStrength_;
@@ -295,7 +387,7 @@ void WaterSurfaceComponent::Deserialize(const json& j) {
 	}
 	if(j.contains("waves") && j["waves"].is_array()) {
 		const auto& wavesJ = j["waves"];
-		int count = std::min(kMaxWaves, (int)wavesJ.size());
+		int count = std::min(kMaxBaseWaves, (int)wavesJ.size());
 		for(int i = 0; i < count; ++i) {
 			const auto& wJ = wavesJ[i];
 			if(wJ.contains("amplitude")) waves_[i].amplitude = wJ["amplitude"];
@@ -307,6 +399,19 @@ void WaterSurfaceComponent::Deserialize(const json& j) {
 			}
 		}
 	}
+	if(j.contains("stormWaves") && j["stormWaves"].is_array()) {
+		const auto& stormJ = j["stormWaves"];
+		int count = std::min(kStormWaves, (int)stormJ.size());
+		for(int s = 0; s < count; ++s) {
+			const auto& wJ = stormJ[s];
+			if(wJ.contains("amplitude")) stormWaves_[s].amplitude = wJ["amplitude"];
+			if(wJ.contains("frequency")) stormWaves_[s].frequency = wJ["frequency"];
+			if(wJ.contains("steepness")) stormWaves_[s].steepness = wJ["steepness"];
+			if(wJ.contains("angle")) stormWaves_[s].angle = wJ["angle"];
+		}
+	}
+	RebuildActiveWaves();
+
 	if(j.contains("nearFadeDistance")) {
 		nearFadeDistance_ = j["nearFadeDistance"];
 	}

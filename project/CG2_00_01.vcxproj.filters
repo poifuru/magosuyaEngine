@@ -95,6 +95,7 @@
     <ClCompile Include="Application\Entity\Props\EnergyItemComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\CourseBuoyComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\DolphinEventComponent.cpp" />
+    <ClCompile Include="Application\Entity\Props\RoughSeaComponent.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\EmitterComponent.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\GpuEmitterComponent.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleComponent.cpp" />
@@ -138,7 +139,6 @@
     <ClCompile Include="Application\Entity\Player\BoatDriverComponent.cpp" />
     <ClCompile Include="Application\Entity\Player\JumpHeightHudComponent.cpp" />
     <ClCompile Include="Application\Entity\System\GameFlowComponent.cpp" />
-    <ClCompile Include="Application\Entity\System\JumpCountHudComponent.cpp" />
     <ClCompile Include="Application\Entity\System\GameMessageHudComponent.cpp" />
     <ClCompile Include="Application\Entity\System\DolphinNoticeHudComponent.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\Component\ComponentRegistry.cpp" />
@@ -278,6 +278,7 @@
     <ClInclude Include="Application\Entity\Props\EnergyItemComponent.h" />
     <ClInclude Include="Application\Entity\Props\CourseBuoyComponent.h" />
     <ClInclude Include="Application\Entity\Props\DolphinEventComponent.h" />
+    <ClInclude Include="Application\Entity\Props\RoughSeaComponent.h" />
     <ClInclude Include="Engine\Graphics\Particle\EmitterComponent.h" />
     <ClInclude Include="Engine\Graphics\Particle\GpuEmitterComponent.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleComponent.h" />
@@ -320,7 +321,6 @@
     <ClInclude Include="Application\Entity\Player\BoatDriverComponent.h" />
     <ClInclude Include="Application\Entity\Player\JumpHeightHudComponent.h" />
     <ClInclude Include="Application\Entity\System\GameFlowComponent.h" />
-    <ClInclude Include="Application\Entity\System\JumpCountHudComponent.h" />
     <ClInclude Include="Application\Entity\System\GameMessageHudComponent.h" />
     <ClInclude Include="Application\Entity\System\DolphinNoticeHudComponent.h" />
     <ClInclude Include="Engine\Framework\GameObject\Component\ComponentRegistry.h" />

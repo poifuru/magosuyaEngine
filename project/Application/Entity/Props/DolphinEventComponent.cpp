@@ -3,6 +3,7 @@
 #include "BoatDriverComponent.h"
 #include "BoarderComponent.h"
 #include "GameFlowComponent.h"
+#include "RoughSeaComponent.h"
 #include "WaterSurfaceComponent.h"
 #include "BoatWakeComponent.h"
 #include "WaterQuery.h"
@@ -51,6 +52,7 @@ bool DolphinEventComponent::FindReferences() {
 	if (!wake_) { wake_ = gameObject_->FindComponentInScene<BoatWakeComponent>(); }
 	if (!boarder_) { boarder_ = gameObject_->FindComponentInScene<BoarderComponent>(); }
 	if (!flow_) { flow_ = gameObject_->FindComponentInScene<GameFlowComponent>(); }
+	if (!roughSea_) { roughSea_ = gameObject_->FindComponentInScene<RoughSeaComponent>(); } // 無いステージもある
 	// ボーダーと GameFlow は無くても動く（ボーダーが無ければロープの長さは仮の値、GameFlow が無ければ常に Playing 扱い）
 	return boat_ && wake_;
 }
@@ -77,12 +79,49 @@ void DolphinEventComponent::ChooseWaypoint() {
 		}
 	}
 
+	// 海が荒れる点の近くは外す（印あり・印なし、どちらの候補にも通す）
+	ExcludeNearRoughSea(candidates);
+
 	if (candidates.empty()) {
 		chosenWaypoint_ = -1; // ウェイポイントの無いコース：fallbackDelay_ 秒で来る
 	} else {
 		std::uniform_int_distribution<size_t> pick(0, candidates.size() - 1);
 		chosenWaypoint_ = candidates[pick(Rng())];
 	}
+}
+
+float DolphinEventComponent::CalcRoughOverlap(int candidate, int roughIndex) const {
+	if (!boat_ || !roughSea_) return -1.0f;
+	if (candidate == roughIndex) return 1e6f; // 同じ点は必ず重なる
+
+	// 船は「イベントの強い時間 × 巡航速度」だけ進む間、そのイベントが続く
+	// 先に起きる方が終わるまでに、次の点に着かなければ重ならない
+	float speed = boat_->GetCruiseSpeed();
+	float dist = boat_->GetCourseDistance(candidate, roughIndex); // + ならイルカが先
+	float need = (dist >= 0.0f)
+		? (approachTime_ + escortTime_) * speed + roughSeaGap_   // イルカが先
+		: roughSea_->GetBusyDuration() * speed + roughSeaGap_;   // うねりが先
+	// 点と点を直線でつないだ距離は実際に走る線より短いので、少し多めに外す側に倒れる（安全）
+	return need - std::fabs(dist);
+}
+
+void DolphinEventComponent::ExcludeNearRoughSea(std::vector<int>& candidates) const {
+	if (!boat_ || !roughSea_ || candidates.empty()) return;
+	int rough = boat_->GetRoughWaypoint();
+	if (rough < 0) return;
+
+	std::vector<int> safe;
+	int best = candidates.front();
+	float bestOverlap = 1e9f;
+	for (int c : candidates) {
+		float overlap = CalcRoughOverlap(c, rough);
+		if (overlap <= 0.0f) { safe.push_back(c); }
+		if (overlap < bestOverlap) { bestOverlap = overlap; best = c; }
+	}
+
+	// 全部近すぎる（短いコース）：いちばん余裕のある 1 つにする。重なりそうなら実行中の保険で待たせる
+	if (safe.empty()) { safe.push_back(best); }
+	candidates = safe;
 }
 
 void DolphinEventComponent::ChangeState(State next) {
@@ -235,11 +274,17 @@ void DolphinEventComponent::Update() {
 			// 船が抽選した点を通過した（向かう点がその点から次へ変わった）
 			size_t target = boat_->GetTargetIndex();
 			if (hasPrevTarget_ && prevTarget_ == static_cast<size_t>(chosenWaypoint_) && target != prevTarget_) {
-				StartEvent();
+				pendingStart_ = true;
 			}
 			prevTarget_ = target;
 			hasPrevTarget_ = true;
 		} else if (playTime_ >= fallbackDelay_) {
+			pendingStart_ = true;
+		}
+
+		// うねりが強い時間なら、終わるまで待つ（抽選で離してあるので、ふつうは待たない。カーブで遅れたときの保険）
+		if (pendingStart_ && !(roughSea_ && roughSea_->IsBusy())) {
+			pendingStart_ = false;
 			StartEvent();
 		}
 		break;
@@ -437,6 +482,7 @@ void DolphinEventComponent::ImGui() {
 		ImGui::DragFloat("並走する時間", &escortTime_, 0.05f, 0.1f, 60.0f, "%.2f s");
 		ImGui::DragFloat("去る時間", &leaveTime_, 0.05f, 0.1f, 20.0f, "%.2f s");
 		ImGui::DragFloat("代わりに出すまでの時間", &fallbackDelay_, 0.1f, 0.0f, 120.0f, "%.1f s");
+		ImGui::DragFloat("うねりとの間にさらに空ける距離", &roughSeaGap_, 1.0f, 0.0f, 2000.0f, "%.0f m");
 		ImGui::TreePop();
 	}
 	if (ImGui::TreeNode("波")) {
@@ -464,6 +510,15 @@ void DolphinEventComponent::ImGui() {
 	ImGui::Separator();
 	ImGui::Text("状態: %s（%.2f 秒）", kStateNames[static_cast<int>(state_)], stateTime_);
 	ImGui::Text("通過点: %d  側: %s", chosenWaypoint_, sideSign_ > 0.0f ? "右" : "左");
+	if (roughSea_ && boat_ && boat_->GetRoughWaypoint() >= 0 && chosenWaypoint_ >= 0) {
+		float overlap = CalcRoughOverlap(chosenWaypoint_, boat_->GetRoughWaypoint());
+		if (overlap <= 0.0f) {
+			ImGui::Text("うねりの点 %d とは重ならない（余裕 %.0f m）", boat_->GetRoughWaypoint(), -overlap);
+		} else {
+			ImGui::TextColored({ 1.0f, 0.85f, 0.2f, 1.0f }, "うねりの点 %d と近い（%.0f m 足りない）。重なったら待ってから来る", boat_->GetRoughWaypoint(), overlap);
+		}
+	}
+	if (pendingStart_) { ImGui::TextColored({ 1.0f, 0.8f, 0.2f, 1.0f }, "うねりが静まるのを待っています"); }
 	float t = boat_ ? CalcWakeTan() : 0.0f;
 	ImGui::Text("航跡の角度: %.1f 度  交わる点: 後ろ %.1f m  横: %.1f m",
 		std::atan(t) * 57.2958f, boat_ ? CalcCrossDistance() : 0.0f, boat_ ? CalcEscortLateral() : 0.0f);
@@ -478,6 +533,7 @@ void DolphinEventComponent::ImGui() {
 		if (boat_) { ChooseWaypoint(); }
 		state_ = State::Waiting;
 		hasPrevTarget_ = false;
+		pendingStart_ = false;
 	}
 #endif
 }
@@ -499,6 +555,7 @@ void DolphinEventComponent::Serialize(json& j) const {
 	j["escortTime"] = escortTime_;
 	j["leaveTime"] = leaveTime_;
 	j["fallbackDelay"] = fallbackDelay_;
+	j["roughSeaGap"] = roughSeaGap_;
 	j["waveStrength"] = waveStrength_;
 	j["waveRadius"] = waveRadius_;
 	j["foam"] = foam_;
@@ -526,6 +583,7 @@ void DolphinEventComponent::Deserialize(const json& j) {
 	if (j.contains("escortTime")) escortTime_ = j["escortTime"];
 	if (j.contains("leaveTime")) leaveTime_ = j["leaveTime"];
 	if (j.contains("fallbackDelay")) fallbackDelay_ = j["fallbackDelay"];
+	if (j.contains("roughSeaGap")) roughSeaGap_ = j["roughSeaGap"];
 	if (j.contains("waveStrength")) waveStrength_ = j["waveStrength"];
 	if (j.contains("waveRadius")) waveRadius_ = j["waveRadius"];
 	if (j.contains("foam")) foam_ = j["foam"];

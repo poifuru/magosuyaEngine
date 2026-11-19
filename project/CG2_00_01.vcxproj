@@ -185,7 +185,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Application\Entity\Player\BoatDriverComponent.cpp" />
     <ClCompile Include="Application\Entity\Player\JumpHeightHudComponent.cpp" />
     <ClCompile Include="Application\Entity\System\GameFlowComponent.cpp" />
-    <ClCompile Include="Application\Entity\System\JumpCountHudComponent.cpp" />
     <ClCompile Include="Application\Entity\System\GameMessageHudComponent.cpp" />
     <ClCompile Include="Application\Entity\System\DolphinNoticeHudComponent.cpp" />
     <ClCompile Include="Application\Scene\BaseScene.cpp" />
@@ -279,6 +278,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Application\Entity\Props\EnergyItemComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\CourseBuoyComponent.cpp" />
     <ClCompile Include="Application\Entity\Props\DolphinEventComponent.cpp" />
+    <ClCompile Include="Application\Entity\Props\RoughSeaComponent.cpp" />
     <ClCompile Include="Engine\Render\FontRendering\FontManager.cpp" />
     <ClCompile Include="Engine\Render\FontRendering\Font.cpp" />
     <ClCompile Include="Engine\Framework\GameObject\FontTextComponent\FontTextComponent.cpp" />
@@ -377,7 +377,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Application\Entity\Player\BoatDriverComponent.h" />
     <ClInclude Include="Application\Entity\Player\JumpHeightHudComponent.h" />
     <ClInclude Include="Application\Entity\System\GameFlowComponent.h" />
-    <ClInclude Include="Application\Entity\System\JumpCountHudComponent.h" />
     <ClInclude Include="Application\Entity\System\GameMessageHudComponent.h" />
     <ClInclude Include="Application\Entity\System\DolphinNoticeHudComponent.h" />
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -449,6 +448,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Application\Entity\Props\EnergyItemComponent.h" />
     <ClInclude Include="Application\Entity\Props\CourseBuoyComponent.h" />
     <ClInclude Include="Application\Entity\Props\DolphinEventComponent.h" />
+    <ClInclude Include="Application\Entity\Props\RoughSeaComponent.h" />
     <ClInclude Include="Engine\Render\FontRendering\FontManager.h" />
     <ClInclude Include="Engine\Render\FontRendering\Font.h" />
     <ClInclude Include="Engine\Framework\GameObject\FontTextComponent\FontTextComponent.h" />

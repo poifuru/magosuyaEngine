@@ -1,6 +1,6 @@
 #pragma once
 
-static const int kMaxWaves = 6;
+static const int kMaxWaves = 8; // WaterSurfaceComponent::kMaxWaves と揃える（普段の波 6 + 荒れ用の波 2）
 
 struct VertexShaderOutput
 {

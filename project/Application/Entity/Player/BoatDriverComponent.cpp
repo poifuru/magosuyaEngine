@@ -5,6 +5,7 @@
 #include "LineRenderer.h"
 #include "CameraOrganizer.h"
 #include "MathFunction.h"
+#include "WaterSurfaceComponent.h"
 #ifdef USEIMGUI
 #include "EditorManager.h"
 #include "GameViewWindow.h"
@@ -59,6 +60,7 @@ namespace {
 	const Vector4 kGoalColor = { 1.0f, 1.0f, 1.0f, 1.0f };      // ゴール
 	const Vector4 kGoalSubColor = { 0.1f, 0.1f, 0.1f, 1.0f };   // ゴール（チェッカーの黒）
 	const Vector4 kDolphinColor = { 0.2f, 0.9f, 1.0f, 1.0f };   // イルカイベントの候補
+	const Vector4 kRoughColor = { 1.0f, 0.3f, 0.6f, 1.0f };     // 海が荒れる点
 
 	constexpr float kLineY = 0.3f; // 線を描く高さ（水面に埋もれにくく）
 }
@@ -78,6 +80,35 @@ void BoatDriverComponent::Initialize() {
 	distance_ = 0.0f;
 	targetIndex_ = 0;
 	isFinished_ = false;
+}
+
+int BoatDriverComponent::GetRoughWaypoint() const {
+	for (size_t i = 0; i < waypoints_.size(); ++i) {
+		if (waypoints_[i].rough > 0.0f) return static_cast<int>(i);
+	}
+	return -1;
+}
+
+void BoatDriverComponent::SetRoughWaypoint(int index, float strength) {
+	// 1 ステージに 1 回だけにしたいので、データの上でも 1 つしか付けられないようにする（ラジオボタンと同じ）
+	for (auto& w : waypoints_) { w.rough = 0.0f; }
+	if (index >= 0 && index < static_cast<int>(waypoints_.size())) {
+		waypoints_[index].rough = std::clamp(strength, 0.05f, 1.0f);
+	}
+}
+
+float BoatDriverComponent::GetCourseDistance(int from, int to) const {
+	const int count = static_cast<int>(waypoints_.size());
+	if (from < 0 || to < 0 || from >= count || to >= count || from == to) return 0.0f;
+
+	int a = (std::min)(from, to), b = (std::max)(from, to);
+	float length = 0.0f;
+	for (int i = a; i < b; ++i) {
+		float dx = waypoints_[i + 1].pos.x - waypoints_[i].pos.x;
+		float dz = waypoints_[i + 1].pos.z - waypoints_[i].pos.z;
+		length += std::sqrt(dx * dx + dz * dz);
+	}
+	return (to > from) ? length : -length;
 }
 
 Vector3 BoatDriverComponent::GetIncomingDir(size_t index) const {
@@ -159,7 +190,15 @@ void BoatDriverComponent::Update() {
 	float step = speed_ * dt;
 	t.translate.x += std::sin(yaw_) * step;
 	t.translate.z += std::cos(yaw_) * step;
-	t.translate.y = boatHeight_;
+	// 高さ：うねりで船が沈んだり浮いたりして見えないように、Gerstner の高さに乗せる
+	// （航跡の波紋は船自身が立てているので足さない）
+	float waterY = 0.0f;
+	if (followWater_) {
+		if (auto* water = gameObject_->FindComponentInScene<WaterSurfaceComponent>()) {
+			waterY = water->SampleGerstnerHeight(t.translate.x, t.translate.z);
+		}
+	}
+	t.translate.y = waterY + boatHeight_;
 	t.rotate.y = yaw_;
 
 	distance_ += step;
@@ -233,6 +272,14 @@ void BoatDriverComponent::DrawDebug() {
 		if (waypoints_[i].dolphin) {
 			line->DrawCircleXZ(p, r + 1.5f, kDolphinColor, 16, false);
 			line->DrawCircleXZ(p, r + 2.5f, kDolphinColor, 16, false);
+		}
+		// 海が荒れる点（ピンクの波線：縦棒の先にギザギザ）
+		if (waypoints_[i].rough > 0.0f) {
+			line->DrawCircleXZ(p, r + 3.5f, kRoughColor, 24, false);
+			for (int k = 0; k < 4; ++k) {
+				float y0 = p.y + 4.5f + k * 0.6f;
+				line->DrawLine({ p.x - 1.0f, y0, p.z }, { p.x + 1.0f, y0 + 0.3f, p.z }, kRoughColor, false);
+			}
 		}
 	}
 
@@ -452,6 +499,18 @@ void BoatDriverComponent::DrawWaypointList() {
 		ImGui::Checkbox("イルカ", &waypoints_[i].dolphin);
 		ImGui::SameLine();
 
+		// 海が荒れる点（コースに1つだけ。チェックすると他の点は外れる）
+		bool rough = waypoints_[i].rough > 0.0f;
+		if (ImGui::Checkbox("荒れ", &rough)) {
+			SetRoughWaypoint(rough ? i : -1);
+		}
+		if (rough) {
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(50.0f);
+			ImGui::DragFloat("##rough", &waypoints_[i].rough, 0.01f, 0.05f, 1.0f, "%.2f");
+		}
+		ImGui::SameLine();
+
 		// 座標（X, Z）
 		float xz[2] = { waypoints_[i].pos.x, waypoints_[i].pos.z };
 		ImGui::SetNextItemWidth(120.0f);
@@ -515,6 +574,7 @@ void BoatDriverComponent::ImGui() {
 		ImGui::DragFloat("巡航速度 [m/s]", &cruiseSpeed_, 0.1f, 0.0f, 40.0f);
 		ImGui::DragFloat("加速度 [m/s2]", &acceleration_, 0.05f, 0.1f, 20.0f);
 		ImGui::DragFloat("船の高さ", &boatHeight_, 0.01f, -2.0f, 2.0f);
+		ImGui::Checkbox("波の高さに合わせて上下する", &followWater_);
 		if (acceleration_ > 0.0f) {
 			ImGui::Text("巡航速度までの時間: %.1f 秒", cruiseSpeed_ / acceleration_);
 		}
@@ -538,12 +598,13 @@ void BoatDriverComponent::Serialize(json& j) const {
 	j["cruiseSpeed"] = cruiseSpeed_;
 	j["acceleration"] = acceleration_;
 	j["boatHeight"] = boatHeight_;
+	j["followWater"] = followWater_;
 	j["isRunning"] = isRunning_;
 
-	// コース（点は [x, z, 種類, イルカ候補] の配列で保存。種類 0 = 道中、1 = ゴール。イルカ候補 0 / 1）
+	// コース（点は [x, z, 種類, イルカ候補, 荒れる強さ] の配列で保存。種類 0 = 道中、1 = ゴール。イルカ候補 0 / 1。荒れ 0 = なし）
 	json points = json::array();
 	for (const auto& w : waypoints_) {
-		points.push_back({ w.pos.x, w.pos.z, static_cast<int>(w.type), w.dolphin ? 1 : 0 });
+		points.push_back({ w.pos.x, w.pos.z, static_cast<int>(w.type), w.dolphin ? 1 : 0, w.rough });
 	}
 	j["waypoints"] = points;
 	j["loop"] = loop_;
@@ -557,6 +618,7 @@ void BoatDriverComponent::Deserialize(const json& j) {
 	if (j.contains("cruiseSpeed")) cruiseSpeed_ = j["cruiseSpeed"];
 	if (j.contains("acceleration")) acceleration_ = j["acceleration"];
 	if (j.contains("boatHeight")) boatHeight_ = j["boatHeight"];
+	if (j.contains("followWater")) followWater_ = j["followWater"];
 	if (j.contains("isRunning")) isRunning_ = j["isRunning"];
 
 	// コース
@@ -573,6 +635,10 @@ void BoatDriverComponent::Deserialize(const json& j) {
 				// 4つ目（イルカ候補）が無い古いデータは候補なし
 				if (p.size() >= 4) {
 					w.dolphin = p[3].get<int>() != 0;
+				}
+				// 5つ目（荒れる強さ）が無い古いデータは荒れなし
+				if (p.size() >= 5) {
+					w.rough = (std::max)(p[4].get<float>(), 0.0f);
 				}
 				waypoints_.push_back(w);
 			}

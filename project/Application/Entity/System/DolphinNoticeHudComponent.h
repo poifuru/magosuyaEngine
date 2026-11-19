@@ -6,10 +6,12 @@ using json = nlohmann::json;
 
 class FontTextComponent;
 class DolphinEventComponent;
+class RoughSeaComponent;
 
 // イルカの告知を、同じ GameObject の FontText に表示する（画面の左上などに置く想定）
 // ・イルカが近づいてくる間（Approach）だけ DolphinEventComponent::GetArrivalText() を出す
 // ・イルカがいないステージでは何も出さない
+// ・海が荒れるイベント（RoughSeaComponent）の予告も、Warning と Rising の間だけここに出す（2つは重ならないようにしてある）
 class DolphinNoticeHudComponent : public Component {
 public:
 	DolphinNoticeHudComponent() = default;
@@ -26,5 +28,6 @@ public:
 private:
 	// ===== 実行時の状態 =====
 	DolphinEventComponent* dolphin_ = nullptr; // シーン内のイルカイベント（最初に1回だけ探す）
+	RoughSeaComponent* roughSea_ = nullptr;    // シーン内の海が荒れるイベント
 	FontTextComponent* text_ = nullptr;        // 同じ GameObject の FontText
 };

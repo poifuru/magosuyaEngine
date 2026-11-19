@@ -2,6 +2,7 @@
 #include "StageSelection.h"
 #include "GameFlowComponent.h"
 #include "DolphinEventComponent.h"
+#include "RoughSeaComponent.h"
 #include <unordered_map>
 
 namespace {
@@ -26,12 +27,13 @@ namespace {
 			for (const auto& compJ : objJ["components"]) {
 				const std::string type = compJ.value("type", "");
 				// キーが無いときはコンポーネント側の初期値と同じ値にする
-				if (type == "GameFlowComponent") {
-					stage.maxJumps = compJ.value("maxJumps", GameFlowComponent::kDefaultMaxJumps);
-				}
-				else if (type == "DolphinEventComponent") {
+				if (type == "DolphinEventComponent") {
 					stage.hasDolphin = true;
 					stage.dolphinNotice = compJ.value("noticeText", std::string(DolphinEventComponent::kDefaultNoticeText));
+				}
+				else if (type == "RoughSeaComponent") {
+					stage.hasRoughSea = true;
+					stage.roughSeaNotice = compJ.value("noticeText", std::string(RoughSeaComponent::kDefaultNoticeText));
 				}
 			}
 		}

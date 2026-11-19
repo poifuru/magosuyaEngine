@@ -38,6 +38,7 @@ private:
 	struct Placement {
 		Vector3 pos;
 		float yaw;
+		bool rough = false; // 海が荒れる点（色を変えて目印にする）
 	};
 
 	// プールのウキ1つぶん
@@ -66,6 +67,7 @@ private:
 	bool useRipple_ = true;      // 航跡などの波紋でも上下させる
 	float tiltScale_ = 1.0f;     // 波の傾きに合わせて傾ける強さ（0 で傾けない）
 	float maxTilt_ = 0.5f;       // 傾きの上限 [rad]
+	Vector4 roughTint_ = { 1.0f, 0.35f, 0.55f, 1.0f }; // 海が荒れる点のブイに掛ける色（2回目のプレイで「ここで荒れる」と分かる目印）
 
 	// --- 状態 ---
 	// unique_ptr で持つのは、vector が伸びても tilt のアドレス（モデルの親）が変わらないようにするため

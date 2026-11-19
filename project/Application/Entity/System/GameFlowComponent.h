@@ -11,14 +11,11 @@ class BoatDriverComponent;
 
 // インゲームの進行を管理する（表示はしない。HUD は Getter を読む）
 // Ready（カウントダウン）→ Playing → Ending（GOAL!/FINISH! を見せる）→ Result（リトライ / ステージ選択）
-// ・船が Goal のウェイポイントに着いたらゴール
-// ・maxJumps_ 回跳んで、最後のジャンプが着水したら強制終了
+// ・船が Goal のウェイポイントに着いたらゴール（ジャンプは何回でもできる。途中で終わることはない）
 class GameFlowComponent : public Component {
 public:
 	enum class Phase { Ready, Playing, Ending, Result };
-	enum class EndReason { None, Goal, OutOfJumps };
-
-	static constexpr int kDefaultMaxJumps = 3; // maxJumps_ の初期値（ステージセレクトがシーンjsonを読むときにも使う）
+	enum class EndReason { None, Goal };
 
 	GameFlowComponent() = default;
 	~GameFlowComponent() override = default;
@@ -36,9 +33,7 @@ public:
 	EndReason GetEndReason() const { return endReason_; }
 	float GetPhaseTime() const { return phaseTime_; } // 今の Phase に入ってからの時間[s]
 	float GetCountdownTime() const { return countdownTime_; }
-	int GetMaxJumps() const { return maxJumps_; }
-	int GetJumpsUsed() const { return jumpsUsed_; }
-	int GetRemainingJumps() const { return (std::max)(maxJumps_ - jumpsUsed_, 0); }
+	int GetJumpsUsed() const { return jumpsUsed_; } // このプレイで跳んだ回数（踏み切りで数える）
 	const std::vector<float>& GetJumpHeights() const { return jumpHeights_; } // 着水したジャンプの高さ[m]
 	float GetBestHeight() const;      // このプレイでの最高[m]
 	float GetAverageHeight() const;   // このプレイでの平均[m]（着水したジャンプの平均。跳んでいなければ 0）
@@ -58,7 +53,6 @@ private:
 
 private:
 	// ===== 調整パラメータ（シリアライズ対象） =====
-	int maxJumps_ = kDefaultMaxJumps; // このステージで跳べる回数（3〜5）
 	float countdownTime_ = 3.0f;    // 3,2,1 の長さ[s]
 	float endingTime_ = 2.0f;       // GOAL!/FINISH! を見せる時間[s]（着水してから数える）
 	float resultInputDelay_ = 0.5f; // リザルトが出てから入力を受け付けるまで[s]（連打で即リトライしないように）

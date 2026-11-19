@@ -26,6 +26,7 @@ public:
 		Vector3 pos;                          // 位置（y は使わない）
 		WaypointType type = WaypointType::Pass;
 		bool dolphin = false;                 // イルカイベントの候補（DolphinEventComponent がこの中から1つ抽選する）
+		float rough = 0.0f;                   // 海が荒れる強さ（0 = なし）。通過したら RoughSeaComponent が必ず起こす。コースに1つだけ
 	};
 
 	BoatDriverComponent() = default;
@@ -42,6 +43,7 @@ public:
 	const char* GetName() const override { return "BoatDriverComponent"; }
 
 	float GetSpeed() const { return speed_; }   // 今の速度[m/s]
+	float GetCruiseSpeed() const { return cruiseSpeed_; } // 巡航速度[m/s]（イベントの間隔の見積もりに使う）
 	float GetYaw() const { return yaw_; }       // 進行方向[rad]
 
 	// スタート地点に戻して、速度0からやり直す
@@ -60,6 +62,15 @@ public:
 	// コースの情報（ウキの配置などに使う）
 	const std::vector<Waypoint>& GetWaypoints() const { return waypoints_; }
 	const Vector3& GetStartPos() const { return startPos_; }
+
+	// 海が荒れる点の番号（無ければ -1）。コースに1つだけ付けられる
+	int GetRoughWaypoint() const;
+	// 海が荒れる点を index にする（他の点の印は外す）。index = -1 で全部外す
+	void SetRoughWaypoint(int index, float strength = 1.0f);
+
+	// コースに沿った from → to の距離[m]（点と点を直線でつないだ長さの合計。to が前なら -）
+	// 0番の前はスタート地点。イベントどうしが重ならないように間隔を測るのに使う
+	float GetCourseDistance(int from, int to) const;
 
 	// その点に入ってくる向き（XZの単位ベクトル）。前の点（0番はスタート地点）から見た方向
 	Vector3 GetIncomingDir(size_t index) const;
@@ -94,6 +105,7 @@ private:
 	float cruiseSpeed_ = 10.0f;  // 巡航速度[m/s]
 	float acceleration_ = 3.0f;  // 加速[m/s²]（スタート時に徐々に速くなる）
 	float boatHeight_ = 0.3f;    // 船の高さ（水面に置く y）
+	bool followWater_ = true;    // 波（Gerstner）の高さに合わせて上下する（うねりで船が沈まないように）
 	bool isRunning_ = true;      // false で停止（エディタでの確認用）
 
 	// --- コース ---

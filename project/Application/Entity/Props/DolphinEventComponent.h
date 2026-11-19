@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 #include <memory>
 #include <string>
+#include <vector>
 
 using json = nlohmann::json;
 
@@ -15,6 +16,7 @@ class BoatDriverComponent;
 class BoatWakeComponent;
 class BoarderComponent;
 class GameFlowComponent;
+class RoughSeaComponent;
 
 // イルカが船の横を並走して、航跡どうしの重なり（干渉）で大波を作るイベント
 // ・どのウェイポイントで来るかは、ステージ開始時に「候補」の点から1つ抽選する（必ず1回来る）
@@ -25,6 +27,8 @@ class GameFlowComponent;
 //   その点は船の航跡のイルカ側の腕の上にあるので、ボーダーがイルカ側へ振り出せば届く
 //   → 交わる点がロープの届く距離に来るように lateral を毎フレーム計算する
 // ・GameFlow が Playing の間だけ動く
+// ・海が荒れるイベント（RoughSeaComponent）と重ならないように、荒れる点からコースに沿って離れた候補だけを抽選する
+//   さらに保険として、うねりが強い時間に通過したら、終わるまで待ってから来る
 class DolphinEventComponent : public MyEngine::Rendering::RenderComponent {
 public:
 	enum class State {
@@ -61,10 +65,16 @@ public:
 	const std::string& GetNoticeText() const { return noticeText_; }   // ステージセレクトに出す予告
 	const std::string& GetArrivalText() const { return arrivalText_; } // 近づいてくるときに出す
 	int GetChosenWaypoint() const { return chosenWaypoint_; }
+	// 強い時間（近づいてくる〜並走）か。うねりはこの間は始まらない
+	bool IsBusy() const { return state_ == State::Approach || state_ == State::Escort; }
 
 private:
 	bool FindReferences();
 	void ChooseWaypoint();      // 候補から1つ抽選する（ステージ開始時に1回）
+	// うねりの点から近すぎる候補を外す（全部外れたら、いちばん余裕のある1つを残す）
+	void ExcludeNearRoughSea(std::vector<int>& candidates) const;
+	// 候補 c とうねりの点の「足りない距離」[m]（0 以下なら重ならない）
+	float CalcRoughOverlap(int candidate, int roughIndex) const;
 	void ChangeState(State next);
 	void StartEvent();          // Approach を始める
 
@@ -105,6 +115,7 @@ private:
 	float escortTime_ = 9.0f;         // 並走の長さ[s]
 	float leaveTime_ = 3.0f;          // 離れていく長さ[s]
 	float fallbackDelay_ = 10.0f;     // ウェイポイントが無いコースのとき、スタートから何秒で来るか
+	float roughSeaGap_ = 100.0f;      // うねりのイベントとの間に、さらに空ける距離[m]
 
 	// --- 波 ---
 	float waveStrength_ = 1.5f;       // 立てる波の強さ（船 = 1）
@@ -130,6 +141,7 @@ private:
 	int chosenWaypoint_ = -1;         // 抽選した点（-1 = 時間で来る）
 	size_t prevTarget_ = 0;           // 前フレームに船が向かっていた点
 	bool hasPrevTarget_ = false;
+	bool pendingStart_ = false;       // 通過したが、うねりが強い時間なので待っている
 	float sideSign_ = 1.0f;           // 今回来る側
 	float swimTime_ = 0.0f;           // 上下の泳ぎの位相用
 	float smoothedDt_ = 1.0f / 60.0f; // ならした dt（波の速さの計算用）
@@ -155,6 +167,7 @@ private:
 	BoatWakeComponent* wake_ = nullptr;
 	BoarderComponent* boarder_ = nullptr;
 	GameFlowComponent* flow_ = nullptr;
+	RoughSeaComponent* roughSea_ = nullptr;
 
 	std::unique_ptr<MyEngine::Rendering::Model> model_;
 	uint32_t textureIndex_ = 0;

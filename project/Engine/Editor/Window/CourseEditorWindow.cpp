@@ -27,6 +27,7 @@ namespace {
 	const ImU32 kGoalColor = IM_COL32(255, 255, 255, 255);    // ゴール（白）
 	const ImU32 kGoalSubColor = IM_COL32(20, 20, 20, 255);    // ゴール（チェッカーの黒）
 	const ImU32 kDolphinColor = IM_COL32(50, 230, 255, 255);  // イルカイベントの候補（水色）
+	const ImU32 kRoughColor = IM_COL32(255, 80, 150, 255);    // 海が荒れる点（ピンク）
 	const ImU32 kTextColor = IM_COL32(255, 255, 255, 220);
 
 	constexpr float kPointRadiusPx = 6.0f; // 点の見た目の半径（ピクセル）
@@ -308,6 +309,12 @@ void CourseEditorWindow::DrawMap(BoatDriverComponent* driver) {
 		auto& dolphin = wps[driver->selectedIndex_].dolphin;
 		dolphin = !dolphin;
 	}
+	// W キー：選択中の点を 海が荒れる点 にする / 外す（コースに1つだけ。他の点の印は外れる）
+	if (isHovered && ImGui::IsKeyPressed(ImGuiKey_W) &&
+		driver->selectedIndex_ >= 0 && driver->selectedIndex_ < static_cast<int>(wps.size())) {
+		bool turnOn = wps[driver->selectedIndex_].rough <= 0.0f;
+		driver->SetRoughWaypoint(turnOn ? driver->selectedIndex_ : -1);
+	}
 
 	// ===== 描画 =====
 	ImDrawList* dl = ImGui::GetWindowDrawList();
@@ -394,8 +401,21 @@ void CourseEditorWindow::DrawMap(BoatDriverComponent* driver) {
 		if (wps[i].dolphin) {
 			dl->AddCircle(s, kPointRadiusPx + 5.0f, kDolphinColor, 16, 2.0f);
 		}
-		char label[24];
-		sprintf_s(label, isGoal ? "%d GOAL" : (wps[i].dolphin ? "%d DOLPHIN" : "%d"), i);
+		bool rough = wps[i].rough > 0.0f;
+		if (rough) {
+			// 波マーク（ギザギザ）を点の下に
+			for (int k = 0; k < 4; ++k) {
+				float x0 = s.x - 10.0f + k * 5.0f;
+				dl->AddLine({ x0, s.y + 12.0f }, { x0 + 2.5f, s.y + 9.0f }, kRoughColor, 2.0f);
+				dl->AddLine({ x0 + 2.5f, s.y + 9.0f }, { x0 + 5.0f, s.y + 12.0f }, kRoughColor, 2.0f);
+			}
+		}
+		char label[40];
+		if (isGoal) {
+			sprintf_s(label, "%d GOAL", i);
+		} else {
+			sprintf_s(label, "%d%s%s", i, wps[i].dolphin ? " DOLPHIN" : "", rough ? " ROUGH" : "");
+		}
 		dl->AddText({ s.x + 8.0f, s.y - 16.0f }, kTextColor, label);
 	}
 
@@ -425,7 +445,7 @@ void CourseEditorWindow::DrawMap(BoatDriverComponent* driver) {
 	sprintf_s(info, "grid: %g m   zoom: %.2f px/m", step, pixelsPerMeter_);
 	dl->AddText({ p0.x + 8.0f, p0.y + 6.0f }, kTextColor, info);
 	dl->AddText({ p0.x + 8.0f, p0.y + 24.0f }, IM_COL32(255, 255, 255, 120),
-		"L: add / drag   Shift+L: insert   R / Del: delete   G: goal   Wheel: zoom   M-drag: pan   F: fit");
+		"L: add / drag   Shift+L: insert   R / Del: delete   G: goal   D: dolphin   W: rough sea   Wheel: zoom   M-drag: pan   F: fit");
 
 	// マウス位置のワールド座標
 	if (isHovered) {

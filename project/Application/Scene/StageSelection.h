@@ -2,7 +2,7 @@
 
 // ステージの一覧（Resources/Stage/stages.json）と、ステージセレクトで選んだステージを覚えておく
 // ・stages.json には「名前・シーンjson・説明文」だけを書く
-// ・ジャンプ回数とイルカの有無はシーンjsonの中身（GameFlow / DolphinEvent）から読む（同じ値を2か所に書かないため）
+// ・イルカやうねりの有無はシーンjsonの中身（DolphinEvent / RoughSea）から読む（同じ値を2か所に書かないため）
 // ・選んだステージはシーンをまたいで残るように static に持つ（アプリを閉じると消える）
 struct StageInfo {
 	// ===== stages.json に書く値 =====
@@ -12,9 +12,10 @@ struct StageInfo {
 
 	// ===== シーンjsonから読む値 =====
 	bool sceneExists = false; // シーンjsonがあるか（無ければ選べない）
-	int maxJumps = 0;         // GameFlowComponent の maxJumps（GameFlow が無ければ 0）
 	bool hasDolphin = false;  // DolphinEventComponent があるか
 	std::string dolphinNotice; // イルカの予告文
+	bool hasRoughSea = false;  // RoughSeaComponent があるか
+	std::string roughSeaNotice; // うねりの予告文
 };
 
 namespace StageSelection {

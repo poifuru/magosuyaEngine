@@ -105,6 +105,17 @@ void CourseBuoyComponent::PlaceModels(std::vector<std::unique_ptr<Buoy>>& pool, 
 		model->SetRotate({ 0.0f, pl.yaw, 0.0f });
 		model->SetScale({ buoyScale_, buoyScale_, buoyScale_ });
 		model->Update(&cameraData);
+
+		// 色：海が荒れる点だけ色を変える（プールを使い回すので、毎回どちらかに設定し直す）
+		// （SetColor は呼ぶたびに GPU へ送り直すので、色が変わるときだけ呼ぶ）
+		if (auto* material = model->GetMaterial()) {
+			Vector4 want = pl.rough ? roughTint_ : Vector4{ 1.0f, 1.0f, 1.0f, 1.0f };
+			const Vector4& now = material->GetMaterialData().color;
+			if (now.x != want.x || now.y != want.y || now.z != want.z || now.w != want.w) {
+				material->SetColor(want);
+				material->Update();
+			}
+		}
 	}
 }
 
@@ -135,7 +146,7 @@ void CourseBuoyComponent::Update() {
 			goalPlacements.push_back({ left, yaw + flip });
 			goalPlacements.push_back({ right, yaw + flip + std::numbers::pi_v<float> });
 		} else {
-			passPlacements.push_back({ wps[i].pos, yaw + flip });
+			passPlacements.push_back({ wps[i].pos, yaw + flip, wps[i].rough > 0.0f });
 		}
 	}
 
@@ -154,6 +165,7 @@ void CourseBuoyComponent::ImGui() {
 	ImGui::DragFloat("傾きの上限", &maxTilt_, 0.01f, 0.0f, 1.5f, "%.2f rad");
 	ImGui::DragFloat("揺れ", &swayAmount_, 0.005f, 0.0f, 0.5f, "%.3f rad");
 	ImGui::Checkbox("旗を反転", &flipFlag_);
+	ImGui::ColorEdit4("荒れる点のブイの色", &roughTint_.x);
 	ImGui::TextDisabled("ブイ: 通過 %d / ゴール %d", static_cast<int>(passActive_), static_cast<int>(goalActive_));
 	ImGui::TextDisabled("水面問い合わせの枠: %d / %d 使用中", static_cast<int>(WaterQuery::GetAllocatedSlotCount()), static_cast<int>(WaterQuery::kMaxQueries));
 	if (!gameObject_ || !gameObject_->GetComponent<BoatDriverComponent>()) {
@@ -198,6 +210,7 @@ void CourseBuoyComponent::Serialize(json& j) const {
 	j["useRipple"] = useRipple_;
 	j["tiltScale"] = tiltScale_;
 	j["maxTilt"] = maxTilt_;
+	j["roughTint"] = { roughTint_.x, roughTint_.y, roughTint_.z, roughTint_.w };
 }
 
 void CourseBuoyComponent::Deserialize(const json& j) {
@@ -210,4 +223,7 @@ void CourseBuoyComponent::Deserialize(const json& j) {
 	if (j.contains("useRipple")) useRipple_ = j["useRipple"];
 	if (j.contains("tiltScale")) tiltScale_ = j["tiltScale"];
 	if (j.contains("maxTilt")) maxTilt_ = j["maxTilt"];
+	if (j.contains("roughTint") && j["roughTint"].is_array() && j["roughTint"].size() >= 4) {
+		roughTint_ = { j["roughTint"][0].get<float>(), j["roughTint"][1].get<float>(), j["roughTint"][2].get<float>(), j["roughTint"][3].get<float>() };
+	}
 }
