@@ -1,5 +1,6 @@
 #pragma once
 #include "RenderCollector.h"
+#include "CameraOrganizer.h"
 
 class PostEffectManager;
 class GameObject;
@@ -40,6 +41,9 @@ namespace MyEngine::Rendering {
 	};
 
 	class Renderer {
+	public: //定数
+		static constexpr uint32_t kParticlePreviewSize = 512;   // 正方形
+
 	public:
 		// コンストラクタ
 		Renderer(
@@ -72,6 +76,10 @@ namespace MyEngine::Rendering {
 
 		// 描画コンポーネントリストから抜ける
 		void UnregisterRenderComponent(MyEngine::Rendering::RenderComponent* renderComponent);
+
+		// エディタから毎フレーム呼ぶ。呼ばれたフレームだけ描く
+		void RequestParticlePreview(const std::string& effectName, const CameraData& camera);
+		D3D12_GPU_DESCRIPTOR_HANDLE GetParticlePreviewSrvHandle() const;
 
 		MyEngine::Rendering::RenderSystem* GetRenderSystem() { return renderSystem_.get(); }
 		MyEngine::Rendering::RenderTexture* GetRenderTexture() { return renderTexture_.get(); }
@@ -122,6 +130,9 @@ namespace MyEngine::Rendering {
 		// ビューポートとシザーレクトを現在の解像度に合わせる
 		void SetViewportAndScissorRect();
 
+		// パーティクルエディタのプレビュー描画
+		void RenderParticlePreview(MyEngine::LowLevel::SrvDescriptorHeapPool* heap);
+
 	private:
 		ID3D12Device* device_ = nullptr;
 		ID3D12GraphicsCommandList* cmdList_ = nullptr;
@@ -139,6 +150,13 @@ namespace MyEngine::Rendering {
 		std::unique_ptr<MyEngine::Rendering::DepthTexture> sceneDepthTexture_;
 		// ピンポン用の中間テクスチャ2枚
 		std::unique_ptr<MyEngine::Rendering::RenderTexture> workTextures_[2];
+
+		// パーティクルプレビュー画面用のレンダーテクスチャ・深度テクスチャ
+		std::unique_ptr<MyEngine::Rendering::RenderTexture> particlePreviewTexture_;
+		std::unique_ptr<MyEngine::Rendering::DepthTexture> particlePreviewDepth_;
+		bool hasPreviewRequest_ = false;
+		std::string previewEffectName_;
+		CameraData previewCamera_{};
 
 		// シェーダーの組み合わせを保存しておく
 		std::unordered_map<uint64_t, ShaderPair> shaderTable_;

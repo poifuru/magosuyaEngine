@@ -138,10 +138,18 @@ void ImGuiManager::RenderDockingSpace(
 	ImGui::PopStyleVar(3);
 
 	ImGuiID dockspace_id = ImGui::GetID("MyEngineDockSpace");
-	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 
-	ImGui::Begin("View");
-	ImGui::End();
+	// パーティクルのワークスペースでは、メインのドックを「生かしておくだけ」にする
+	// ・DockSpace を呼ばないと、そこにドッキングしていたウィンドウの配置が外れてしまう
+	// ・KeepAliveOnly なら場所も取らず何も表示しないので、空いた場所にパーティクルエディタを描ける
+	bool isMainWorkspace = (EditorManager::GetInstance()->GetWorkspace() == EditorWorkspace::Main);
+	ImGuiDockNodeFlags dockFlags = isMainWorkspace ? ImGuiDockNodeFlags_None : ImGuiDockNodeFlags_KeepAliveOnly;
+	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockFlags);
+
+	if (isMainWorkspace) {
+		ImGui::Begin("View");
+		ImGui::End();
+	}
 
 	EditorManager::GetInstance()->UpdateAndDraw(device, heapManager, renderTexture);
 

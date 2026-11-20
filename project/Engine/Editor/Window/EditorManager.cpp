@@ -106,6 +106,17 @@ void EditorManager::UpdateAndDraw(
 	context.renderTexture = renderTexture;
 	context.sceneContext = sceneContext_;
 	context.selectedObject = &selectedObject_;
+
+	// パーティクルのワークスペース：パーティクルエディタだけを画面いっぱいに描く
+	// ・ほかのウィンドウは描かない（メインのドックは ImGuiManager 側で KeepAliveOnly にして配置だけ残している）
+	// ・通常の「パーティクルエディタ」ウィンドウも描かないので、プレビューの要求が2回出ることはない
+	if (workspace_ == EditorWorkspace::Particle) {
+		if (ParticleEditorWindow* particle = GetWindow<ParticleEditorWindow>()) {
+			particle->DrawWorkspace(context);
+		}
+		return;
+	}
+
 	for (auto& window : windows_) {
 		window->UpdateAndDraw(context);
 	}
@@ -151,6 +162,8 @@ void EditorManager::SaveLayoutSettings() {
 	for (auto& window : windows_) {
 		root["ウィンドウ"][window->GetName()] = window->IsOpen();
 	}
+	// 次に起動したときも同じワークスペースで開く（日本語キーは他と合わせる）
+	root["ワークスペース"] = (workspace_ == EditorWorkspace::Particle) ? "particle" : "main";
 	std::filesystem::path path(settingsFilePath_);
 	if (path.has_parent_path() && !std::filesystem::exists(path.parent_path())) {
 		std::filesystem::create_directories(path.parent_path());
@@ -178,6 +191,9 @@ void EditorManager::LoadLayoutSettings() {
 				window->SetOpen(root["ウィンドウ"][name].get<bool>());
 			}
 		}
+	}
+	if (root.contains("ワークスペース") && root["ワークスペース"].is_string()) {
+		workspace_ = (root["ワークスペース"].get<std::string>() == "particle") ? EditorWorkspace::Particle : EditorWorkspace::Main;
 	}
 }
 
@@ -300,6 +316,18 @@ void EditorManager::DrawMenuBar() {
 		if (ImGui::BeginMenu("ウィンドウ")) {
 			for (auto& window : windows_) {
 				ImGui::MenuItem(window->GetName().c_str(), nullptr, window->GetIsOpenPtr());
+			}
+			ImGui::EndMenu();
+		}
+
+		// Workspace メニュー（画面全体の使い方を切り替える）
+		if (ImGui::BeginMenu("ワークスペース")) {
+			if (ImGui::MenuItem("エディタ", nullptr, workspace_ == EditorWorkspace::Main)) {
+				workspace_ = EditorWorkspace::Main;
+			}
+			// 再生中はゲーム画面の範囲にマウスを閉じ込めているので、停止中だけ切り替えられるようにする
+			if (ImGui::MenuItem("パーティクル", nullptr, workspace_ == EditorWorkspace::Particle, IsEditing())) {
+				workspace_ = EditorWorkspace::Particle;
 			}
 			ImGui::EndMenu();
 		}

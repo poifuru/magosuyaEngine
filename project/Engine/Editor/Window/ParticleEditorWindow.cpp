@@ -6,6 +6,10 @@
 #include "GpuParticlePool.h"
 #include "ParticleEffectData.h"
 #include "Time.h"
+#include "CameraOrganizer.h"
+#include "MathFunction.h"
+#include "Renderer.h"
+#include "LineRenderer.h"
 
 namespace {
 	// Combo の表示名（並びは enum / 番号と同じにする）
@@ -27,40 +31,85 @@ void ParticleEditorWindow::UpdateAndDraw(const EditorContext& context) {
 
 	ImGui::SetNextWindowSize(ImVec2(820.0f, 560.0f), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin(name_.c_str(), &isOpen_)) {
-		// System は SceneContext の renderer から取る
-		GpuParticleSystem* system = nullptr;
-		if (context.sceneContext && context.sceneContext->renderer) {
-			system = context.sceneContext->renderer->GetParticleSystem();
-		}
+		DrawContents(context);
+	}
+	ImGui::End();   // Begin の戻り値が false（たたまれている）でも End は必ず呼ぶ
+}
 
-		if (!system) {
-			ImGui::TextDisabled("パーティクルシステムがありません");
+void ParticleEditorWindow::DrawWorkspace(const EditorContext& context) {
+	// パーティクルのワークスペースでは、EditorManager のホストウィンドウの中に直接描く
+	// （Begin("パーティクルエディタ") とは別の場所なので、ドッキングの配置とぶつからない）
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
+	ImGui::BeginChild("##particleWorkspace", ImVec2(0.0f, 0.0f), ImGuiChildFlags_AlwaysUseWindowPadding);
+	ImGui::PopStyleVar();
+	DrawContents(context);
+	ImGui::EndChild();
+}
+
+void ParticleEditorWindow::DrawContents(const EditorContext& context) {
+	// System は SceneContext の renderer から取る
+	GpuParticleSystem* system = nullptr;
+	if (context.sceneContext && context.sceneContext->renderer) {
+		system = context.sceneContext->renderer->GetParticleSystem();
+	}
+
+	if (!system) {
+		ImGui::TextDisabled("パーティクルシステムがありません");
+	}
+	else {
+		// 左：一覧（200px は最初の幅。右端をドラッグして変えられ、幅は imgui.ini に保存される）
+		ImGui::BeginChild("##list", ImVec2(200.0f, 0.0f), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX);
+		DrawEffectList(*system);
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		ParticleEffectData* data = system->FindEffect(selectedName_);
+		if (!data) {
+			ImGui::BeginChild("##empty");
+			ImGui::TextDisabled("左の一覧からエフェクトを選んでください");
+			ImGui::EndChild();
 		}
 		else {
-			// 左：一覧（幅 200px の子ウィンドウ）
-			ImGui::BeginChild("##list", ImVec2(200.0f, 0.0f), true);
-			DrawEffectList(*system);
+			// 残りの幅を「プレビュー列」と「パラメータ列」に分ける
+			// ・パラメータ列だけを子ウィンドウでスクロールさせるので、プレビューは常に見えたまま
+			// ・プレビュー列も右端をドラッグして幅を変えられる（380px は最初の幅）
+
+			// 中：プレビュー（ここはスクロールさせない）
+			ImGui::BeginChild("##preview", ImVec2(380.0f, 0.0f),
+							  ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX,
+							  ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+			DrawPreview(*system, context.sceneContext->renderer);
 			ImGui::EndChild();
 
 			ImGui::SameLine();
 
-			// 右：プレビューとパラメータ
-			ImGui::BeginChild("##params");
-			ParticleEffectData* data = system->FindEffect(selectedName_);
-			if (!data) {
-				ImGui::TextDisabled("左の一覧からエフェクトを選んでください");
-			}
-			else {
-				DrawPreview(*system);
-				if (DrawParameters(*system, *data)) {
-					system->ApplyEffect(selectedName_);   // 変わったフレームだけ反映
-					unsavedNames_.insert(selectedName_);
-				}
+			// 右：パラメータ（幅 0 = 残り全部なので、左2つの幅に合わせて自動で伸び縮みする）
+			ImGui::BeginChild("##params", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders);
+			if (DrawParameters(*system, *data)) {
+				system->ApplyEffect(selectedName_);   // 変わったフレームだけ反映
+				unsavedNames_.insert(selectedName_);
 			}
 			ImGui::EndChild();
 		}
 	}
-	ImGui::End();   // Begin の戻り値が false（たたまれている）でも End は必ず呼ぶ
+}
+
+CameraData ParticleEditorWindow::MakePreviewCamera() const {
+	Vector3 target = previewPosition_;
+	Vector3 eye = {
+		target.x + orbitDistance_ * std::cos(orbitPitch_) * std::sin(orbitYaw_),
+		target.y + orbitDistance_ * std::sin(orbitPitch_),
+		target.z - orbitDistance_ * std::cos(orbitPitch_) * std::cos(orbitYaw_),
+	};
+
+	CameraData camera{};
+	camera.view  = Math::MakeLookAtMatrix(eye, target, { 0.0f, 1.0f, 0.0f });
+	camera.world = Math::Inverse(camera.view);   // ビルボードは world の1行目（右）・2行目（上）を使う
+	camera.proj  = Math::MakePerspectiveFOVMatrix(0.8f, 1.0f, 0.1f, 1000.0f);   // 正方形なのでアスペクト比 1
+	camera.vp    = Math::Multiply(camera.view, camera.proj);
+	return camera;
+	return CameraData();
 }
 
 void ParticleEditorWindow::DrawEffectList(GpuParticleSystem& system) {
@@ -116,11 +165,71 @@ void ParticleEditorWindow::DrawEffectList(GpuParticleSystem& system) {
 	}
 }
 
-void ParticleEditorWindow::DrawPreview(GpuParticleSystem& system) {
+void ParticleEditorWindow::RequestPreviewGrid() const {
+	LineRenderer* line = LineRenderer::GetInstance();
+	const Vector3& c = previewPosition_;
+	float half = gridSize_ * 0.5f;
+
+	// 地面のグリッド（プレビュー位置の高さ）
+	line->DrawPreviewGridXZ(c, gridSize_, gridStep_, { 0.5f, 0.5f, 0.55f, 0.35f });
+
+	// 中心の軸だけ色を付けて向きを分かりやすくする（X = 赤、Z = 青）
+	line->DrawPreviewLine({ c.x - half, c.y, c.z }, { c.x + half, c.y, c.z }, { 0.9f, 0.3f, 0.3f, 0.8f });
+	line->DrawPreviewLine({ c.x, c.y, c.z - half }, { c.x, c.y, c.z + half }, { 0.3f, 0.5f, 0.9f, 0.8f });
+}
+
+void ParticleEditorWindow::DrawPreview(GpuParticleSystem& system, MyEngine::Rendering::Renderer* renderer) {
+	// プレビューを頼む（描かれるのはこの後の RenderScene）
+	renderer->RequestParticlePreview(selectedName_, MakePreviewCamera());
+
+	// グリッドの線もこのフレームのうちに要求しておく（Renderer がプレビューの粒より先に描く）
+	if (showGrid_) {
+		RequestPreviewGrid();
+	}
+
+	// 幅に合わせた正方形（大きすぎないように 360px まで）
+	float size = std::min(ImGui::GetContentRegionAvail().x, float(MyEngine::Rendering::Renderer::kParticlePreviewSize));
+	ImVec2 pos = ImGui::GetCursorScreenPos();
+
+	// 画像のアルファが 1 未満のところ（消えかけの粒）でウィンドウの背景が透けないよう、同じ色を先に塗る
+	ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + size, pos.y + size), IM_COL32(20, 20, 26, 255));
+	D3D12_GPU_DESCRIPTOR_HANDLE handle = renderer->GetParticlePreviewSrvHandle();
+	ImGui::Image((ImTextureID)handle.ptr, ImVec2(size, size));
+
+	// 画像と同じ場所に透明なボタンを重ねて、マウス操作を受け取る
+	// ・Image は ID を持たない（操作を受け取れない）ので、ID を持つ InvisibleButton を使う
+	// ・ボタンを押している間は「アクティブ」になるので、画像の外までドラッグしても回し続けられる
+	ImGui::SetCursorScreenPos(pos);
+	ImGui::InvisibleButton("##previewView", ImVec2(size, size));
+
+	// ホイールをこのボタンの持ち物にする。これで親の子ウィンドウ（パラメータ欄）がスクロールしなくなる
+	ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY);
+
+	ImGuiIO& io = ImGui::GetIO();
+	if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+		orbitYaw_   -= io.MouseDelta.x * 0.01f;   // 右にドラッグすると右に回り込む向き
+		orbitPitch_ += io.MouseDelta.y * 0.01f;
+		orbitPitch_ = std::clamp(orbitPitch_, -1.5f, 1.5f);
+	}
+	if (ImGui::IsItemHovered()) {
+		orbitDistance_ = std::clamp(orbitDistance_ - io.MouseWheel * 0.5f, 1.0f, 100.0f);
+	}
+
 	ImGui::Text("編集中: %s", selectedName_.c_str());
 
 	// バースト再生と、出し続けるプレビューを出す位置
 	ImGui::DragFloat3("プレビュー位置", &previewPosition_.x, 0.05f);
+
+	// グリッドの表示切り替え（開いたときだけ大きさ・間隔を変えられる）
+	ImGui::Checkbox("グリッド表示", &showGrid_);
+	if (showGrid_) {
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(80.0f);
+		ImGui::DragFloat("大きさ##grid", &gridSize_, 0.1f, 1.0f, 100.0f);
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(80.0f);
+		ImGui::DragFloat("間隔##grid", &gridStep_, 0.05f, 0.1f, 10.0f);
+	}
 
 	// 出し続けるエフェクトは、エディタが毎フレーム要求を出す（Pool は自分では出さないため）
 	// ウィンドウを閉じたり別のエフェクトを選ぶと要求が止まるので、止める処理はいらない

@@ -67,6 +67,16 @@ public:
 		const CameraData& camera
 	);
 
+	// 一つのエフェクトだけを描画する
+	void OneDraw(
+		const std::string& name, 
+		ID3D12GraphicsCommandList* cmdList,
+		ID3D12RootSignature* commonRootSig, 
+		D3D12_GPU_DESCRIPTOR_HANDLE srvTableStart,
+		const CameraData& camera, 
+		uint32_t drawSlot
+	);
+
 	// エディタ用
 	GpuParticlePool* FindPool(const std::string& name);
 	std::vector<std::string> GetEffectNames() const;           // 一覧表示用（名前順）

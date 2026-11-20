@@ -13,7 +13,6 @@
 #include "DepthTexture.h"
 #include "RenderTargetFactory.h"
 #include "RenderingModel.h"
-#include "CameraOrganizer.h"
 #include "Function.h"
 #include "Model.h"
 #include "Material.h"
@@ -98,6 +97,22 @@ MyEngine::Rendering::Renderer::Renderer(
 				WindowsAPI::GetInstance()->GetWindowHeight()
 			);
 	}
+
+	particlePreviewTexture_ =
+		MyEngine::LowLevel::RenderTargetFactory::CreateRenderTexture(
+			device,
+			heapContext,
+			kParticlePreviewSize,
+			kParticlePreviewSize
+		);
+
+	particlePreviewDepth_ =
+		MyEngine::LowLevel::RenderTargetFactory::CreateDepthTexture(
+			device,
+			heapContext,
+			kParticlePreviewSize,
+			kParticlePreviewSize
+		);
 
 	// シャドウマップ（シーン全体で1枚）
 	shadowPass_ = std::make_unique<MyEngine::Rendering::ShadowPass>(device, heapContext);
@@ -227,6 +242,11 @@ void MyEngine::Rendering::Renderer::RenderScene(
 #endif
 
 	renderTexture_->ChangeState(cmdList_, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+#ifdef USEIMGUI
+	// パーティクルエディタのプレビュー（頼まれたフレームだけ）
+	RenderParticlePreview(heapManager);
+#endif
 
 	// カメラの Near/Far を Outline エフェクトに渡す
 	auto cameraData = CameraOrganizer::GetInstance()->GetCameraData();
@@ -361,6 +381,16 @@ void MyEngine::Rendering::Renderer::UnregisterRenderComponent(MyEngine::Renderin
 	if(it != renderComponents_.end()) {
 		renderComponents_.erase(it);
 	}
+}
+
+void MyEngine::Rendering::Renderer::RequestParticlePreview(const std::string& effectName, const CameraData& camera) {
+	previewEffectName_ = effectName;
+	previewCamera_     = camera;
+	hasPreviewRequest_ = true;
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE MyEngine::Rendering::Renderer::GetParticlePreviewSrvHandle() const {
+	return particlePreviewTexture_->GetSrvGpuHandle();
 }
 
 uint64_t MyEngine::Rendering::Renderer::MakeShaderKey(
@@ -694,4 +724,37 @@ void MyEngine::Rendering::Renderer::SetViewportAndScissorRect() {
 	backBufferScissorRect.bottom = static_cast<LONG>(winHeight);
 
 	cmdList_->RSSetScissorRects(1, &backBufferScissorRect);
+}
+
+void MyEngine::Rendering::Renderer::RenderParticlePreview(MyEngine::LowLevel::SrvDescriptorHeapPool* heap) {
+	if (!hasPreviewRequest_ || !particleSystem_ || !heap) { return; }
+	hasPreviewRequest_ = false;   // 頼まれたフレームだけ描く
+
+	particlePreviewTexture_->ChangeState(cmdList_, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE rtv = particlePreviewTexture_->GetDescriptorHandle();
+	D3D12_CPU_DESCRIPTOR_HANDLE dsv = particlePreviewDepth_->GetDescriptorHandle();
+	cmdList_->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
+
+	float clearColor[] = { 0.08f, 0.08f, 0.10f, 1.0f };   // 粒が見やすい暗い色
+	cmdList_->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+	cmdList_->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+	// ビューポートとシザーを 512×512 にする
+	D3D12_VIEWPORT viewport{ 0.0f, 0.0f, float(kParticlePreviewSize), float(kParticlePreviewSize), 0.0f, 1.0f };
+	D3D12_RECT scissor{ 0, 0, LONG(kParticlePreviewSize), LONG(kParticlePreviewSize) };
+	cmdList_->RSSetViewports(1, &viewport);
+	cmdList_->RSSetScissorRects(1, &scissor);
+
+	// グリッド（エディタが要求した線）を先に描く。線は深度を書かないので、粒は常にこの上に出る
+	LineRenderer::GetInstance()->RenderPreview(cmdList_, previewCamera_.vp);
+
+	particleSystem_->OneDraw(previewEffectName_, cmdList_, rootSigManager_->GetCommonRootSignature(),
+							 heap->GetGpuHandle(0), previewCamera_, 1);   // スロット 1 を使う
+
+	particlePreviewTexture_->ChangeState(cmdList_, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+	// この後のポストエフェクトなどは画面サイズ前提なので戻しておく
+	SetupViewport(cmdList_);
+	SetupScissorRect(cmdList_);
 }

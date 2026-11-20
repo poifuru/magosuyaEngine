@@ -21,6 +21,14 @@ enum class EditorPlayState {
 	Pause	// 一時停止
 };
 
+// 画面全体の使い方（ワークスペース）
+// ・Main     ：いつものエディタ（ドッキングした各ウィンドウ）
+// ・Particle ：パーティクルエディタだけを画面いっぱいに出す
+enum class EditorWorkspace {
+	Main,
+	Particle
+};
+
 class EditorManager {
 public:
 	static EditorManager* GetInstance() {
@@ -78,6 +86,10 @@ public:
 	void SaveLayoutSettings();
 	void LoadLayoutSettings();
 
+	// ワークスペースの取得・切り替え
+	EditorWorkspace GetWorkspace() const { return workspace_; }
+	void SetWorkspace(EditorWorkspace workspace) { workspace_ = workspace; }
+
 	// 選択中のGameObject管理
 	GameObject* GetSelectedObject() const { return selectedObject_; }
 	void SetSelectedObject(GameObject* obj) { selectedObject_ = obj; }
@@ -125,6 +137,9 @@ private:
 
 	// SceneContext
 	SceneContext* sceneContext_ = nullptr;
+
+	// 今のワークスペース
+	EditorWorkspace workspace_ = EditorWorkspace::Main;
 
 	// 稼働状態
 	EditorPlayState playState_ = EditorPlayState::Edit;

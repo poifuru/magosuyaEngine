@@ -19,7 +19,8 @@ void LineRenderer::Initialize(
 	rootSignature_ = commonRootSignature;
 
 	// --- 頂点バッファ（UPLOAD ヒープ、Map しっぱなし） ---
-	const UINT vertexCount = kMaxLines * 2 * 2; // 線1本 = 2頂点、深度あり・なしの2区画
+	// 線1本 = 2頂点。深度あり・なしの2区画 + プレビュー用の区画
+	const UINT vertexCount = kMaxLines * 2 * 2 + kMaxPreviewLines * 2;
 	const UINT bufferSize = sizeof(LineVertex) * vertexCount;
 
 	D3D12_HEAP_PROPERTIES heapProps{};
@@ -57,6 +58,7 @@ void LineRenderer::Initialize(
 
 	// --- ViewProjection の定数バッファ ---
 	viewProjBuffer_.Initialize(device);
+	previewViewProjBuffer_.Initialize(device);
 
 	// --- PSO ---
 	MyEngine::Rendering::PSODescriptor desc{};
@@ -78,6 +80,7 @@ void LineRenderer::Initialize(
 
 	depthCount_ = 0;
 	overlayCount_ = 0;
+	previewCount_ = 0;
 	isInitialized_ = true;
 }
 
@@ -88,11 +91,13 @@ void LineRenderer::Finalize() {
 	mappedVertices_ = nullptr;
 	vertexBuffer_.Reset();
 	viewProjBuffer_.Release();
+	previewViewProjBuffer_.Release();
 	psoDepth_ = nullptr;
 	psoOverlay_ = nullptr;
 	rootSignature_ = nullptr;
 	depthCount_ = 0;
 	overlayCount_ = 0;
+	previewCount_ = 0;
 	isInitialized_ = false;
 }
 
@@ -197,4 +202,56 @@ void LineRenderer::Render(ID3D12GraphicsCommandList* cmdList, const Matrix4x4& v
 void LineRenderer::Clear() {
 	depthCount_ = 0;
 	overlayCount_ = 0;
+}
+
+// ===== パーティクルエディタのプレビュー用 =====
+
+void LineRenderer::DrawPreviewLine(const Vector3& a, const Vector3& b, const Vector4& color) {
+	// isEnabled_ はシーンのデバッグ線用のスイッチなので見ない
+	if (!isInitialized_) return;
+	if (previewCount_ >= kMaxPreviewLines) return; // あふれたら捨てる
+
+	// プレビュー区画はシーン用の2区画（kMaxLines * 2 頂点 × 2）の後ろから始まる
+	uint32_t base = kMaxLines * 4 + previewCount_ * 2;
+	mappedVertices_[base + 0] = { a, color };
+	mappedVertices_[base + 1] = { b, color };
+	previewCount_++;
+}
+
+void LineRenderer::DrawPreviewGridXZ(const Vector3& center, float size, float step, const Vector4& color) {
+	if (step <= 0.0f || size <= 0.0f) return;
+	float half = size * 0.5f;
+	int lineCount = static_cast<int>(size / step);
+
+	for (int i = 0; i <= lineCount; ++i) {
+		float offset = -half + step * static_cast<float>(i);
+		// Z方向の線
+		DrawPreviewLine({ center.x + offset, center.y, center.z - half }, { center.x + offset, center.y, center.z + half }, color);
+		// X方向の線
+		DrawPreviewLine({ center.x - half, center.y, center.z + offset }, { center.x + half, center.y, center.z + offset }, color);
+	}
+}
+
+void LineRenderer::RenderPreview(ID3D12GraphicsCommandList* cmdList, const Matrix4x4& viewProj) {
+	if (!isInitialized_ || !cmdList) return;
+	if (previewCount_ == 0) return;
+
+	// シーン用の viewProjBuffer_ とは別の CB に書く（同じフレームで両方使うため）
+	previewViewProjBuffer_.Update(viewProj);
+
+	PIXBeginEvent(cmdList, PIX_COLOR(255, 200, 0), "LineRenderer Preview");
+
+	cmdList->SetGraphicsRootSignature(rootSignature_);
+	cmdList->SetGraphicsRootConstantBufferView(0, previewViewProjBuffer_.GetGPUVirtualAddress());
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+	cmdList->IASetVertexBuffers(0, 1, &vbView_);
+
+	// 深度テストありの PSO（深度は書かないので、後から描く粒は常に線の上に出る）
+	cmdList->SetPipelineState(psoDepth_);
+	cmdList->DrawInstanced(previewCount_ * 2, 1, kMaxLines * 4, 0);
+
+	PIXEndEvent(cmdList);
+
+	// プレビューは1フレームに1回しか描かないので、描いたらすぐ空にする
+	previewCount_ = 0;
 }

@@ -37,7 +37,8 @@ public:
 		ID3D12GraphicsCommandList* cmdList,
 		ID3D12RootSignature* commonRootSig,
 		D3D12_GPU_DESCRIPTOR_HANDLE srvTableStart,
-		const CameraData& camera
+		const CameraData& camera,
+		uint32_t drawSlot = 0
 	);
 
 	// 見た目・動きの設定を入れ直す
@@ -82,7 +83,8 @@ private:
 	uint32_t frameCount_ = 0;   // 乱数の種用
 
 	uint32_t particleSrvIndex_ = 0;
-	ConstantBuffer<ParticleDrawForGpu> drawBuffer_;
+	static constexpr uint32_t kDrawSlotCount = 2;   // 0: ゲーム画面、1: エディタのプレビュー
+	ConstantBuffer<ParticleDrawForGpu> drawBuffers_[kDrawSlotCount];
 	ID3D12PipelineState* drawPso_ = nullptr;
 
 	uint32_t textureIndex_ = 0;

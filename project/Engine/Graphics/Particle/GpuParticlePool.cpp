@@ -73,7 +73,9 @@ GpuParticlePool::GpuParticlePool(
 	heap.CreateSRVforTexture2D(particleSrvIndex_, particleBuffer_.Get(), srvDesc); // 中身は CreateShaderResourceView なのでバッファにも使える
 
 	// 描画用の定数バッファ
-	drawBuffer_.Initialize(device);   // ConstantBuffer<ParticleDrawForGPU>
+	for(uint32_t i = 0; i < kDrawSlotCount; ++i) {
+		drawBuffers_[i].Initialize(device);   // ConstantBuffer<ParticleDrawForGPU>
+	}
 
 	// フラグ（作り直したときも、最初の Dispatch で必ず Initialize CS が走るように）
 	needsInitialize_ = true;
@@ -172,7 +174,8 @@ void GpuParticlePool::Draw(
 	ID3D12GraphicsCommandList* cmdList,
 	ID3D12RootSignature* commonRootSig,
 	D3D12_GPU_DESCRIPTOR_HANDLE srvTableStart,
-	const CameraData& camera
+	const CameraData& camera,
+	uint32_t drawSlot
 ) {
 	// カメラの右・上ベクトル＝カメラのワールド行列の1行目・2行目
 	ParticleDrawForGpu draw{};
@@ -182,7 +185,7 @@ void GpuParticlePool::Draw(
 	draw.startColor = emitter_.startColor;
 	draw.endColor = emitter_.endColor;
 	draw.endSize = emitter_.endSize;
-	drawBuffer_.Update(draw);
+	drawBuffers_[drawSlot].Update(draw);
 
 	// CS が書いた粒バッファを VS が読める状態にする
 	MyEngine::Utility::TransitionBarrier(cmdList, particleBuffer_.Get(),
@@ -190,7 +193,7 @@ void GpuParticlePool::Draw(
 
 	cmdList->SetGraphicsRootSignature(commonRootSig);
 	cmdList->SetPipelineState(drawPso_);
-	cmdList->SetGraphicsRootConstantBufferView(0, drawBuffer_.GetGPUVirtualAddress()); // b0
+	cmdList->SetGraphicsRootConstantBufferView(0, drawBuffers_[drawSlot].GetGPUVirtualAddress()); // b0
 	cmdList->SetGraphicsRoot32BitConstant(1, particleSrvIndex_, 0);                  // b1 の1つ目
 	cmdList->SetGraphicsRootDescriptorTable(2, srvTableStart);                        // t0, space1
 	cmdList->SetGraphicsRoot32BitConstant(1, textureIndex_, 1);       // b1 の2つ目

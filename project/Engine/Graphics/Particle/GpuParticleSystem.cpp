@@ -131,6 +131,19 @@ void GpuParticleSystem::Draw(
 	}
 }
 
+void GpuParticleSystem::OneDraw(
+	const std::string& name, 
+	ID3D12GraphicsCommandList* cmdList,
+	ID3D12RootSignature* commonRootSig, 
+	D3D12_GPU_DESCRIPTOR_HANDLE srvTableStart, 
+	const CameraData& camera,
+	uint32_t drawSlot
+) {
+	GpuParticlePool* pool = FindPool(name);
+	if (!pool) { return; }
+	pool->Draw(cmdList, commonRootSig, srvTableStart, camera, drawSlot);
+}
+
 GpuParticlePool* GpuParticleSystem::FindPool(const std::string& name) {
 	std::map<std::string, std::unique_ptr<GpuParticlePool>>::iterator it = pools_.find(name);
 	if (it == pools_.end()) { return nullptr; }   // その名前のエフェクトが無い

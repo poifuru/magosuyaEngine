@@ -19,6 +19,7 @@ namespace MyEngine::Rendering {
 class LineRenderer {
 public:
 	static constexpr uint32_t kMaxLines = 32768; // 深度あり・なしそれぞれの最大本数
+	static constexpr uint32_t kMaxPreviewLines = 1024; // パーティクルエディタのプレビュー用の最大本数
 
 	static LineRenderer* GetInstance() {
 		static LineRenderer instance;
@@ -63,6 +64,20 @@ public:
 	// 次のフレームのために線を空にする
 	void Clear();
 
+	// ===== パーティクルエディタのプレビュー用（シーンの線とは別の区画・別の CB） =====
+	// ・シーンの線と混ざらないよう、頂点バッファの後ろにプレビュー専用の区画を持つ
+	// ・ViewProjection もシーン用とは別の CB にする（1フレームに2回 Render すると上書きされるため）
+	// ・SetEnabled(false) はシーンのデバッグ線用のスイッチなので、こちらには効かない
+
+	// プレビュー用の線分
+	void DrawPreviewLine(const Vector3& a, const Vector3& b, const Vector4& color);
+
+	// プレビュー用の XZ 平面グリッド（center を中心に一辺 size、間隔 step）
+	void DrawPreviewGridXZ(const Vector3& center, float size, float step, const Vector4& color);
+
+	// プレビューのレンダーターゲットと深度バッファがセットされた状態で呼ぶ（描いたら空にする）
+	void RenderPreview(ID3D12GraphicsCommandList* cmdList, const Matrix4x4& viewProj);
+
 	// 表示のON/OFF（OFFの間は描画要求も無視する）
 	void SetEnabled(bool enabled) { isEnabled_ = enabled; }
 	bool IsEnabled() const { return isEnabled_; }
@@ -79,13 +94,14 @@ private:
 	LineRenderer& operator=(LineRenderer&&) = delete;
 
 private:
-	// 頂点バッファ（前半 kMaxLines 本 = 深度あり、後半 kMaxLines 本 = 常に手前）
+	// 頂点バッファ（前半 kMaxLines 本 = 深度あり、次の kMaxLines 本 = 常に手前、最後の kMaxPreviewLines 本 = プレビュー）
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer_;
 	LineVertex* mappedVertices_ = nullptr;
 	D3D12_VERTEX_BUFFER_VIEW vbView_{};
 
 	// ViewProjection（b0 = 共通ルートシグネチャの Slot 0）
 	ConstantBuffer<Matrix4x4> viewProjBuffer_;
+	ConstantBuffer<Matrix4x4> previewViewProjBuffer_; // プレビュー用（シーン用とは別）
 
 	// PSO（実体は PSOManager のキャッシュが持っている）
 	ID3D12PipelineState* psoDepth_ = nullptr;
@@ -95,6 +111,7 @@ private:
 	// 今フレームの本数
 	uint32_t depthCount_ = 0;
 	uint32_t overlayCount_ = 0;
+	uint32_t previewCount_ = 0;
 
 	bool isInitialized_ = false;
 	bool isEnabled_ = true;
